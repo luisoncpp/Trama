@@ -1,8 +1,8 @@
-# Current Status (Phase 2 Kickoff)
+# Current Status (Phase 2 Complete)
 
 ## Product state
 
-The repository is in a Phase 2 kickoff state. Core file-first foundations are working, but advanced writing workflows are still pending.
+The repository has completed Phase 2 (File System, Indexing, and Core Editing Loop). Core file-first foundations and conflict-safe editing flows are implemented.
 
 Implemented now:
 - Electron + Vite + Preact desktop shell.
@@ -14,13 +14,12 @@ Implemented now:
 - YAML frontmatter parse/serialize using `yaml` package.
 - `.trama.index.json` reconciliation (prune missing references + append new files).
 - External file watcher events and dirty-vs-external conflict prompt.
+- Conflict resolution actions: reload, keep local edits, compare disk vs local, and save as copy.
 - Refactored renderer feature structure (`project-editor` hook + view/components split).
 - Rich markdown visual editor (formatted editing surface, markdown persisted).
 - Native right-click context menu with spellcheck suggestions.
 
-Not implemented yet (planned in later Phase 2+):
-- Save-as-copy action for conflict flow.
-- Full compare/diff conflict UX.
+Not implemented yet (planned in later phases):
 - File operations beyond read/save (create/rename/delete workflows).
 - Wiki links, templates, corkboard DnD, AI import/export pipeline.
 
@@ -28,8 +27,9 @@ Not implemented yet (planned in later Phase 2+):
 
 Current verification baseline:
 - `npm run build` passes.
+- `npm run lint` passes.
 - `npm run test` passes.
-- Tests cover startup config, IPC contract, frontmatter behavior, index reconciliation, and project-editor hook/logic smoke behavior.
+- Tests cover startup config, IPC contract, frontmatter behavior, index reconciliation, and project-editor conflict/autosave integration behavior.
 
 ## Known technical tradeoffs
 
@@ -39,9 +39,9 @@ Current verification baseline:
 
 ## Suggested next milestones
 
-1. Finish Phase 2 editing loop safety:
-- Add save-as-copy and compare actions in conflict resolution.
-- Add create document flow and tree refresh UX around it.
+1. Start Phase 3 workspace UX:
+- Split-pane layout with persistent panel sizes and active tabs.
+- Theme preferences and fullscreen/focus mode wiring.
 
 2. Improve editor capabilities:
 - Improve rich editor UX polish (layout density, accessibility, keyboard flow).

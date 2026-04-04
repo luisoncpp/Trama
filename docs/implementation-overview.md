@@ -1,17 +1,17 @@
-# Implementation Overview (Phase 2 Kickoff)
+# Implementation Overview (Phase 2 Complete)
 
 For quick onboarding context, read `new-conversation-handoff.md` and `current-status.md` first.
 
 ## What is implemented
 
-The project now includes the Phase 1 baseline plus a Phase 2 kickoff slice:
+The project now includes the Phase 1 baseline plus a complete Phase 2 slice:
 
 - Open project via native folder picker from renderer
 - Recursive project scan for `.md` documents
 - Frontmatter parse/serialize in main process with `yaml`
 - Read/save markdown documents through typed IPC
 - `.trama.index.json` reconciliation (prune missing + append new)
-- External file watcher events (`internal` vs `external`) and conflict prompt
+- External file watcher events (`internal` vs `external`) and conflict handling actions
 - Rich markdown visual editor loop with autosave debounce and modular renderer architecture
 - Native context menu with spellcheck suggestions and dictionary action
 
@@ -74,13 +74,13 @@ Implemented channels at this stage:
 
 ## Why this matters for later phases
 
-Current seams are ready for deeper Phase 2 work:
+Current seams are ready for Phase 3+ work:
 
 - Add new channels by extending `src/shared/ipc.ts`
 - Keep orchestration in `electron/ipc.ts` and move business logic to modular handlers/services
 - Expose new preload methods in `electron/preload.cts`
 - Consume typed APIs in renderer components/hooks
-- Extend current loop with dirty-state conflict handling and external watcher events
+- Extend current loop with additional workspace UI and advanced writing workflows
 
 ## Known tradeoffs
 

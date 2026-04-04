@@ -1,6 +1,6 @@
 import { useCallback } from 'preact/hooks'
 import type { DocumentMeta } from '../../shared/ipc'
-import { canSelectFile } from './project-editor-logic'
+import { buildConflictCopyPath, canSelectFile } from './project-editor-logic'
 import { PROJECT_EDITOR_STRINGS } from './project-editor-strings'
 import type { ProjectEditorActions } from './project-editor-types'
 import type { UseProjectEditorStateResult } from './use-project-editor-state'
@@ -86,7 +86,7 @@ function useSaveNowAction({
   }, [saveDocumentNow, values.editorMeta, values.editorValue, values.isDirty, values.saving, values.selectedPath])
 }
 
-function useConflictActions({
+function useResolveConflictReloadAction({
   values,
   setters,
   loadDocument,
@@ -94,25 +94,95 @@ function useConflictActions({
   values: UseProjectEditorStateResult['values']
   setters: UseProjectEditorStateResult['setters']
   loadDocument: (path: string) => Promise<void>
-}): Pick<ProjectEditorActions, 'resolveConflictReload' | 'resolveConflictKeep'> {
-  const resolveConflictReload = useCallback(() => {
+}): ProjectEditorActions['resolveConflictReload'] {
+  return useCallback(() => {
     if (values.externalConflictPath) {
       void loadDocument(values.externalConflictPath)
     }
 
     setters.setExternalConflictPath(null)
+    setters.setConflictComparisonContent(null)
     setters.setStatusMessage(PROJECT_EDITOR_STRINGS.statusReloadDiscarded)
   }, [loadDocument, setters, values.externalConflictPath])
+}
 
-  const resolveConflictKeep = useCallback(() => {
+function useResolveConflictKeepAction(
+  setters: UseProjectEditorStateResult['setters'],
+): ProjectEditorActions['resolveConflictKeep'] {
+  return useCallback(() => {
     setters.setExternalConflictPath(null)
+    setters.setConflictComparisonContent(null)
     setters.setStatusMessage(PROJECT_EDITOR_STRINGS.statusSaveAsCopyHint)
   }, [setters])
+}
 
-  return {
-    resolveConflictReload,
-    resolveConflictKeep,
-  }
+function useResolveConflictSaveAsCopyAction({
+  values,
+  setters,
+  openProject,
+}: {
+  values: UseProjectEditorStateResult['values']
+  setters: UseProjectEditorStateResult['setters']
+  openProject: (projectRoot: string, preferredFilePath?: string) => Promise<void>
+}): ProjectEditorActions['resolveConflictSaveAsCopy'] {
+  return useCallback(() => {
+    if (!values.selectedPath || !values.rootPath) {
+      return
+    }
+
+    const copyPath = buildConflictCopyPath(values.selectedPath, values.visibleFiles)
+    void (async () => {
+      const response = await window.tramaApi.saveDocument({
+        path: copyPath,
+        content: values.editorValue,
+        meta: values.editorMeta,
+      })
+
+      if (!response.ok) {
+        setters.setStatusMessage(`${PROJECT_EDITOR_STRINGS.statusSaveAsCopyFailed} ${response.error.message}`)
+        return
+      }
+
+      setters.setExternalConflictPath(null)
+      setters.setConflictComparisonContent(null)
+      setters.setStatusMessage(PROJECT_EDITOR_STRINGS.statusSaveAsCopyCreated)
+      await openProject(values.rootPath, response.data.path)
+    })()
+  }, [openProject, setters, values.editorMeta, values.editorValue, values.rootPath, values.selectedPath, values.visibleFiles])
+}
+
+function useResolveConflictCompareAction({
+  values,
+  setters,
+}: {
+  values: UseProjectEditorStateResult['values']
+  setters: UseProjectEditorStateResult['setters']
+}): ProjectEditorActions['resolveConflictCompare'] {
+  return useCallback(() => {
+    const conflictPath = values.externalConflictPath
+    if (!conflictPath) {
+      return
+    }
+
+    void (async () => {
+      const response = await window.tramaApi.readDocument({ path: conflictPath })
+      if (!response.ok) {
+        setters.setStatusMessage(`${PROJECT_EDITOR_STRINGS.statusCompareFailed} ${response.error.message}`)
+        return
+      }
+
+      setters.setConflictComparisonContent(response.data.content)
+      setters.setStatusMessage(PROJECT_EDITOR_STRINGS.statusCompareReady)
+    })()
+  }, [setters, values.externalConflictPath])
+}
+
+function useCloseConflictCompareAction(
+  setters: UseProjectEditorStateResult['setters'],
+): ProjectEditorActions['closeConflictCompare'] {
+  return useCallback(() => {
+    setters.setConflictComparisonContent(null)
+  }, [setters])
 }
 
 export function useProjectEditorUiActions({
@@ -126,11 +196,11 @@ export function useProjectEditorUiActions({
   const selectFile = useSelectFileAction({ values, setters, loadDocument })
   const updateEditorValue = useUpdateEditorValueAction(setters)
   const saveNow = useSaveNowAction({ values, saveDocumentNow })
-  const { resolveConflictReload, resolveConflictKeep } = useConflictActions({
-    values,
-    setters,
-    loadDocument,
-  })
+  const resolveConflictReload = useResolveConflictReloadAction({ values, setters, loadDocument })
+  const resolveConflictKeep = useResolveConflictKeepAction(setters)
+  const resolveConflictSaveAsCopy = useResolveConflictSaveAsCopyAction({ values, setters, openProject })
+  const resolveConflictCompare = useResolveConflictCompareAction({ values, setters })
+  const closeConflictCompare = useCloseConflictCompareAction(setters)
 
   return {
     pickProjectFolder,
@@ -139,5 +209,8 @@ export function useProjectEditorUiActions({
     saveNow,
     resolveConflictReload,
     resolveConflictKeep,
+    resolveConflictSaveAsCopy,
+    resolveConflictCompare,
+    closeConflictCompare,
   }
 }

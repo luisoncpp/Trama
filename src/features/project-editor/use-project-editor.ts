@@ -25,6 +25,7 @@ export function useProjectEditor(): ProjectEditorModel {
     loadDocument: core.loadDocument,
     openProject: core.openProject,
     setExternalConflictPath: setters.setExternalConflictPath,
+    setConflictComparisonContent: setters.setConflictComparisonContent,
     setStatusMessage: setters.setStatusMessage,
   })
 
@@ -34,6 +35,7 @@ export function useProjectEditor(): ProjectEditorModel {
       rootPath: values.rootPath,
       statusMessage: values.statusMessage,
       externalConflictPath: values.externalConflictPath,
+      conflictComparisonContent: values.conflictComparisonContent,
       visibleFiles: values.visibleFiles,
       selectedPath: values.selectedPath,
       editorValue: values.editorValue,

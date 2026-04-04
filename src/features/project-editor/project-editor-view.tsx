@@ -1,5 +1,6 @@
 import type { ProjectEditorModel } from './project-editor-types'
 import { ConflictBanner } from './components/conflict-banner'
+import { ConflictComparePanel } from './components/conflict-compare-panel'
 import { EditorPanel } from './components/editor-panel'
 import { FileListPanel } from './components/file-list-panel'
 
@@ -32,6 +33,17 @@ export function ProjectEditorView({ model }: ProjectEditorViewProps) {
                 externalConflictPath={state.externalConflictPath}
                 onReload={actions.resolveConflictReload}
                 onKeep={actions.resolveConflictKeep}
+                onSaveAsCopy={actions.resolveConflictSaveAsCopy}
+                onCompare={actions.resolveConflictCompare}
+              />
+            )}
+
+            {state.externalConflictPath && state.conflictComparisonContent !== null && (
+              <ConflictComparePanel
+                externalConflictPath={state.externalConflictPath}
+                diskContent={state.conflictComparisonContent}
+                localContent={state.editorValue}
+                onClose={actions.closeConflictCompare}
               />
             )}
 

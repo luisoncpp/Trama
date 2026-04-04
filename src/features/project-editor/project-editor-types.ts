@@ -3,6 +3,7 @@ export interface ProjectEditorState {
   rootPath: string
   statusMessage: string
   externalConflictPath: string | null
+  conflictComparisonContent: string | null
   visibleFiles: string[]
   selectedPath: string | null
   editorValue: string
@@ -19,6 +20,9 @@ export interface ProjectEditorActions {
   saveNow: () => void
   resolveConflictReload: () => void
   resolveConflictKeep: () => void
+  resolveConflictSaveAsCopy: () => void
+  resolveConflictCompare: () => void
+  closeConflictCompare: () => void
 }
 
 export interface ProjectEditorModel {

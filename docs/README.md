@@ -1,6 +1,6 @@
 # Trama Technical Docs
 
-This folder documents the current Phase 2 kickoff implementation so future sessions can resume work without relying on chat history.
+This folder documents the current Phase 2 implementation so future sessions can resume work without relying on chat history.
 
 ## Recommended reading order
 
@@ -11,10 +11,11 @@ This folder documents the current Phase 2 kickoff implementation so future sessi
 5. `file-map.md`
 6. `dev-workflow.md`
 7. `troubleshooting.md`
+8. `phase-2-closure-checklist.md`
 
 ## Current scope
 
-The project currently implements **Phase 1 baseline + a Phase 2 kickoff slice**:
+The project currently implements **Phase 1 baseline + complete Phase 2 scope**:
 
 - Electron + Vite + Preact desktop shell
 - Secure-by-default Electron window configuration (with one practical preload tradeoff, documented below)

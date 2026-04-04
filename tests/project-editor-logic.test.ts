@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
+  buildConflictCopyPath,
   canSelectFile,
   resolvePreferredFile,
   shouldRefreshTreeOnExternalEvent,
@@ -46,5 +47,20 @@ describe('project editor logic helpers', () => {
     expect(shouldRefreshTreeOnExternalEvent('add')).toBe(true)
     expect(shouldRefreshTreeOnExternalEvent('unlink')).toBe(true)
     expect(shouldRefreshTreeOnExternalEvent('change')).toBe(false)
+  })
+
+  it('creates a conflict copy path when no prior copy exists', () => {
+    const copyPath = buildConflictCopyPath('docs/a.md', ['docs/a.md'])
+    expect(copyPath).toBe('docs/a.conflict-copy.md')
+  })
+
+  it('increments conflict copy suffix when copy path already exists', () => {
+    const copyPath = buildConflictCopyPath('docs/a.md', [
+      'docs/a.md',
+      'docs/a.conflict-copy.md',
+      'docs/a.conflict-copy-2.md',
+    ])
+
+    expect(copyPath).toBe('docs/a.conflict-copy-3.md')
   })
 })

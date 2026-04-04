@@ -11,6 +11,7 @@ interface UseProjectEditorExternalEventsEffectParams {
   loadDocument: (path: string) => Promise<void>
   openProject: (projectRoot: string, preferredFilePath?: string) => Promise<void>
   setExternalConflictPath: (path: string | null) => void
+  setConflictComparisonContent: (value: string | null) => void
   setStatusMessage: (message: string) => void
 }
 
@@ -23,6 +24,7 @@ interface HandleExternalEventParams {
   loadDocument: (path: string) => Promise<void>
   openProject: (projectRoot: string, preferredFilePath?: string) => Promise<void>
   setExternalConflictPath: (path: string | null) => void
+  setConflictComparisonContent: (value: string | null) => void
   setStatusMessage: (message: string) => void
 }
 
@@ -35,17 +37,20 @@ function handleExternalEvent({
   loadDocument,
   openProject,
   setExternalConflictPath,
+  setConflictComparisonContent,
   setStatusMessage,
 }: HandleExternalEventParams): void {
   if (event.path === selectedPath) {
     if (event.event === 'unlink') {
       if (isDirty) {
         setExternalConflictPath(event.path)
+        setConflictComparisonContent(null)
         setStatusMessage(`El archivo activo fue eliminado externamente: ${event.path}.`)
         return
       }
 
       clearEditor()
+      setConflictComparisonContent(null)
       void openProject(snapshotRootPath)
       setStatusMessage(`El archivo activo fue eliminado externamente: ${event.path}`)
       return
@@ -53,10 +58,12 @@ function handleExternalEvent({
 
     if (isDirty) {
       setExternalConflictPath(event.path)
+      setConflictComparisonContent(null)
       setStatusMessage(`Cambio externo detectado en ${event.path}.`)
       return
     }
 
+    setConflictComparisonContent(null)
     void loadDocument(event.path)
     setStatusMessage(`Recargado automaticamente tras cambio externo: ${event.path}`)
     return
@@ -82,6 +89,7 @@ export function useProjectEditorExternalEventsEffect({
   loadDocument,
   openProject,
   setExternalConflictPath,
+  setConflictComparisonContent,
   setStatusMessage,
 }: UseProjectEditorExternalEventsEffectParams): void {
   useEffect(() => {
@@ -99,6 +107,7 @@ export function useProjectEditorExternalEventsEffect({
         loadDocument,
         openProject,
         setExternalConflictPath,
+        setConflictComparisonContent,
         setStatusMessage,
       })
     })
@@ -113,6 +122,7 @@ export function useProjectEditorExternalEventsEffect({
     openProject,
     selectedPath,
     setExternalConflictPath,
+    setConflictComparisonContent,
     setStatusMessage,
     snapshotRootPath,
   ])

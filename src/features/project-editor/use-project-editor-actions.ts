@@ -24,6 +24,8 @@ function useClearEditor(setters: UseProjectEditorStateResult['setters']): () => 
     setters.setEditorValue('')
     setters.setEditorMeta({})
     setters.setIsDirty(false)
+    setters.setExternalConflictPath(null)
+    setters.setConflictComparisonContent(null)
   }, [setters])
 }
 
@@ -43,6 +45,7 @@ function useLoadDocument(setters: UseProjectEditorStateResult['setters']): (path
         setters.setEditorValue(response.data.content)
         setters.setEditorMeta(response.data.meta)
         setters.setIsDirty(false)
+        setters.setConflictComparisonContent(null)
         setters.setStatusMessage(`Documento cargado: ${response.data.path}`)
       } finally {
         setters.setLoadingDocument(false)

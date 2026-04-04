@@ -15,6 +15,7 @@ export interface UseProjectEditorStateResult {
     loadingDocument: boolean
     saving: boolean
     externalConflictPath: string | null
+    conflictComparisonContent: string | null
     statusMessage: string
     visibleFiles: string[]
   }
@@ -29,6 +30,7 @@ export interface UseProjectEditorStateResult {
     setLoadingDocument: (value: boolean) => void
     setSaving: (value: boolean) => void
     setExternalConflictPath: (value: string | null) => void
+    setConflictComparisonContent: (value: string | null) => void
     setStatusMessage: (value: string) => void
   }
 }
@@ -44,6 +46,7 @@ export function useProjectEditorState(): UseProjectEditorStateResult {
   const [loadingDocument, setLoadingDocument] = useState(false)
   const [saving, setSaving] = useState(false)
   const [externalConflictPath, setExternalConflictPath] = useState<string | null>(null)
+  const [conflictComparisonContent, setConflictComparisonContent] = useState<string | null>(null)
   const [statusMessage, setStatusMessage] = useState<string>(PROJECT_EDITOR_STRINGS.initialStatus)
 
   const apiAvailable = Boolean(window.tramaApi?.openProject)
@@ -62,6 +65,7 @@ export function useProjectEditorState(): UseProjectEditorStateResult {
       loadingDocument,
       saving,
       externalConflictPath,
+      conflictComparisonContent,
       statusMessage,
       visibleFiles,
     },
@@ -76,6 +80,7 @@ export function useProjectEditorState(): UseProjectEditorStateResult {
       setLoadingDocument,
       setSaving,
       setExternalConflictPath,
+      setConflictComparisonContent,
       setStatusMessage,
     },
   }

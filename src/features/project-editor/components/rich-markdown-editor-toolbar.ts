@@ -52,7 +52,7 @@ export function useSyncToolbarControls({
     }
 
     const toolbar = host.querySelector('.ql-toolbar')
-    if (!toolbar) {
+    if (!(toolbar instanceof HTMLElement)) {
       return
     }
 
