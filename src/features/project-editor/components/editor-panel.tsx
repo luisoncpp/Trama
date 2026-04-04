@@ -20,34 +20,36 @@ export function EditorPanel({
   onSaveNow,
   onEditorChange,
 }: EditorPanelProps) {
+  const saveDisabled = !selectedPath || saving || !isDirty
+  const saveLabel = saving
+    ? PROJECT_EDITOR_STRINGS.saving
+    : isDirty
+      ? PROJECT_EDITOR_STRINGS.saveNow
+      : PROJECT_EDITOR_STRINGS.noChanges
+
+  const syncState = !selectedPath || loadingDocument ? 'disabled' : saving ? 'saving' : isDirty ? 'dirty' : 'clean'
+  const syncStateLabel =
+    syncState === 'saving'
+      ? 'Guardando'
+      : syncState === 'dirty'
+        ? 'Cambios pendientes'
+        : syncState === 'clean'
+          ? 'Sincronizado'
+          : PROJECT_EDITOR_STRINGS.noFileSelected
+
   return (
     <article class="workspace-panel workspace-panel--editor">
-      <div class="workspace-panel__header workspace-panel__header--editor">
-        <div>
-          <p class="workspace-panel__eyebrow">Modo edicion</p>
-          <h2 class="workspace-panel__title">{PROJECT_EDITOR_STRINGS.editorTitle}</h2>
-        </div>
-        <button
-          type="button"
-          disabled={!selectedPath || saving || !isDirty}
-          onClick={onSaveNow}
-          class="editor-button editor-button--secondary"
-        >
-          {saving ? PROJECT_EDITOR_STRINGS.saving : isDirty ? PROJECT_EDITOR_STRINGS.saveNow : PROJECT_EDITOR_STRINGS.noChanges}
-        </button>
-      </div>
-      <div class="editor-document-meta">
-        <p class="editor-document-meta__path">{selectedPath ?? PROJECT_EDITOR_STRINGS.noFileSelected}</p>
-        <span class={`editor-document-meta__state ${isDirty ? 'is-dirty' : 'is-clean'}`}>
-          {isDirty ? 'Cambios pendientes' : 'Sincronizado'}
-        </span>
-      </div>
       <div class={`editor-manuscript ${!selectedPath || loadingDocument ? 'is-muted' : ''}`}>
         <RichMarkdownEditor
           documentId={selectedPath}
           value={editorValue}
           disabled={!selectedPath || loadingDocument}
           onChange={onEditorChange}
+          saveDisabled={saveDisabled}
+          saveLabel={saveLabel}
+          onSaveNow={onSaveNow}
+          syncState={syncState}
+          syncStateLabel={syncStateLabel}
         />
       </div>
     </article>
