@@ -12,7 +12,8 @@ The project now includes the Phase 1 baseline plus a Phase 2 kickoff slice:
 - Read/save markdown documents through typed IPC
 - `.trama.index.json` reconciliation (prune missing + append new)
 - External file watcher events (`internal` vs `external`) and conflict prompt
-- Editor loop with autosave debounce and modular renderer architecture
+- Rich markdown visual editor loop with autosave debounce and modular renderer architecture
+- Native context menu with spellcheck suggestions and dictionary action
 
 ## Runtime architecture
 
@@ -23,6 +24,9 @@ The project now includes the Phase 1 baseline plus a Phase 2 kickoff slice:
 	- `src/features/project-editor/components/*`
 - **Preload script**: safe API bridge (`electron/preload.cts`)
 - **Main process**: app lifecycle + IPC orchestration (`electron/main.ts`, `electron/ipc.ts`)
+- **Main-process helpers**:
+	- `electron/main-process/context-menu.ts`
+	- `electron/main-process/smoke-hooks.ts`
 - **IPC handlers (modularized)**:
 	- `electron/ipc/handlers/index.ts`
 	- `electron/ipc/handlers/ping-handler.ts`

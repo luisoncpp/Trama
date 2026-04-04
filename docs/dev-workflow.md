@@ -24,6 +24,7 @@
 2. Open Electron window and use `Elegir carpeta` to load a markdown project.
 3. Confirm preload status is available and documents load/save correctly.
 4. Run `npm run test` before finishing changes.
+5. Validate right-click context menu in the editor (copy/paste + spellcheck suggestions).
 
 ## Adding a new IPC endpoint
 
@@ -41,6 +42,8 @@
 After `npm run build:electron`:
 
 - `dist-electron/electron/main.js`
+- `dist-electron/electron/main-process/context-menu.js`
+- `dist-electron/electron/main-process/smoke-hooks.js`
 - `dist-electron/electron/ipc.js`
 - `dist-electron/electron/preload.cjs`
 - `dist-electron/electron/ipc/handlers/index.js`

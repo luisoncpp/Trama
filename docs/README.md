@@ -24,6 +24,8 @@ The project currently implements **Phase 1 baseline + a Phase 2 kickoff slice**:
 - Project scan + markdown read/save + index reconciliation
 - External file watcher and dirty-vs-external conflict prompt
 - Frontmatter parsing/serialization backed by a dedicated YAML library
+- Rich markdown visual editor (formatted text UI, markdown persisted)
+- Native right-click context menu with spellcheck suggestions
 - Refactored renderer structure (`useProjectEditor` + split presentational components)
 - Tests for startup, IPC contract, frontmatter, index reconciliation, and project-editor logic/hooks
 

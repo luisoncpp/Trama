@@ -15,9 +15,10 @@ Implemented now:
 - `.trama.index.json` reconciliation (prune missing references + append new files).
 - External file watcher events and dirty-vs-external conflict prompt.
 - Refactored renderer feature structure (`project-editor` hook + view/components split).
+- Rich markdown visual editor (formatted editing surface, markdown persisted).
+- Native right-click context menu with spellcheck suggestions.
 
 Not implemented yet (planned in later Phase 2+):
-- Rich markdown editor (still plain textarea).
 - Save-as-copy action for conflict flow.
 - Full compare/diff conflict UX.
 - File operations beyond read/save (create/rename/delete workflows).
@@ -43,8 +44,8 @@ Current verification baseline:
 - Add create document flow and tree refresh UX around it.
 
 2. Improve editor capabilities:
-- Replace textarea with CodeMirror/Monaco.
-- Add markdown + frontmatter-aware behavior.
+- Improve rich editor UX polish (layout density, accessibility, keyboard flow).
+- Expand markdown fidelity coverage (edge cases in markdown/html roundtrip).
 
 3. Performance and architecture cleanup:
 - Reduce repeated full-project scans during save/index updates.

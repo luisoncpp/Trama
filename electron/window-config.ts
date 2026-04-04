@@ -14,6 +14,7 @@ export function createMainWindowOptions(preloadPath: string): BrowserWindowConst
       contextIsolation: true,
       sandbox: false,
       webSecurity: true,
+      spellcheck: true,
     },
   }
 }

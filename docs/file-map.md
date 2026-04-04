@@ -17,10 +17,17 @@
 - `electron/main.ts`
   - App lifecycle (`app.whenReady`, `window-all-closed`).
   - Creates BrowserWindow with preload.
+  - Wires smoke hooks and right-click context menu helpers.
   - Registers IPC handlers.
   - Keeps global window reference to prevent early process exit.
+- `electron/main-process/context-menu.ts`
+  - Builds and shows native context menu.
+  - Includes spellcheck suggestions and add-to-dictionary action.
+- `electron/main-process/smoke-hooks.ts`
+  - Registers smoke-test load-failure and timeout hooks.
 - `electron/window-config.ts`
   - BrowserWindow security-related defaults.
+  - Enables spellcheck in web preferences.
 - `electron/ipc.ts`
   - Thin orchestration layer for channel registration.
   - Delegates real logic to modular handlers.

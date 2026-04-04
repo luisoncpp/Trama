@@ -6,7 +6,7 @@ Use this file to quickly bootstrap a fresh chat session and avoid rediscovering 
 
 ## 60-second summary
 
-Trama is a file-first desktop writing tool. The codebase currently delivers a Phase 2 kickoff: open project folder, scan markdown files, edit/save documents with YAML frontmatter support, maintain index reconciliation, and react to external file changes with a basic conflict flow.
+Trama is a file-first desktop writing tool. The codebase currently delivers a Phase 2 kickoff: open project folder, scan markdown files, edit/save documents with YAML frontmatter support, maintain index reconciliation, rich visual markdown editing, and react to external file changes with a basic conflict flow.
 
 ## Read first (in order)
 
@@ -45,11 +45,12 @@ Shared contract:
 - confirm preload API status is available,
 - open a folder,
 - edit/save a markdown file,
+- right-click a misspelled word and verify spellcheck suggestions,
 - verify no regressions in conflict behavior.
 
 ## Current high-value next tasks
 
 1. Implement complete conflict actions (save as copy, compare/review).
-2. Move from textarea to rich markdown editor.
+2. Improve rich editor UX polish and markdown roundtrip fidelity.
 3. Optimize project scan/reconciliation work triggered by save operations.
 4. Expand tests for external file event flows and dirty-state safety.

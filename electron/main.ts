@@ -2,6 +2,8 @@ import { app, BrowserWindow, ipcMain } from 'electron'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
 import { registerIpcHandlers, shutdownIpcServices } from './ipc.js'
+import { setupContextMenu } from './main-process/context-menu.js'
+import { setupSmokeTestHooks } from './main-process/smoke-hooks.js'
 import { createMainWindowOptions } from './window-config.js'
 
 const __filename = fileURLToPath(import.meta.url)
@@ -60,15 +62,7 @@ async function createMainWindow(): Promise<void> {
   mainWindow = win
 
   if (isSmokeTest) {
-    win.webContents.on('did-fail-load', (_event, code, description) => {
-      console.error('SMOKE_TEST_FAIL', `LOAD_FAIL ${code}: ${description}`)
-      app.exit(1)
-    })
-
-    setTimeout(() => {
-      console.error('SMOKE_TEST_FAIL', 'SMOKE_TIMEOUT')
-      app.exit(1)
-    }, 10_000)
+    setupSmokeTestHooks(win)
   }
 
   const renderer = getRendererEntry()
@@ -85,6 +79,7 @@ async function createMainWindow(): Promise<void> {
       win.show()
     })
   }
+  setupContextMenu(win)
 
   win.on('closed', () => {
     mainWindow = null
