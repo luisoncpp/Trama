@@ -21,20 +21,28 @@ export function EditorPanel({
   onEditorChange,
 }: EditorPanelProps) {
   return (
-    <article class="rounded-xl border border-slate-800 bg-slate-900/70 p-3">
-      <div class="mb-2 flex items-center justify-between">
-        <h2 class="text-sm font-semibold text-slate-200">{PROJECT_EDITOR_STRINGS.editorTitle}</h2>
+    <article class="workspace-panel workspace-panel--editor">
+      <div class="workspace-panel__header workspace-panel__header--editor">
+        <div>
+          <p class="workspace-panel__eyebrow">Modo edicion</p>
+          <h2 class="workspace-panel__title">{PROJECT_EDITOR_STRINGS.editorTitle}</h2>
+        </div>
         <button
           type="button"
           disabled={!selectedPath || saving || !isDirty}
           onClick={onSaveNow}
-          class="rounded-md bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-900 disabled:opacity-50"
+          class="editor-button editor-button--secondary"
         >
           {saving ? PROJECT_EDITOR_STRINGS.saving : isDirty ? PROJECT_EDITOR_STRINGS.saveNow : PROJECT_EDITOR_STRINGS.noChanges}
         </button>
       </div>
-      <p class="mb-2 text-xs text-slate-400">{selectedPath ?? PROJECT_EDITOR_STRINGS.noFileSelected}</p>
-      <div class={!selectedPath || loadingDocument ? 'opacity-70' : ''}>
+      <div class="editor-document-meta">
+        <p class="editor-document-meta__path">{selectedPath ?? PROJECT_EDITOR_STRINGS.noFileSelected}</p>
+        <span class={`editor-document-meta__state ${isDirty ? 'is-dirty' : 'is-clean'}`}>
+          {isDirty ? 'Cambios pendientes' : 'Sincronizado'}
+        </span>
+      </div>
+      <div class={`editor-manuscript ${!selectedPath || loadingDocument ? 'is-muted' : ''}`}>
         <RichMarkdownEditor
           documentId={selectedPath}
           value={editorValue}

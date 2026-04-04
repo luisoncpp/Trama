@@ -12,8 +12,8 @@ export function ProjectEditorView({ model }: ProjectEditorViewProps) {
   const { state, actions } = model
 
   return (
-    <main class="min-h-screen bg-slate-950 text-slate-100">
-      <div class="mx-auto flex min-h-screen w-full max-w-7xl flex-col px-6 py-6">
+    <main class="editor-shell">
+      <div class="editor-app">
         <ProjectHeader
           apiAvailable={state.apiAvailable}
           loadingProject={state.loadingProject}
@@ -30,7 +30,7 @@ export function ProjectEditorView({ model }: ProjectEditorViewProps) {
           />
         )}
 
-        <section class="mt-4 grid min-h-[60vh] grid-cols-1 gap-4 lg:grid-cols-[320px_1fr]">
+        <section class="editor-workspace">
           <FileListPanel
             visibleFiles={state.visibleFiles}
             selectedPath={state.selectedPath}
