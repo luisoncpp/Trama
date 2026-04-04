@@ -75,7 +75,32 @@
 - `src/features/project-editor/project-editor-view.tsx`
   - Screen-level UI composition.
 - `src/features/project-editor/components/*`
-  - Presentational components (header, conflict banner, file list, editor panel).
+  - Presentational components (header, conflict banner, editor panel).
+- `src/features/project-editor/components/sidebar/sidebar-panel.tsx`
+  - Sidebar shell/orchestrator.
+  - Composes rail + active section panel.
+- `src/features/project-editor/components/sidebar/sidebar-rail.tsx`
+  - Left rail with section selection and collapse toggle.
+  - Sections: explorer, corkboard, planner, settings.
+- `src/features/project-editor/components/sidebar/sidebar-explorer-content.tsx`
+  - Explorer section container/header.
+  - Renders root path and hierarchical file tree.
+- `src/features/project-editor/components/sidebar/sidebar-tree.tsx`
+  - Interactive tree UI.
+  - Expand/collapse, selection, and keyboard navigation.
+- `src/features/project-editor/components/sidebar/sidebar-tree-logic.ts`
+  - Pure tree construction/flattening helpers used by sidebar tree UI.
+- `src/features/project-editor/components/sidebar/sidebar-tree-icons.tsx`
+  - Sidebar tree chevron + folder/file SVG icons.
+- `src/features/project-editor/components/sidebar/sidebar-settings-content.tsx`
+  - Sidebar settings section.
+  - Panel width slider UI.
+- `src/features/project-editor/components/sidebar/sidebar-section-placeholder.tsx`
+  - Placeholder section body for corkboard/planner until implemented.
+- `src/features/project-editor/use-sidebar-ui-state.ts`
+  - Sidebar UI local persistence (`trama.sidebar.ui.v1`).
+- `src/features/project-editor/use-project-editor-sidebar-actions.ts`
+  - Sidebar-specific action composition layer.
 - `src/features/project-editor/project-editor-strings.ts`
   - UI/status string constants.
 - `src/features/project-editor/project-editor-logic.ts`
@@ -111,6 +136,10 @@
   - Conflict flow behavior under external-change scenarios.
 - `tests/rich-markdown-editor.test.ts`
   - Rich markdown editor behavior and conversion loop checks.
+- `tests/sidebar-tree.test.ts`
+  - Tree building, sorting, flattening, and ancestor-path helpers.
+- `tests/sidebar-panels.test.ts`
+  - Sidebar shell section rendering + explorer/settings panel interactions.
 - `tests/electron-smoke.test.ts`
   - Built app smoke validation for Electron startup + preload API path.
 - `tests/typescript-compile.test.ts`
