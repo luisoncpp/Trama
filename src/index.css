@@ -436,30 +436,44 @@ select {
 .rich-editor .ql-container.ql-snow {
   flex: 1 1 auto;
   min-height: 0;
-  display: flex;
-  flex-direction: column;
   overflow-y: auto;
+  overflow-x: hidden;
   background:
     radial-gradient(circle at top, rgba(110, 166, 255, 0.08), transparent 28%),
     linear-gradient(180deg, #141922 0%, #10141c 100%);
   border: 0;
-  padding: 18px;
+  padding: 0;
 }
 
 .rich-editor .ql-editor {
-  width: min(100%, 860px);
+  width: 100%;
+  max-width: 860px;
   min-height: 100%;
   margin: 0 auto;
-  background: linear-gradient(180deg, #1a212c 0%, var(--canvas) 100%);
+  background: transparent;
   color: var(--canvas-ink);
-  border: 1px solid rgba(154, 175, 210, 0.14);
-  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.34);
-  border-radius: 18px;
-  overflow-y: visible;
+  border: 0;
+  box-shadow: none;
+  border-radius: 0;
+  overflow: visible;
   font-family: Georgia, 'Palatino Linotype', serif;
   font-size: 1.04rem;
-  line-height: 1.88;
-  padding: 2.5rem 3rem 3rem;
+  line-height: 1.62;
+  padding: 1.1rem 1.25rem 1.35rem;
+}
+
+.rich-editor .ql-editor p {
+  margin: 0 0 0.42rem;
+}
+
+.rich-editor .ql-editor li {
+  margin: 0.1rem 0;
+}
+
+.rich-editor .ql-editor h1,
+.rich-editor .ql-editor h2,
+.rich-editor .ql-editor h3 {
+  margin: 0.55rem 0 0.42rem;
 }
 
 .rich-editor .ql-editor.ql-blank::before {
@@ -570,7 +584,7 @@ select {
   }
 
   .rich-editor .ql-container.ql-snow {
-    padding: 10px;
+    padding: 0;
   }
 
   .rich-toolbar-controls {
@@ -580,7 +594,9 @@ select {
 
   .rich-editor .ql-editor {
     min-height: 100%;
-    padding: 1.5rem 1.25rem 2rem;
+    padding: 0.9rem 0.85rem 1.1rem;
     font-size: 0.98rem;
+    line-height: 1.56;
+    max-width: 100%;
   }
 }
