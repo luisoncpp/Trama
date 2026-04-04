@@ -8,6 +8,7 @@ Implemented now:
 - Electron + Vite + Preact desktop shell.
 - Secure-by-default window config with one tradeoff (`sandbox: false`).
 - Typed IPC with Zod validation and envelope responses.
+- Renderer-to-main debug logging channel (`trama:debug:log`) for diagnostics.
 - Native folder picker and project open flow.
 - Recursive markdown scan with ignored system/build folders.
 - Markdown read/save through main process repository layer.
@@ -29,12 +30,18 @@ Current verification baseline:
 - `npm run build` passes.
 - `npm run lint` passes.
 - `npm run test` passes.
+- `npm run test:smoke` passes.
 - Tests cover startup config, IPC contract, frontmatter behavior, index reconciliation, and project-editor conflict/autosave integration behavior.
+
+Additional regression checks currently in the suite:
+- Electron smoke startup flow (`tests/electron-smoke.test.ts`).
+- TypeScript compilation guard (`tests/typescript-compile.test.ts`).
+- Rich markdown editor behavior (`tests/rich-markdown-editor.test.ts`).
 
 ## Known technical tradeoffs
 
 - `sandbox: false` remains enabled for preload stability in this setup.
-- IPC project handlers still perform some repeated scan/meta refresh work after save (acceptable for kickoff, likely optimize later).
+- IPC project handlers still perform some repeated scan/meta refresh work after save (acceptable for current scope, likely optimize later).
 - External change handling currently favors safety over convenience (blocks refresh if local document is dirty).
 
 ## Suggested next milestones

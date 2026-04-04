@@ -30,6 +30,7 @@
   - Enables spellcheck in web preferences.
 - `electron/ipc.ts`
   - Thin orchestration layer for channel registration.
+  - Hosts renderer debug-log bridge (`trama:debug:log`) after payload validation.
   - Delegates real logic to modular handlers.
 - `electron/ipc/handlers/index.ts`
   - Facade export for all IPC handler entry points.
@@ -106,6 +107,14 @@
   - Pure project-editor helper logic.
 - `tests/use-project-editor.test.ts`
   - Hook-level behavior smoke tests.
+- `tests/project-editor-conflict-flow.test.ts`
+  - Conflict flow behavior under external-change scenarios.
+- `tests/rich-markdown-editor.test.ts`
+  - Rich markdown editor behavior and conversion loop checks.
+- `tests/electron-smoke.test.ts`
+  - Built app smoke validation for Electron startup + preload API path.
+- `tests/typescript-compile.test.ts`
+  - Verifies TypeScript project references compile successfully.
 
 ## Build outputs
 

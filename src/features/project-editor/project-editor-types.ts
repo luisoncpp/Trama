@@ -1,7 +1,12 @@
+export type SidebarSection = 'explorer' | 'corkboard' | 'planner' | 'settings'
+
 export interface ProjectEditorState {
   apiAvailable: boolean
   rootPath: string
   statusMessage: string
+  sidebarActiveSection: SidebarSection
+  sidebarPanelCollapsed: boolean
+  sidebarPanelWidth: number
   externalConflictPath: string | null
   conflictComparisonContent: string | null
   visibleFiles: string[]
@@ -16,6 +21,9 @@ export interface ProjectEditorState {
 export interface ProjectEditorActions {
   pickProjectFolder: () => Promise<void>
   selectFile: (filePath: string) => void
+  setSidebarSection: (section: SidebarSection) => void
+  toggleSidebarPanelCollapsed: () => void
+  setSidebarPanelWidth: (width: number) => void
   updateEditorValue: (value: string) => void
   saveNow: () => void
   resolveConflictReload: () => void

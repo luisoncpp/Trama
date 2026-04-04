@@ -10,6 +10,7 @@ The project now includes the Phase 1 baseline plus a complete Phase 2 slice:
 - Recursive project scan for `.md` documents
 - Frontmatter parse/serialize in main process with `yaml`
 - Read/save markdown documents through typed IPC
+- Renderer-to-main diagnostic logging via `trama:debug:log`
 - `.trama.index.json` reconciliation (prune missing + append new)
 - External file watcher events (`internal` vs `external`) and conflict handling actions
 - Rich markdown visual editor loop with autosave debounce and modular renderer architecture
@@ -65,12 +66,18 @@ Validation is done with `zod` in main process before producing a response.
 Implemented channels at this stage:
 
 - `trama:ping`
+- `trama:debug:log`
 - `trama:project:open`
 - `trama:project:select-folder`
 - `trama:document:read`
 - `trama:document:save`
 - `trama:index:get`
 - `trama:project:external-file-event`
+
+Current test entry points:
+
+- `npm run test` runs the full Vitest suite (unit/integration around startup, IPC contract, frontmatter, index reconciliation, project editor, and rich markdown editor behavior).
+- `npm run test:smoke` runs a built Electron smoke startup validation.
 
 ## Why this matters for later phases
 

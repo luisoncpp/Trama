@@ -156,6 +156,18 @@ select {
   line-height: 1.5;
 }
 
+.project-menu__field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 0.76rem;
+  color: var(--text-muted);
+}
+
+.project-menu__field input[type='range'] {
+  width: 100%;
+}
+
 .editor-button {
   appearance: none;
   border-radius: 12px;
@@ -208,10 +220,72 @@ select {
 
 .editor-workspace {
   display: grid;
-  grid-template-columns: 300px minmax(0, 1fr);
+  grid-template-columns: var(--sidebar-width, 300px) minmax(0, 1fr);
   gap: 14px;
   height: 100%;
   min-height: 0;
+}
+
+.sidebar-shell {
+  border: 1px solid var(--border);
+  background: linear-gradient(180deg, var(--panel-bg), var(--panel-strong));
+  box-shadow: var(--shadow-lg);
+  border-radius: 18px;
+  display: flex;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.sidebar-shell.is-collapsed {
+  width: 72px;
+}
+
+.sidebar-panel-content {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.sidebar-rail {
+  width: 72px;
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 8px;
+  background: rgba(8, 11, 16, 0.45);
+}
+
+.sidebar-rail__items {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+.sidebar-rail__item,
+.sidebar-rail__toggle {
+  width: 100%;
+  min-height: 40px;
+  border-radius: 10px;
+  border: 1px solid var(--border-strong);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-muted);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 160ms ease, color 160ms ease, border-color 160ms ease;
+}
+
+.sidebar-rail__item:hover,
+.sidebar-rail__toggle:hover,
+.sidebar-rail__item.is-active {
+  background: rgba(110, 166, 255, 0.1);
+  color: var(--accent-strong);
+  border-color: rgba(110, 166, 255, 0.3);
 }
 
 .editor-main {
@@ -227,6 +301,15 @@ select {
 
 .workspace-panel--sidebar {
   padding: 16px;
+  border: 0;
+  box-shadow: none;
+  height: 100%;
+}
+
+.sidebar-placeholder {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
 .editor-panel-root {

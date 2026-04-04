@@ -123,6 +123,7 @@ interface ProjectIndex {
   * **DoD:** User can open a project, edit a document, autosave to disk, and recover safely from external updates.  
   * **Minimum Tests:** Frontmatter parser unit tests; index reconciliation tests; save/reload conflict integration test.
 * **Phase 3: Workspace UX (Split, Dark Mode, Fullscreen)**  
+  * Implementation reference: `docs/sidebar-technical-design-and-implementation-plan.md`.  
   * Implement real split-pane layout with persistent panel sizes and active tabs.  
   * Implement dark/light mode toggle with optional system sync.  
   * Implement native fullscreen/focus mode wiring through window APIs.  

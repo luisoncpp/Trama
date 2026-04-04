@@ -52,6 +52,7 @@ function setupTramaApiMock(overrides?: Partial<TramaApiMock>) {
 
 describe('useProjectEditor', () => {
   it('exposes initial state from hook', () => {
+    window.localStorage.removeItem('trama.sidebar.ui.v1')
     setupTramaApiMock()
 
     let model: ProjectEditorModel | undefined
@@ -69,9 +70,13 @@ describe('useProjectEditor', () => {
     expect(model).toBeDefined()
     expect(model?.state.apiAvailable).toBe(true)
     expect(model?.state.statusMessage).toBe('Abre una carpeta de proyecto para iniciar.')
+    expect(model?.state.sidebarActiveSection).toBe('explorer')
+    expect(model?.state.sidebarPanelCollapsed).toBe(false)
+    expect(model?.state.sidebarPanelWidth).toBe(300)
   })
 
   it('updates status when folder picking is canceled', async () => {
+    window.localStorage.removeItem('trama.sidebar.ui.v1')
     setupTramaApiMock({
       selectProjectFolder: async () => ({ ok: true, data: { rootPath: null } }),
     })
@@ -93,5 +98,40 @@ describe('useProjectEditor', () => {
     })
 
     expect(model?.state.statusMessage).toBe('Seleccion de carpeta cancelada.')
+  })
+
+  it('persists sidebar section and layout preferences', async () => {
+    window.localStorage.removeItem('trama.sidebar.ui.v1')
+    setupTramaApiMock()
+
+    let model: ProjectEditorModel | undefined
+
+    function Harness() {
+      model = useProjectEditor()
+      return null
+    }
+
+    const container = document.createElement('div')
+    act(() => {
+      render(h(Harness, {}), container)
+    })
+
+    await act(async () => {
+      model?.actions.setSidebarSection('settings')
+      model?.actions.setSidebarPanelWidth(420)
+      model?.actions.toggleSidebarPanelCollapsed()
+    })
+
+    expect(model?.state.sidebarActiveSection).toBe('settings')
+    expect(model?.state.sidebarPanelWidth).toBe(420)
+    expect(model?.state.sidebarPanelCollapsed).toBe(true)
+
+    const persisted = window.localStorage.getItem('trama.sidebar.ui.v1')
+    expect(persisted).toBeTruthy()
+    expect(JSON.parse(persisted as string)).toEqual({
+      activeSection: 'settings',
+      panelCollapsed: true,
+      panelWidth: 420,
+    })
   })
 })

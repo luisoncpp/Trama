@@ -33,6 +33,7 @@ This document explains how IPC is structured today so contributors can add endpo
 ## Current endpoint mapping
 
 - `trama:ping` -> `handlers/ping-handler.ts`
+- `trama:debug:log` -> inline validation + `console.log` in `electron/ipc.ts`
 - `trama:project:open` -> `handlers/project-handlers/project-open-handler.ts`
 - `trama:project:select-folder` -> `handlers/project-handlers/project-folder-dialog-handler.ts`
 - `trama:document:read` -> `handlers/project-handlers/document-handlers.ts`

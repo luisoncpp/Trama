@@ -6,8 +6,12 @@
   - Starts Vite + Electron desktop flow.
 - `npm run build`
   - Builds renderer and Electron outputs.
+- `npm run lint`
+  - Runs ESLint with `--max-warnings 0`.
 - `npm run test`
   - Runs Vitest suite.
+- `npm run test:smoke`
+  - Builds the app and runs Electron smoke startup test.
 
 ## Useful partial commands
 
@@ -23,8 +27,13 @@
 1. Start with `npm run dev`.
 2. Open Electron window and use `Elegir carpeta` to load a markdown project.
 3. Confirm preload status is available and documents load/save correctly.
-4. Run `npm run test` before finishing changes.
+4. Run `npm run lint` and `npm run test` before finishing changes.
 5. Validate right-click context menu in the editor (copy/paste + spellcheck suggestions).
+
+## Dev script behavior to remember
+
+- `npm run dev` uses `concurrently` with `--kill-others` and `--success command-electron`.
+- If Electron exits, the renderer process is also terminated by design.
 
 ## Adding a new IPC endpoint
 

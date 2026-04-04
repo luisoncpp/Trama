@@ -39,9 +39,11 @@ Shared contract:
 ## Quick sanity checks after any significant change
 
 1. `npm run build`
-2. `npm run test`
-3. `npm run dev`
-4. In the app:
+2. `npm run lint`
+3. `npm run test`
+4. `npm run test:smoke`
+5. `npm run dev`
+6. In the app:
 - confirm preload API status is available,
 - open a folder,
 - edit/save a markdown file,

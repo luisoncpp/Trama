@@ -21,6 +21,7 @@ The project currently implements **Phase 1 baseline + complete Phase 2 scope**:
 - Secure-by-default Electron window configuration (with one practical preload tradeoff, documented below)
 - Typed IPC contract with runtime validation
 - `contextBridge` preload API (`window.tramaApi`)
+- Renderer-to-main debug logging endpoint (`trama:debug:log`)
 - Native folder picker (`selectProjectFolder`)
 - Project scan + markdown read/save + index reconciliation
 - External file watcher and dirty-vs-external conflict prompt
@@ -28,7 +29,7 @@ The project currently implements **Phase 1 baseline + complete Phase 2 scope**:
 - Rich markdown visual editor (formatted text UI, markdown persisted)
 - Native right-click context menu with spellcheck suggestions
 - Refactored renderer structure (`useProjectEditor` + split presentational components)
-- Tests for startup, IPC contract, frontmatter, index reconciliation, and project-editor logic/hooks
+- Tests for startup/smoke, IPC contract, frontmatter, index reconciliation, project-editor logic/hooks, rich markdown editor behavior, and TypeScript compile guard
 
 ## Important note
 

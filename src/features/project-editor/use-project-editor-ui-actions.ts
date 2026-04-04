@@ -3,6 +3,7 @@ import type { DocumentMeta } from '../../shared/ipc'
 import { buildConflictCopyPath, canSelectFile } from './project-editor-logic'
 import { PROJECT_EDITOR_STRINGS } from './project-editor-strings'
 import type { ProjectEditorActions } from './project-editor-types'
+import { useSetSidebarPanelWidthAction, useSetSidebarSectionAction, useToggleSidebarPanelCollapsedAction } from './use-project-editor-sidebar-actions'
 import type { UseProjectEditorStateResult } from './use-project-editor-state'
 
 interface UseProjectEditorUiActionsParams {
@@ -12,7 +13,6 @@ interface UseProjectEditorUiActionsParams {
   loadDocument: (path: string) => Promise<void>
   saveDocumentNow: (path: string, content: string, meta: DocumentMeta) => Promise<void>
 }
-
 function usePickProjectFolderAction({
   openProject,
   setters,
@@ -35,7 +35,6 @@ function usePickProjectFolderAction({
     await openProject(selected.data.rootPath)
   }, [openProject, setters])
 }
-
 function useSelectFileAction({
   values,
   setters,
@@ -57,10 +56,7 @@ function useSelectFileAction({
     [loadDocument, setters, values.isDirty, values.selectedPath],
   )
 }
-
-function useUpdateEditorValueAction(
-  setters: UseProjectEditorStateResult['setters'],
-): ProjectEditorActions['updateEditorValue'] {
+function useUpdateEditorValueAction(setters: UseProjectEditorStateResult['setters']): ProjectEditorActions['updateEditorValue'] {
   return useCallback(
     (nextValue: string) => {
       setters.setEditorValue(nextValue)
@@ -69,7 +65,6 @@ function useUpdateEditorValueAction(
     [setters],
   )
 }
-
 function useSaveNowAction({
   values,
   saveDocumentNow,
@@ -85,7 +80,6 @@ function useSaveNowAction({
     void saveDocumentNow(values.selectedPath, values.editorValue, values.editorMeta)
   }, [saveDocumentNow, values.editorMeta, values.editorValue, values.isDirty, values.saving, values.selectedPath])
 }
-
 function useResolveConflictReloadAction({
   values,
   setters,
@@ -105,17 +99,13 @@ function useResolveConflictReloadAction({
     setters.setStatusMessage(PROJECT_EDITOR_STRINGS.statusReloadDiscarded)
   }, [loadDocument, setters, values.externalConflictPath])
 }
-
-function useResolveConflictKeepAction(
-  setters: UseProjectEditorStateResult['setters'],
-): ProjectEditorActions['resolveConflictKeep'] {
+function useResolveConflictKeepAction(setters: UseProjectEditorStateResult['setters']): ProjectEditorActions['resolveConflictKeep'] {
   return useCallback(() => {
     setters.setExternalConflictPath(null)
     setters.setConflictComparisonContent(null)
     setters.setStatusMessage(PROJECT_EDITOR_STRINGS.statusSaveAsCopyHint)
   }, [setters])
 }
-
 function useResolveConflictSaveAsCopyAction({
   values,
   setters,
@@ -150,7 +140,6 @@ function useResolveConflictSaveAsCopyAction({
     })()
   }, [openProject, setters, values.editorMeta, values.editorValue, values.rootPath, values.selectedPath, values.visibleFiles])
 }
-
 function useResolveConflictCompareAction({
   values,
   setters,
@@ -176,10 +165,7 @@ function useResolveConflictCompareAction({
     })()
   }, [setters, values.externalConflictPath])
 }
-
-function useCloseConflictCompareAction(
-  setters: UseProjectEditorStateResult['setters'],
-): ProjectEditorActions['closeConflictCompare'] {
+function useCloseConflictCompareAction(setters: UseProjectEditorStateResult['setters']): ProjectEditorActions['closeConflictCompare'] {
   return useCallback(() => {
     setters.setConflictComparisonContent(null)
   }, [setters])
@@ -194,6 +180,9 @@ export function useProjectEditorUiActions({
 }: UseProjectEditorUiActionsParams): ProjectEditorActions {
   const pickProjectFolder = usePickProjectFolderAction({ openProject, setters })
   const selectFile = useSelectFileAction({ values, setters, loadDocument })
+  const setSidebarSection = useSetSidebarSectionAction(setters)
+  const toggleSidebarPanelCollapsed = useToggleSidebarPanelCollapsedAction(values, setters)
+  const setSidebarPanelWidth = useSetSidebarPanelWidthAction(setters)
   const updateEditorValue = useUpdateEditorValueAction(setters)
   const saveNow = useSaveNowAction({ values, saveDocumentNow })
   const resolveConflictReload = useResolveConflictReloadAction({ values, setters, loadDocument })
@@ -205,6 +194,9 @@ export function useProjectEditorUiActions({
   return {
     pickProjectFolder,
     selectFile,
+    setSidebarSection,
+    toggleSidebarPanelCollapsed,
+    setSidebarPanelWidth,
     updateEditorValue,
     saveNow,
     resolveConflictReload,
