@@ -8,6 +8,22 @@ import { RichMarkdownEditor } from '../src/features/project-editor/components/ri
 describe('RichMarkdownEditor', () => {
   let container: HTMLDivElement
   const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
+  const noop = () => {}
+
+  const buildEditorProps = (
+    overrides: Partial<Parameters<typeof RichMarkdownEditor>[0]> = {},
+  ): Parameters<typeof RichMarkdownEditor>[0] => ({
+    documentId: 'test-doc',
+    value: '',
+    disabled: false,
+    onChange: noop,
+    saveDisabled: false,
+    saveLabel: 'Guardar',
+    onSaveNow: noop,
+    syncState: 'clean',
+    syncStateLabel: 'Sin cambios',
+    ...overrides,
+  })
 
   function getQuillInstance(root: ParentNode): Quill {
     const quillContainer = root.querySelector('.ql-container')
@@ -40,12 +56,10 @@ describe('RichMarkdownEditor', () => {
   it('renderiza el editor sin errores', async () => {
     act(() => {
       render(
-        h(RichMarkdownEditor, {
+        h(RichMarkdownEditor, buildEditorProps({
           documentId: 'test-doc-1',
           value: '# Test\n\nContent',
-          disabled: false,
-          onChange: () => {},
-        }),
+        })),
         container,
       )
     })
@@ -63,14 +77,13 @@ describe('RichMarkdownEditor', () => {
       const [docId, setDocId] = useState('doc-1')
 
       return h(Fragment, null, [
-        h(RichMarkdownEditor, {
+        h(RichMarkdownEditor, buildEditorProps({
           documentId: docId,
           value: 'Content',
-          disabled: false,
           onChange: () => {
             recreationCount++
           },
-        }),
+        })),
         h('button', {
           id: 'switch-doc',
           onClick: () => setDocId('doc-2'),
@@ -104,12 +117,11 @@ describe('RichMarkdownEditor', () => {
       const [disabled, setDisabled] = useState(false)
 
       return h(Fragment, null, [
-        h(RichMarkdownEditor, {
+        h(RichMarkdownEditor, buildEditorProps({
           documentId: 'test-doc',
           value: testContent,
           disabled,
-          onChange: () => {},
-        }),
+        })),
         h('button', {
           id: 'toggle-disabled',
           onClick: () => setDisabled((d) => !d),
@@ -148,12 +160,10 @@ describe('RichMarkdownEditor', () => {
       const [count, setCount] = useState(0)
 
       return h(Fragment, null, [
-        h(RichMarkdownEditor, {
+        h(RichMarkdownEditor, buildEditorProps({
           documentId: 'same-doc',
           value: `Content ${count}`,
-          disabled: false,
-          onChange: () => {},
-        }),
+        })),
         h('button', {
           id: 'rerender',
           onClick: () => setCount((n) => n + 1),
@@ -188,12 +198,10 @@ describe('RichMarkdownEditor', () => {
       const [value, setValue] = useState('# Inicio')
 
       return h(Fragment, null, [
-        h(RichMarkdownEditor, {
+        h(RichMarkdownEditor, buildEditorProps({
           documentId: 'undo-doc',
           value,
-          disabled: false,
-          onChange: () => {},
-        }),
+        })),
         h('button', {
           id: 'sync-external',
           onClick: () => setValue('# Externo'),
@@ -216,15 +224,16 @@ describe('RichMarkdownEditor', () => {
     })
 
     await sleep(40)
-    const beforeUndo = editor.getText().trim()
+    const syncedEditor = getQuillInstance(container)
+    const beforeUndo = syncedEditor.getText().trim()
     expect(beforeUndo).toBe('Externo')
 
     act(() => {
-      editor.history.undo()
+      syncedEditor.history.undo()
     })
 
     await sleep(20)
-    const afterUndo = editor.getText().trim()
+    const afterUndo = syncedEditor.getText().trim()
     expect(afterUndo).toBe('Externo')
   })
 
@@ -233,12 +242,10 @@ describe('RichMarkdownEditor', () => {
       const [value, setValue] = useState('# Inicio')
 
       return h(Fragment, null, [
-        h(RichMarkdownEditor, {
+        h(RichMarkdownEditor, buildEditorProps({
           documentId: 'undo-mixed-doc',
           value,
-          disabled: false,
-          onChange: () => {},
-        }),
+        })),
         h('button', {
           id: 'sync-external-mixed',
           onClick: () => setValue('# Externo'),
@@ -268,20 +275,21 @@ describe('RichMarkdownEditor', () => {
     })
 
     await sleep(40)
-    expect(editor.getText().trim()).toBe('Externo')
+    const editorAfterSync = getQuillInstance(container)
+    expect(editorAfterSync.getText().trim()).toBe('Externo')
 
     act(() => {
-      editor.insertText(editor.getLength() - 1, ' actualizado', 'user')
+      editorAfterSync.insertText(editorAfterSync.getLength() - 1, ' actualizado', 'user')
     })
 
     await sleep(20)
-    expect(editor.getText().trim()).toBe('Externo actualizado')
+    expect(editorAfterSync.getText().trim()).toBe('Externo actualizado')
 
     act(() => {
-      editor.history.undo()
+      editorAfterSync.history.undo()
     })
 
     await sleep(20)
-    expect(editor.getText().trim()).toBe('Externo')
+    expect(editorAfterSync.getText().trim()).toBe('Externo')
   })
 })

@@ -229,12 +229,11 @@ select {
   padding: 16px;
 }
 
-.workspace-panel--editor {
+.editor-panel-root {
   flex: 1 1 auto;
   display: flex;
   flex-direction: column;
   min-height: 0;
-  padding: 16px;
 }
 
 .workspace-panel__header {
@@ -321,9 +320,9 @@ select {
 .editor-manuscript {
   flex: 1 1 auto;
   min-height: 0;
-  border-radius: 18px;
-  border: 1px solid var(--border);
-  background: linear-gradient(180deg, rgba(11, 14, 20, 0.96), rgba(15, 18, 25, 0.98));
+  border-radius: 0;
+  border: 0;
+  background: transparent;
   overflow: hidden;
 }
 
@@ -571,7 +570,6 @@ select {
   }
 
   .workspace-panel--sidebar,
-  .workspace-panel--editor,
   .editor-conflict-banner {
     padding: 12px;
   }

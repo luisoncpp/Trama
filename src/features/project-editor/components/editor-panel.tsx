@@ -38,7 +38,7 @@ export function EditorPanel({
           : PROJECT_EDITOR_STRINGS.noFileSelected
 
   return (
-    <article class="workspace-panel workspace-panel--editor">
+    <article class="editor-panel-root">
       <div class={`editor-manuscript ${!selectedPath || loadingDocument ? 'is-muted' : ''}`}>
         <RichMarkdownEditor
           documentId={selectedPath}
