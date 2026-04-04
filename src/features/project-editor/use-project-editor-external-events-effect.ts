@@ -13,6 +13,66 @@ interface UseProjectEditorExternalEventsEffectParams {
   setStatusMessage: (message: string) => void
 }
 
+interface HandleExternalEventParams {
+  event: { event: string; path: string }
+  selectedPath: string | null
+  snapshotRootPath: string
+  isDirty: boolean
+  clearEditor: () => void
+  loadDocument: (path: string) => Promise<void>
+  openProject: (projectRoot: string, preferredFilePath?: string) => Promise<void>
+  setExternalConflictPath: (path: string | null) => void
+  setStatusMessage: (message: string) => void
+}
+
+function handleExternalEvent({
+  event,
+  selectedPath,
+  snapshotRootPath,
+  isDirty,
+  clearEditor,
+  loadDocument,
+  openProject,
+  setExternalConflictPath,
+  setStatusMessage,
+}: HandleExternalEventParams): void {
+  if (event.path === selectedPath) {
+    if (event.event === 'unlink') {
+      if (isDirty) {
+        setExternalConflictPath(event.path)
+        setStatusMessage(`El archivo activo fue eliminado externamente: ${event.path}.`)
+        return
+      }
+
+      clearEditor()
+      void openProject(snapshotRootPath)
+      setStatusMessage(`El archivo activo fue eliminado externamente: ${event.path}`)
+      return
+    }
+
+    if (isDirty) {
+      setExternalConflictPath(event.path)
+      setStatusMessage(`Cambio externo detectado en ${event.path}.`)
+      return
+    }
+
+    void loadDocument(event.path)
+    setStatusMessage(`Recargado automaticamente tras cambio externo: ${event.path}`)
+    return
+  }
+
+  if (!shouldRefreshTreeOnExternalEvent(event.event)) {
+    return
+  }
+
+  if (isDirty) {
+    setStatusMessage(PROJECT_EDITOR_STRINGS.statusNeedSaveBeforeRefresh)
+    return
+  }
+
+  void openProject(snapshotRootPath, selectedPath ?? undefined)
+}
+
 export function useProjectEditorExternalEventsEffect({
   snapshotRootPath,
   selectedPath,
@@ -29,39 +89,17 @@ export function useProjectEditorExternalEventsEffect({
     }
 
     const unsubscribe = window.tramaApi.onExternalFileEvent((event) => {
-      if (event.path === selectedPath) {
-        if (event.event === 'unlink') {
-          if (isDirty) {
-            setExternalConflictPath(event.path)
-            setStatusMessage(`El archivo activo fue eliminado externamente: ${event.path}.`)
-            return
-          }
-
-          clearEditor()
-          void openProject(snapshotRootPath)
-          setStatusMessage(`El archivo activo fue eliminado externamente: ${event.path}`)
-          return
-        }
-
-        if (isDirty) {
-          setExternalConflictPath(event.path)
-          setStatusMessage(`Cambio externo detectado en ${event.path}.`)
-          return
-        }
-
-        void loadDocument(event.path)
-        setStatusMessage(`Recargado automaticamente tras cambio externo: ${event.path}`)
-        return
-      }
-
-      if (shouldRefreshTreeOnExternalEvent(event.event)) {
-        if (isDirty) {
-          setStatusMessage(PROJECT_EDITOR_STRINGS.statusNeedSaveBeforeRefresh)
-          return
-        }
-
-        void openProject(snapshotRootPath, selectedPath ?? undefined)
-      }
+      handleExternalEvent({
+        event,
+        selectedPath,
+        snapshotRootPath,
+        isDirty,
+        clearEditor,
+        loadDocument,
+        openProject,
+        setExternalConflictPath,
+        setStatusMessage,
+      })
     })
 
     return () => {

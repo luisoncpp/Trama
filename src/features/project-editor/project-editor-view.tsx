@@ -9,65 +9,43 @@ interface ProjectEditorViewProps {
 }
 
 export function ProjectEditorView({ model }: ProjectEditorViewProps) {
-  const {
-    state: {
-      apiAvailable,
-      rootPath,
-      statusMessage,
-      externalConflictPath,
-      visibleFiles,
-      selectedPath,
-      editorValue,
-      isDirty,
-      loadingProject,
-      loadingDocument,
-      saving,
-    },
-    actions: {
-      pickProjectFolder,
-      selectFile,
-      updateEditorValue,
-      saveNow,
-      resolveConflictReload,
-      resolveConflictKeep,
-    },
-  } = model
+  const { state, actions } = model
 
   return (
     <main class="min-h-screen bg-slate-950 text-slate-100">
       <div class="mx-auto flex min-h-screen w-full max-w-7xl flex-col px-6 py-6">
         <ProjectHeader
-          apiAvailable={apiAvailable}
-          loadingProject={loadingProject}
-          rootPath={rootPath}
-          statusMessage={statusMessage}
-          onPickFolder={() => void pickProjectFolder()}
+          apiAvailable={state.apiAvailable}
+          loadingProject={state.loadingProject}
+          rootPath={state.rootPath}
+          statusMessage={state.statusMessage}
+          onPickFolder={() => void actions.pickProjectFolder()}
         />
 
-        {externalConflictPath && (
+        {state.externalConflictPath && (
           <ConflictBanner
-            externalConflictPath={externalConflictPath}
-            onReload={resolveConflictReload}
-            onKeep={resolveConflictKeep}
+            externalConflictPath={state.externalConflictPath}
+            onReload={actions.resolveConflictReload}
+            onKeep={actions.resolveConflictKeep}
           />
         )}
 
         <section class="mt-4 grid min-h-[60vh] grid-cols-1 gap-4 lg:grid-cols-[320px_1fr]">
           <FileListPanel
-            visibleFiles={visibleFiles}
-            selectedPath={selectedPath}
-            loadingDocument={loadingDocument}
-            onSelectFile={selectFile}
+            visibleFiles={state.visibleFiles}
+            selectedPath={state.selectedPath}
+            loadingDocument={state.loadingDocument}
+            onSelectFile={actions.selectFile}
           />
 
           <EditorPanel
-            selectedPath={selectedPath}
-            saving={saving}
-            isDirty={isDirty}
-            loadingDocument={loadingDocument}
-            editorValue={editorValue}
-            onSaveNow={saveNow}
-            onEditorChange={updateEditorValue}
+            selectedPath={state.selectedPath}
+            saving={state.saving}
+            isDirty={state.isDirty}
+            loadingDocument={state.loadingDocument}
+            editorValue={state.editorValue}
+            onSaveNow={actions.saveNow}
+            onEditorChange={actions.updateEditorValue}
           />
         </section>
       </div>

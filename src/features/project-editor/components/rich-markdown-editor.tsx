@@ -10,71 +10,123 @@ interface RichMarkdownEditorProps {
   onChange: (value: string) => void
 }
 
-export function RichMarkdownEditor({ documentId, value, disabled, onChange }: RichMarkdownEditorProps) {
-  const hostRef = useRef<HTMLDivElement | null>(null)
-  const editorRef = useRef<Quill | null>(null)
-  const onChangeRef = useRef(onChange)
-  const lastEditorValueRef = useRef(normalizeMarkdown(value))
-  const isApplyingExternalValueRef = useRef(false)
-  const turndownRef = useRef(new TurndownService())
+function normalizeMarkdown(input: string): string {
+  return input.replace(/\r\n/g, '\n').trimEnd()
+}
 
-  function normalizeMarkdown(input: string): string {
-    return input.replace(/\r\n/g, '\n').trimEnd()
-  }
+function createQuillEditor(host: HTMLDivElement): Quill {
+  host.innerHTML = ''
+  const toolbar = document.createElement('div')
+  const editorHost = document.createElement('div')
+  host.append(toolbar, editorHost)
 
-  useEffect(() => {
-    onChangeRef.current = onChange
-  }, [onChange])
+  return new Quill(editorHost, {
+    theme: 'snow',
+    modules: {
+      toolbar: [
+        [{ header: [1, 2, 3, false] }],
+        ['bold', 'italic', 'strike'],
+        [{ list: 'ordered' }, { list: 'bullet' }],
+        ['blockquote', 'code-block'],
+        ['link', 'image'],
+        ['clean'],
+      ],
+    },
+  })
+}
 
-  useEffect(() => {
-    if (!hostRef.current) {
+function applyMarkdownToEditor(editor: Quill, markdown: string): void {
+  editor.setContents([])
+  editor.clipboard.dangerouslyPasteHTML(marked.parse(markdown) as string)
+}
+
+function registerEditorTextChangeHandler({
+  editor,
+  isApplyingExternalValueRef,
+  turndownRef,
+  lastEditorValueRef,
+  onChangeRef,
+}: {
+  editor: Quill
+  isApplyingExternalValueRef: { current: boolean }
+  turndownRef: { current: TurndownService }
+  lastEditorValueRef: { current: string }
+  onChangeRef: { current: (value: string) => void }
+}): void {
+  editor.on('text-change', () => {
+    if (isApplyingExternalValueRef.current) {
       return
     }
 
-    hostRef.current.innerHTML = ''
-    const toolbar = document.createElement('div')
-    const editorHost = document.createElement('div')
-    hostRef.current.append(toolbar, editorHost)
+    const markdown = normalizeMarkdown(turndownRef.current.turndown(editor.root.innerHTML))
+    lastEditorValueRef.current = markdown
+    onChangeRef.current(markdown)
+  })
+}
 
-    const editor = new Quill(editorHost, {
-      theme: 'snow',
-      modules: {
-        toolbar: [
-          [{ header: [1, 2, 3, false] }],
-          ['bold', 'italic', 'strike'],
-          [{ list: 'ordered' }, { list: 'bullet' }],
-          ['blockquote', 'code-block'],
-          ['link', 'image'],
-          ['clean'],
-        ],
-      },
-    })
+function useSyncOnChangeRef(
+  onChange: (value: string) => void,
+  onChangeRef: { current: (value: string) => void },
+): void {
+  useEffect(() => {
+    onChangeRef.current = onChange
+  }, [onChange, onChangeRef])
+}
 
-    editorRef.current = editor
-
-    const html = marked.parse(value) as string
-    editor.clipboard.dangerouslyPasteHTML(html)
-    lastEditorValueRef.current = normalizeMarkdown(value)
-
-    editor.on('text-change', () => {
-      if (isApplyingExternalValueRef.current) {
-        return
-      }
-
-      const markdown = normalizeMarkdown(turndownRef.current.turndown(editor.root.innerHTML))
-      lastEditorValueRef.current = markdown
-      onChangeRef.current(markdown)
-    })
-
-    if (disabled) {
-      editor.enable(false)
+function useInitializeEditor({
+  documentId,
+  value,
+  hostRef,
+  editorRef,
+  isApplyingExternalValueRef,
+  lastEditorValueRef,
+  turndownRef,
+  onChangeRef,
+}: {
+  documentId: string | null
+  value: string
+  hostRef: { current: HTMLDivElement | null }
+  editorRef: { current: Quill | null }
+  isApplyingExternalValueRef: { current: boolean }
+  lastEditorValueRef: { current: string }
+  turndownRef: { current: TurndownService }
+  onChangeRef: { current: (value: string) => void }
+}): void {
+  useEffect(() => {
+    const host = hostRef.current
+    if (!host) {
+      return
     }
+
+    const editor = createQuillEditor(host)
+    editorRef.current = editor
+    applyMarkdownToEditor(editor, value)
+    lastEditorValueRef.current = normalizeMarkdown(value)
+    registerEditorTextChangeHandler({
+      editor,
+      isApplyingExternalValueRef,
+      turndownRef,
+      lastEditorValueRef,
+      onChangeRef,
+    })
 
     return () => {
       editorRef.current = null
     }
   }, [documentId])
+}
 
+function useSyncExternalValue({
+  value,
+  editorRef,
+  lastEditorValueRef,
+  isApplyingExternalValueRef,
+}: {
+  value: string
+  editorRef: { current: Quill | null }
+  lastEditorValueRef: { current: string }
+  isApplyingExternalValueRef: { current: boolean }
+}): void {
   useEffect(() => {
     const editor = editorRef.current
     if (!editor) {
@@ -88,8 +140,7 @@ export function RichMarkdownEditor({ documentId, value, disabled, onChange }: Ri
 
     isApplyingExternalValueRef.current = true
     const selection = editor.getSelection()
-    editor.setContents([])
-    editor.clipboard.dangerouslyPasteHTML(marked.parse(value) as string)
+    applyMarkdownToEditor(editor, value)
     if (selection) {
       editor.setSelection(selection)
     }
@@ -97,21 +148,58 @@ export function RichMarkdownEditor({ documentId, value, disabled, onChange }: Ri
     window.setTimeout(() => {
       isApplyingExternalValueRef.current = false
     }, 0)
-  }, [value])
+  }, [editorRef, isApplyingExternalValueRef, lastEditorValueRef, value])
+}
 
+function useToggleDisabled({
+  documentId,
+  disabled,
+  editorRef,
+}: {
+  documentId: string | null
+  disabled: boolean
+  editorRef: { current: Quill | null }
+}): void {
   useEffect(() => {
     const editor = editorRef.current
     if (!editor) {
       return
     }
 
-    if (disabled) {
-      editor.enable(false)
-      return
-    }
+    editor.enable(!disabled)
+  }, [disabled, documentId, editorRef])
+}
 
-    editor.enable(true)
-  }, [disabled])
+export function RichMarkdownEditor({ documentId, value, disabled, onChange }: RichMarkdownEditorProps) {
+  const hostRef = useRef<HTMLDivElement | null>(null)
+  const editorRef = useRef<Quill | null>(null)
+  const onChangeRef = useRef(onChange)
+  const lastEditorValueRef = useRef(normalizeMarkdown(value))
+  const isApplyingExternalValueRef = useRef(false)
+  const turndownRef = useRef(new TurndownService())
+
+  useSyncOnChangeRef(onChange, onChangeRef)
+  useInitializeEditor({
+    documentId,
+    value,
+    hostRef,
+    editorRef,
+    isApplyingExternalValueRef,
+    lastEditorValueRef,
+    turndownRef,
+    onChangeRef,
+  })
+  useSyncExternalValue({
+    value,
+    editorRef,
+    lastEditorValueRef,
+    isApplyingExternalValueRef,
+  })
+  useToggleDisabled({
+    documentId,
+    disabled,
+    editorRef,
+  })
 
   return <div ref={hostRef} class="rich-editor w-full" />
 }
