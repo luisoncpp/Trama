@@ -2,7 +2,7 @@ import type { ProjectEditorModel } from './project-editor-types'
 import { ConflictBanner } from './components/conflict-banner'
 import { ConflictComparePanel } from './components/conflict-compare-panel'
 import { EditorPanel } from './components/editor-panel'
-import { FileListPanel } from './components/file-list-panel'
+import { FileListPanel } from './components/file-list-panel.tsx'
 
 interface ProjectEditorViewProps {
   model: ProjectEditorModel
@@ -69,7 +69,6 @@ export function ProjectEditorView({ model }: ProjectEditorViewProps) {
             apiAvailable={state.apiAvailable}
             loadingProject={state.loadingProject}
             rootPath={state.rootPath}
-            statusMessage={state.statusMessage}
             onPickFolder={() => void actions.pickProjectFolder()}
           />
           <ProjectEditorMainPane model={model} />

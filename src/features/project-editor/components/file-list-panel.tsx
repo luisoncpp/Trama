@@ -2,6 +2,7 @@ import type { SidebarSection } from '../project-editor-types'
 import { SidebarRail } from './sidebar-rail'
 import { SidebarExplorerContent } from './sidebar-explorer-content'
 import { SidebarSectionPlaceholder } from './sidebar-section-placeholder'
+import { SidebarSettingsContent } from './sidebar-settings-content.tsx'
 
 interface FileListPanelProps {
   visibleFiles: string[]
@@ -17,7 +18,6 @@ interface FileListPanelProps {
   apiAvailable: boolean
   loadingProject: boolean
   rootPath: string
-  statusMessage: string
   onPickFolder: () => void
 }
 
@@ -43,16 +43,20 @@ export function FileListPanel({
       />
 
       {!sidebarPanelCollapsed && sidebarActiveSection === 'explorer' && (
-        <SidebarExplorerContent
-          {...props}
-          sidebarPanelWidth={sidebarPanelWidth}
-          onSidebarPanelWidthChange={onSidebarPanelWidthChange}
+        <SidebarExplorerContent {...props} />
+      )}
+
+      {!sidebarPanelCollapsed && sidebarActiveSection === 'settings' && (
+        <SidebarSettingsContent
+          panelWidth={sidebarPanelWidth}
+          onPanelWidthChange={onSidebarPanelWidthChange}
         />
       )}
 
-      {!sidebarPanelCollapsed && sidebarActiveSection !== 'explorer' && (
-        <SidebarSectionPlaceholder section={sidebarActiveSection} />
-      )}
+      {!sidebarPanelCollapsed &&
+        (sidebarActiveSection === 'corkboard' || sidebarActiveSection === 'planner') && (
+          <SidebarSectionPlaceholder section={sidebarActiveSection} />
+        )}
     </aside>
   )
 }

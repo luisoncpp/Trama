@@ -23,5 +23,5 @@ Create a new file in this directory named after the topic (e.g., `auth-token-ref
 | File | Topic | Date |
 |------|-------|------|
 | `typescript-async-narrowing.md` | Nullable state narrowed before async callback still surfaced TS errors; fix by capturing local const before async boundary | 2026-04-04 |
-<!-- Add entries as lessons are recorded. Example: -->
-<!-- | `auth-token-refresh.md` | OAuth refresh tokens expire silently after 30 days | 2026-01-15 | -->
+| `tsx-import-extension.md` | TS language server (moduleResolution: bundler) does not resolve `.tsx` files without explicit extension in imports | 2026-04-04 |
+| `css-patch-corruption.md` | Patch tool may inject CSS rule blocks inside open `:root {}` / `body {}` blocks; apply CSS edits in small isolated hunks | 2026-04-04 |

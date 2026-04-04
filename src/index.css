@@ -340,6 +340,10 @@ select {
   padding-right: 4px;
 }
 
+.sidebar-tree {
+  gap: 6px;
+}
+
 .file-tree__item {
   width: 100%;
   border: 1px solid transparent;
@@ -351,13 +355,91 @@ select {
   transition: background-color 160ms ease, border-color 160ms ease, color 160ms ease;
 }
 
+.sidebar-tree__row {
+  width: 100%;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  min-height: 36px;
+  font-family: 'Segoe UI Variable Text', 'Trebuchet MS', sans-serif;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-align: left;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.025), rgba(255, 255, 255, 0)), rgba(12, 16, 23, 0.82);
+  color: var(--text-muted);
+  transition: background-color 160ms ease, border-color 160ms ease, color 160ms ease;
+}
+
+.sidebar-tree__row:hover,
+.sidebar-tree__row:focus-visible {
+  border-color: rgba(110, 166, 255, 0.22);
+  color: var(--text-main);
+}
+
+.sidebar-tree__row.is-active {
+  border-color: rgba(110, 166, 255, 0.26);
+  background: linear-gradient(90deg, rgba(110, 166, 255, 0.18), transparent 70%), rgba(17, 22, 30, 0.98);
+  color: var(--text-main);
+}
+
+.sidebar-tree__chevron {
+  min-width: 14px;
+  width: 14px;
+  height: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-dim);
+}
+
+.sidebar-tree__chevron svg {
+  width: 14px;
+  height: 14px;
+  transition: transform 160ms ease;
+}
+
+.sidebar-tree__chevron.is-expanded svg {
+  transform: rotate(90deg);
+}
+
+.sidebar-tree__chevron.is-file {
+  opacity: 0;
+}
+
+.sidebar-tree__icon {
+  width: 16px;
+  height: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #a9b6cd;
+}
+
+.sidebar-tree__icon svg {
+  width: 16px;
+  height: 16px;
+}
+
+.sidebar-tree__row.is-folder .sidebar-tree__icon {
+  color: #c7b07f;
+}
+
+.sidebar-tree__row.is-file .sidebar-tree__icon {
+  color: #9bb0ce;
+}
+
+.file-tree__item-label {
+  font-family: 'Segoe UI Variable Text', 'Trebuchet MS', sans-serif;
+  font-size: 0.86rem;
+  line-height: 1.35;
+}
+
 .file-tree__item.is-active {
   border-color: rgba(110, 166, 255, 0.26);
   background: linear-gradient(90deg, rgba(110, 166, 255, 0.18), transparent 70%), rgba(17, 22, 30, 0.98);
   color: var(--text-main);
 }
 
-.file-tree__item-label,
 .editor-document-meta__path,
 .editor-conflict-banner__path {
   display: block;

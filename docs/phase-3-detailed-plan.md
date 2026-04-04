@@ -286,4 +286,4 @@ Phase 3 is complete when all are true:
 
 ## 9. Immediate Next Step
 
-Start PR-1 (layout foundation) and keep scope tight: state model, split skeleton, persistence, and tests before adding fullscreen/theme.
+Start PR-3 for sidebar filter/search UX (auto-expansion + restore expanded-state), then continue with PR-4 create actions and window/theme tracks.

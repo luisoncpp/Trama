@@ -235,6 +235,8 @@ Main process touch points:
 
 ## PR-1: Sidebar State Foundation
 
+Status: Completed (2026-04-04)
+
 Goals:
 - Introduce Sidebar UI state model and persistence.
 - Add global rail and static section switching.
@@ -253,7 +255,26 @@ Exit criteria:
 - Rail renders and section state survives restart.
 - Existing flat-list behavior still works unchanged inside the Explorer section.
 
+Delivered in implementation:
+- Persistent sidebar UI state (`activeSection`, `panelCollapsed`, `panelWidth`) with localStorage versioned key.
+- Global rail integrated into sidebar shell.
+- Explorer-content adapter boundary kept, enabling non-breaking swap in PR-2.
+
+Primary implementation files:
+- `src/features/project-editor/use-sidebar-ui-state.ts`
+- `src/features/project-editor/use-project-editor-state.ts`
+- `src/features/project-editor/use-project-editor-sidebar-actions.ts`
+- `src/features/project-editor/components/sidebar-rail.tsx`
+- `src/features/project-editor/components/file-list-panel.tsx`
+
+Validation evidence:
+- `npm run lint` passed.
+- `npm run build` passed.
+- `tests/use-project-editor.test.ts` updated and passing with sidebar persistence checks.
+
 ## PR-2: Hierarchical Tree Rendering
+
+Status: Completed (2026-04-04)
 
 Goals:
 - Replace flat list with hierarchical tree view.
@@ -271,6 +292,24 @@ Tests:
 
 Exit criteria:
 - User navigates nested folders and opens files reliably.
+
+Delivered in implementation:
+- Explorer content replaced with a hierarchical tree implementation.
+- Folder/file tree building and folder-first alphabetical ordering.
+- Expand/collapse behavior and keyboard navigation basics.
+- Visual polish iteration: readable UI typography for tree labels, chevron expanders, and folder/file icons.
+
+Primary implementation files:
+- `src/features/project-editor/components/sidebar-tree-logic.ts`
+- `src/features/project-editor/components/sidebar-tree.tsx`
+- `src/features/project-editor/components/sidebar-tree-icons.tsx`
+- `src/features/project-editor/components/sidebar-explorer-content.tsx`
+- `src/index.css`
+
+Validation evidence:
+- `npm run lint` passed.
+- `npm run build` passed.
+- `tests/sidebar-tree.test.ts` added and passing.
 
 ## PR-3: Filter/Search UX
 
