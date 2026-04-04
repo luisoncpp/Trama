@@ -30,7 +30,7 @@ import { SidebarTree } from './sidebar-tree.tsx';
 
 ## Affected files (examples)
 
-- `project-editor-view.tsx` → `./components/file-list-panel.tsx`
+- `project-editor-view.tsx` → `./components/sidebar/sidebar-panel.tsx`
 - `sidebar-explorer-content.tsx` → `./sidebar-tree.tsx`
 
 ## Notes

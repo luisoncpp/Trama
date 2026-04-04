@@ -1,13 +1,13 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { h, render } from 'preact'
 import { act } from 'preact/test-utils'
-import { FileListPanel } from '../src/features/project-editor/components/file-list-panel.tsx'
-import { SidebarExplorerContent } from '../src/features/project-editor/components/sidebar-explorer-content.tsx'
-import { SidebarSettingsContent } from '../src/features/project-editor/components/sidebar-settings-content.tsx'
+import { SidebarPanel } from '../src/features/project-editor/components/sidebar/sidebar-panel.tsx'
+import { SidebarExplorerContent } from '../src/features/project-editor/components/sidebar/sidebar-explorer-content.tsx'
+import { SidebarSettingsContent } from '../src/features/project-editor/components/sidebar/sidebar-settings-content.tsx'
 
 function buildPanelProps(
-  overrides: Partial<Parameters<typeof FileListPanel>[0]> = {},
-): Parameters<typeof FileListPanel>[0] {
+  overrides: Partial<Parameters<typeof SidebarPanel>[0]> = {},
+): Parameters<typeof SidebarPanel>[0] {
   return {
     visibleFiles: ['docs/README.md'],
     selectedPath: 'docs/README.md',
@@ -41,7 +41,7 @@ describe('sidebar panels', () => {
 
   it('renders explorer, settings, and planner sections from the shell', () => {
     act(() => {
-      render(h(FileListPanel, buildPanelProps()), container)
+      render(h(SidebarPanel, buildPanelProps()), container)
     })
 
     expect(container.textContent).toContain('Proyecto')
@@ -49,7 +49,7 @@ describe('sidebar panels', () => {
 
     act(() => {
       render(
-        h(FileListPanel, buildPanelProps({ sidebarActiveSection: 'settings' })),
+        h(SidebarPanel, buildPanelProps({ sidebarActiveSection: 'settings' })),
         container,
       )
     })
@@ -59,7 +59,7 @@ describe('sidebar panels', () => {
 
     act(() => {
       render(
-        h(FileListPanel, buildPanelProps({ sidebarActiveSection: 'planner' })),
+        h(SidebarPanel, buildPanelProps({ sidebarActiveSection: 'planner' })),
         container,
       )
     })

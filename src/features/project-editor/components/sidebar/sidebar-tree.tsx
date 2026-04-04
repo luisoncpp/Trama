@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'preact/hooks'
-import { PROJECT_EDITOR_STRINGS } from '../project-editor-strings'
+import { PROJECT_EDITOR_STRINGS } from '../../project-editor-strings'
 import { buildSidebarTree, getAncestorFolderPaths, getVisibleSidebarRows } from './sidebar-tree-logic'
 import { TreeChevron, TreeNodeIcon } from './sidebar-tree-icons'
 

@@ -1,10 +1,10 @@
-import type { SidebarSection } from '../project-editor-types'
+import type { SidebarSection } from '../../project-editor-types'
 import { SidebarRail } from './sidebar-rail'
 import { SidebarExplorerContent } from './sidebar-explorer-content'
 import { SidebarSectionPlaceholder } from './sidebar-section-placeholder'
 import { SidebarSettingsContent } from './sidebar-settings-content.tsx'
 
-interface FileListPanelProps {
+interface SidebarPanelProps {
   visibleFiles: string[]
   selectedPath: string | null
   loadingDocument: boolean
@@ -21,7 +21,7 @@ interface FileListPanelProps {
   onPickFolder: () => void
 }
 
-export function FileListPanel({
+export function SidebarPanel({
   sidebarActiveSection,
   sidebarPanelCollapsed,
   sidebarPanelWidth,
@@ -29,7 +29,7 @@ export function FileListPanel({
   onToggleSidebarPanelCollapsed,
   onSidebarPanelWidthChange,
   ...props
-}: FileListPanelProps) {
+}: SidebarPanelProps) {
   return (
     <aside
       class={`sidebar-shell ${sidebarPanelCollapsed ? 'is-collapsed' : ''}`}
@@ -42,9 +42,7 @@ export function FileListPanel({
         onToggleCollapsed={onToggleSidebarPanelCollapsed}
       />
 
-      {!sidebarPanelCollapsed && sidebarActiveSection === 'explorer' && (
-        <SidebarExplorerContent {...props} />
-      )}
+      {!sidebarPanelCollapsed && sidebarActiveSection === 'explorer' && <SidebarExplorerContent {...props} />}
 
       {!sidebarPanelCollapsed && sidebarActiveSection === 'settings' && (
         <SidebarSettingsContent

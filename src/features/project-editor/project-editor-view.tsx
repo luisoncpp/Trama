@@ -2,7 +2,7 @@ import type { ProjectEditorModel } from './project-editor-types'
 import { ConflictBanner } from './components/conflict-banner'
 import { ConflictComparePanel } from './components/conflict-compare-panel'
 import { EditorPanel } from './components/editor-panel'
-import { FileListPanel } from './components/file-list-panel.tsx'
+import { SidebarPanel } from './components/sidebar/sidebar-panel.tsx'
 
 interface ProjectEditorViewProps {
   model: ProjectEditorModel
@@ -55,7 +55,7 @@ export function ProjectEditorView({ model }: ProjectEditorViewProps) {
           class="editor-workspace"
           style={{ '--sidebar-width': `${state.sidebarPanelCollapsed ? 72 : state.sidebarPanelWidth}px` }}
         >
-          <FileListPanel
+          <SidebarPanel
             visibleFiles={state.visibleFiles}
             selectedPath={state.selectedPath}
             loadingDocument={state.loadingDocument}

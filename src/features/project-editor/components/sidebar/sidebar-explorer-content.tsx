@@ -1,4 +1,4 @@
-import { PROJECT_EDITOR_STRINGS } from '../project-editor-strings'
+import { PROJECT_EDITOR_STRINGS } from '../../project-editor-strings'
 import { SidebarTree } from './sidebar-tree.tsx'
 
 interface SidebarHeaderProps {

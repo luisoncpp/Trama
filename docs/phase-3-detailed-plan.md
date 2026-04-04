@@ -90,7 +90,7 @@ Primary files likely touched:
 - `src/features/project-editor/use-project-editor.ts`
 - `src/features/project-editor/project-editor-view.tsx`
 - `src/features/project-editor/components/editor-panel.tsx`
-- `src/features/project-editor/components/file-list-panel.tsx`
+- `src/features/project-editor/components/sidebar/sidebar-panel.tsx`
 
 Acceptance criteria:
 - User can toggle single/split modes.

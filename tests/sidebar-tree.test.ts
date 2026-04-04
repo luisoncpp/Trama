@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { buildSidebarTree, getAncestorFolderPaths, getVisibleSidebarRows } from '../src/features/project-editor/components/sidebar-tree-logic'
+import { buildSidebarTree, getAncestorFolderPaths, getVisibleSidebarRows } from '../src/features/project-editor/components/sidebar/sidebar-tree-logic'
 
 describe('sidebar tree logic', () => {
   it('builds hierarchical folders and files with folder-first sorting', () => {

@@ -1,4 +1,4 @@
-import type { SidebarSection } from '../project-editor-types'
+import type { SidebarSection } from '../../project-editor-types'
 
 function getSectionMessage(section: Exclude<SidebarSection, 'explorer'>): string {
   if (section === 'corkboard') {

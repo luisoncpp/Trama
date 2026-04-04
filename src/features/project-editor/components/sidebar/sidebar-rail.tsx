@@ -1,5 +1,5 @@
 import type { JSX } from 'preact'
-import type { SidebarSection } from '../project-editor-types'
+import type { SidebarSection } from '../../project-editor-types'
 
 interface SidebarRailProps {
   activeSection: SidebarSection

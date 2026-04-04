@@ -150,7 +150,7 @@ La sidebar debe componerse de:
 ## 5.1 Renderer
 
 Módulos objetivo:
-- src/features/project-editor/components/file-list-panel.tsx
+- src/features/project-editor/components/sidebar/sidebar-panel.tsx
 - src/features/project-editor/project-editor-view.tsx
 - src/features/project-editor/use-project-editor-state.ts
 - src/features/project-editor/use-project-editor-ui-actions.ts

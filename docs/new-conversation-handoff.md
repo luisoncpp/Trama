@@ -31,11 +31,12 @@ Renderer editor behavior:
 Sidebar UI (Phase 3):
 - `src/features/project-editor/use-sidebar-ui-state.ts` — localStorage persistence
 - `src/features/project-editor/use-project-editor-sidebar-actions.ts` — action composers
-- `src/features/project-editor/components/sidebar-rail.tsx` — section icon rail
-- `src/features/project-editor/components/sidebar-explorer-content.tsx` — Explorer section
-- `src/features/project-editor/components/sidebar-tree.tsx` — hierarchical tree component
-- `src/features/project-editor/components/sidebar-tree-logic.ts` — pure tree build/filter functions
-- `src/features/project-editor/components/sidebar-tree-icons.tsx` — SVG chevron/node icons
+- `src/features/project-editor/components/sidebar/sidebar-panel.tsx` — sidebar shell/orchestrator
+- `src/features/project-editor/components/sidebar/sidebar-rail.tsx` — section icon rail
+- `src/features/project-editor/components/sidebar/sidebar-explorer-content.tsx` — Explorer section
+- `src/features/project-editor/components/sidebar/sidebar-tree.tsx` — hierarchical tree component
+- `src/features/project-editor/components/sidebar/sidebar-tree-logic.ts` — pure tree build/filter functions
+- `src/features/project-editor/components/sidebar/sidebar-tree-icons.tsx` — SVG chevron/node icons
 
 IPC/backend behavior:
 - `electron/ipc.ts`

@@ -136,7 +136,7 @@ Versioned keys allow safe migrations.
 - `sidebar-footer-actions.tsx`
   - New Article / New Category actions.
 
-- `file-list-panel.tsx` (transitional orchestrator)
+- `sidebar/sidebar-panel.tsx` (transitional orchestrator)
   - Composes the new sidebar building blocks.
 
 ## 6.2 Keyboard Interaction Model
@@ -264,8 +264,8 @@ Primary implementation files:
 - `src/features/project-editor/use-sidebar-ui-state.ts`
 - `src/features/project-editor/use-project-editor-state.ts`
 - `src/features/project-editor/use-project-editor-sidebar-actions.ts`
-- `src/features/project-editor/components/sidebar-rail.tsx`
-- `src/features/project-editor/components/file-list-panel.tsx`
+- `src/features/project-editor/components/sidebar/sidebar-rail.tsx`
+- `src/features/project-editor/components/sidebar/sidebar-panel.tsx`
 
 Validation evidence:
 - `npm run lint` passed.
@@ -300,10 +300,10 @@ Delivered in implementation:
 - Visual polish iteration: readable UI typography for tree labels, chevron expanders, and folder/file icons.
 
 Primary implementation files:
-- `src/features/project-editor/components/sidebar-tree-logic.ts`
-- `src/features/project-editor/components/sidebar-tree.tsx`
-- `src/features/project-editor/components/sidebar-tree-icons.tsx`
-- `src/features/project-editor/components/sidebar-explorer-content.tsx`
+- `src/features/project-editor/components/sidebar/sidebar-tree-logic.ts`
+- `src/features/project-editor/components/sidebar/sidebar-tree.tsx`
+- `src/features/project-editor/components/sidebar/sidebar-tree-icons.tsx`
+- `src/features/project-editor/components/sidebar/sidebar-explorer-content.tsx`
 - `src/index.css`
 
 Validation evidence:
@@ -402,11 +402,11 @@ Sidebar is complete when:
 ## 14. Suggested File-Level Work Map
 
 Renderer:
-- `src/features/project-editor/components/file-list-panel.tsx`
-- `src/features/project-editor/components/sidebar-rail.tsx` (new)
+- `src/features/project-editor/components/sidebar/sidebar-panel.tsx`
+- `src/features/project-editor/components/sidebar/sidebar-rail.tsx` (new)
 - `src/features/project-editor/components/sidebar-tree-header.tsx` (new)
 - `src/features/project-editor/components/sidebar-filter.tsx` (new)
-- `src/features/project-editor/components/sidebar-tree.tsx` (new)
+- `src/features/project-editor/components/sidebar/sidebar-tree.tsx` (new)
 - `src/features/project-editor/components/sidebar-footer-actions.tsx` (new)
 - `src/features/project-editor/project-editor-types.ts`
 - `src/features/project-editor/use-project-editor-state.ts`
