@@ -1,6 +1,16 @@
 import { PROJECT_EDITOR_STRINGS } from '../../project-editor-strings'
 import { SidebarTree } from './sidebar-tree.tsx'
 
+function SelectProjectFolderIcon() {
+  return (
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true">
+      <path d="M3 6.5A2.5 2.5 0 0 1 5.5 4H10l2 2h6.5A2.5 2.5 0 0 1 21 8.5V17a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3V6.5Z" />
+      <path d="M8 13h8" />
+      <path d="M12 9v8" />
+    </svg>
+  )
+}
+
 interface SidebarHeaderProps {
   title: string
   count: number
@@ -34,9 +44,10 @@ function SidebarHeader({ title, count, apiAvailable, loadingProject, onPickFolde
           class="sidebar-menu-btn"
           onClick={onPickFolder}
           disabled={loadingProject || !apiAvailable}
-          aria-label="Elegir carpeta del proyecto"
+          aria-label="Select Project Folder..."
+          title="Select Project Folder..."
         >
-          ⚙
+          <SelectProjectFolderIcon />
         </button>
       </div>
     </div>

@@ -9,12 +9,12 @@ export function SidebarSettingsContent({ panelWidth, onPanelWidthChange }: Sideb
       <aside class="workspace-panel workspace-panel--sidebar">
         <div class="workspace-panel__header">
           <div>
-            <p class="workspace-panel__eyebrow">Configuración</p>
+            <p class="workspace-panel__eyebrow">Settings</p>
           </div>
         </div>
         <div class="project-menu">
           <label class="project-menu__field">
-            <span>Ancho de panel: {panelWidth}px</span>
+            <span>Panel width: {panelWidth}px</span>
             <input
               type="range"
               min={260}

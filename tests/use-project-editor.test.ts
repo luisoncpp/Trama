@@ -69,7 +69,7 @@ describe('useProjectEditor', () => {
 
     expect(model).toBeDefined()
     expect(model?.state.apiAvailable).toBe(true)
-    expect(model?.state.statusMessage).toBe('Abre una carpeta de proyecto para iniciar.')
+    expect(model?.state.statusMessage).toBe('Open a project folder to begin.')
     expect(model?.state.sidebarActiveSection).toBe('explorer')
     expect(model?.state.sidebarPanelCollapsed).toBe(false)
     expect(model?.state.sidebarPanelWidth).toBe(300)
@@ -97,7 +97,7 @@ describe('useProjectEditor', () => {
       await model?.actions.pickProjectFolder()
     })
 
-    expect(model?.state.statusMessage).toBe('Seleccion de carpeta cancelada.')
+    expect(model?.state.statusMessage).toBe('Project folder selection was canceled.')
   })
 
   it('persists sidebar section and layout preferences', async () => {

@@ -23,7 +23,7 @@ function usePickProjectFolderAction({
   return useCallback(async (): Promise<void> => {
     const selected = await window.tramaApi.selectProjectFolder()
     if (!selected.ok) {
-      setters.setStatusMessage(`No se pudo abrir el selector: ${selected.error.message}`)
+      setters.setStatusMessage(`Could not open folder picker: ${selected.error.message}`)
       return
     }
 

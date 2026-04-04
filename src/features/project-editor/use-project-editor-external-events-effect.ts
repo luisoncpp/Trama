@@ -45,27 +45,27 @@ function handleExternalEvent({
       if (isDirty) {
         setExternalConflictPath(event.path)
         setConflictComparisonContent(null)
-        setStatusMessage(`El archivo activo fue eliminado externamente: ${event.path}.`)
+        setStatusMessage(`The active file was removed externally: ${event.path}.`)
         return
       }
 
       clearEditor()
       setConflictComparisonContent(null)
       void openProject(snapshotRootPath)
-      setStatusMessage(`El archivo activo fue eliminado externamente: ${event.path}`)
+      setStatusMessage(`The active file was removed externally: ${event.path}`)
       return
     }
 
     if (isDirty) {
       setExternalConflictPath(event.path)
       setConflictComparisonContent(null)
-      setStatusMessage(`Cambio externo detectado en ${event.path}.`)
+      setStatusMessage(`External change detected in ${event.path}.`)
       return
     }
 
     setConflictComparisonContent(null)
     void loadDocument(event.path)
-    setStatusMessage(`Recargado automaticamente tras cambio externo: ${event.path}`)
+    setStatusMessage(`Automatically reloaded after external change: ${event.path}`)
     return
   }
 

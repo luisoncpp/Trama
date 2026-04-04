@@ -37,7 +37,7 @@ function useLoadDocument(setters: UseProjectEditorStateResult['setters']): (path
       try {
         const response = await window.tramaApi.readDocument({ path: filePath })
         if (!response.ok) {
-          setters.setStatusMessage(`No se pudo leer ${filePath}: ${response.error.message}`)
+          setters.setStatusMessage(`Could not read ${filePath}: ${response.error.message}`)
           return
         }
 
@@ -46,7 +46,7 @@ function useLoadDocument(setters: UseProjectEditorStateResult['setters']): (path
         setters.setEditorMeta(response.data.meta)
         setters.setIsDirty(false)
         setters.setConflictComparisonContent(null)
-        setters.setStatusMessage(`Documento cargado: ${response.data.path}`)
+        setters.setStatusMessage(`Loaded document: ${response.data.path}`)
       } finally {
         setters.setLoadingDocument(false)
       }
@@ -68,13 +68,13 @@ function useOpenProject(
       try {
         const response = await window.tramaApi.openProject({ rootPath: projectRoot })
         if (!response.ok) {
-          setters.setStatusMessage(`No se pudo abrir el proyecto: ${response.error.message}`)
+          setters.setStatusMessage(`Could not open project: ${response.error.message}`)
           return
         }
 
         setters.setRootPath(response.data.rootPath)
         setters.setSnapshot(response.data)
-        setters.setStatusMessage(`Proyecto abierto: ${response.data.rootPath}`)
+        setters.setStatusMessage(`Project opened: ${response.data.rootPath}`)
 
         const nextFile = resolvePreferredFile(response.data, preferredFilePath)
         if (!nextFile) {
@@ -85,8 +85,8 @@ function useOpenProject(
 
         await loadDocument(nextFile)
       } catch (error) {
-        const message = error instanceof Error ? error.message : 'Error desconocido'
-        setters.setStatusMessage(`Error al abrir proyecto: ${message}`)
+        const message = error instanceof Error ? error.message : 'Unknown error'
+        setters.setStatusMessage(`Error opening project: ${message}`)
       } finally {
         setters.setLoadingProject(false)
       }
@@ -105,12 +105,12 @@ function useSaveDocumentNow(
       try {
         const response = await window.tramaApi.saveDocument({ path, content, meta })
         if (!response.ok) {
-          setters.setStatusMessage(`Error guardando ${path}: ${response.error.message}`)
+          setters.setStatusMessage(`Error saving ${path}: ${response.error.message}`)
           return
         }
 
         setters.setIsDirty(false)
-        setters.setStatusMessage(`Guardado: ${response.data.path} (${response.data.version})`)
+        setters.setStatusMessage(`Saved: ${response.data.path} (${response.data.version})`)
       } finally {
         setters.setSaving(false)
       }

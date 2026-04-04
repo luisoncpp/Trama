@@ -2,14 +2,14 @@ import type { SidebarSection } from '../../project-editor-types'
 
 function getSectionMessage(section: Exclude<SidebarSection, 'explorer'>): string {
   if (section === 'outline') {
-    return 'Outline estara disponible con herramientas dedicadas en una fase posterior.'
+    return 'Outline tools will be available in a future phase.'
   }
 
   if (section === 'lore') {
-    return 'Lore estara disponible con herramientas dedicadas en una fase posterior.'
+    return 'Lore tools will be available in a future phase.'
   }
 
-  return 'Project settings avanzados estaran disponibles en una fase posterior.'
+  return 'Advanced project settings will be available in a future phase.'
 }
 
 export function SidebarSectionPlaceholder({ section }: { section: Exclude<SidebarSection, 'explorer'> }) {

@@ -83,8 +83,8 @@ describe('sidebar panels', () => {
       )
     })
 
-    expect(container.textContent).toContain('Configuración')
-    expect(container.textContent).toContain('Ancho de panel: 320px')
+    expect(container.textContent).toContain('Settings')
+    expect(container.textContent).toContain('Panel width: 320px')
   })
 
   it('maps scoped file selections back to project-relative paths', () => {
@@ -128,13 +128,14 @@ describe('sidebar panels', () => {
       )
     })
 
-    const gearButton = container.querySelector('[aria-label="Elegir carpeta del proyecto"]') as HTMLButtonElement
-    expect(gearButton).toBeTruthy()
+    const folderButton = container.querySelector('[aria-label="Select Project Folder..."]') as HTMLButtonElement
+    expect(folderButton).toBeTruthy()
+    expect(folderButton?.getAttribute('title')).toBe('Select Project Folder...')
     expect(container.textContent).not.toContain('Documento cargado:')
-    expect(container.textContent).not.toContain('Seleccion de carpeta cancelada.')
+    expect(container.textContent).not.toContain('Project folder selection was canceled.')
 
     act(() => {
-      gearButton.click()
+      folderButton.click()
     })
 
     expect(onPickFolder).toHaveBeenCalledTimes(1)
