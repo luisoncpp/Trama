@@ -21,16 +21,19 @@
 ## Typical development loop
 
 1. Start with `npm run dev`.
-2. Open Electron window and use `Probar round-trip IPC`.
-3. Confirm preload status is available.
+2. Open Electron window and use `Elegir carpeta` to load a markdown project.
+3. Confirm preload status is available and documents load/save correctly.
 4. Run `npm run test` before finishing changes.
 
 ## Adding a new IPC endpoint
 
 1. Add channel + request/response schemas in `src/shared/ipc.ts`.
-2. Implement main handler in `electron/ipc.ts`.
+2. Implement handler in `electron/ipc/handlers/`:
+  - Use `electron/ipc/handlers/project-handlers/` for project/document/index handlers.
+  - Use `electron/ipc/handlers/ping-handler.ts` for ping-style utility endpoints.
 3. Expose method in `electron/preload.cts`.
-4. Consume from renderer (`src/app.tsx` or future hooks/services).
+4. Register channel in `electron/ipc.ts`.
+5. Consume from renderer hooks/components (currently under `src/features/project-editor/`).
 5. Add tests in `tests/` for valid/invalid payloads.
 
 ## Build artifact expectations
@@ -40,6 +43,7 @@ After `npm run build:electron`:
 - `dist-electron/electron/main.js`
 - `dist-electron/electron/ipc.js`
 - `dist-electron/electron/preload.cjs`
+- `dist-electron/electron/ipc/handlers/index.js`
 - `dist-electron/src/shared/ipc.js`
 
 If `preload.cjs` is missing, preload will not load and `window.tramaApi` will be undefined.

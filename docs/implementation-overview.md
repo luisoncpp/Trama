@@ -1,27 +1,44 @@
 # Implementation Overview (Phase 2 Kickoff)
 
+For quick onboarding context, read `new-conversation-handoff.md` and `current-status.md` first.
+
 ## What is implemented
 
 The project now includes the Phase 1 baseline plus a Phase 2 kickoff slice:
 
-- Open project by root path from renderer
+- Open project via native folder picker from renderer
 - Recursive project scan for `.md` documents
-- Frontmatter parse/serialize in main process
+- Frontmatter parse/serialize in main process with `yaml`
 - Read/save markdown documents through typed IPC
 - `.trama.index.json` reconciliation (prune missing + append new)
-- Minimal editor loop in renderer with autosave debounce
+- External file watcher events (`internal` vs `external`) and conflict prompt
+- Editor loop with autosave debounce and modular renderer architecture
 
 ## Runtime architecture
 
 - **Renderer process**: UI and user interactions (`src/app.tsx`)
+- **Renderer project editor feature**:
+	- `src/features/project-editor/use-project-editor.ts`
+	- `src/features/project-editor/project-editor-view.tsx`
+	- `src/features/project-editor/components/*`
 - **Preload script**: safe API bridge (`electron/preload.cts`)
 - **Main process**: app lifecycle + IPC orchestration (`electron/main.ts`, `electron/ipc.ts`)
+- **IPC handlers (modularized)**:
+	- `electron/ipc/handlers/index.ts`
+	- `electron/ipc/handlers/ping-handler.ts`
+	- `electron/ipc/handlers/project-handlers/*`
+- **IPC runtime and helpers**:
+	- `electron/ipc-runtime.ts`
+	- `electron/ipc-errors.ts`
 - **Phase 2 services**:
 	- `electron/services/project-scanner.ts`
 	- `electron/services/document-repository.ts`
 	- `electron/services/frontmatter.ts`
 	- `electron/services/index-service.ts`
+	- `electron/services/watcher-service.ts`
 - **Shared contract**: IPC channels, schemas, and envelope types (`src/shared/ipc.ts`)
+
+See `ipc-architecture.md` for endpoint mapping and extension workflow.
 
 ## Security baseline
 
@@ -45,16 +62,18 @@ Implemented channels at this stage:
 
 - `trama:ping`
 - `trama:project:open`
+- `trama:project:select-folder`
 - `trama:document:read`
 - `trama:document:save`
 - `trama:index:get`
+- `trama:project:external-file-event`
 
 ## Why this matters for later phases
 
 Current seams are ready for deeper Phase 2 work:
 
 - Add new channels by extending `src/shared/ipc.ts`
-- Keep orchestration in `electron/ipc.ts` and move business logic to services
+- Keep orchestration in `electron/ipc.ts` and move business logic to modular handlers/services
 - Expose new preload methods in `electron/preload.cts`
 - Consume typed APIs in renderer components/hooks
 - Extend current loop with dirty-state conflict handling and external watcher events

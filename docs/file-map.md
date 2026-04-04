@@ -22,16 +22,56 @@
 - `electron/window-config.ts`
   - BrowserWindow security-related defaults.
 - `electron/ipc.ts`
-  - `buildPingResponse` validation + response.
-  - `registerIpcHandlers` for channel registration.
+  - Thin orchestration layer for channel registration.
+  - Delegates real logic to modular handlers.
+- `electron/ipc/handlers/index.ts`
+  - Facade export for all IPC handler entry points.
+- `electron/ipc/handlers/ping-handler.ts`
+  - Ping validation + envelope response.
+- `electron/ipc/handlers/project-handlers/project-open-handler.ts`
+  - `openProject` validation + scan + index reconciliation + watcher startup.
+- `electron/ipc/handlers/project-handlers/project-folder-dialog-handler.ts`
+  - Native folder picker dialog handler.
+- `electron/ipc/handlers/project-handlers/document-handlers.ts`
+  - `readDocument` and `saveDocument` handlers.
+- `electron/ipc/handlers/project-handlers/index-handler.ts`
+  - `getIndex` handler.
+- `electron/ipc-runtime.ts`
+  - Active project/index runtime state and watcher lifecycle.
+- `electron/ipc-errors.ts`
+  - Shared IPC error envelope helper.
 - `electron/preload.cts`
-  - Exposes `window.tramaApi` with `contextBridge`.
+  - Exposes typed `window.tramaApi` with `contextBridge`.
+  - Bridges external-file event subscription.
+- `electron/services/project-scanner.ts`
+  - Recursive markdown project scan with ignored paths.
+- `electron/services/document-repository.ts`
+  - Read/save markdown documents with frontmatter support.
+- `electron/services/frontmatter.ts`
+  - YAML frontmatter parse/serialize.
+- `electron/services/index-service.ts`
+  - `.trama.index.json` load/save/reconcile.
+- `electron/services/watcher-service.ts`
+  - Chokidar wrapper and `internal|external` change classification.
 
 ## Renderer layer
 
 - `src/app.tsx`
-  - Shell UI for Phase 1.
-  - IPC test button and runtime diagnostics.
+  - Minimal app composition entry.
+- `src/features/project-editor/use-project-editor.ts`
+  - Main hook for Phase 2 editor state/actions.
+- `src/features/project-editor/use-project-editor-autosave-effect.ts`
+  - Autosave side-effect extraction.
+- `src/features/project-editor/use-project-editor-external-events-effect.ts`
+  - External-file event side-effect extraction.
+- `src/features/project-editor/project-editor-view.tsx`
+  - Screen-level UI composition.
+- `src/features/project-editor/components/*`
+  - Presentational components (header, conflict banner, file list, editor panel).
+- `src/features/project-editor/project-editor-strings.ts`
+  - UI/status string constants.
+- `src/features/project-editor/project-editor-logic.ts`
+  - Pure helper logic used by hook.
 - `src/index.css`
   - Tailwind import + minimal global styles.
 - `src/types/trama-api.d.ts`
@@ -51,6 +91,14 @@
 - `tests/ipc-contract.test.ts`
   - Valid payload => success envelope.
   - Invalid payload => validation error envelope.
+- `tests/frontmatter-parser.test.ts`
+  - Frontmatter parser/serializer behavior.
+- `tests/index-reconciliation.test.ts`
+  - `.trama.index.json` reconciliation behavior.
+- `tests/project-editor-logic.test.ts`
+  - Pure project-editor helper logic.
+- `tests/use-project-editor.test.ts`
+  - Hook-level behavior smoke tests.
 
 ## Build outputs
 
