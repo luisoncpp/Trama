@@ -288,6 +288,19 @@ select {
   border-color: rgba(110, 166, 255, 0.3);
 }
 
+.sidebar-rail__icon {
+  width: 18px;
+  height: 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sidebar-rail__icon svg {
+  width: 18px;
+  height: 18px;
+}
+
 .editor-main {
   display: flex;
   flex-direction: column;
