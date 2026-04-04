@@ -1,4 +1,5 @@
 import { PROJECT_EDITOR_STRINGS } from '../project-editor-strings'
+import { RichMarkdownEditor } from './rich-markdown-editor'
 
 interface EditorPanelProps {
   selectedPath: string | null
@@ -33,12 +34,14 @@ export function EditorPanel({
         </button>
       </div>
       <p class="mb-2 text-xs text-slate-400">{selectedPath ?? PROJECT_EDITOR_STRINGS.noFileSelected}</p>
-      <textarea
-        value={editorValue}
-        onInput={(event) => onEditorChange(event.currentTarget.value)}
-        disabled={!selectedPath || loadingDocument}
-        class="h-[55vh] w-full resize-none rounded-lg border border-slate-700 bg-slate-950 p-3 font-mono text-sm text-slate-100 outline-none focus:border-emerald-400 disabled:opacity-70"
-      />
+      <div class={!selectedPath || loadingDocument ? 'opacity-70' : ''}>
+        <RichMarkdownEditor
+          documentId={selectedPath}
+          value={editorValue}
+          disabled={!selectedPath || loadingDocument}
+          onChange={onEditorChange}
+        />
+      </div>
     </article>
   )
 }

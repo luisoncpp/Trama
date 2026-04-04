@@ -1,4 +1,5 @@
 import type {
+  DebugLogRequest,
   ExternalFileEvent,
   IpcEnvelope,
   OpenProjectRequest,
@@ -17,6 +18,7 @@ declare global {
   interface Window {
     tramaApi: {
       ping(payload: PingRequest): Promise<IpcEnvelope<PingResponse>>
+      debugLog(payload: DebugLogRequest): Promise<void>
       openProject(payload: OpenProjectRequest): Promise<IpcEnvelope<ProjectSnapshot>>
       selectProjectFolder(): Promise<IpcEnvelope<SelectProjectFolderResponse>>
       readDocument(payload: ReadDocumentRequest): Promise<IpcEnvelope<ReadDocumentResponse>>

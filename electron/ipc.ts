@@ -1,6 +1,8 @@
 import type { BrowserWindow, IpcMain } from 'electron'
 import {
+  debugLogRequestSchema,
   IPC_CHANNELS,
+  type DebugLogRequest,
   type OpenProjectRequest,
   type PingRequest,
   type ReadDocumentRequest,
@@ -21,6 +23,21 @@ export { buildPingResponse, shutdownIpcServices }
 
 export function registerIpcHandlers(ipcMain: IpcMain, getMainWindow: () => BrowserWindow | null): void {
   configureMainWindowResolver(getMainWindow)
+
+  ipcMain.handle(IPC_CHANNELS.debugLog, (_event, payload: DebugLogRequest) => {
+    const parsed = debugLogRequestSchema.safeParse(payload)
+    if (!parsed.success) {
+      return
+    }
+
+    const { source, message, details } = parsed.data
+    if (details === undefined) {
+      console.log(`[renderer:${source}] ${message}`)
+      return
+    }
+
+    console.log(`[renderer:${source}] ${message}`, details)
+  })
 
   ipcMain.handle(IPC_CHANNELS.ping, (_event, payload: PingRequest) => {
     return buildPingResponse(payload)

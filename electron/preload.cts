@@ -1,6 +1,8 @@
 import { contextBridge, ipcRenderer } from 'electron'
 import {
+  debugLogRequestSchema,
   IPC_CHANNELS,
+  type DebugLogRequest,
   type ExternalFileEvent,
   type IpcEnvelope,
   type OpenProjectRequest,
@@ -18,6 +20,14 @@ import {
 const tramaApi = {
   ping(payload: PingRequest): Promise<IpcEnvelope<PingResponse>> {
     return ipcRenderer.invoke(IPC_CHANNELS.ping, payload)
+  },
+  debugLog(payload: DebugLogRequest): Promise<void> {
+    const parsed = debugLogRequestSchema.safeParse(payload)
+    if (!parsed.success) {
+      return Promise.resolve()
+    }
+
+    return ipcRenderer.invoke(IPC_CHANNELS.debugLog, parsed.data)
   },
   openProject(payload: OpenProjectRequest): Promise<IpcEnvelope<ProjectSnapshot>> {
     return ipcRenderer.invoke(IPC_CHANNELS.openProject, payload)

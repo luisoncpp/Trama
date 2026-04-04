@@ -16,8 +16,18 @@
     "test:smoke": "npm run build && vitest run tests/electron-smoke.test.ts"
   },
   "dependencies": {
+    "@codemirror/commands": "^6.10.3",
+    "@codemirror/lang-markdown": "^6.5.0",
+    "@codemirror/language": "^6.12.3",
+    "@codemirror/state": "^6.6.0",
+    "@codemirror/view": "^6.41.0",
+    "@toast-ui/editor": "^3.2.2",
+    "@types/turndown": "^5.0.6",
     "chokidar": "^5.0.0",
+    "marked": "^17.0.5",
     "preact": "^10.29.0",
+    "quill": "^2.0.3",
+    "turndown": "^7.2.4",
     "yaml": "^2.8.3"
   },
   "devDependencies": {

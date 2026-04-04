@@ -2,6 +2,7 @@ import { z } from 'zod'
 
 export const IPC_CHANNELS = {
   ping: 'trama:ping',
+  debugLog: 'trama:debug:log',
   openProject: 'trama:project:open',
   selectProjectFolder: 'trama:project:select-folder',
   readDocument: 'trama:document:read',
@@ -17,6 +18,12 @@ export const pingRequestSchema = z.object({
 export const pingResponseSchema = z.object({
   echo: z.string(),
   timestamp: z.string(),
+})
+
+export const debugLogRequestSchema = z.object({
+  source: z.string().trim().min(1).max(80),
+  message: z.string().trim().min(1).max(300),
+  details: z.unknown().optional(),
 })
 
 export const documentMetaSchema = z
@@ -107,6 +114,7 @@ export const ipcEnvelopeSchema = <T extends z.ZodTypeAny>(dataSchema: T) =>
 
 export type PingRequest = z.infer<typeof pingRequestSchema>
 export type PingResponse = z.infer<typeof pingResponseSchema>
+export type DebugLogRequest = z.infer<typeof debugLogRequestSchema>
 export type DocumentMeta = z.infer<typeof documentMetaSchema>
 export type TreeItem = {
   id: string
