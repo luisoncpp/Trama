@@ -25,8 +25,8 @@ function GearIcon(): JSX.Element {
 
 const SIDEBAR_ITEMS: SidebarRailItem[] = [
   { section: 'explorer', shortLabel: 'EX', title: 'Explorer' },
-  { section: 'corkboard', shortLabel: 'CB', title: 'Corkboard (coming soon)' },
-  { section: 'planner', shortLabel: 'PL', title: 'Planner (coming soon)' },
+  { section: 'outline', shortLabel: 'OU', title: 'Outline' },
+  { section: 'lore', shortLabel: 'LO', title: 'Lore' },
   { section: 'settings', shortLabel: 'ST', title: 'Project settings', icon: GearIcon },
 ]
 

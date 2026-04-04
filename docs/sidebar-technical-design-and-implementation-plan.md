@@ -47,10 +47,17 @@ The sidebar will be built as two coordinated UI layers:
 1. Global Rail (Level 1)
 - A narrow vertical icon rail for top-level workspace areas.
 - Initial sections:
-  - Explorer (active in Phase 3)
-  - Corkboard (placeholder)
-  - Planner/Timeline (placeholder)
+  - Explorer Manuscript (book content: Act/Chapter/Scene)
+  - Outline
+  - Lore
   - Project Settings
+
+Section-to-subfolder mapping rule (new):
+- Each content section must scope its tree to a different project subfolder.
+- Initial mapping for implementation:
+  - `explorer` -> `book/`
+  - `outline` -> `outline/`
+  - `lore` -> `lore/`
 
 2. Tree Panel (Level 2)
 - A contextual panel bound to the Explorer section.
@@ -89,7 +96,7 @@ export interface SidebarTreeState {
 ## 5.2 Sidebar UI State (Renderer)
 
 ```ts
-export type SidebarSection = 'explorer' | 'corkboard' | 'planner' | 'settings'
+export type SidebarSection = 'explorer' | 'outline' | 'lore' | 'settings'
 
 export interface SidebarUiState {
   activeSection: SidebarSection
@@ -99,6 +106,14 @@ export interface SidebarUiState {
   selectedPath: string | null
   filterQuery: string
   lastExplorerScrollTop: number
+}
+```
+
+```ts
+export interface SidebarSectionRoots {
+  explorer: 'book/'
+  outline: 'outline/'
+  lore: 'lore/'
 }
 ```
 
@@ -172,6 +187,7 @@ Complexity:
 
 Rules:
 - Match against file name and relative path (case-insensitive).
+- Search scope is restricted to files inside the active section root.
 - When filter is active:
   - Keep matching files.
   - Include ancestor folders of each match.

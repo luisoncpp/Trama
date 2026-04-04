@@ -9,8 +9,12 @@ function buildPanelProps(
   overrides: Partial<Parameters<typeof SidebarPanel>[0]> = {},
 ): Parameters<typeof SidebarPanel>[0] {
   return {
-    visibleFiles: ['docs/README.md'],
-    selectedPath: 'docs/README.md',
+    visibleFiles: [
+      'book/Act-01/Chapter-01/Scene-001.md',
+      'outline/arc-general.md',
+      'lore/personajes/protagonista.md',
+    ],
+    selectedPath: 'book/Act-01/Chapter-01/Scene-001.md',
     loadingDocument: false,
     onSelectFile: () => undefined,
     sidebarActiveSection: 'explorer',
@@ -39,13 +43,38 @@ describe('sidebar panels', () => {
     document.body.removeChild(container)
   })
 
-  it('renders explorer, settings, and planner sections from the shell', () => {
+  it('renders explorer, outline, lore and settings sections with scoped trees', () => {
     act(() => {
       render(h(SidebarPanel, buildPanelProps()), container)
     })
 
-    expect(container.textContent).toContain('Proyecto')
-    expect(container.textContent).toContain('C:/Proyectos/test_trama')
+    expect(container.textContent).toContain('Manuscript')
+    expect(container.textContent).toContain('C:/Proyectos/test_trama/book')
+    expect(container.textContent).toContain('Scene-001.md')
+    expect(container.textContent).not.toContain('arc-general.md')
+
+    act(() => {
+      render(
+        h(SidebarPanel, buildPanelProps({ sidebarActiveSection: 'outline' })),
+        container,
+      )
+    })
+
+    expect(container.textContent).toContain('Outline')
+    expect(container.textContent).toContain('C:/Proyectos/test_trama/outline')
+    expect(container.textContent).toContain('arc-general.md')
+    expect(container.textContent).not.toContain('Scene-001.md')
+
+    act(() => {
+      render(
+        h(SidebarPanel, buildPanelProps({ sidebarActiveSection: 'lore' })),
+        container,
+      )
+    })
+
+    expect(container.textContent).toContain('Lore')
+    expect(container.textContent).toContain('C:/Proyectos/test_trama/lore')
+    expect(container.textContent).toContain('protagonista.md')
 
     act(() => {
       render(
@@ -56,15 +85,27 @@ describe('sidebar panels', () => {
 
     expect(container.textContent).toContain('Configuración')
     expect(container.textContent).toContain('Ancho de panel: 320px')
+  })
+
+  it('maps scoped file selections back to project-relative paths', () => {
+    const onSelectFile = vi.fn()
 
     act(() => {
       render(
-        h(SidebarPanel, buildPanelProps({ sidebarActiveSection: 'planner' })),
+        h(SidebarPanel, buildPanelProps({ onSelectFile })),
         container,
       )
     })
 
-    expect(container.textContent).toContain('Planner estara disponible en una fase posterior.')
+    const rowButtons = Array.from(container.querySelectorAll('.sidebar-tree__row')) as HTMLButtonElement[]
+    const fileRowButton = rowButtons.find((button) => button.textContent?.includes('Scene-001.md'))
+    expect(fileRowButton).toBeTruthy()
+
+    act(() => {
+      fileRowButton?.click()
+    })
+
+    expect(onSelectFile).toHaveBeenCalledWith('book/Act-01/Chapter-01/Scene-001.md')
   })
 
   it('uses explorer gear button to pick a folder and does not render status text', () => {
@@ -73,13 +114,14 @@ describe('sidebar panels', () => {
     act(() => {
       render(
         h(SidebarExplorerContent, {
+          title: 'Manuscript',
           visibleFiles: ['docs/README.md'],
           selectedPath: 'docs/README.md',
           loadingDocument: false,
           onSelectFile: () => undefined,
           apiAvailable: true,
           loadingProject: false,
-          rootPath: 'C:/Proyectos/test_trama',
+          scopePathLabel: 'C:/Proyectos/test_trama/book',
           onPickFolder,
         }),
         container,

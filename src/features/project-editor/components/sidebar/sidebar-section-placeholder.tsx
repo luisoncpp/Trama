@@ -1,12 +1,12 @@
 import type { SidebarSection } from '../../project-editor-types'
 
 function getSectionMessage(section: Exclude<SidebarSection, 'explorer'>): string {
-  if (section === 'corkboard') {
-    return 'Corkboard estara disponible en una fase posterior.'
+  if (section === 'outline') {
+    return 'Outline estara disponible con herramientas dedicadas en una fase posterior.'
   }
 
-  if (section === 'planner') {
-    return 'Planner estara disponible en una fase posterior.'
+  if (section === 'lore') {
+    return 'Lore estara disponible con herramientas dedicadas en una fase posterior.'
   }
 
   return 'Project settings avanzados estaran disponibles en una fase posterior.'

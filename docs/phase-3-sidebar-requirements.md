@@ -37,13 +37,22 @@ La columna más a la izquierda debe funcionar como lanzador de áreas de trabajo
 
 Requerimientos:
 - Mostrar iconos de módulos principales (ejemplo inicial):
-  - Tree/Explorer (árbol de documentos).
-  - Corkboard (fase posterior, placeholder permitido).
-  - Timeline/Planner (placeholder permitido).
+  - Explorer Manuscript (contenido del libro: Act/Chapter/Scene).
+  - Outline principal.
+  - Lore.
   - Settings del proyecto.
 - Mostrar estado activo de sección con señal visual fuerte.
 - Soportar tooltips accesibles para cada icono.
 - Permitir colapso/expansión del rail secundario (panel de árbol).
+
+Regla nueva de información:
+- Cada sección del rail debe explorar una subcarpeta distinta del proyecto.
+- El árbol mostrado en cada sección se limita a su subcarpeta raíz configurada.
+
+Mapeo inicial propuesto (documentación previa a implementación):
+- Explorer Manuscript -> subcarpeta `book/` (estructura esperada: Act/Chapter/Scene).
+- Outline principal -> subcarpeta `outline/`.
+- Lore -> subcarpeta `lore/`.
 
 Criterios de aceptación:
 - El usuario puede cambiar de sección sin perder documento abierto.
@@ -64,6 +73,7 @@ Reglas de datos:
 - Fuente de verdad: filesystem + reconciliación de .trama.index.json.
 - Si un archivo desaparece por cambio externo, el árbol se refresca sin romper selección activa.
 - Si aparece un archivo nuevo, se muestra automáticamente según reglas de reconciliación.
+- Cada vista filtra `visibleFiles` por prefijo de subcarpeta según la sección activa del rail.
 
 Criterios de aceptación:
 - Un proyecto con estructura profunda se puede navegar sin latencia perceptible.

@@ -1,4 +1,4 @@
-export type SidebarSection = 'explorer' | 'corkboard' | 'planner' | 'settings'
+export type SidebarSection = 'explorer' | 'outline' | 'lore' | 'settings'
 
 export interface ProjectEditorState {
   apiAvailable: boolean

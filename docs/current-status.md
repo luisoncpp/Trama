@@ -21,6 +21,7 @@ Implemented now:
 - Native right-click context menu with spellcheck suggestions.
 - Phase 3 PR-1 completed: sidebar rail shell with persisted section/collapse/width state.
 - Phase 3 PR-2 completed: hierarchical sidebar tree with expand/collapse, keyboard navigation basics, and folder/file icons.
+- Sidebar IA updated in docs before implementation: sections will map to different project subfolders (`book/`, `outline/`, `lore/`) and Explorer will focus on manuscript Act/Chapter/Scene content.
 
 Not implemented yet (planned in later phases):
 - File operations beyond read/save (create/rename/delete workflows).
