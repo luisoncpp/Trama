@@ -168,6 +168,41 @@ select {
   width: 100%;
 }
 
+.sidebar-filter {
+  margin-top: 10px;
+  display: flex;
+  gap: 8px;
+}
+
+.sidebar-filter__input {
+  flex: 1 1 auto;
+  min-width: 0;
+  border: 1px solid var(--border-strong);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-main);
+  padding: 8px 10px;
+  font-size: 0.8rem;
+}
+
+.sidebar-filter__input::placeholder {
+  color: var(--text-dim);
+}
+
+.sidebar-filter__clear {
+  border: 1px solid var(--border-strong);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-muted);
+  padding: 0 10px;
+  font-size: 0.72rem;
+}
+
+.sidebar-filter__clear:hover {
+  color: var(--text-main);
+  border-color: rgba(110, 166, 255, 0.3);
+}
+
 .editor-button {
   appearance: none;
   border-radius: 12px;

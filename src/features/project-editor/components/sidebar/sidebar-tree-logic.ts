@@ -140,12 +140,21 @@ export function getAncestorFolderPaths(filePath: string): string[] {
   return ancestorFolders
 }
 
-export function getVisibleSidebarRows(tree: SidebarTreeState, expandedFolderPaths: Set<string>): SidebarTreeRow[] {
+export function getVisibleSidebarRows(
+  tree: SidebarTreeState,
+  expandedFolderPaths: Set<string>,
+  visibleNodePaths?: Set<string>,
+): SidebarTreeRow[] {
   const rows: SidebarTreeRow[] = []
+  const hasVisibilityFilter = visibleNodePaths !== undefined
 
   const visit = (nodeId: string) => {
     const node = tree.nodesById[nodeId]
     if (!node) {
+      return
+    }
+
+    if (hasVisibilityFilter && !visibleNodePaths.has(node.path)) {
       return
     }
 

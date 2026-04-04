@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { filterSidebarTree } from '../src/features/project-editor/components/sidebar/sidebar-filter-logic'
 import { buildSidebarTree, getAncestorFolderPaths, getVisibleSidebarRows } from '../src/features/project-editor/components/sidebar/sidebar-tree-logic'
 
 describe('sidebar tree logic', () => {
@@ -34,5 +35,35 @@ describe('sidebar tree logic', () => {
   it('extracts ancestor folder paths from file path', () => {
     expect(getAncestorFolderPaths('Lore/Characters/hero.md')).toEqual(['Lore', 'Lore/Characters'])
     expect(getAncestorFolderPaths('root.md')).toEqual([])
+  })
+
+  it('filters tree by query and returns visible nodes plus auto-expanded folders', () => {
+    const tree = buildSidebarTree([
+      'Act-01/Chapter-01/Scene-001.md',
+      'Act-01/Chapter-02/Scene-003.md',
+      'Appendix/glossary.md',
+    ])
+
+    const result = filterSidebarTree(tree, 'scene-003')
+
+    expect(result.matchedFilePaths).toEqual(['Act-01/Chapter-02/Scene-003.md'])
+    expect(result.autoExpandFolderPaths).toEqual(['Act-01/Chapter-02', 'Act-01'])
+
+    const rows = getVisibleSidebarRows(tree, new Set(result.autoExpandFolderPaths), result.visibleNodePaths)
+    expect(rows.map((row) => row.path)).toEqual([
+      'Act-01',
+      'Act-01/Chapter-02',
+      'Act-01/Chapter-02/Scene-003.md',
+    ])
+  })
+
+  it('returns empty filter result for blank query', () => {
+    const tree = buildSidebarTree(['a.md'])
+    const result = filterSidebarTree(tree, '   ')
+
+    expect(result.query).toBe('')
+    expect(result.matchedFilePaths).toEqual([])
+    expect(result.visibleNodePaths.size).toBe(0)
+    expect(result.autoExpandFolderPaths).toEqual([])
   })
 })

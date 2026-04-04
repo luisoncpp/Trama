@@ -23,7 +23,7 @@ export function ProjectHeader({
           <h1 class="editor-topbar__title">Editor</h1>
         </div>
         <span class={`editor-topbar__status ${apiAvailable ? 'is-live' : 'is-offline'}`}>
-          {apiAvailable ? 'API disponible' : 'API no disponible'}
+          {apiAvailable ? `API ${PROJECT_EDITOR_STRINGS.preloadAvailable}` : `API ${PROJECT_EDITOR_STRINGS.preloadUnavailable}`}
         </span>
       </div>
 

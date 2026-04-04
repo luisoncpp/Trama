@@ -1,13 +1,16 @@
-import { useEffect, useMemo, useRef, useState } from 'preact/hooks'
+import { useMemo, useRef } from 'preact/hooks'
 import { PROJECT_EDITOR_STRINGS } from '../../project-editor-strings'
-import { buildSidebarTree, getAncestorFolderPaths, getVisibleSidebarRows } from './sidebar-tree-logic'
+import { filterSidebarTree } from './sidebar-filter-logic'
+import { buildSidebarTree, getVisibleSidebarRows } from './sidebar-tree-logic'
 import { TreeChevron, TreeNodeIcon } from './sidebar-tree-icons'
+import { useSidebarTreeExpandedFolders } from './use-sidebar-tree-expanded-folders'
 
 interface SidebarTreeProps {
   visibleFiles: string[]
   selectedPath: string | null
   loadingDocument: boolean
   onSelectFile: (filePath: string) => void
+  filterQuery: string
 }
 
 interface SidebarTreeRowsProps {
@@ -29,10 +32,6 @@ interface SidebarTreeRowButtonProps {
   onRowKeyDown: (event: KeyboardEvent, index: number) => void
 }
 
-function unique(values: string[]): string[] {
-  return Array.from(new Set(values))
-}
-
 function findParentRowIndex(rows: ReturnType<typeof getVisibleSidebarRows>, index: number): number {
   const currentDepth = rows[index]?.depth ?? 0
 
@@ -43,43 +42,6 @@ function findParentRowIndex(rows: ReturnType<typeof getVisibleSidebarRows>, inde
   }
 
   return -1
-}
-
-function useExpandedFolders(tree: ReturnType<typeof buildSidebarTree>, selectedPath: string | null): [string[], (path: string, expanded: boolean) => void] {
-  const [expandedFolders, setExpandedFolders] = useState<string[]>([])
-
-  useEffect(() => {
-    const folderPaths = new Set(
-      Object.values(tree.nodesById)
-        .filter((node) => node.type === 'folder')
-        .map((node) => node.path),
-    )
-
-    const rootFolders = tree.rootIds
-      .map((id) => tree.nodesById[id])
-      .filter((node) => node?.type === 'folder')
-      .map((node) => node.path)
-
-    const selectedAncestors = selectedPath ? getAncestorFolderPaths(selectedPath) : []
-
-    setExpandedFolders((prev) => {
-      const previousValid = prev.filter((path) => folderPaths.has(path))
-      const seed = previousValid.length > 0 ? previousValid : rootFolders
-      return unique([...seed, ...selectedAncestors])
-    })
-  }, [selectedPath, tree])
-
-  const setFolderExpanded = (path: string, expanded: boolean) => {
-    setExpandedFolders((current) => {
-      if (expanded) {
-        return unique([...current, path])
-      }
-
-      return current.filter((entry) => entry !== path)
-    })
-  }
-
-  return [expandedFolders, setFolderExpanded]
 }
 
 function useRowFocus(containerRef: { current: HTMLDivElement | null }, rows: ReturnType<typeof getVisibleSidebarRows>) {
@@ -194,14 +156,33 @@ function SidebarTreeRows({
   )
 }
 
-export function SidebarTree({ visibleFiles, selectedPath, loadingDocument, onSelectFile }: SidebarTreeProps) {
+export function SidebarTree({ visibleFiles, selectedPath, loadingDocument, onSelectFile, filterQuery }: SidebarTreeProps) {
   const tree = useMemo(() => buildSidebarTree(visibleFiles), [visibleFiles])
-  const [expandedFolders, setFolderExpanded] = useExpandedFolders(tree, selectedPath)
-  const rows = useMemo(() => getVisibleSidebarRows(tree, new Set(expandedFolders)), [expandedFolders, tree])
+  const filterResult = useMemo(() => filterSidebarTree(tree, filterQuery), [filterQuery, tree])
+  const [setFolderExpanded, effectiveExpandedFolders] = useSidebarTreeExpandedFolders(
+    tree,
+    selectedPath,
+    filterQuery,
+    filterResult.autoExpandFolderPaths,
+  )
+  const rows = useMemo(
+    () =>
+      getVisibleSidebarRows(
+        tree,
+        new Set(effectiveExpandedFolders),
+        filterResult.query ? filterResult.visibleNodePaths : undefined,
+      ),
+    [effectiveExpandedFolders, filterResult, tree],
+  )
   const containerRef = useRef<HTMLDivElement | null>(null)
+  const hasFilterQuery = filterResult.query.length > 0
 
-  if (visibleFiles.length === 0) {
+  if (visibleFiles.length === 0 && !hasFilterQuery) {
     return <p class="file-tree__empty">{PROJECT_EDITOR_STRINGS.noMarkdownFiles}</p>
+  }
+
+  if (rows.length === 0 && hasFilterQuery) {
+    return <p class="file-tree__empty">No files match "{filterResult.query}".</p>
   }
 
   return (

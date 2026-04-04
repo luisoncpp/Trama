@@ -21,12 +21,13 @@ Implemented now:
 - Native right-click context menu with spellcheck suggestions.
 - Phase 3 PR-1 completed: sidebar rail shell with persisted section/collapse/width state.
 - Phase 3 PR-2 completed: hierarchical sidebar tree with expand/collapse, keyboard navigation basics, and folder/file icons.
+- Phase 3 PR-3 completed: debounced sidebar filter/search with scoped matching, auto-expanded branches, and expanded-state restore on clear.
 - Sidebar IA updated in docs before implementation: sections will map to different project subfolders (`book/`, `outline/`, `lore/`) and Explorer will focus on manuscript Act/Chapter/Scene content.
 
 Not implemented yet (planned in later phases):
 - File operations beyond read/save (create/rename/delete workflows).
 - Wiki links, templates, corkboard DnD, AI import/export pipeline.
-- Sidebar filter/search flow (PR-3) and create actions over IPC (PR-4).
+- Create actions over IPC (PR-4).
 
 ## Reliability status
 
@@ -51,7 +52,6 @@ Additional regression checks currently in the suite:
 ## Suggested next milestones
 
 1. Continue Phase 3 workspace UX:
-- Sidebar PR-3: filter/search with auto-expansion and restore expanded state.
 - Sidebar PR-4: create article/category actions over IPC.
 - Theme preferences and fullscreen/focus mode wiring.
 

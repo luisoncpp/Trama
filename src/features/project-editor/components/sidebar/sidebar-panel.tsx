@@ -1,3 +1,4 @@
+import { useState } from 'preact/hooks'
 import type { SidebarSection } from '../../project-editor-types'
 import { SidebarRail } from './sidebar-rail'
 import { SidebarExplorerContent } from './sidebar-explorer-content'
@@ -67,6 +68,40 @@ interface SidebarPanelProps {
   onPickFolder: () => void
 }
 
+function useSidebarContentSection(
+  sidebarActiveSection: SidebarSection,
+  visibleFiles: string[],
+  selectedPath: string | null,
+) {
+  const [sectionFilters, setSectionFilters] = useState<Record<ContentSidebarSection, string>>({
+    explorer: '',
+    outline: '',
+    lore: '',
+  })
+
+  const isContentSection = sidebarActiveSection !== 'settings'
+  const contentSection = isContentSection ? (sidebarActiveSection as ContentSidebarSection) : null
+  const sectionConfig = contentSection ? SIDEBAR_SECTION_CONFIG[contentSection] : null
+
+  return {
+    contentSection,
+    sectionConfig,
+    scopedFiles: sectionConfig ? getScopedFiles(visibleFiles, sectionConfig.root) : [],
+    scopedSelectedPath: sectionConfig ? getScopedSelectedPath(selectedPath, sectionConfig.root) : null,
+    activeFilterQuery: contentSection ? sectionFilters[contentSection] : '',
+    onFilterQueryChange: (value: string) => {
+      if (!contentSection) {
+        return
+      }
+
+      setSectionFilters((current) => ({
+        ...current,
+        [contentSection]: value,
+      }))
+    },
+  }
+}
+
 export function SidebarPanel({
   visibleFiles,
   selectedPath,
@@ -80,10 +115,8 @@ export function SidebarPanel({
   onSidebarPanelWidthChange,
   ...props
 }: SidebarPanelProps) {
-  const isContentSection = sidebarActiveSection !== 'settings'
-  const sectionConfig = isContentSection ? SIDEBAR_SECTION_CONFIG[sidebarActiveSection] : null
-  const scopedFiles = sectionConfig ? getScopedFiles(visibleFiles, sectionConfig.root) : []
-  const scopedSelectedPath = sectionConfig ? getScopedSelectedPath(selectedPath, sectionConfig.root) : null
+  const { sectionConfig, scopedFiles, scopedSelectedPath, activeFilterQuery, onFilterQueryChange } =
+    useSidebarContentSection(sidebarActiveSection, visibleFiles, selectedPath)
 
   return (
     <aside
@@ -96,7 +129,6 @@ export function SidebarPanel({
         onSelectSection={onSelectSidebarSection}
         onToggleCollapsed={onToggleSidebarPanelCollapsed}
       />
-
       {!sidebarPanelCollapsed && sectionConfig && (
         <SidebarExplorerContent
           {...props}
@@ -104,10 +136,11 @@ export function SidebarPanel({
           scopePathLabel={joinProjectPath(rootPath, sectionConfig.root)}
           visibleFiles={scopedFiles}
           selectedPath={scopedSelectedPath}
+          filterQuery={activeFilterQuery}
+          onFilterQueryChange={onFilterQueryChange}
           onSelectFile={(filePath) => onSelectFile(`${sectionConfig.root}${filePath}`)}
         />
       )}
-
       {!sidebarPanelCollapsed && sidebarActiveSection === 'settings' && (
         <SidebarSettingsContent
           panelWidth={sidebarPanelWidth}

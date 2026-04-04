@@ -110,6 +110,7 @@ describe('sidebar panels', () => {
 
   it('uses explorer gear button to pick a folder and does not render status text', () => {
     const onPickFolder = vi.fn()
+    const onFilterQueryChange = vi.fn()
 
     act(() => {
       render(
@@ -122,6 +123,8 @@ describe('sidebar panels', () => {
           apiAvailable: true,
           loadingProject: false,
           scopePathLabel: 'C:/Proyectos/test_trama/book',
+          filterQuery: '',
+          onFilterQueryChange,
           onPickFolder,
         }),
         container,
@@ -131,7 +134,7 @@ describe('sidebar panels', () => {
     const folderButton = container.querySelector('[aria-label="Select Project Folder..."]') as HTMLButtonElement
     expect(folderButton).toBeTruthy()
     expect(folderButton?.getAttribute('title')).toBe('Select Project Folder...')
-    expect(container.textContent).not.toContain('Documento cargado:')
+    expect(container.textContent).not.toContain('Loaded document:')
     expect(container.textContent).not.toContain('Project folder selection was canceled.')
 
     act(() => {
@@ -139,6 +142,9 @@ describe('sidebar panels', () => {
     })
 
     expect(onPickFolder).toHaveBeenCalledTimes(1)
+
+    const filterInput = container.querySelector('.sidebar-filter__input') as HTMLInputElement
+    expect(filterInput).toBeTruthy()
   })
 
   it('updates panel width from settings slider', () => {

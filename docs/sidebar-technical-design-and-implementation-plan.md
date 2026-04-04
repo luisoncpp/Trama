@@ -329,6 +329,8 @@ Validation evidence:
 
 ## PR-3: Filter/Search UX
 
+Status: Completed (2026-04-04)
+
 Goals:
 - Implement debounced filter with branch auto-expansion.
 
@@ -343,6 +345,29 @@ Tests:
 
 Exit criteria:
 - File discovery via partial query is reliable and fast.
+
+Delivered in implementation:
+- Added debounced `sidebar-filter` input component with clear action.
+- Implemented filter logic with scoped matches (name/path), ancestor inclusion, and auto-expanded branches.
+- Implemented expanded-state restoration when filter is cleared.
+- Wired filter state per sidebar section (`explorer`, `outline`, `lore`) so each section keeps its own query.
+
+Primary implementation files:
+- `src/features/project-editor/components/sidebar/sidebar-filter.tsx`
+- `src/features/project-editor/components/sidebar/sidebar-filter-logic.ts`
+- `src/features/project-editor/components/sidebar/sidebar-tree.tsx`
+- `src/features/project-editor/components/sidebar/use-sidebar-tree-expanded-folders.ts`
+- `src/features/project-editor/components/sidebar/sidebar-tree-logic.ts`
+- `src/features/project-editor/components/sidebar/sidebar-panel.tsx`
+- `src/features/project-editor/components/sidebar/sidebar-explorer-content.tsx`
+- `src/index.css`
+
+Validation evidence:
+- `npm run lint` passed.
+- `npm run build` passed.
+- `tests/sidebar-tree.test.ts` updated and passing.
+- `tests/sidebar-filter.test.ts` added and passing.
+- `tests/sidebar-panels.test.ts` updated and passing.
 
 ## PR-4: Create Actions and IPC Extensions
 
