@@ -16,7 +16,9 @@
     "test:smoke": "npm run build && vitest run tests/electron-smoke.test.ts"
   },
   "dependencies": {
-    "preact": "^10.29.0"
+    "chokidar": "^5.0.0",
+    "preact": "^10.29.0",
+    "yaml": "^2.8.3"
   },
   "devDependencies": {
     "@preact/preset-vite": "^2.10.4",

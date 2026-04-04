@@ -1,37 +1,48 @@
-import type { IpcMain } from 'electron'
+import type { BrowserWindow, IpcMain } from 'electron'
 import {
   IPC_CHANNELS,
-  pingRequestSchema,
-  type IpcEnvelope,
+  type OpenProjectRequest,
   type PingRequest,
-  type PingResponse,
+  type ReadDocumentRequest,
+  type SaveDocumentRequest,
 } from '../src/shared/ipc.js'
+import {
+  buildPingResponse,
+  configureMainWindowResolver,
+  handleGetIndex,
+  handleOpenProject,
+  handleReadDocument,
+  handleSaveDocument,
+  handleSelectProjectFolder,
+  shutdownIpcServices,
+} from './ipc/handlers/index.js'
 
-export function buildPingResponse(rawPayload: unknown): IpcEnvelope<PingResponse> {
-  const payload = pingRequestSchema.safeParse(rawPayload)
+export { buildPingResponse, shutdownIpcServices }
 
-  if (!payload.success) {
-    return {
-      ok: false,
-      error: {
-        code: 'VALIDATION_ERROR',
-        message: 'Invalid payload for trama:ping',
-        details: payload.error.flatten(),
-      },
-    }
-  }
+export function registerIpcHandlers(ipcMain: IpcMain, getMainWindow: () => BrowserWindow | null): void {
+  configureMainWindowResolver(getMainWindow)
 
-  return {
-    ok: true,
-    data: {
-      echo: payload.data.message,
-      timestamp: new Date().toISOString(),
-    },
-  }
-}
-
-export function registerIpcHandlers(ipcMain: IpcMain): void {
   ipcMain.handle(IPC_CHANNELS.ping, (_event, payload: PingRequest) => {
     return buildPingResponse(payload)
+  })
+
+  ipcMain.handle(IPC_CHANNELS.openProject, (_event, payload: OpenProjectRequest) => {
+    return handleOpenProject(payload)
+  })
+
+  ipcMain.handle(IPC_CHANNELS.selectProjectFolder, () => {
+    return handleSelectProjectFolder()
+  })
+
+  ipcMain.handle(IPC_CHANNELS.readDocument, (_event, payload: ReadDocumentRequest) => {
+    return handleReadDocument(payload)
+  })
+
+  ipcMain.handle(IPC_CHANNELS.saveDocument, (_event, payload: SaveDocumentRequest) => {
+    return handleSaveDocument(payload)
+  })
+
+  ipcMain.handle(IPC_CHANNELS.getIndex, () => {
+    return handleGetIndex()
   })
 }

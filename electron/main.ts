@@ -1,7 +1,7 @@
 import { app, BrowserWindow, ipcMain } from 'electron'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
-import { registerIpcHandlers } from './ipc.js'
+import { registerIpcHandlers, shutdownIpcServices } from './ipc.js'
 import { createMainWindowOptions } from './window-config.js'
 
 const __filename = fileURLToPath(import.meta.url)
@@ -92,7 +92,7 @@ async function createMainWindow(): Promise<void> {
 }
 
 app.whenReady().then(async () => {
-  registerIpcHandlers(ipcMain)
+  registerIpcHandlers(ipcMain, () => mainWindow)
   await createMainWindow()
 
   app.on('activate', () => {
@@ -106,4 +106,8 @@ app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
     app.quit()
   }
+})
+
+app.on('before-quit', () => {
+  void shutdownIpcServices()
 })
