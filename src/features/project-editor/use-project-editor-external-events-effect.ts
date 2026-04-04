@@ -1,4 +1,5 @@
 import { useEffect } from 'preact/hooks'
+import type { ExternalFileEvent } from '../../shared/ipc'
 import { shouldRefreshTreeOnExternalEvent } from './project-editor-logic'
 import { PROJECT_EDITOR_STRINGS } from './project-editor-strings'
 
@@ -14,7 +15,7 @@ interface UseProjectEditorExternalEventsEffectParams {
 }
 
 interface HandleExternalEventParams {
-  event: { event: string; path: string }
+  event: ExternalFileEvent
   selectedPath: string | null
   snapshotRootPath: string
   isDirty: boolean

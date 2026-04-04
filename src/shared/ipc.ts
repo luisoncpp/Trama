@@ -100,18 +100,6 @@ export const ipcErrorSchema = z.object({
   details: z.unknown().optional(),
 })
 
-export const ipcEnvelopeSchema = <T extends z.ZodTypeAny>(dataSchema: T) =>
-  z.discriminatedUnion('ok', [
-    z.object({
-      ok: z.literal(true),
-      data: dataSchema,
-    }),
-    z.object({
-      ok: z.literal(false),
-      error: ipcErrorSchema,
-    }),
-  ])
-
 export type PingRequest = z.infer<typeof pingRequestSchema>
 export type PingResponse = z.infer<typeof pingResponseSchema>
 export type DebugLogRequest = z.infer<typeof debugLogRequestSchema>

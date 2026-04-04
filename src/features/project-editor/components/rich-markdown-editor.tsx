@@ -10,6 +10,8 @@ interface RichMarkdownEditorProps {
   onChange: (value: string) => void
 }
 
+type QuillChangeSource = 'api' | 'user' | 'silent'
+
 function normalizeMarkdown(input: string): string {
   return input.replace(/\r\n/g, '\n').trimEnd()
 }
@@ -31,13 +33,16 @@ function createQuillEditor(host: HTMLDivElement): Quill {
         ['link', 'image'],
         ['clean'],
       ],
+      history: {
+        userOnly: true,
+      },
     },
   })
 }
 
-function applyMarkdownToEditor(editor: Quill, markdown: string): void {
-  editor.setContents([])
-  editor.clipboard.dangerouslyPasteHTML(marked.parse(markdown) as string)
+function applyMarkdownToEditor(editor: Quill, markdown: string, source: QuillChangeSource = 'api'): void {
+  editor.setContents([], source)
+  editor.clipboard.dangerouslyPasteHTML(marked.parse(markdown) as string, source)
 }
 
 function registerEditorTextChangeHandler({
@@ -100,7 +105,7 @@ function useInitializeEditor({
 
     const editor = createQuillEditor(host)
     editorRef.current = editor
-    applyMarkdownToEditor(editor, value)
+    applyMarkdownToEditor(editor, value, 'silent')
     lastEditorValueRef.current = normalizeMarkdown(value)
     registerEditorTextChangeHandler({
       editor,
@@ -140,7 +145,7 @@ function useSyncExternalValue({
 
     isApplyingExternalValueRef.current = true
     const selection = editor.getSelection()
-    applyMarkdownToEditor(editor, value)
+    applyMarkdownToEditor(editor, value, 'silent')
     if (selection) {
       editor.setSelection(selection)
     }

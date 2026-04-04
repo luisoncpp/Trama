@@ -7,6 +7,8 @@ export default [
       "dist-electron/**",
       "node_modules/**",
       "**/*.d.ts",
+      "**/*.test.*",
+      "**/*.spec.*",
     ],
   },
   {
