@@ -1,7 +1,7 @@
 # Phase 3 Detailed Plan - Workspace UX
 
-Date: 2026-04-04
-Status: **In Progress** — WS1 re-scoped for split-pane usability
+Date: 2026-04-05
+Status: **In Progress** — WS1 complete, WS2 foundation landed
 Related: `docs/current-status.md`, `docs/implementation-overview.md`, `DESIGN_SPEC.md`
 
 ## 1. Context and Starting Point
@@ -62,10 +62,13 @@ Known constraint to keep in mind:
 
 ## 5. Workstreams and Deliverables
 
-## WS1 - Split Workspace Usability (Re-scoped)
+## WS1 - Split Workspace Usability
 
 Objective:
 - Make split-pane mode actually usable for writing and reviewing side-by-side content.
+
+Status:
+- Completed on 2026-04-05.
 
 Deliverables:
 - Both panel editors remain visible and readable at the same time (no inactive editor disappearing).
@@ -94,6 +97,13 @@ Acceptance criteria:
 - Pane labels show file name (or a clear empty-state label if pane has no file).
 - Top split control bar is removed and no longer required for core split interaction.
 
+Delivered notes:
+- Split panes now stay mounted and visible together instead of swapping inactive content out.
+- Active pane follows pointer interaction inside the editor surface.
+- The divider drag range was widened to 80/20 and split mode removes the old side-width constraint.
+- Pane headers were compacted into a single metadata row.
+- Split toggle is reachable through `Ctrl/Cmd + .` and the native editor context menu.
+
 Tests:
 - Extend `tests/sidebar-panels.test.ts` or add dedicated split-pane interaction tests for click-to-focus and dual-pane visibility.
 - Extend `tests/workspace-layout-persistence.test.ts` to validate divider-driven ratio changes still persist.
@@ -103,6 +113,9 @@ Tests:
 
 Objective:
 - Implement stable theme controller with persistence and optional system sync.
+
+Status:
+- In progress. Theme foundation has landed and rollout polish remains.
 
 Deliverables:
 - Theme preference model: `light | dark | system`.
@@ -114,6 +127,14 @@ Suggested implementation details:
 - Store preference in local storage with key namespace (`trama.theme.preference`).
 - Resolve effective theme at runtime (`system` -> `matchMedia`).
 - Keep editor and list panels using semantic tokens instead of hardcoded values.
+- Prefer a dedicated theme hook/provider over scattering theme state through existing editor state.
+- Start by centralizing reusable color tokens before introducing new toggle UI.
+
+Delivered now:
+- Dedicated theme state lives outside `useProjectEditor` and applies a root `data-theme` attribute.
+- Settings panel exposes `light`, `dark`, and `system` options.
+- Preference persists in local storage and `system` reacts to `matchMedia` changes.
+- Core workspace surfaces now consume semantic theme tokens instead of remaining dark-only.
 
 Primary files likely touched:
 - `src/app.css`
@@ -233,10 +254,29 @@ PR-1: Split UX interaction overhaul
 - Replace "Primary/Secondary" labels with file names.
 - Remove top control bar.
 
+Status: Completed.
+
 PR-2: Split UX stabilization and regression safety
 - Verify conflict flow and autosave behavior with new split interactions.
 - Expand persistence tests for drag-based resizing.
 - Polish empty-state and focus affordances.
+
+Status: Completed for WS1 scope.
+
+PR-3: Theme foundation and persistence
+- Add theme preference model (`light | dark | system`).
+- Add resolved-theme application on app root.
+- Introduce semantic CSS tokens for core surfaces and states.
+- Cover preference persistence with focused tests.
+
+Status: Completed.
+
+PR-4: Theme rollout and system sync
+- Apply theme tokens across sidebar, editor, split-pane affordances, and conflict UI.
+- Add system-theme listeners for live updates in `system` mode.
+- Validate contrast and regressions in both themes.
+
+Status: In progress.
 
 PR-3: Theme subsystem
 - Introduce semantic tokens and switcher.
@@ -285,4 +325,4 @@ Phase 3 is complete when all are true:
 
 ## 9. Immediate Next Step
 
-Start WS1 re-scoped implementation for split-pane usability (dual readable editors, click-to-focus, center drag divider, filename labels, and no top control bar).
+Finish WS2 rollout polish: manual contrast validation, cleanup of any remaining untokenized surfaces, and decide whether WS2 can close before moving to WS3.

@@ -3,12 +3,20 @@ import { ConflictBanner } from './components/conflict-banner'
 import { ConflictComparePanel } from './components/conflict-compare-panel'
 import { WorkspaceLayoutPanel } from './components/workspace-editor-panels.tsx'
 import { SidebarPanel } from './components/sidebar/sidebar-panel.tsx'
+import type { ResolvedTheme, ThemePreference } from '../../theme/theme-types'
 
 interface ProjectEditorViewProps {
   model: ProjectEditorModel
+  themePreference: ThemePreference
+  resolvedTheme: ResolvedTheme
+  onThemePreferenceChange: (preference: ThemePreference) => void
 }
 
-function ProjectEditorMainPane({ model }: ProjectEditorViewProps) {
+interface ProjectEditorMainPaneProps {
+  model: ProjectEditorModel
+}
+
+function ProjectEditorMainPane({ model }: ProjectEditorMainPaneProps) {
   const { state, actions } = model
 
   return (
@@ -37,7 +45,12 @@ function ProjectEditorMainPane({ model }: ProjectEditorViewProps) {
   )
 }
 
-export function ProjectEditorView({ model }: ProjectEditorViewProps) {
+export function ProjectEditorView({
+  model,
+  themePreference,
+  resolvedTheme,
+  onThemePreferenceChange,
+}: ProjectEditorViewProps) {
   const { state, actions } = model
   const shellClassName = state.workspaceLayout.mode === 'split' ? 'editor-shell is-split' : 'editor-shell'
 
@@ -67,6 +80,9 @@ export function ProjectEditorView({ model }: ProjectEditorViewProps) {
             loadingProject={state.loadingProject}
             rootPath={state.rootPath}
             onPickFolder={() => void actions.pickProjectFolder()}
+            themePreference={themePreference}
+            resolvedTheme={resolvedTheme}
+            onThemePreferenceChange={onThemePreferenceChange}
           />
           <ProjectEditorMainPane model={model} />
         </section>

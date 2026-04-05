@@ -32,6 +32,8 @@ Implemented now:
 - Pane-targeted document loading and save dirty-flag clearing by matching path.
 - Split reopen flow hardened through dedicated open-project module (`use-project-editor-open-project.ts`) to satisfy lint limits and reduce hook complexity.
 - Split conflict regression restored: save-as-copy from secondary pane remains in secondary after project reopen.
+- Split workspace usability pass completed: both panes stay visible, pane activation is click-in-editor, resize uses a center drag divider, headers show document names, split toggle is available through `Ctrl/Cmd + .` and the editor context menu, and split mode removes extra side gutters.
+- Theme system foundation landed: persisted `light | dark | system` preference, root `data-theme` application, live `matchMedia` sync for `system`, settings-panel theme switcher, and first-pass semantic tokens across sidebar, editor, split panes, and conflict UI.
 
 Not implemented yet (planned in later phases):
 - Folder rename/delete and move workflows.
@@ -59,21 +61,20 @@ Additional regression checks in suite include:
 - Index refresh still does full reconciliation in several write flows (safe, but can be optimized later).
 - External change handling favors safety over convenience (prevents accidental overwrite when local doc is dirty).
 
-## 🎯 Next Immediate Step: Phase 3 Workstream 1 - Split Workspace Usability
+## 🎯 Next Immediate Step: Phase 3 Workstream 2 - Theme Rollout Polish
 
-**Status**: Re-scoped and ready
+**Status**: In progress
 
-Prioritize split-pane UX fixes before WS2:
+WS1 split usability is complete and WS2 theme foundation is in place. The active remaining focus for WS2 is rollout polish:
 
-1. Keep both panel editors readable at the same time.
-2. Activate pane by clicking inside editor content.
-3. Resize split with a draggable center divider (no top slider).
-4. Show file names in pane headers (not Primary/Secondary).
-5. Remove top split control bar.
+1. Run a manual contrast pass in light and dark mode on real content.
+2. Catch any remaining hardcoded surfaces outside the current tokenized path.
+3. Tighten visual polish for theme-specific affordances in settings, split panes, and conflict states.
+4. Decide whether WS2 is complete or needs one more UI cleanup pass before WS3.
 
-**📖 Detailed plan**: See [phase-3-detailed-plan.md](./phase-3-detailed-plan.md) (WS1 section re-scoped).
+**📖 Detailed plan**: See [phase-3-detailed-plan.md](./phase-3-detailed-plan.md) (WS2 section).
 
-After WS1 usability completion → WS2 (Theme System) → WS3 (Fullscreen & Focus Mode)
+Planned sequence after WS2: WS3 (Fullscreen & Focus Mode) → WS4 (UX Hardening & Accessibility) → WS5 (Final Hardening & Docs)
 
 ## Other planned improvements (Phase 4+)
 

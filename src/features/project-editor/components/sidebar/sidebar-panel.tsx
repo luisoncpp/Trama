@@ -26,6 +26,9 @@ function buildSidebarPanelContentProps(props: SidebarPanelProps) {
     selectedPath: props.selectedPath,
     sidebarActiveSection: props.sidebarActiveSection,
     rootPath: props.rootPath,
+    themePreference: props.themePreference,
+    resolvedTheme: props.resolvedTheme,
+    onThemePreferenceChange: props.onThemePreferenceChange,
   }
 }
 
@@ -54,6 +57,9 @@ export function SidebarPanel(props: SidebarPanelProps) {
     onSelectFile: props.onSelectFile,
     sidebarPanelWidth: props.sidebarPanelWidth,
     onSidebarPanelWidthChange: props.onSidebarPanelWidthChange,
+    themePreference: props.themePreference,
+    resolvedTheme: props.resolvedTheme,
+    onThemePreferenceChange: props.onThemePreferenceChange,
     contentProps: buildSidebarPanelContentProps(props),
   })
 

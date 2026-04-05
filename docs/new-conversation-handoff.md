@@ -13,6 +13,17 @@ Sidebar scope is mature for core operations:
 - Create article/category from sidebar.
 - Rename/delete markdown files from right-click context menu.
 
+Workspace split mode is now usable for daily work:
+- Both panes remain visible in split mode.
+- Active pane follows clicks inside the editor surface.
+- Resize uses a draggable center divider.
+- Pane headers show the current document and split toggle is exposed via `Ctrl/Cmd + .` plus the editor context menu.
+
+Theme groundwork is now live:
+- Settings exposes `light`, `dark`, and `system`.
+- Theme preference persists and applies through root `data-theme` tokens.
+- System mode listens to OS theme changes.
+
 ## Read first (in order)
 
 1. `docs/current-status.md`
@@ -78,7 +89,7 @@ Sidebar scope is mature for core operations:
 
 ## Current high-value next tasks
 
-1. Folder rename/delete workflows.
-2. Move file/folder across tree branches.
-3. Accessibility polish for dialogs/context menus (escape close, focus behavior).
-4. Performance optimization for repeated full-project reconciliation.
+1. Finish WS2 contrast and visual polish pass in both themes.
+2. Confirm there are no meaningful untokenized surfaces left in the renderer.
+3. Start WS3 fullscreen/focus mode after WS2 polish is signed off.
+4. Folder rename/delete and move workflows in later scope.

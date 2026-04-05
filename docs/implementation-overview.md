@@ -17,6 +17,7 @@ The project now includes:
 - Rich markdown visual editor loop with autosave debounce.
 - Sidebar with section-scoped tree (`book/`, `outline/`, `lore/`) and settings.
 - Sidebar filter, responsive behavior, and right-click file context actions.
+- Split workspace mode with per-pane document state, persistent layout, drag resize, click-to-activate panes, and native/context-menu split toggle.
 
 ## Runtime architecture
 
@@ -88,6 +89,12 @@ Current seams are ready for Phase 4 work:
 - Add IPC endpoints by extending `src/shared/ipc.ts` first.
 - Keep preload API explicit in `electron/preload.cts` and `src/types/trama-api.d.ts`.
 - Use focused tests in `tests/sidebar-panels.test.ts`, `tests/use-project-editor.test.ts`, and `tests/ipc-contract.test.ts` before full suite.
+
+For the current Phase 3 sequence:
+
+- WS1 split usability is complete and stable.
+- WS2 should build a theme layer without coupling preference state to pane/editor document state.
+- Semantic color tokens should be introduced before broad component restyling to keep the rollout incremental.
 
 ## Known tradeoffs
 

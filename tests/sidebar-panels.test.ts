@@ -4,6 +4,7 @@ import { act } from 'preact/test-utils'
 import { SidebarPanel } from '../src/features/project-editor/components/sidebar/sidebar-panel.tsx'
 import { SidebarExplorerContent } from '../src/features/project-editor/components/sidebar/sidebar-explorer-content.tsx'
 import { SidebarSettingsContent } from '../src/features/project-editor/components/sidebar/sidebar-settings-content.tsx'
+import type { ThemePreference } from '../src/theme/theme-types'
 
 function buildPanelProps(
   overrides: Partial<Parameters<typeof SidebarPanel>[0]> = {},
@@ -31,6 +32,9 @@ function buildPanelProps(
     loadingProject: false,
     rootPath: 'C:/Proyectos/test_trama',
     onPickFolder: () => undefined,
+    themePreference: 'dark',
+    resolvedTheme: 'dark',
+    onThemePreferenceChange: () => undefined,
     ...overrides,
   }
 }
@@ -88,6 +92,8 @@ describe('sidebar panels', () => {
     })
 
     expect(container.textContent).toContain('Settings')
+    expect(container.textContent).toContain('Theme')
+    expect(container.textContent).toContain('Resolved now: Dark')
     expect(container.textContent).toContain('Panel width: 320px')
   })
 
@@ -418,6 +424,9 @@ describe('sidebar panels', () => {
         h(SidebarSettingsContent, {
           panelWidth: 320,
           onPanelWidthChange,
+          themePreference: 'dark',
+          resolvedTheme: 'dark',
+          onThemePreferenceChange: () => undefined,
         }),
         container,
       )
@@ -432,6 +441,35 @@ describe('sidebar panels', () => {
     })
 
     expect(onPanelWidthChange).toHaveBeenCalledWith(410)
+  })
+
+  it('updates theme preference from settings buttons', () => {
+    const onThemePreferenceChange = vi.fn<(preference: ThemePreference) => void>()
+
+    act(() => {
+      render(
+        h(SidebarSettingsContent, {
+          panelWidth: 320,
+          onPanelWidthChange: () => undefined,
+          themePreference: 'dark',
+          resolvedTheme: 'dark',
+          onThemePreferenceChange,
+        }),
+        container,
+      )
+    })
+
+    const systemButton = Array.from(container.querySelectorAll('.theme-preference-option')).find((button) =>
+      button.textContent?.includes('System'),
+    ) as HTMLButtonElement
+
+    expect(systemButton).toBeTruthy()
+
+    act(() => {
+      systemButton.click()
+    })
+
+    expect(onThemePreferenceChange).toHaveBeenCalledWith('system')
   })
 
   it('auto-collapses sidebar on narrow viewport', () => {

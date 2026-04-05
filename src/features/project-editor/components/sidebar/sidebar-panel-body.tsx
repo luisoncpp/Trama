@@ -3,7 +3,12 @@ import { SidebarExplorerContent } from './sidebar-explorer-content'
 import { SIDEBAR_SECTION_CONFIG, type ContentSidebarSection } from './sidebar-section-roots'
 import { SidebarSettingsContent } from './sidebar-settings-content.tsx'
 import { joinProjectPath } from './sidebar-panel-logic'
-import type { SidebarFileActions, SidebarProjectContextProps, SidebarSelectionProps } from './sidebar-types'
+import type {
+  SidebarFileActions,
+  SidebarProjectContextProps,
+  SidebarSelectionProps,
+  SidebarThemeProps,
+} from './sidebar-types'
 
 export interface SidebarPanelBodyProps {
   effectiveCollapsed: boolean
@@ -17,6 +22,9 @@ export interface SidebarPanelBodyProps {
   onSelectFile: SidebarSelectionProps['onSelectFile']
   sidebarPanelWidth: number
   onSidebarPanelWidthChange: (width: number) => void
+  themePreference: SidebarThemeProps['themePreference']
+  resolvedTheme: SidebarThemeProps['resolvedTheme']
+  onThemePreferenceChange: SidebarThemeProps['onThemePreferenceChange']
   onCreateArticle: SidebarFileActions['onCreateArticle']
   onCreateCategory: SidebarFileActions['onCreateCategory']
   onRenameFile: SidebarFileActions['onRenameFile']
@@ -29,9 +37,8 @@ export interface SidebarPanelBodyProps {
   >
 }
 
-export function SidebarPanelBody({
-  effectiveCollapsed,
-  sidebarActiveSection,
+function renderSidebarExplorerContent({
+  contentProps,
   sectionConfig,
   rootPath,
   scopedFiles,
@@ -43,35 +50,58 @@ export function SidebarPanelBody({
   onRenameFile,
   onDeleteFile,
   onSelectFile,
-  sidebarPanelWidth,
-  onSidebarPanelWidthChange,
-  contentProps,
 }: SidebarPanelBodyProps) {
-  if (effectiveCollapsed) {
+  if (!sectionConfig) {
     return null
   }
 
-  if (sectionConfig) {
-    return (
-      <SidebarExplorerContent
-        {...contentProps}
-        title={sectionConfig.title}
-        scopePathLabel={joinProjectPath(rootPath, sectionConfig.root)}
-        visibleFiles={scopedFiles}
-        selectedPath={scopedSelectedPath}
-        filterQuery={activeFilterQuery}
-        onFilterQueryChange={onFilterQueryChange}
-        onCreateArticle={onCreateArticle}
-        onCreateCategory={onCreateCategory}
-        onRenameFile={(path, newName) => onRenameFile(`${sectionConfig.root}${path}`, newName)}
-        onDeleteFile={(path) => onDeleteFile(`${sectionConfig.root}${path}`)}
-        onSelectFile={(filePath) => onSelectFile(`${sectionConfig.root}${filePath}`)}
-      />
-    )
+  return (
+    <SidebarExplorerContent
+      {...contentProps}
+      title={sectionConfig.title}
+      scopePathLabel={joinProjectPath(rootPath, sectionConfig.root)}
+      visibleFiles={scopedFiles}
+      selectedPath={scopedSelectedPath}
+      filterQuery={activeFilterQuery}
+      onFilterQueryChange={onFilterQueryChange}
+      onCreateArticle={onCreateArticle}
+      onCreateCategory={onCreateCategory}
+      onRenameFile={(path, newName) => onRenameFile(`${sectionConfig.root}${path}`, newName)}
+      onDeleteFile={(path) => onDeleteFile(`${sectionConfig.root}${path}`)}
+      onSelectFile={(filePath) => onSelectFile(`${sectionConfig.root}${filePath}`)}
+    />
+  )
+}
+
+function renderSidebarSettingsContent({
+  sidebarPanelWidth,
+  onSidebarPanelWidthChange,
+  themePreference,
+  resolvedTheme,
+  onThemePreferenceChange,
+}: SidebarPanelBodyProps) {
+  return (
+    <SidebarSettingsContent
+      panelWidth={sidebarPanelWidth}
+      onPanelWidthChange={onSidebarPanelWidthChange}
+      themePreference={themePreference}
+      resolvedTheme={resolvedTheme}
+      onThemePreferenceChange={onThemePreferenceChange}
+    />
+  )
+}
+
+export function SidebarPanelBody(props: SidebarPanelBodyProps) {
+  if (props.effectiveCollapsed) {
+    return null
   }
 
-  if (sidebarActiveSection === 'settings') {
-    return <SidebarSettingsContent panelWidth={sidebarPanelWidth} onPanelWidthChange={onSidebarPanelWidthChange} />
+  if (props.sectionConfig) {
+    return renderSidebarExplorerContent(props)
+  }
+
+  if (props.sidebarActiveSection === 'settings') {
+    return renderSidebarSettingsContent(props)
   }
 
   return null
@@ -93,6 +123,9 @@ export function buildSidebarPanelBodyProps(params: {
   onSelectFile: SidebarSelectionProps['onSelectFile']
   sidebarPanelWidth: number
   onSidebarPanelWidthChange: (width: number) => void
+  themePreference: SidebarThemeProps['themePreference']
+  resolvedTheme: SidebarThemeProps['resolvedTheme']
+  onThemePreferenceChange: SidebarThemeProps['onThemePreferenceChange']
   contentProps: SidebarPanelBodyProps['contentProps']
 }): SidebarPanelBodyProps {
   return {
@@ -111,6 +144,9 @@ export function buildSidebarPanelBodyProps(params: {
     onSelectFile: params.onSelectFile,
     sidebarPanelWidth: params.sidebarPanelWidth,
     onSidebarPanelWidthChange: params.onSidebarPanelWidthChange,
+    themePreference: params.themePreference,
+    resolvedTheme: params.resolvedTheme,
+    onThemePreferenceChange: params.onThemePreferenceChange,
     contentProps: params.contentProps,
   }
 }

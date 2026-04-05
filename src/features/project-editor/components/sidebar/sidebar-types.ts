@@ -1,4 +1,5 @@
 import type { SidebarCreateInput, SidebarSection } from '../../project-editor-types'
+import type { ResolvedTheme, ThemePreference } from '../../../../theme/theme-types'
 
 export interface SidebarSelectionProps {
   visibleFiles: string[]
@@ -23,6 +24,12 @@ export interface SidebarProjectContextProps {
   onPickFolder: () => void
 }
 
+export interface SidebarThemeProps {
+  themePreference: ThemePreference
+  resolvedTheme: ResolvedTheme
+  onThemePreferenceChange: (preference: ThemePreference) => void
+}
+
 export interface SidebarFileActions {
   onCreateArticle: (input: SidebarCreateInput) => void
   onCreateCategory: (input: SidebarCreateInput) => void
@@ -33,6 +40,7 @@ export interface SidebarFileActions {
 export type SidebarPanelCommonProps = SidebarSelectionProps &
   SidebarPanelLayoutProps &
   SidebarFileActions &
-  SidebarProjectContextProps
+  SidebarProjectContextProps &
+  SidebarThemeProps
 
 export type SidebarExplorerCommonProps = SidebarSelectionProps & SidebarProjectContextProps & SidebarFileActions
