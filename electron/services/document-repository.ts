@@ -1,5 +1,5 @@
 import path from 'node:path'
-import { mkdir, readFile, stat, writeFile } from 'node:fs/promises'
+import { mkdir, readFile, rename, rm, stat, writeFile } from 'node:fs/promises'
 import { parseMarkdownWithFrontmatter, serializeMarkdownWithFrontmatter } from './frontmatter.js'
 
 export interface DocumentRecord {
@@ -86,6 +86,32 @@ async function ensurePathDoesNotExist(fullPath: string): Promise<void> {
   }
 }
 
+function validateNameSegment(name: string): string {
+  const normalized = name.trim()
+  if (!normalized) {
+    throw new Error('Name cannot be empty')
+  }
+
+  if (normalized.includes('/') || normalized.includes('\\')) {
+    throw new Error('Name cannot contain path separators')
+  }
+
+  if (normalized === '.' || normalized === '..') {
+    throw new Error('Invalid name segment')
+  }
+
+  if (INVALID_NAME_CHARS.test(normalized)) {
+    throw new Error(`Invalid characters in name: ${normalized}`)
+  }
+
+  const baseName = normalized.split('.')[0]?.toUpperCase() ?? ''
+  if (RESERVED_WINDOWS_NAMES.has(baseName)) {
+    throw new Error(`Reserved name is not allowed: ${normalized}`)
+  }
+
+  return normalized
+}
+
 export class DocumentRepository {
   async readDocument(projectRoot: string, relativePath: string): Promise<DocumentRecord> {
     if (!relativePath.endsWith('.md')) {
@@ -156,6 +182,51 @@ export class DocumentRepository {
     return {
       path: normalizeRelative(normalizedPath),
       createdAt: new Date().toISOString(),
+    }
+  }
+
+  async renameDocument(
+    projectRoot: string,
+    relativePath: string,
+    newName: string,
+  ): Promise<{ path: string; renamedTo: string; updatedAt: string }> {
+    const normalizedPath = validateRelativePath(relativePath)
+    if (!normalizedPath.endsWith('.md')) {
+      throw new Error('Only markdown files are supported')
+    }
+
+    const normalizedName = validateNameSegment(newName)
+    const targetName = normalizedName.toLowerCase().endsWith('.md') ? normalizedName : `${normalizedName}.md`
+    const directory = path.posix.dirname(normalizedPath)
+    const nextRelativePath = directory === '.' ? targetName : `${directory}/${targetName}`
+    if (normalizeRelative(nextRelativePath) === normalizeRelative(normalizedPath)) {
+      throw new Error('New name must be different from current name')
+    }
+
+    const sourceFullPath = resolveProjectPath(projectRoot, normalizedPath)
+    const targetFullPath = resolveProjectPath(projectRoot, nextRelativePath)
+    await ensurePathDoesNotExist(targetFullPath)
+    await rename(sourceFullPath, targetFullPath)
+
+    return {
+      path: normalizeRelative(normalizedPath),
+      renamedTo: normalizeRelative(nextRelativePath),
+      updatedAt: new Date().toISOString(),
+    }
+  }
+
+  async deleteDocument(projectRoot: string, relativePath: string): Promise<{ path: string; deletedAt: string }> {
+    const normalizedPath = validateRelativePath(relativePath)
+    if (!normalizedPath.endsWith('.md')) {
+      throw new Error('Only markdown files are supported')
+    }
+
+    const fullPath = resolveProjectPath(projectRoot, normalizedPath)
+    await rm(fullPath)
+
+    return {
+      path: normalizeRelative(normalizedPath),
+      deletedAt: new Date().toISOString(),
     }
   }
 }

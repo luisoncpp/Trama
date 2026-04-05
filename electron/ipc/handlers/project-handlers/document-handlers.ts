@@ -1,12 +1,16 @@
 import {
   createDocumentRequestSchema,
   createFolderRequestSchema,
+  deleteDocumentRequestSchema,
   readDocumentRequestSchema,
+  renameDocumentRequestSchema,
   saveDocumentRequestSchema,
   type CreateDocumentResponse,
   type CreateFolderResponse,
+  type DeleteDocumentResponse,
   type IpcEnvelope,
   type ReadDocumentResponse,
+  type RenameDocumentResponse,
   type SaveDocumentResponse,
 } from '../../../../src/shared/ipc.js'
 import { errorEnvelope } from '../../../ipc-errors.js'
@@ -122,5 +126,50 @@ export async function handleCreateFolder(rawPayload: unknown): Promise<IpcEnvelo
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unable to create folder'
     return errorEnvelope('FOLDER_CREATE_FAILED', message)
+  }
+}
+
+export async function handleRenameDocument(rawPayload: unknown): Promise<IpcEnvelope<RenameDocumentResponse>> {
+  const payload = renameDocumentRequestSchema.safeParse(rawPayload)
+  if (!payload.success) {
+    return errorEnvelope('VALIDATION_ERROR', 'Invalid payload for document rename', payload.error.flatten())
+  }
+
+  try {
+    const projectRoot = getActiveProjectRoot()
+    const result = await documentRepository.renameDocument(projectRoot, payload.data.path, payload.data.newName)
+    markInternalWrite(result.path)
+    markInternalWrite(result.renamedTo)
+    await reconcileActiveProjectIndex(projectRoot)
+
+    return {
+      ok: true,
+      data: result,
+    }
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unable to rename document'
+    return errorEnvelope('DOCUMENT_RENAME_FAILED', message)
+  }
+}
+
+export async function handleDeleteDocument(rawPayload: unknown): Promise<IpcEnvelope<DeleteDocumentResponse>> {
+  const payload = deleteDocumentRequestSchema.safeParse(rawPayload)
+  if (!payload.success) {
+    return errorEnvelope('VALIDATION_ERROR', 'Invalid payload for document delete', payload.error.flatten())
+  }
+
+  try {
+    const projectRoot = getActiveProjectRoot()
+    const result = await documentRepository.deleteDocument(projectRoot, payload.data.path)
+    markInternalWrite(result.path)
+    await reconcileActiveProjectIndex(projectRoot)
+
+    return {
+      ok: true,
+      data: result,
+    }
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unable to delete document'
+    return errorEnvelope('DOCUMENT_DELETE_FAILED', message)
   }
 }

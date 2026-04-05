@@ -68,6 +68,8 @@ export function ProjectEditorView({ model }: ProjectEditorViewProps) {
             onSidebarPanelWidthChange={actions.setSidebarPanelWidth}
             onCreateArticle={(input) => void actions.createArticle(input)}
             onCreateCategory={(input) => void actions.createCategory(input)}
+            onRenameFile={(path, newName) => void actions.renameFile({ path, newName })}
+            onDeleteFile={(path) => void actions.deleteFile(path)}
             apiAvailable={state.apiAvailable}
             loadingProject={state.loadingProject}
             rootPath={state.rootPath}

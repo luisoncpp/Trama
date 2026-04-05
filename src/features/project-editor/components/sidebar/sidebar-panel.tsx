@@ -1,10 +1,8 @@
 import type { SidebarSection } from '../../project-editor-types'
 import type { SidebarCreateInput } from '../../project-editor-types'
+import { SidebarPanelBody, buildSidebarPanelBodyProps } from './sidebar-panel-body.tsx'
 import { SidebarRail } from './sidebar-rail'
-import { SidebarExplorerContent } from './sidebar-explorer-content'
-import { SIDEBAR_SECTION_CONFIG, type ContentSidebarSection } from './sidebar-section-roots'
-import { SidebarSettingsContent } from './sidebar-settings-content.tsx'
-import { joinProjectPath, useSidebarContentSection } from './sidebar-panel-logic'
+import { useSidebarContentSection } from './sidebar-panel-logic'
 import { useSidebarResponsiveCollapse } from './use-sidebar-responsive-collapse'
 
 interface SidebarPanelProps {
@@ -20,139 +18,77 @@ interface SidebarPanelProps {
   onSidebarPanelWidthChange: (width: number) => void
   onCreateArticle: (input: SidebarCreateInput) => void
   onCreateCategory: (input: SidebarCreateInput) => void
+  onRenameFile: (path: string, newName: string) => void
+  onDeleteFile: (path: string) => void
   apiAvailable: boolean
   loadingProject: boolean
   rootPath: string
   onPickFolder: () => void
 }
 
-interface SidebarPanelBodyProps {
-  effectiveCollapsed: boolean
-  sidebarActiveSection: SidebarSection
-  sectionConfig: (typeof SIDEBAR_SECTION_CONFIG)[ContentSidebarSection] | null
-  rootPath: string
-  scopedFiles: string[]
-  scopedSelectedPath: string | null
-  activeFilterQuery: string
-  onFilterQueryChange: (value: string) => void
-  onCreateArticle: (input: SidebarCreateInput) => void
-  onCreateCategory: (input: SidebarCreateInput) => void
-  onSelectFile: (filePath: string) => void
-  sidebarPanelWidth: number
-  onSidebarPanelWidthChange: (width: number) => void
-  contentProps: Omit<
-    SidebarPanelProps,
-    | 'visibleFiles'
-    | 'selectedPath'
-    | 'sidebarActiveSection'
-    | 'sidebarPanelCollapsed'
-    | 'sidebarPanelWidth'
-    | 'onSelectSidebarSection'
-    | 'onToggleSidebarPanelCollapsed'
-    | 'onSidebarPanelWidthChange'
-    | 'onCreateArticle'
-    | 'onCreateCategory'
-    | 'onSelectFile'
-    | 'rootPath'
-  >
+function buildSidebarPanelContentProps(props: SidebarPanelProps) {
+  return {
+    loadingDocument: props.loadingDocument,
+    apiAvailable: props.apiAvailable,
+    loadingProject: props.loadingProject,
+    onPickFolder: props.onPickFolder,
+    onSelectSidebarSection: props.onSelectSidebarSection,
+    onToggleSidebarPanelCollapsed: props.onToggleSidebarPanelCollapsed,
+    sidebarPanelCollapsed: props.sidebarPanelCollapsed,
+    sidebarPanelWidth: props.sidebarPanelWidth,
+    onSidebarPanelWidthChange: props.onSidebarPanelWidthChange,
+    onCreateArticle: props.onCreateArticle,
+    onCreateCategory: props.onCreateCategory,
+    onRenameFile: props.onRenameFile,
+    onDeleteFile: props.onDeleteFile,
+    onSelectFile: props.onSelectFile,
+    visibleFiles: props.visibleFiles,
+    selectedPath: props.selectedPath,
+    sidebarActiveSection: props.sidebarActiveSection,
+    rootPath: props.rootPath,
+  }
 }
 
-function SidebarPanelBody({
-  effectiveCollapsed,
-  sidebarActiveSection,
-  sectionConfig,
-  rootPath,
-  scopedFiles,
-  scopedSelectedPath,
-  activeFilterQuery,
-  onFilterQueryChange,
-  onCreateArticle,
-  onCreateCategory,
-  onSelectFile,
-  sidebarPanelWidth,
-  onSidebarPanelWidthChange,
-  contentProps,
-}: SidebarPanelBodyProps) {
-  if (effectiveCollapsed) {
-    return null
-  }
-
-  if (sectionConfig) {
-    return (
-      <SidebarExplorerContent
-        {...contentProps}
-        title={sectionConfig.title}
-        scopePathLabel={joinProjectPath(rootPath, sectionConfig.root)}
-        visibleFiles={scopedFiles}
-        selectedPath={scopedSelectedPath}
-        filterQuery={activeFilterQuery}
-        onFilterQueryChange={onFilterQueryChange}
-        onCreateArticle={onCreateArticle}
-        onCreateCategory={onCreateCategory}
-        onSelectFile={(filePath) => onSelectFile(`${sectionConfig.root}${filePath}`)}
-      />
-    )
-  }
-
-  if (sidebarActiveSection === 'settings') {
-    return (
-      <SidebarSettingsContent
-        panelWidth={sidebarPanelWidth}
-        onPanelWidthChange={onSidebarPanelWidthChange}
-      />
-    )
-  }
-
-  return null
-}
-
-export function SidebarPanel({
-  visibleFiles,
-  selectedPath,
-  onSelectFile,
-  rootPath,
-  sidebarActiveSection,
-  sidebarPanelCollapsed,
-  sidebarPanelWidth,
-  onSelectSidebarSection,
-  onToggleSidebarPanelCollapsed,
-  onSidebarPanelWidthChange,
-  onCreateArticle,
-  onCreateCategory,
-  ...props
-}: SidebarPanelProps) {
+function useSidebarPanelRenderState(props: SidebarPanelProps) {
   const isResponsiveCollapsed = useSidebarResponsiveCollapse()
-  const effectiveCollapsed = sidebarPanelCollapsed || isResponsiveCollapsed
-  const { sectionConfig, scopedFiles, scopedSelectedPath, activeFilterQuery, onFilterQueryChange } =
-    useSidebarContentSection(sidebarActiveSection, visibleFiles, selectedPath)
+  const effectiveCollapsed = props.sidebarPanelCollapsed || isResponsiveCollapsed
+  const sectionState = useSidebarContentSection(props.sidebarActiveSection, props.visibleFiles, props.selectedPath)
+  return { effectiveCollapsed, sectionState }
+}
+
+export function SidebarPanel(props: SidebarPanelProps) {
+  const { effectiveCollapsed, sectionState } = useSidebarPanelRenderState(props)
+  const bodyProps = buildSidebarPanelBodyProps({
+    effectiveCollapsed,
+    sidebarActiveSection: props.sidebarActiveSection,
+    sectionConfig: sectionState.sectionConfig,
+    rootPath: props.rootPath,
+    scopedFiles: sectionState.scopedFiles,
+    scopedSelectedPath: sectionState.scopedSelectedPath,
+    activeFilterQuery: sectionState.activeFilterQuery,
+    onFilterQueryChange: sectionState.onFilterQueryChange,
+    onCreateArticle: props.onCreateArticle,
+    onCreateCategory: props.onCreateCategory,
+    onRenameFile: props.onRenameFile,
+    onDeleteFile: props.onDeleteFile,
+    onSelectFile: props.onSelectFile,
+    sidebarPanelWidth: props.sidebarPanelWidth,
+    onSidebarPanelWidthChange: props.onSidebarPanelWidthChange,
+    contentProps: buildSidebarPanelContentProps(props),
+  })
 
   return (
     <aside
       class={`sidebar-shell ${effectiveCollapsed ? 'is-collapsed' : ''}`}
-      style={{ width: `${effectiveCollapsed ? 72 : sidebarPanelWidth}px` }}
+      style={{ width: `${effectiveCollapsed ? 72 : props.sidebarPanelWidth}px` }}
     >
       <SidebarRail
-        activeSection={sidebarActiveSection}
+        activeSection={props.sidebarActiveSection}
         collapsed={effectiveCollapsed}
-        onSelectSection={onSelectSidebarSection}
-        onToggleCollapsed={onToggleSidebarPanelCollapsed}
+        onSelectSection={props.onSelectSidebarSection}
+        onToggleCollapsed={props.onToggleSidebarPanelCollapsed}
       />
-      <SidebarPanelBody
-        effectiveCollapsed={effectiveCollapsed}
-        sidebarActiveSection={sidebarActiveSection}
-        sectionConfig={sectionConfig}
-        rootPath={rootPath}
-        scopedFiles={scopedFiles}
-        scopedSelectedPath={scopedSelectedPath}
-        activeFilterQuery={activeFilterQuery}
-        onFilterQueryChange={onFilterQueryChange}
-        onCreateArticle={onCreateArticle}
-        onCreateCategory={onCreateCategory}
-        onSelectFile={onSelectFile}
-        sidebarPanelWidth={sidebarPanelWidth}
-        onSidebarPanelWidthChange={onSidebarPanelWidthChange}
-        contentProps={props}
-      />
+      <SidebarPanelBody {...bodyProps} />
     </aside>
   )
 }

@@ -9,6 +9,8 @@ export const IPC_CHANNELS = {
   saveDocument: 'trama:document:save',
   createDocument: 'trama:document:create',
   createFolder: 'trama:folder:create',
+  renameDocument: 'trama:document:rename',
+  deleteDocument: 'trama:document:delete',
   getIndex: 'trama:index:get',
   externalFileEvent: 'trama:project:external-file-event',
 } as const
@@ -108,6 +110,26 @@ export const createFolderResponseSchema = z.object({
   createdAt: z.string(),
 })
 
+export const renameDocumentRequestSchema = z.object({
+  path: z.string().trim().min(1),
+  newName: z.string().trim().min(1),
+})
+
+export const renameDocumentResponseSchema = z.object({
+  path: z.string(),
+  renamedTo: z.string(),
+  updatedAt: z.string(),
+})
+
+export const deleteDocumentRequestSchema = z.object({
+  path: z.string().trim().min(1),
+})
+
+export const deleteDocumentResponseSchema = z.object({
+  path: z.string(),
+  deletedAt: z.string(),
+})
+
 export const externalFileEventSchema = z.object({
   path: z.string(),
   event: z.enum(['add', 'change', 'unlink']),
@@ -144,6 +166,10 @@ export type CreateDocumentRequest = z.infer<typeof createDocumentRequestSchema>
 export type CreateDocumentResponse = z.infer<typeof createDocumentResponseSchema>
 export type CreateFolderRequest = z.infer<typeof createFolderRequestSchema>
 export type CreateFolderResponse = z.infer<typeof createFolderResponseSchema>
+export type RenameDocumentRequest = z.infer<typeof renameDocumentRequestSchema>
+export type RenameDocumentResponse = z.infer<typeof renameDocumentResponseSchema>
+export type DeleteDocumentRequest = z.infer<typeof deleteDocumentRequestSchema>
+export type DeleteDocumentResponse = z.infer<typeof deleteDocumentResponseSchema>
 export type ExternalFileEvent = z.infer<typeof externalFileEventSchema>
 
 export type IpcError = z.infer<typeof ipcErrorSchema>

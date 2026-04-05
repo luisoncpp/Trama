@@ -11,6 +11,7 @@ interface SidebarTreeProps {
   loadingDocument: boolean
   onSelectFile: (filePath: string) => void
   filterQuery: string
+  onFileContextMenu?: (filePath: string, event: MouseEvent) => void
 }
 
 interface SidebarTreeRowsProps {
@@ -20,6 +21,7 @@ interface SidebarTreeRowsProps {
   onSelectFile: (filePath: string) => void
   onToggleFolder: (path: string, expanded: boolean) => void
   containerRef: { current: HTMLDivElement | null }
+  onFileContextMenu?: (filePath: string, event: MouseEvent) => void
 }
 
 interface SidebarTreeRowButtonProps {
@@ -30,6 +32,7 @@ interface SidebarTreeRowButtonProps {
   onSelectFile: (filePath: string) => void
   onToggleFolder: (path: string, expanded: boolean) => void
   onRowKeyDown: (event: KeyboardEvent, index: number) => void
+  onFileContextMenu?: (filePath: string, event: MouseEvent) => void
 }
 
 function findParentRowIndex(rows: ReturnType<typeof getVisibleSidebarRows>, index: number): number {
@@ -106,7 +109,16 @@ function SidebarTreeRowButton({
   onSelectFile,
   onToggleFolder,
   onRowKeyDown,
+  onFileContextMenu,
 }: SidebarTreeRowButtonProps) {
+  const handleContextMenu = (event: MouseEvent) => {
+    if (row.type !== 'file') {
+      return
+    }
+    event.preventDefault()
+    onFileContextMenu?.(row.path, event)
+  }
+
   return (
     <button
       type="button"
@@ -118,6 +130,7 @@ function SidebarTreeRowButton({
       class={`sidebar-tree__row ${row.type === 'folder' ? 'is-folder' : 'is-file'} ${selectedPath === row.path ? 'is-active' : ''}`}
       style={{ paddingLeft: `${12 + row.depth * 16}px` }}
       onClick={() => (row.type === 'folder' ? onToggleFolder(row.path, !row.isExpanded) : onSelectFile(row.path))}
+      onContextMenu={handleContextMenu}
       onKeyDown={(event) => onRowKeyDown(event, index)}
     >
       {row.type === 'folder' ? <TreeChevron expanded={row.isExpanded} /> : <span class="sidebar-tree__chevron is-file" />}
@@ -134,6 +147,7 @@ function SidebarTreeRows({
   onSelectFile,
   onToggleFolder,
   containerRef,
+  onFileContextMenu,
 }: SidebarTreeRowsProps) {
   const focusRow = useRowFocus(containerRef, rows)
   const handleRowKeyDown = useRowKeyDownHandler({ rows, focusRow, onToggleFolder, onSelectFile })
@@ -150,13 +164,14 @@ function SidebarTreeRows({
           onSelectFile={onSelectFile}
           onToggleFolder={onToggleFolder}
           onRowKeyDown={handleRowKeyDown}
+          onFileContextMenu={onFileContextMenu}
         />
       ))}
     </>
   )
 }
 
-export function SidebarTree({ visibleFiles, selectedPath, loadingDocument, onSelectFile, filterQuery }: SidebarTreeProps) {
+export function SidebarTree({ visibleFiles, selectedPath, loadingDocument, onSelectFile, filterQuery, onFileContextMenu }: SidebarTreeProps) {
   const tree = useMemo(() => buildSidebarTree(visibleFiles), [visibleFiles])
   const filterResult = useMemo(() => filterSidebarTree(tree, filterQuery), [filterQuery, tree])
   const [setFolderExpanded, effectiveExpandedFolders] = useSidebarTreeExpandedFolders(
@@ -194,6 +209,7 @@ export function SidebarTree({ visibleFiles, selectedPath, loadingDocument, onSel
         onSelectFile={onSelectFile}
         onToggleFolder={setFolderExpanded}
         containerRef={containerRef}
+        onFileContextMenu={onFileContextMenu}
       />
     </div>
   )

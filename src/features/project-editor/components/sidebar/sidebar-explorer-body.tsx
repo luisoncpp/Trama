@@ -2,13 +2,48 @@ import { PROJECT_EDITOR_STRINGS } from '../../project-editor-strings'
 import type { SidebarCreateInput } from '../../project-editor-types'
 import type { SidebarCreateMode } from './sidebar-create-dialog.tsx'
 import { SidebarCreateDialog } from './sidebar-create-dialog.tsx'
+import { SidebarFileContextMenu } from './sidebar-file-context-menu.tsx'
+import { SidebarFileActionsDialog, type SidebarFileActionMode } from './sidebar-file-actions-dialog.tsx'
 import { SidebarFooterActions } from './sidebar-footer-actions.tsx'
 import { SidebarFilter } from './sidebar-filter.tsx'
 import { SidebarTree } from './sidebar-tree.tsx'
+import { useSidebarFileContextMenu } from './use-sidebar-file-context-menu'
 
 interface SidebarStateHintProps {
   loadingProject: boolean
   apiAvailable: boolean
+}
+
+interface SidebarTreeAreaProps {
+  showOnlyStateHint: boolean
+  loadingProject: boolean
+  apiAvailable: boolean
+  visibleFiles: string[]
+  selectedPath: string | null
+  loadingDocument: boolean
+  filterQuery: string
+  onSelectFile: (path: string) => void
+  onFileContextMenu: (path: string, event: MouseEvent) => void
+}
+
+interface SidebarExplorerDialogsProps {
+  loadingProject: boolean
+  apiAvailable: boolean
+  openCreateDialog: (mode: SidebarCreateMode) => void
+  createMode: SidebarCreateMode | null
+  createInput: SidebarCreateInput
+  onDirectoryChange: (value: string) => void
+  onNameChange: (value: string) => void
+  submitCreateDialog: () => void
+  closeCreateDialog: () => void
+  title: string
+  fileActionMode: SidebarFileActionMode | null
+  fileActionTargetPath: string | null
+  renameValue: string
+  onRenameValueChange: (value: string) => void
+  confirmFileActionDialog: () => void
+  closeFileActionDialog: () => void
+  fileContextMenu: ReturnType<typeof useSidebarFileContextMenu>
 }
 
 interface SidebarExplorerBodyProps {
@@ -27,6 +62,14 @@ interface SidebarExplorerBodyProps {
   openCreateDialog: (mode: SidebarCreateMode) => void
   closeCreateDialog: () => void
   submitCreateDialog: () => void
+  fileActionMode: SidebarFileActionMode | null
+  fileActionTargetPath: string | null
+  renameValue: string
+  openRenameDialog: (path: string) => void
+  openDeleteDialog: (path: string) => void
+  closeFileActionDialog: () => void
+  confirmFileActionDialog: () => void
+  onRenameValueChange: (value: string) => void
   onDirectoryChange: (value: string) => void
   onNameChange: (value: string) => void
   filterInputRef: (element: HTMLInputElement | null) => void
@@ -44,7 +87,69 @@ function SidebarStateHint({ loadingProject, apiAvailable }: SidebarStateHintProp
   return null
 }
 
+function SidebarTreeArea(props: SidebarTreeAreaProps) {
+  if (props.showOnlyStateHint) {
+    return <SidebarStateHint loadingProject={props.loadingProject} apiAvailable={props.apiAvailable} />
+  }
+
+  return (
+    <SidebarTree
+      visibleFiles={props.visibleFiles}
+      selectedPath={props.selectedPath}
+      loadingDocument={props.loadingDocument}
+      onSelectFile={props.onSelectFile}
+      filterQuery={props.filterQuery}
+      onFileContextMenu={props.onFileContextMenu}
+    />
+  )
+}
+
+function SidebarExplorerDialogs(props: SidebarExplorerDialogsProps) {
+  return (
+    <>
+      <SidebarFooterActions
+        disabled={props.loadingProject || !props.apiAvailable}
+        onCreateArticle={() => props.openCreateDialog('article')}
+        onCreateCategory={() => props.openCreateDialog('category')}
+      />
+      <SidebarFileContextMenu
+        isOpen={Boolean(props.fileContextMenu.contextMenuState)}
+        position={
+          props.fileContextMenu.contextMenuState
+            ? { x: props.fileContextMenu.contextMenuState.x, y: props.fileContextMenu.contextMenuState.y }
+            : null
+        }
+        onRename={props.fileContextMenu.handleRenameFromContextMenu}
+        onDelete={props.fileContextMenu.handleDeleteFromContextMenu}
+        onClose={props.fileContextMenu.closeContextMenu}
+      />
+      <SidebarCreateDialog
+        mode={props.createMode}
+        sectionTitle={props.title}
+        value={props.createInput}
+        onDirectoryChange={props.onDirectoryChange}
+        onNameChange={props.onNameChange}
+        onSubmit={props.submitCreateDialog}
+        onCancel={props.closeCreateDialog}
+      />
+      <SidebarFileActionsDialog
+        mode={props.fileActionMode}
+        targetPath={props.fileActionTargetPath}
+        renameValue={props.renameValue}
+        onRenameValueChange={props.onRenameValueChange}
+        onConfirm={props.confirmFileActionDialog}
+        onCancel={props.closeFileActionDialog}
+      />
+    </>
+  )
+}
+
 export function SidebarExplorerBody(props: SidebarExplorerBodyProps) {
+  const fileContextMenu = useSidebarFileContextMenu({
+    onSelectFile: props.onSelectFile,
+    onOpenRename: props.openRenameDialog,
+    onOpenDelete: props.openDeleteDialog,
+  })
   const showOnlyStateHint = !props.apiAvailable || props.loadingProject
 
   return (
@@ -56,30 +161,35 @@ export function SidebarExplorerBody(props: SidebarExplorerBodyProps) {
         inputRef={props.filterInputRef}
         onChange={props.onFilterQueryChange}
       />
-      {showOnlyStateHint ? (
-        <SidebarStateHint loadingProject={props.loadingProject} apiAvailable={props.apiAvailable} />
-      ) : (
-        <SidebarTree
-          visibleFiles={props.visibleFiles}
-          selectedPath={props.selectedPath}
-          loadingDocument={props.loadingDocument}
-          onSelectFile={props.onSelectFile}
-          filterQuery={props.filterQuery}
-        />
-      )}
-      <SidebarFooterActions
-        disabled={props.loadingProject || !props.apiAvailable}
-        onCreateArticle={() => props.openCreateDialog('article')}
-        onCreateCategory={() => props.openCreateDialog('category')}
+      <SidebarTreeArea
+        showOnlyStateHint={showOnlyStateHint}
+        loadingProject={props.loadingProject}
+        apiAvailable={props.apiAvailable}
+        visibleFiles={props.visibleFiles}
+        selectedPath={props.selectedPath}
+        loadingDocument={props.loadingDocument}
+        filterQuery={props.filterQuery}
+        onSelectFile={props.onSelectFile}
+        onFileContextMenu={fileContextMenu.handleFileContextMenu}
       />
-      <SidebarCreateDialog
-        mode={props.createMode}
-        sectionTitle={props.title}
-        value={props.createInput}
+      <SidebarExplorerDialogs
+        loadingProject={props.loadingProject}
+        apiAvailable={props.apiAvailable}
+        openCreateDialog={props.openCreateDialog}
+        createMode={props.createMode}
+        createInput={props.createInput}
         onDirectoryChange={props.onDirectoryChange}
         onNameChange={props.onNameChange}
-        onSubmit={props.submitCreateDialog}
-        onCancel={props.closeCreateDialog}
+        submitCreateDialog={props.submitCreateDialog}
+        closeCreateDialog={props.closeCreateDialog}
+        title={props.title}
+        fileActionMode={props.fileActionMode}
+        fileActionTargetPath={props.fileActionTargetPath}
+        renameValue={props.renameValue}
+        onRenameValueChange={props.onRenameValueChange}
+        confirmFileActionDialog={props.confirmFileActionDialog}
+        closeFileActionDialog={props.closeFileActionDialog}
+        fileContextMenu={fileContextMenu}
       />
     </>
   )

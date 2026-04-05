@@ -213,6 +213,44 @@ select {
   flex: 1 1 50%;
 }
 
+.sidebar-context-menu-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 45;
+}
+
+.sidebar-context-menu {
+  position: fixed;
+  min-width: 150px;
+  padding: 6px;
+  border: 1px solid var(--border-strong);
+  border-radius: 10px;
+  background: rgba(10, 14, 20, 0.98);
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.32);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.sidebar-context-menu__item {
+  appearance: none;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-main);
+  text-align: left;
+  font-size: 0.73rem;
+  padding: 7px 9px;
+}
+
+.sidebar-context-menu__item:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.sidebar-context-menu__item--danger {
+  color: #f0b89c;
+}
+
 .sidebar-create-modal {
   position: fixed;
   inset: 0;

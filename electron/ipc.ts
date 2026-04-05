@@ -2,12 +2,14 @@ import type { BrowserWindow, IpcMain } from 'electron'
 import {
   type CreateDocumentRequest,
   type CreateFolderRequest,
+  type DeleteDocumentRequest,
   debugLogRequestSchema,
   IPC_CHANNELS,
   type DebugLogRequest,
   type OpenProjectRequest,
   type PingRequest,
   type ReadDocumentRequest,
+  type RenameDocumentRequest,
   type SaveDocumentRequest,
 } from '../src/shared/ipc.js'
 import {
@@ -15,9 +17,11 @@ import {
   configureMainWindowResolver,
   handleCreateDocument,
   handleCreateFolder,
+  handleDeleteDocument,
   handleGetIndex,
   handleOpenProject,
   handleReadDocument,
+  handleRenameDocument,
   handleSaveDocument,
   handleSelectProjectFolder,
   shutdownIpcServices,
@@ -69,6 +73,14 @@ export function registerIpcHandlers(ipcMain: IpcMain, getMainWindow: () => Brows
 
   ipcMain.handle(IPC_CHANNELS.createFolder, (_event, payload: CreateFolderRequest) => {
     return handleCreateFolder(payload)
+  })
+
+  ipcMain.handle(IPC_CHANNELS.renameDocument, (_event, payload: RenameDocumentRequest) => {
+    return handleRenameDocument(payload)
+  })
+
+  ipcMain.handle(IPC_CHANNELS.deleteDocument, (_event, payload: DeleteDocumentRequest) => {
+    return handleDeleteDocument(payload)
   })
 
   ipcMain.handle(IPC_CHANNELS.getIndex, () => {

@@ -1,6 +1,6 @@
 # Trama Technical Docs
 
-This folder documents the current Phase 2 implementation so future sessions can resume work without relying on chat history.
+This folder documents the active implementation so new chats can resume work quickly without re-reading large parts of the codebase.
 
 ## Recommended reading order
 
@@ -11,26 +11,31 @@ This folder documents the current Phase 2 implementation so future sessions can 
 5. `file-map.md`
 6. `dev-workflow.md`
 7. `troubleshooting.md`
-8. `phase-2-closure-checklist.md`
+8. `lessons-learned/README.md`
 
-## Current scope
+## Current scope snapshot
 
-The project currently implements **Phase 1 baseline + complete Phase 2 scope**:
+Implemented foundation:
 
-- Electron + Vite + Preact desktop shell
-- Secure-by-default Electron window configuration (with one practical preload tradeoff, documented below)
-- Typed IPC contract with runtime validation
-- `contextBridge` preload API (`window.tramaApi`)
-- Renderer-to-main debug logging endpoint (`trama:debug:log`)
-- Native folder picker (`selectProjectFolder`)
-- Project scan + markdown read/save + index reconciliation
-- External file watcher and dirty-vs-external conflict prompt
-- Frontmatter parsing/serialization backed by a dedicated YAML library
-- Rich markdown visual editor (formatted text UI, markdown persisted)
-- Native right-click context menu with spellcheck suggestions
-- Refactored renderer structure (`useProjectEditor` + split presentational components)
-- Tests for startup/smoke, IPC contract, frontmatter, index reconciliation, project-editor logic/hooks, rich markdown editor behavior, and TypeScript compile guard
+- Electron + Vite + Preact desktop shell.
+- Typed IPC contract with runtime validation and envelope responses.
+- `contextBridge` preload API (`window.tramaApi`).
+- Native folder picker (`selectProjectFolder`).
+- Project scan + markdown read/save/create/rename/delete + folder create.
+- Index reconciliation (`.trama.index.json`).
+- External file watcher and conflict-safe editing flow.
+- Rich markdown visual editor.
+- Native editor context menu with spellcheck.
+- Sidebar sections (manuscript/outline/lore/settings), filter, responsive collapse, and right-click file actions.
+
+## Quick intent routing (for new chats)
+
+- IPC/channel/schema changes: start in `src/shared/ipc.ts`.
+- File-system operations: `electron/services/document-repository.ts` + `electron/ipc/handlers/project-handlers/document-handlers.ts`.
+- Sidebar behavior/UI: `src/features/project-editor/components/sidebar/*`.
+- Project-editor orchestration/actions: `src/features/project-editor/use-project-editor*.ts`.
+- Regressions after refactor: check `tests/sidebar-panels.test.ts`, `tests/use-project-editor.test.ts`, `tests/ipc-contract.test.ts` first.
 
 ## Important note
 
-Some settings were adjusted pragmatically to make preload integration reliable on this setup. See `troubleshooting.md` for why and when to revisit them.
+Some settings were adjusted pragmatically to keep preload integration stable (`sandbox: false`). See `troubleshooting.md` before changing Electron security defaults.

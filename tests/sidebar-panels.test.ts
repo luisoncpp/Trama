@@ -25,6 +25,8 @@ function buildPanelProps(
     onSidebarPanelWidthChange: () => undefined,
     onCreateArticle: () => undefined,
     onCreateCategory: () => undefined,
+    onRenameFile: () => undefined,
+    onDeleteFile: () => undefined,
     apiAvailable: true,
     loadingProject: false,
     rootPath: 'C:/Proyectos/test_trama',
@@ -129,6 +131,8 @@ describe('sidebar panels', () => {
           onFilterQueryChange,
           onCreateArticle: () => undefined,
           onCreateCategory: () => undefined,
+          onRenameFile: () => undefined,
+          onDeleteFile: () => undefined,
           onPickFolder,
         }),
         container,
@@ -167,6 +171,8 @@ describe('sidebar panels', () => {
           onFilterQueryChange: () => undefined,
           onCreateArticle: () => undefined,
           onCreateCategory: () => undefined,
+          onRenameFile: () => undefined,
+          onDeleteFile: () => undefined,
           onPickFolder: () => undefined,
         }),
         container,
@@ -199,6 +205,8 @@ describe('sidebar panels', () => {
           onFilterQueryChange: () => undefined,
           onCreateArticle: () => undefined,
           onCreateCategory: () => undefined,
+          onRenameFile: () => undefined,
+          onDeleteFile: () => undefined,
           onPickFolder: () => undefined,
         }),
         container,
@@ -222,6 +230,8 @@ describe('sidebar panels', () => {
           onFilterQueryChange: () => undefined,
           onCreateArticle: () => undefined,
           onCreateCategory: () => undefined,
+          onRenameFile: () => undefined,
+          onDeleteFile: () => undefined,
           onPickFolder: () => undefined,
         }),
         container,
@@ -320,6 +330,84 @@ describe('sidebar panels', () => {
       directory: 'World',
       name: 'Cities',
     })
+  })
+
+  it('triggers rename and delete callbacks from file context menu', () => {
+    const onRenameFile = vi.fn()
+    const onDeleteFile = vi.fn()
+
+    act(() => {
+      render(
+        h(SidebarPanel, buildPanelProps({ onRenameFile, onDeleteFile })),
+        container,
+      )
+    })
+
+    const fileRowButton = Array.from(container.querySelectorAll('.sidebar-tree__row')).find((node) =>
+      node.textContent?.includes('Scene-001.md'),
+    ) as HTMLButtonElement
+    expect(fileRowButton).toBeTruthy()
+
+    act(() => {
+      fileRowButton.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true, clientX: 120, clientY: 140 }))
+    })
+
+    const renameMenuItem = Array.from(container.querySelectorAll('.sidebar-context-menu__item')).find((node) =>
+      node.textContent?.includes('Rename'),
+    ) as HTMLButtonElement
+
+    expect(renameMenuItem).toBeTruthy()
+
+    act(() => {
+      renameMenuItem.click()
+    })
+
+    const renameInput = container.querySelector(
+      '.sidebar-create-dialog input[placeholder="Scene-002.md"]',
+    ) as HTMLInputElement
+    const renameConfirm = Array.from(container.querySelectorAll('.sidebar-create-dialog .editor-button')).find((node) =>
+      node.textContent?.includes('Rename'),
+    ) as HTMLButtonElement
+
+    expect(renameInput).toBeTruthy()
+    expect(renameConfirm).toBeTruthy()
+
+    act(() => {
+      renameInput.value = 'Scene-009.md'
+      renameInput.dispatchEvent(new Event('input', { bubbles: true }))
+    })
+
+    act(() => {
+      renameConfirm.click()
+    })
+
+    expect(onRenameFile).toHaveBeenCalledWith('book/Act-01/Chapter-01/Scene-001.md', 'Scene-009.md')
+
+    act(() => {
+      fileRowButton.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true, clientX: 180, clientY: 220 }))
+    })
+
+    const deleteMenuItem = Array.from(container.querySelectorAll('.sidebar-context-menu__item')).find((node) =>
+      node.textContent?.includes('Delete'),
+    ) as HTMLButtonElement
+
+    expect(deleteMenuItem).toBeTruthy()
+
+    act(() => {
+      deleteMenuItem.click()
+    })
+
+    const deleteConfirm = Array.from(container.querySelectorAll('.sidebar-create-dialog .editor-button')).find((node) =>
+      node.textContent?.includes('Delete'),
+    ) as HTMLButtonElement
+
+    expect(deleteConfirm).toBeTruthy()
+
+    act(() => {
+      deleteConfirm.click()
+    })
+
+    expect(onDeleteFile).toHaveBeenCalledWith('book/Act-01/Chapter-01/Scene-001.md')
   })
 
   it('updates panel width from settings slider', () => {

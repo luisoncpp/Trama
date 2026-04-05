@@ -2,75 +2,83 @@
 
 ## Goal
 
-Use this file to quickly bootstrap a fresh chat session and avoid rediscovering project context.
+Bootstrap a fresh chat in minutes and avoid spending tokens rediscovering architecture.
 
-## 60-second summary
+## 90-second summary
 
-Trama is a file-first desktop writing tool. The codebase currently delivers a complete Phase 2 slice: open project folder, scan markdown files, edit/save documents with YAML frontmatter support, maintain index reconciliation, rich visual markdown editing, and handle external file conflicts with reload/keep/compare/save-as-copy actions.
+Trama is a file-first desktop writing tool (Electron + Preact + TypeScript). The app opens a project folder, scans markdown files, edits with a rich visual editor, saves via typed IPC, reconciles `.trama.index.json`, and handles external file conflicts safely.
 
-Phase 3 (sidebar navigation) is in progress. PR-1 (sidebar state/persistence via `localStorage`), PR-2 (hierarchical folder/file tree with expand/collapse, keyboard navigation, chevron icons, and folder/file SVG icons), PR-3 (debounced filter/search with auto-expand + restore), PR-4 (create article/category via typed IPC), and PR-5 (hardening: keyboard focus, sidebar loading/error states, responsive collapse) are complete.
+Sidebar scope is mature for core operations:
+- Section-scoped trees (`book/`, `outline/`, `lore/`), filter, keyboard basics, responsive collapse.
+- Create article/category from sidebar.
+- Rename/delete markdown files from right-click context menu.
 
 ## Read first (in order)
 
 1. `docs/current-status.md`
 2. `docs/implementation-overview.md`
-3. `docs/file-map.md`
-4. `docs/ipc-architecture.md`
+3. `docs/ipc-architecture.md`
+4. `docs/file-map.md`
 5. `docs/dev-workflow.md`
 6. `docs/troubleshooting.md`
-7. `docs/sidebar-technical-design-and-implementation-plan.md` ← Phase 3 ongoing work
+7. `docs/lessons-learned/README.md`
 
-## Where to make common changes
+## Fast intent routing (what to open for each task)
 
-Renderer editor behavior:
-- `src/features/project-editor/use-project-editor.ts`
-- `src/features/project-editor/use-project-editor-autosave-effect.ts`
-- `src/features/project-editor/use-project-editor-external-events-effect.ts`
-- `src/features/project-editor/project-editor-view.tsx`
+- Add/change IPC endpoint:
+  - `src/shared/ipc.ts`
+  - `electron/ipc.ts`
+  - `electron/ipc/handlers/project-handlers/*`
+  - `electron/preload.cts`
+  - `src/types/trama-api.d.ts`
 
-Sidebar UI (Phase 3):
-- `src/features/project-editor/use-sidebar-ui-state.ts` — localStorage persistence
-- `src/features/project-editor/use-project-editor-sidebar-actions.ts` — action composers
-- `src/features/project-editor/components/sidebar/sidebar-panel.tsx` — sidebar shell/orchestrator
-- `src/features/project-editor/components/sidebar/sidebar-rail.tsx` — section icon rail
-- `src/features/project-editor/components/sidebar/sidebar-explorer-content.tsx` — Explorer section
-- `src/features/project-editor/components/sidebar/sidebar-tree.tsx` — hierarchical tree component
-- `src/features/project-editor/components/sidebar/sidebar-tree-logic.ts` — pure tree build/filter functions
-- `src/features/project-editor/components/sidebar/sidebar-tree-icons.tsx` — SVG chevron/node icons
+- Change file-system behavior (read/save/create/rename/delete):
+  - `electron/services/document-repository.ts`
+  - `electron/ipc/handlers/project-handlers/document-handlers.ts`
 
-IPC/backend behavior:
-- `electron/ipc.ts`
-- `electron/ipc/handlers/project-handlers/*`
-- `electron/ipc-runtime.ts`
-- `electron/services/*`
+- Change sidebar UX/behavior:
+  - `src/features/project-editor/components/sidebar/sidebar-panel.tsx`
+  - `src/features/project-editor/components/sidebar/sidebar-explorer-content.tsx`
+  - `src/features/project-editor/components/sidebar/sidebar-explorer-body.tsx`
+  - `src/features/project-editor/components/sidebar/sidebar-tree.tsx`
+  - `src/features/project-editor/components/sidebar/use-sidebar-tree-expanded-folders.ts`
 
-Shared contract:
-- `src/shared/ipc.ts`
-- `src/types/trama-api.d.ts`
-- `electron/preload.cts`
+- Change action orchestration/state:
+  - `src/features/project-editor/use-project-editor.ts`
+  - `src/features/project-editor/use-project-editor-ui-actions.ts`
+  - `src/features/project-editor/use-project-editor-file-actions.ts`
+  - `src/features/project-editor/use-project-editor-create-actions.ts`
 
-## Known quirks
+## High-value invariants (do not break)
 
-- **TS imports**: Always use explicit `.tsx` extension when importing Preact components, e.g. `import { Foo } from './foo.tsx'`. The language server does not resolve them without it. See `docs/lessons-learned/tsx-import-extension.md`.
-- **ESLint limits**: `max-lines: 200` and `max-lines-per-function: 50` are enforced on all TS/TSX. Decompose components and hooks into named helpers proactively.
-- **CSS edits**: Apply CSS changes in small, isolated hunks. The patch tool has historically injected rule blocks inside `:root {}` or `body {}`. Validate structure after each CSS edit. See `docs/lessons-learned/css-patch-corruption.md`.
+- IPC channel names and schemas live only in `src/shared/ipc.ts`.
+- IPC handlers must return envelope responses (`ok/data` or `ok:false/error`).
+- Preload API surface in `electron/preload.cts` must match `src/types/trama-api.d.ts`.
+- Sidebar imports for `.tsx` components should keep explicit `.tsx` extension.
+- Lint limits are strict (`max-lines` and `max-lines-per-function`), so split components/hooks early.
 
-## Quick sanity checks after any significant change
+## Regression hotspots
 
-1. `npm run build`
-2. `npm run lint`
-3. `npm run test`
-4. `npm run test:smoke`
-5. `npm run dev`
-6. In the app:
-- confirm preload API status is available,
-- open a folder,
-- edit/save a markdown file,
-- right-click a misspelled word and verify spellcheck suggestions,
-- verify no regressions in conflict behavior.
+- Rich editor cursor jumping: watch re-init dependencies in editor core.
+- Sidebar collapse-all restoring unexpectedly: expanded-folder state logic.
+- Sidebar create/rename/delete wiring: path scoping between section-relative and project-relative paths.
+- Empty folder visibility in tree: scanner + tree builder interplay.
+
+## Quick sanity checks after meaningful changes
+
+1. `npm run lint`
+2. `npm run test`
+3. `npm run build`
+4. `npm run test:smoke` (when touching Electron/preload/window/IPC startup)
+5. `npm run dev` manual check:
+- open folder
+- edit/save markdown
+- right-click sidebar file -> rename/delete flow
+- right-click editor misspelled word -> spellcheck suggestions
 
 ## Current high-value next tasks
 
-1. Sidebar file operations: rename/move/delete with conflict-safe flows.
-2. Continue expanding tests for watcher bursts and larger conflict scenarios.
-3. Theme preferences and fullscreen/focus mode wiring.
+1. Folder rename/delete workflows.
+2. Move file/folder across tree branches.
+3. Accessibility polish for dialogs/context menus (escape close, focus behavior).
+4. Performance optimization for repeated full-project reconciliation.

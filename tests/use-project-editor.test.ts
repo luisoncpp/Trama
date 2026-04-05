@@ -26,6 +26,14 @@ type TramaApiMock = {
     ok: true
     data: { path: string; createdAt: string }
   }>
+  renameDocument: (payload: { path: string; newName: string }) => Promise<{
+    ok: true
+    data: { path: string; renamedTo: string; updatedAt: string }
+  }>
+  deleteDocument: (payload: { path: string }) => Promise<{
+    ok: true
+    data: { path: string; deletedAt: string }
+  }>
   getIndex: () => Promise<{
     ok: true
     data: { version: string; corkboardOrder: Record<string, string[]>; cache: Record<string, unknown> }
@@ -60,6 +68,21 @@ function setupTramaApiMock(overrides?: Partial<TramaApiMock>) {
       data: {
         path: payload.path,
         createdAt: new Date().toISOString(),
+      },
+    }),
+    renameDocument: async (payload) => ({
+      ok: true,
+      data: {
+        path: payload.path,
+        renamedTo: payload.newName,
+        updatedAt: new Date().toISOString(),
+      },
+    }),
+    deleteDocument: async (payload) => ({
+      ok: true,
+      data: {
+        path: payload.path,
+        deletedAt: new Date().toISOString(),
       },
     }),
     getIndex: async () => ({ ok: true, data: { version: '1.0.0', corkboardOrder: {}, cache: {} } }),

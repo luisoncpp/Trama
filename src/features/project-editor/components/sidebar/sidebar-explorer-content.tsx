@@ -2,6 +2,7 @@ import { useRef } from 'preact/hooks'
 import type { SidebarCreateInput } from '../../project-editor-types'
 import { SidebarExplorerBody } from './sidebar-explorer-body.tsx'
 import { useSidebarCreateDialog } from './use-sidebar-create-dialog'
+import { useSidebarFileActionsDialog } from './use-sidebar-file-actions-dialog'
 import { useSidebarFilterShortcut } from './use-sidebar-filter-shortcut'
 
 function SelectProjectFolderIcon() {
@@ -34,7 +35,24 @@ interface SidebarExplorerContentProps {
   onFilterQueryChange: (value: string) => void
   onCreateArticle: (input: SidebarCreateInput) => void
   onCreateCategory: (input: SidebarCreateInput) => void
+  onRenameFile: (path: string, newName: string) => void
+  onDeleteFile: (path: string) => void
   onPickFolder: () => void
+}
+
+function useSidebarExplorerDialogs(props: SidebarExplorerContentProps) {
+  const createDialog = useSidebarCreateDialog({
+    selectedPath: props.selectedPath,
+    onCreateArticle: props.onCreateArticle,
+    onCreateCategory: props.onCreateCategory,
+  })
+
+  const fileDialog = useSidebarFileActionsDialog({
+    onRenameFile: props.onRenameFile,
+    onDeleteFile: props.onDeleteFile,
+  })
+
+  return { createDialog, fileDialog }
 }
 
 function SidebarHeader({ title, apiAvailable, loadingProject, onPickFolder }: SidebarHeaderProps) {
@@ -60,11 +78,7 @@ function SidebarHeader({ title, apiAvailable, loadingProject, onPickFolder }: Si
 }
 
 export function SidebarExplorerContent(props: SidebarExplorerContentProps) {
-  const { createMode, createInput, setCreateDirectory, setCreateName, openCreateDialog, closeCreateDialog, submitCreateDialog } = useSidebarCreateDialog({
-    selectedPath: props.selectedPath,
-    onCreateArticle: props.onCreateArticle,
-    onCreateCategory: props.onCreateCategory,
-  })
+  const { createDialog, fileDialog } = useSidebarExplorerDialogs(props)
   const filterInputElementRef = useRef<HTMLInputElement | null>(null)
   const setFilterInputRef = (element: HTMLInputElement | null) => {
     filterInputElementRef.current = element
@@ -93,13 +107,21 @@ export function SidebarExplorerContent(props: SidebarExplorerContentProps) {
           scopePathLabel={props.scopePathLabel}
           filterQuery={props.filterQuery}
           onFilterQueryChange={props.onFilterQueryChange}
-          createMode={createMode}
-          createInput={createInput}
-          openCreateDialog={openCreateDialog}
-          closeCreateDialog={closeCreateDialog}
-          submitCreateDialog={submitCreateDialog}
-          onDirectoryChange={setCreateDirectory}
-          onNameChange={setCreateName}
+          createMode={createDialog.createMode}
+          createInput={createDialog.createInput}
+          openCreateDialog={createDialog.openCreateDialog}
+          closeCreateDialog={createDialog.closeCreateDialog}
+          submitCreateDialog={createDialog.submitCreateDialog}
+          fileActionMode={fileDialog.mode}
+          fileActionTargetPath={fileDialog.targetPath}
+          renameValue={fileDialog.renameValue}
+          openRenameDialog={fileDialog.openRename}
+          openDeleteDialog={fileDialog.openDelete}
+          closeFileActionDialog={fileDialog.closeDialog}
+          confirmFileActionDialog={fileDialog.confirm}
+          onRenameValueChange={fileDialog.setRenameValue}
+          onDirectoryChange={createDialog.setCreateDirectory}
+          onNameChange={createDialog.setCreateName}
           filterInputRef={setFilterInputRef}
         />
       </aside>

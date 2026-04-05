@@ -4,7 +4,11 @@ interface SidebarFooterActionsProps {
   onCreateCategory: () => void
 }
 
-export function SidebarFooterActions({ disabled, onCreateArticle, onCreateCategory }: SidebarFooterActionsProps) {
+export function SidebarFooterActions({
+  disabled,
+  onCreateArticle,
+  onCreateCategory,
+}: SidebarFooterActionsProps) {
   return (
     <div class="sidebar-footer-actions">
       <button

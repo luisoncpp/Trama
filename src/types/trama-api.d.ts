@@ -3,6 +3,8 @@ import type {
   CreateDocumentResponse,
   CreateFolderRequest,
   CreateFolderResponse,
+  DeleteDocumentRequest,
+  DeleteDocumentResponse,
   DebugLogRequest,
   ExternalFileEvent,
   IpcEnvelope,
@@ -13,6 +15,8 @@ import type {
   ProjectSnapshot,
   ReadDocumentRequest,
   ReadDocumentResponse,
+  RenameDocumentRequest,
+  RenameDocumentResponse,
   SaveDocumentRequest,
   SaveDocumentResponse,
   SelectProjectFolderResponse,
@@ -29,6 +33,8 @@ declare global {
       saveDocument(payload: SaveDocumentRequest): Promise<IpcEnvelope<SaveDocumentResponse>>
       createDocument(payload: CreateDocumentRequest): Promise<IpcEnvelope<CreateDocumentResponse>>
       createFolder(payload: CreateFolderRequest): Promise<IpcEnvelope<CreateFolderResponse>>
+      renameDocument(payload: RenameDocumentRequest): Promise<IpcEnvelope<RenameDocumentResponse>>
+      deleteDocument(payload: DeleteDocumentRequest): Promise<IpcEnvelope<DeleteDocumentResponse>>
       getIndex(): Promise<IpcEnvelope<ProjectIndex>>
       onExternalFileEvent(callback: (event: ExternalFileEvent) => void): () => void
     }

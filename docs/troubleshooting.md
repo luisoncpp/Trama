@@ -1,18 +1,18 @@
 # Troubleshooting and Surprises
 
-This file captures practical issues observed during the current implementation.
+This file captures practical issues observed during implementation.
 
 ## 1) "Preload API: not available"
 
 ### Symptom
 
 - UI shows preload API unavailable.
-- IPC button fails with missing `window.tramaApi.ping`.
+- IPC actions fail because `window.tramaApi` methods are missing.
 
 ### Root causes seen
 
-- Preload file path did not match emitted artifact.
-- Preload emitted in ESM shape that did not load reliably for this setup.
+- Preload file path does not match emitted artifact.
+- Preload emitted in a format not loaded by current setup.
 
 ### Current fix
 
@@ -29,39 +29,72 @@ This file captures practical issues observed during the current implementation.
 
 ### Symptom
 
-- Dev starts, then exits with code 1 in terminal.
-- `concurrently` reports one process ended and kills the other.
+- Dev starts, then exits with non-zero code.
+- `concurrently` kills sibling process when one command exits.
 
 ### Root causes seen
 
-- Electron entry script path mismatch (`dist-electron/main.js` vs nested path).
-- Electron process exited because window reference was not retained.
+- Electron entry path mismatch.
+- Electron exits if BrowserWindow reference is not retained.
 
 ### Current fix
 
-- Use `dist-electron/electron/main.js` in scripts.
+- Use `dist-electron/electron/main.js` as Electron entry.
 - Keep global `mainWindow` reference in `electron/main.ts`.
 
-### Note
-
-`concurrently -k` intentionally terminates sibling processes when one exits.
-
-## 3) IPC button stuck in loading state
+## 3) Sidebar actions do not appear or do nothing
 
 ### Symptom
 
-- Button label remains in loading mode forever.
+- Right-click on file row does not open Rename/Delete menu.
+- Rename/Delete opens dialog but action does not apply expected file path.
 
-### Root cause
+### Root causes seen
 
-- Async call lacked robust error/finalization handling.
+- Context menu handler not wired from tree row to explorer body.
+- Section-relative path not remapped to project-relative path before IPC call.
 
 ### Current fix
 
-- `try/catch/finally` in renderer call path.
-- Runtime error is displayed in UI.
+- Tree emits `onFileContextMenu` from file rows only.
+- Explorer body uses dedicated context-menu hook.
+- Panel layer remaps section-scoped paths to full project paths before calling actions.
 
-## 4) Security setting tradeoff (`sandbox`)
+### Quick checks
+
+- Open `tests/sidebar-panels.test.ts` and run the context-menu test.
+- Confirm selected file path and action target path are aligned.
+
+## 4) Collapse-all does not stay collapsed
+
+### Symptom
+
+- User collapses all folders and UI re-expands unexpectedly.
+
+### Root cause
+
+- Expanded-folder initialization logic can overwrite intentional collapsed state.
+
+### Current fix
+
+- Expanded-folder hook preserves intentional all-collapsed state while still handling selection and filter auto-expand.
+
+## 5) Rich editor cursor jumps to start while typing
+
+### Symptom
+
+- Caret resets to beginning of document in controlled mode.
+
+### Root cause
+
+- Editor initialization effect reruns on value updates.
+
+### Current fix
+
+- Keep editor initialization independent from controlled value updates.
+- Use dedicated update path for content sync.
+
+## 6) Security setting tradeoff (`sandbox`)
 
 ### Current value
 
@@ -69,25 +102,26 @@ This file captures practical issues observed during the current implementation.
 
 ### Why
 
-- Chosen pragmatically to stabilize preload API behavior in this baseline.
+- Pragmatic choice to stabilize preload behavior in current baseline.
 
 ### Future hardening task
 
-- Re-evaluate enabling `sandbox: true` once preload behavior is validated with full Phase 2+ architecture.
-- If re-enabled, verify preload API and tests before merging.
+- Re-evaluate `sandbox: true` after validating preload behavior with full suite and smoke tests.
 
-## 5) Fast recovery checklist
+## 7) Fast recovery checklist
 
 When things break after refactors, run:
 
-1. `npm run build:electron`
-2. Confirm files in `dist-electron/electron/`
-3. `npm run test`
-4. `npm run dev`
-5. In app, verify preload status and run IPC button
+1. `npm run lint`
+2. `npm run test -- tests/sidebar-panels.test.ts`
+3. `npm run test -- tests/use-project-editor.test.ts`
+4. `npm run build`
+5. `npm run test:smoke` (if startup/preload touched)
+6. `npm run dev` and manually verify editor + sidebar flows.
 
-## 6) Signals for future contributors
+## 8) Contributor signals
 
-- Do not move IPC channel literals only in one layer; keep shared contracts central.
-- Keep preload API minimal and explicit.
-- Avoid mixing business logic into `main.ts`; route through module-level handlers/services.
+- Keep IPC literals and schemas centralized in `src/shared/ipc.ts`.
+- Keep preload API minimal, typed, and mirrored in declarations.
+- Avoid heavy logic in `electron/main.ts` and `electron/ipc.ts`; push into handlers/services.
+- For CSS edits, patch in small chunks and re-check file structure.

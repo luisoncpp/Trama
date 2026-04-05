@@ -6,6 +6,8 @@ import {
   type CreateDocumentResponse,
   type CreateFolderRequest,
   type CreateFolderResponse,
+  type DeleteDocumentRequest,
+  type DeleteDocumentResponse,
   type DebugLogRequest,
   type ExternalFileEvent,
   type IpcEnvelope,
@@ -16,6 +18,8 @@ import {
   type ProjectSnapshot,
   type ReadDocumentRequest,
   type ReadDocumentResponse,
+  type RenameDocumentRequest,
+  type RenameDocumentResponse,
   type SaveDocumentRequest,
   type SaveDocumentResponse,
   type SelectProjectFolderResponse,
@@ -50,6 +54,12 @@ const tramaApi = {
   },
   createFolder(payload: CreateFolderRequest): Promise<IpcEnvelope<CreateFolderResponse>> {
     return ipcRenderer.invoke(IPC_CHANNELS.createFolder, payload)
+  },
+  renameDocument(payload: RenameDocumentRequest): Promise<IpcEnvelope<RenameDocumentResponse>> {
+    return ipcRenderer.invoke(IPC_CHANNELS.renameDocument, payload)
+  },
+  deleteDocument(payload: DeleteDocumentRequest): Promise<IpcEnvelope<DeleteDocumentResponse>> {
+    return ipcRenderer.invoke(IPC_CHANNELS.deleteDocument, payload)
   },
   getIndex(): Promise<IpcEnvelope<ProjectIndex>> {
     return ipcRenderer.invoke(IPC_CHANNELS.getIndex)

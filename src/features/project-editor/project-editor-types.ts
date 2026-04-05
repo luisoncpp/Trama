@@ -5,6 +5,11 @@ export interface SidebarCreateInput {
   name: string
 }
 
+export interface SidebarRenameInput {
+  path: string
+  newName: string
+}
+
 export interface ProjectEditorState {
   apiAvailable: boolean
   rootPath: string
@@ -28,6 +33,8 @@ export interface ProjectEditorActions {
   selectFile: (filePath: string) => void
   createArticle: (input: SidebarCreateInput) => Promise<void>
   createCategory: (input: SidebarCreateInput) => Promise<void>
+  renameFile: (input: SidebarRenameInput) => Promise<void>
+  deleteFile: (path: string) => Promise<void>
   setSidebarSection: (section: SidebarSection) => void
   toggleSidebarPanelCollapsed: () => void
   setSidebarPanelWidth: (width: number) => void

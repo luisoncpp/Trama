@@ -1,47 +1,37 @@
-# Implementation Overview (Phase 2 Complete)
+# Implementation Overview (Phase 2 + Core Phase 3)
 
-For quick onboarding context, read `new-conversation-handoff.md` and `current-status.md` first.
+For fast onboarding, read `new-conversation-handoff.md` first, then this file.
 
 ## What is implemented
 
-The project now includes the Phase 1 baseline plus a complete Phase 2 slice:
+The project now includes:
 
-- Open project via native folder picker from renderer
-- Recursive project scan for `.md` documents
-- Frontmatter parse/serialize in main process with `yaml`
-- Read/save markdown documents through typed IPC
-- Renderer-to-main diagnostic logging via `trama:debug:log`
-- `.trama.index.json` reconciliation (prune missing + append new)
-- External file watcher events (`internal` vs `external`) and conflict handling actions
-- Rich markdown visual editor loop with autosave debounce and modular renderer architecture
-- Native context menu with spellcheck suggestions and dictionary action
+- Open project via native folder picker from renderer.
+- Recursive project scan for markdown documents.
+- Frontmatter parse/serialize in main process with `yaml`.
+- Read/save/create/rename/delete markdown documents through typed IPC.
+- Folder create through typed IPC.
+- Renderer-to-main diagnostic logging via `trama:debug:log`.
+- `.trama.index.json` reconciliation (prune missing + append new).
+- External file watcher events (`internal` vs `external`) and conflict handling actions.
+- Rich markdown visual editor loop with autosave debounce.
+- Sidebar with section-scoped tree (`book/`, `outline/`, `lore/`) and settings.
+- Sidebar filter, responsive behavior, and right-click file context actions.
 
 ## Runtime architecture
 
-- **Renderer process**: UI and user interactions (`src/app.tsx`)
-- **Renderer project editor feature**:
-	- `src/features/project-editor/use-project-editor.ts`
-	- `src/features/project-editor/project-editor-view.tsx`
-	- `src/features/project-editor/components/*`
-- **Preload script**: safe API bridge (`electron/preload.cts`)
-- **Main process**: app lifecycle + IPC orchestration (`electron/main.ts`, `electron/ipc.ts`)
-- **Main-process helpers**:
-	- `electron/main-process/context-menu.ts`
-	- `electron/main-process/smoke-hooks.ts`
-- **IPC handlers (modularized)**:
-	- `electron/ipc/handlers/index.ts`
-	- `electron/ipc/handlers/ping-handler.ts`
-	- `electron/ipc/handlers/project-handlers/*`
-- **IPC runtime and helpers**:
-	- `electron/ipc-runtime.ts`
-	- `electron/ipc-errors.ts`
-- **Phase 2 services**:
-	- `electron/services/project-scanner.ts`
-	- `electron/services/document-repository.ts`
-	- `electron/services/frontmatter.ts`
-	- `electron/services/index-service.ts`
-	- `electron/services/watcher-service.ts`
-- **Shared contract**: IPC channels, schemas, and envelope types (`src/shared/ipc.ts`)
+- Renderer process:
+  - `src/app.tsx`
+  - `src/features/project-editor/*`
+- Preload script:
+  - `electron/preload.cts`
+- Main process:
+  - `electron/main.ts`
+  - `electron/ipc.ts`
+  - `electron/ipc/handlers/*`
+  - `electron/services/*`
+- Shared contract:
+  - `src/shared/ipc.ts`
 
 See `ipc-architecture.md` for endpoint mapping and extension workflow.
 
@@ -52,7 +42,7 @@ Configured in `electron/window-config.ts`:
 - `nodeIntegration: false`
 - `contextIsolation: true`
 - `webSecurity: true`
-- `sandbox: false` (temporary practical choice for this baseline; see troubleshooting)
+- `sandbox: false` (temporary practical choice; revisit later)
 
 ## IPC contract model
 
@@ -61,9 +51,9 @@ IPC responses use a global envelope pattern:
 - Success: `{ ok: true, data: ... }`
 - Failure: `{ ok: false, error: { code, message, details? } }`
 
-Validation is done with `zod` in main process before producing a response.
+Validation is done with `zod` in main process before side effects.
 
-Implemented channels at this stage:
+Current channels:
 
 - `trama:ping`
 - `trama:debug:log`
@@ -71,26 +61,36 @@ Implemented channels at this stage:
 - `trama:project:select-folder`
 - `trama:document:read`
 - `trama:document:save`
+- `trama:document:create`
+- `trama:document:rename`
+- `trama:document:delete`
+- `trama:folder:create`
 - `trama:index:get`
-- `trama:project:external-file-event`
+- `trama:project:external-file-event` (event)
 
-Current test entry points:
+## Token-saving mental model for new chats
 
-- `npm run test` runs the full Vitest suite (unit/integration around startup, IPC contract, frontmatter, index reconciliation, project editor, and rich markdown editor behavior).
-- `npm run test:smoke` runs a built Electron smoke startup validation.
+1. The only shared truth for channels/schemas/types is `src/shared/ipc.ts`.
+2. `electron/ipc.ts` should stay thin: validate and delegate.
+3. Business logic belongs in `electron/ipc/handlers/*` and `electron/services/*`.
+4. Renderer behavior should be composed in feature hooks (`use-project-editor*`) and lightweight view components.
+5. If a sidebar behavior regresses, check these first:
+- `sidebar-panel.tsx`
+- `sidebar-explorer-content.tsx`
+- `sidebar-explorer-body.tsx`
+- `sidebar-tree.tsx`
+- `use-sidebar-tree-expanded-folders.ts`
 
 ## Why this matters for later phases
 
-Current seams are ready for Phase 3+ work:
+Current seams are ready for Phase 4 work:
 
-- Add new channels by extending `src/shared/ipc.ts`
-- Keep orchestration in `electron/ipc.ts` and move business logic to modular handlers/services
-- Expose new preload methods in `electron/preload.cts`
-- Consume typed APIs in renderer components/hooks
-- Extend current loop with additional workspace UI and advanced writing workflows
+- Add IPC endpoints by extending `src/shared/ipc.ts` first.
+- Keep preload API explicit in `electron/preload.cts` and `src/types/trama-api.d.ts`.
+- Use focused tests in `tests/sidebar-panels.test.ts`, `tests/use-project-editor.test.ts`, and `tests/ipc-contract.test.ts` before full suite.
 
 ## Known tradeoffs
 
-- Dev startup currently uses `concurrently + wait-on`; if Electron exits, `concurrently` may end all child processes.
-- Preload was migrated to `.cts` so emitted artifact is `preload.cjs`, which is loaded explicitly by main.
-- Frontmatter parser now uses a dedicated YAML library for robust metadata parsing.
+- Dev startup uses `concurrently + wait-on`; if Electron exits, all child processes are stopped.
+- Preload uses `.cts` and emits `preload.cjs`; main must load that exact artifact.
+- Lint limits are strict (`max-lines`, `max-lines-per-function`), so decomposition is required, not optional.

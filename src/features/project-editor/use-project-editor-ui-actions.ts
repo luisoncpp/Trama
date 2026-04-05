@@ -5,15 +5,10 @@ import { PROJECT_EDITOR_STRINGS } from './project-editor-strings'
 import type { ProjectEditorActions } from './project-editor-types'
 import { useSetSidebarPanelWidthAction, useSetSidebarSectionAction, useToggleSidebarPanelCollapsedAction } from './use-project-editor-sidebar-actions'
 import { useProjectEditorCreateActions } from './use-project-editor-create-actions'
+import { useProjectEditorFileActions } from './use-project-editor-file-actions'
 import type { UseProjectEditorStateResult } from './use-project-editor-state'
 
-interface UseProjectEditorUiActionsParams {
-  values: UseProjectEditorStateResult['values']
-  setters: UseProjectEditorStateResult['setters']
-  openProject: (projectRoot: string, preferredFilePath?: string) => Promise<void>
-  loadDocument: (path: string) => Promise<void>
-  saveDocumentNow: (path: string, content: string, meta: DocumentMeta) => Promise<void>
-}
+interface UseProjectEditorUiActionsParams { values: UseProjectEditorStateResult['values']; setters: UseProjectEditorStateResult['setters']; openProject: (projectRoot: string, preferredFilePath?: string) => Promise<void>; loadDocument: (path: string) => Promise<void>; saveDocumentNow: (path: string, content: string, meta: DocumentMeta) => Promise<void> }
 function usePickProjectFolderAction({
   openProject,
   setters,
@@ -182,6 +177,7 @@ export function useProjectEditorUiActions({
   const pickProjectFolder = usePickProjectFolderAction({ openProject, setters })
   const selectFile = useSelectFileAction({ values, setters, loadDocument })
   const { createArticle, createCategory } = useProjectEditorCreateActions({ values, setters, openProject })
+  const { renameFile, deleteFile } = useProjectEditorFileActions({ values, setters, openProject })
   const setSidebarSection = useSetSidebarSectionAction(setters)
   const toggleSidebarPanelCollapsed = useToggleSidebarPanelCollapsedAction(values, setters)
   const setSidebarPanelWidth = useSetSidebarPanelWidthAction(setters)
@@ -198,6 +194,8 @@ export function useProjectEditorUiActions({
     selectFile,
     createArticle,
     createCategory,
+    renameFile,
+    deleteFile,
     setSidebarSection,
     toggleSidebarPanelCollapsed,
     setSidebarPanelWidth,
