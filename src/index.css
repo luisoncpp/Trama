@@ -122,7 +122,7 @@ html[data-theme='light'] {
   --modal-overlay: rgba(65, 79, 101, 0.2);
   --dialog-bg: rgba(249, 251, 255, 0.97);
   --button-primary-bg: linear-gradient(180deg, #3f86f5 0%, #1f68de 100%);
-  --button-primary-ink: #f7fbff;
+  --button-primary-ink: #1b1f23;
   --button-warning-bg: linear-gradient(180deg, #efc6a2 0%, #d78d5a 100%);
   --button-warning-ink: #3b1f0f;
   --warning-border: rgba(197, 127, 72, 0.3);
@@ -139,7 +139,7 @@ html[data-theme='light'] {
   --tree-row-bg: linear-gradient(180deg, rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0.76)), rgba(235, 242, 252, 0.95);
   --tree-row-active-bg: linear-gradient(90deg, rgba(42, 114, 235, 0.12), transparent 70%), rgba(235, 243, 255, 0.98);
   --tree-row-active-border: rgba(42, 114, 235, 0.24);
-  --tree-icon: #71839d;
+  --tree-icon: #5d6f89;
   --tree-folder-icon: #a07c35;
   --tree-file-icon: #5476aa;
   --document-meta-bg: rgba(243, 248, 255, 0.9);
@@ -158,9 +158,9 @@ html[data-theme='light'] {
   --conflict-pre-text: #24344a;
   --toolbar-bg: linear-gradient(180deg, #f4f8ff 0%, #e8eef9 100%);
   --toolbar-sync-bg: rgba(31, 43, 63, 0.05);
-  --sync-clean: #3ea56a;
-  --sync-dirty: #d38c42;
-  --sync-saving: #4f86ea;
+  --sync-clean: #349b60;
+  --sync-dirty: #bf782e;
+  --sync-saving: #3168cc;
   --editor-canvas-bg:
     radial-gradient(circle at top, rgba(42, 114, 235, 0.07), transparent 30%),
     linear-gradient(180deg, #fdfefe 0%, #eef4fd 100%);
@@ -680,11 +680,14 @@ select {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .workspace-split-pane.is-active {
   border-color: var(--split-pane-active-border);
-  box-shadow: var(--split-pane-active-shadow);
+  box-shadow:
+    var(--split-pane-active-shadow),
+    0 0 0 2px var(--split-pane-active-border);
 }
 
 .workspace-split-pane:not(.is-active) {
@@ -698,6 +701,12 @@ select {
   gap: 8px;
   padding: 8px 12px;
   border-bottom: 1px solid var(--border);
+  transition: background-color 0.2s ease;
+}
+
+.workspace-split-pane.is-active .workspace-split-pane__header {
+  background: var(--surface-accent-bg);
+  border-bottom-color: var(--split-pane-active-border);
 }
 
 .workspace-split-pane__meta {
@@ -739,10 +748,25 @@ select {
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: var(--text-dim);
+  transition: color 0.2s ease;
 }
 
 .workspace-split-pane__active-indicator.is-active {
   color: var(--accent-strong);
+}
+
+/* Unsaved/Dirty indicator badge */
+.workspace-split-pane__dirty-badge {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  background: var(--warning-text);
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.workspace-split-pane.is-active .workspace-split-pane__dirty-badge {
+  background: var(--accent-strong);
 }
 
 .workspace-split-pane__body {
@@ -1323,3 +1347,4 @@ select {
     display: none;
   }
 }
+

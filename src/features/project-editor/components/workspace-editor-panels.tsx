@@ -39,6 +39,7 @@ function PaneEditor({ model, pane }: PaneEditorProps) {
     <section class={`workspace-split-pane ${isActive ? 'is-active' : ''}`} onPointerDownCapture={onActivate}>
       <header class="workspace-split-pane__header">
         <span class="workspace-split-pane__meta" title={paneState.path ?? undefined}>
+          {paneState.isDirty && <span class="workspace-split-pane__dirty-badge" title="Unsaved changes"></span>}
           <span class="workspace-split-pane__label">{toPaneTitle(paneState.path)}</span>
           <span class={`workspace-split-pane__path-inline ${paneState.path ? '' : 'is-empty'}`}>
             {paneState.path ?? 'Click a file to assign it to this pane.'}

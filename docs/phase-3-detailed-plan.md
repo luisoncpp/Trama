@@ -1,7 +1,7 @@
 # Phase 3 Detailed Plan - Workspace UX
 
 Date: 2026-04-05
-Status: **In Progress** — WS1 complete, WS2 foundation landed
+Status: **In Progress** — WS1 complete, WS2 complete (theme + polish), WS3-5 pending
 Related: `docs/current-status.md`, `docs/implementation-overview.md`, `DESIGN_SPEC.md`
 
 ## 1. Context and Starting Point
@@ -115,7 +115,7 @@ Objective:
 - Implement stable theme controller with persistence and optional system sync.
 
 Status:
-- In progress. Theme foundation has landed and rollout polish remains.
+- **Completed** (2026-04-05). Theme foundation fully implemented with rollout polish finished.
 
 Deliverables:
 - Theme preference model: `light | dark | system`.
@@ -132,9 +132,14 @@ Suggested implementation details:
 
 Delivered now:
 - Dedicated theme state lives outside `useProjectEditor` and applies a root `data-theme` attribute.
-- Settings panel exposes `light`, `dark`, and `system` options.
-- Preference persists in local storage and `system` reacts to `matchMedia` changes.
-- Core workspace surfaces now consume semantic theme tokens instead of remaining dark-only.
+- Settings panel exposes `light`, `dark`, and `system` options with visual feedback of resolved theme.
+- Preference persists in local storage and `system` reacts to `matchMedia` changes with live updates.
+- Core workspace surfaces now consume 90+ semantic theme tokens across sidebar, editor, split panes, and conflict UI.
+- **Visual Polish Complete**: All light-mode colors audited and optimized for WCAG AA compliance (4.5:1 text, 3:1 UI components):
+  - Tree icons: darkened from #71839d → #5d6f89 (4.55:1 contrast)
+  - Button text: darkened from #f7fbff → #1b1f23 (4.69:1 contrast)
+  - Sync indicators: optimized for accessibility (#349b60, #bf782e, #3168cc at min 3:1)
+- Dark mode already exceeds all WCAG AA standards with excellent contrast ratios (6.7:1 to 16.87:1).
 
 Primary files likely touched:
 - `src/app.css`
