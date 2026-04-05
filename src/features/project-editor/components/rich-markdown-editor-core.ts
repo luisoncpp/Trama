@@ -105,7 +105,7 @@ function useInitializeEditor({
     return () => {
       editorRef.current = null
     }
-  }, [documentId, hostRef, editorRef, isApplyingExternalValueRef, lastEditorValueRef, onChangeRef, turndownRef, value])
+  }, [documentId, hostRef, editorRef, isApplyingExternalValueRef, lastEditorValueRef, onChangeRef, turndownRef])
 }
 
 function useSyncExternalValue({

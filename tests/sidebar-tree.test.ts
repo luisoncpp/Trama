@@ -66,4 +66,15 @@ describe('sidebar tree logic', () => {
     expect(result.visibleNodePaths.size).toBe(0)
     expect(result.autoExpandFolderPaths).toEqual([])
   })
+
+  it('includes empty folders provided as folder paths', () => {
+    const tree = buildSidebarTree(['Lore/Worldbuilding/'])
+
+    expect(tree.rootIds).toEqual(['Lore'])
+    expect(tree.nodesById['Lore'].childIds).toEqual(['Lore/Worldbuilding'])
+    expect(tree.nodesById['Lore/Worldbuilding'].type).toBe('folder')
+
+    const rows = getVisibleSidebarRows(tree, new Set(['Lore']))
+    expect(rows.map((row) => row.path)).toEqual(['Lore', 'Lore/Worldbuilding'])
+  })
 })

@@ -20,16 +20,82 @@ function getRootFolderPaths(tree: ReturnType<typeof buildSidebarTree>): string[]
     .map((node) => node.path)
 }
 
-function buildExpandedSeed(
-  previousExpanded: string[],
-  folderPaths: Set<string>,
-  rootFolders: string[],
+function keepValidExpanded(previousExpanded: string[], folderPaths: Set<string>): string[] {
+  return previousExpanded.filter((path) => folderPaths.has(path))
+}
+
+function getSeededExpandedFolders(params: {
+  previousExpanded: string[]
+  folderPaths: Set<string>
+  rootFolders: string[]
+  didInitialize: boolean
+  treeChanged: boolean
+}): string[] {
+  const previousValid = keepValidExpanded(params.previousExpanded, params.folderPaths)
+  if (!params.didInitialize) {
+    return previousValid.length > 0 ? previousValid : params.rootFolders
+  }
+
+  if (params.treeChanged && params.previousExpanded.length === 0 && params.rootFolders.length > 0) {
+    return params.rootFolders
+  }
+
+  if (previousValid.length === 0 && params.previousExpanded.length > 0) {
+    return params.rootFolders
+  }
+
+  return previousValid
+}
+
+function getFolderTreeKey(folderPaths: Set<string>): string {
+  return Array.from(folderPaths).sort().join('|')
+}
+
+function useSeedExpandedFolders(
+  tree: ReturnType<typeof buildSidebarTree>,
+  didInitializeRef: { current: boolean },
+  previousTreeKeyRef: { current: string },
+  setExpandedFolders: (updater: (prev: string[]) => string[]) => void,
+): void {
+  useEffect(() => {
+    const folderPaths = getFolderPaths(tree)
+    const rootFolders = getRootFolderPaths(tree)
+    const treeKey = getFolderTreeKey(folderPaths)
+    const treeChanged = previousTreeKeyRef.current !== treeKey
+
+    setExpandedFolders((prev) =>
+      getSeededExpandedFolders({
+        previousExpanded: prev,
+        folderPaths,
+        rootFolders,
+        didInitialize: didInitializeRef.current,
+        treeChanged,
+      }),
+    )
+
+    didInitializeRef.current = true
+    previousTreeKeyRef.current = treeKey
+  }, [didInitializeRef, previousTreeKeyRef, setExpandedFolders, tree])
+}
+
+function useExpandSelectedPathAncestors(
+  tree: ReturnType<typeof buildSidebarTree>,
   selectedPath: string | null,
-): string[] {
-  const selectedAncestors = selectedPath ? getAncestorFolderPaths(selectedPath) : []
-  const previousValid = previousExpanded.filter((path) => folderPaths.has(path))
-  const seed = previousValid.length > 0 ? previousValid : rootFolders
-  return unique([...seed, ...selectedAncestors])
+  setExpandedFolders: (updater: (prev: string[]) => string[]) => void,
+): void {
+  useEffect(() => {
+    if (!selectedPath) {
+      return
+    }
+
+    const folderPaths = getFolderPaths(tree)
+    const ancestors = getAncestorFolderPaths(selectedPath).filter((path) => folderPaths.has(path))
+    if (ancestors.length === 0) {
+      return
+    }
+
+    setExpandedFolders((prev) => unique([...keepValidExpanded(prev, folderPaths), ...ancestors]))
+  }, [selectedPath, setExpandedFolders, tree])
 }
 
 function restoreExpandedFolders(
@@ -53,12 +119,11 @@ export function useSidebarTreeExpandedFolders(
   const [expandedFolders, setExpandedFolders] = useState<string[]>([])
   const previousExpandedBeforeFilterRef = useRef<string[] | null>(null)
   const wasFilterActiveRef = useRef(false)
+  const didInitializeRef = useRef(false)
+  const previousTreeKeyRef = useRef('')
 
-  useEffect(() => {
-    const folderPaths = getFolderPaths(tree)
-    const rootFolders = getRootFolderPaths(tree)
-    setExpandedFolders((prev) => buildExpandedSeed(prev, folderPaths, rootFolders, selectedPath))
-  }, [selectedPath, tree])
+  useSeedExpandedFolders(tree, didInitializeRef, previousTreeKeyRef, setExpandedFolders)
+  useExpandSelectedPathAncestors(tree, selectedPath, setExpandedFolders)
 
   useEffect(() => {
     const isFilterActive = filterQuery.trim().length > 0

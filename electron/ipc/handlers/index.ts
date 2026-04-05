@@ -1,5 +1,7 @@
 export { buildPingResponse } from './ping-handler.js'
 export {
+  handleCreateDocument,
+  handleCreateFolder,
   handleGetIndex,
   handleOpenProject,
   handleReadDocument,

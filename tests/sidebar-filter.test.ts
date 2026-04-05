@@ -72,4 +72,36 @@ describe('sidebar filter UX', () => {
     expect(container.textContent).toContain('Scene-001.md')
     expect(container.textContent).not.toContain('Scene-003.md')
   })
+
+  it('allows collapsing all folders without auto-expanding them again', () => {
+    const props = {
+      visibleFiles: [
+        'Act-01/Chapter-01/Scene-001.md',
+        'Lore/People/Hero.md',
+      ],
+      selectedPath: null,
+      loadingDocument: false,
+      onSelectFile: () => undefined,
+      filterQuery: '',
+    }
+
+    act(() => {
+      render(h(SidebarTree, props), container)
+    })
+
+    const rootButtons = Array.from(container.querySelectorAll('.sidebar-tree__row')).filter((node) =>
+      node.textContent === 'Act-01' || node.textContent === 'Lore',
+    ) as HTMLButtonElement[]
+
+    expect(rootButtons.length).toBe(2)
+
+    act(() => {
+      rootButtons.forEach((button) => button.click())
+    })
+
+    expect(container.textContent).not.toContain('Chapter-01')
+    expect(container.textContent).not.toContain('People')
+    expect(container.textContent).toContain('Act-01')
+    expect(container.textContent).toContain('Lore')
+  })
 })

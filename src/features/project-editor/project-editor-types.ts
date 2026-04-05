@@ -1,5 +1,10 @@
 export type SidebarSection = 'explorer' | 'outline' | 'lore' | 'settings'
 
+export interface SidebarCreateInput {
+  directory: string
+  name: string
+}
+
 export interface ProjectEditorState {
   apiAvailable: boolean
   rootPath: string
@@ -21,6 +26,8 @@ export interface ProjectEditorState {
 export interface ProjectEditorActions {
   pickProjectFolder: () => Promise<void>
   selectFile: (filePath: string) => void
+  createArticle: (input: SidebarCreateInput) => Promise<void>
+  createCategory: (input: SidebarCreateInput) => Promise<void>
   setSidebarSection: (section: SidebarSection) => void
   toggleSidebarPanelCollapsed: () => void
   setSidebarPanelWidth: (width: number) => void

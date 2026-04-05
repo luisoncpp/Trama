@@ -18,6 +18,14 @@ type TramaApiMock = {
   selectProjectFolder: () => Promise<{ ok: true; data: { rootPath: string | null } }>
   readDocument: () => Promise<{ ok: true; data: { path: string; content: string; meta: Record<string, unknown> } }>
   saveDocument: () => Promise<{ ok: true; data: { path: string; version: string } }>
+  createDocument: (payload: { path: string; initialContent?: string }) => Promise<{
+    ok: true
+    data: { path: string; createdAt: string }
+  }>
+  createFolder: (payload: { path: string }) => Promise<{
+    ok: true
+    data: { path: string; createdAt: string }
+  }>
   getIndex: () => Promise<{
     ok: true
     data: { version: string; corkboardOrder: Record<string, string[]>; cache: Record<string, unknown> }
@@ -40,6 +48,20 @@ function setupTramaApiMock(overrides?: Partial<TramaApiMock>) {
     selectProjectFolder: async () => ({ ok: true, data: { rootPath: null } }),
     readDocument: async () => ({ ok: true, data: { path: 'docs/a.md', content: '# A', meta: {} } }),
     saveDocument: async () => ({ ok: true, data: { path: 'docs/a.md', version: new Date().toISOString() } }),
+    createDocument: async (payload) => ({
+      ok: true,
+      data: {
+        path: payload.path,
+        createdAt: new Date().toISOString(),
+      },
+    }),
+    createFolder: async (payload) => ({
+      ok: true,
+      data: {
+        path: payload.path,
+        createdAt: new Date().toISOString(),
+      },
+    }),
     getIndex: async () => ({ ok: true, data: { version: '1.0.0', corkboardOrder: {}, cache: {} } }),
     onExternalFileEvent: () => () => undefined,
   }
@@ -133,5 +155,48 @@ describe('useProjectEditor', () => {
       panelCollapsed: true,
       panelWidth: 420,
     })
+  })
+
+  it('creates a new article with generated name in active section', async () => {
+    window.localStorage.removeItem('trama.sidebar.ui.v1')
+    const createDocumentCalls: string[] = []
+    setupTramaApiMock({
+      selectProjectFolder: async () => ({ ok: true, data: { rootPath: 'C:/tmp/project' } }),
+      openProject: async () => ({
+        ok: true,
+        data: {
+          rootPath: 'C:/tmp/project',
+          tree: [],
+          markdownFiles: ['book/intro.md'],
+          index: { version: '1.0.0', corkboardOrder: {}, cache: {} },
+        },
+      }),
+      createDocument: async (payload) => {
+        createDocumentCalls.push(payload.path)
+        return { ok: true, data: { path: payload.path, createdAt: new Date().toISOString() } }
+      },
+    })
+
+    let model: ProjectEditorModel | undefined
+
+    function Harness() {
+      model = useProjectEditor()
+      return null
+    }
+
+    const container = document.createElement('div')
+    act(() => {
+      render(h(Harness, {}), container)
+    })
+
+    await act(async () => {
+      await model?.actions.pickProjectFolder()
+    })
+
+    await act(async () => {
+      await model?.actions.createArticle({ directory: '', name: 'New-Article' })
+    })
+
+    expect(createDocumentCalls[0]).toBe('book/New-Article.md')
   })
 })

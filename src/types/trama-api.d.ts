@@ -1,4 +1,8 @@
 import type {
+  CreateDocumentRequest,
+  CreateDocumentResponse,
+  CreateFolderRequest,
+  CreateFolderResponse,
   DebugLogRequest,
   ExternalFileEvent,
   IpcEnvelope,
@@ -23,6 +27,8 @@ declare global {
       selectProjectFolder(): Promise<IpcEnvelope<SelectProjectFolderResponse>>
       readDocument(payload: ReadDocumentRequest): Promise<IpcEnvelope<ReadDocumentResponse>>
       saveDocument(payload: SaveDocumentRequest): Promise<IpcEnvelope<SaveDocumentResponse>>
+      createDocument(payload: CreateDocumentRequest): Promise<IpcEnvelope<CreateDocumentResponse>>
+      createFolder(payload: CreateFolderRequest): Promise<IpcEnvelope<CreateFolderResponse>>
       getIndex(): Promise<IpcEnvelope<ProjectIndex>>
       onExternalFileEvent(callback: (event: ExternalFileEvent) => void): () => void
     }

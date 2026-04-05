@@ -66,6 +66,8 @@ export function ProjectEditorView({ model }: ProjectEditorViewProps) {
             onSelectSidebarSection={actions.setSidebarSection}
             onToggleSidebarPanelCollapsed={actions.toggleSidebarPanelCollapsed}
             onSidebarPanelWidthChange={actions.setSidebarPanelWidth}
+            onCreateArticle={(input) => void actions.createArticle(input)}
+            onCreateCategory={(input) => void actions.createCategory(input)}
             apiAvailable={state.apiAvailable}
             loadingProject={state.loadingProject}
             rootPath={state.rootPath}

@@ -1,4 +1,4 @@
-# Current Status (Phase 2 Complete, Phase 3 In Progress)
+# Current Status (Phase 2 Complete, Phase 3 Progressing)
 
 ## Product state
 
@@ -22,12 +22,13 @@ Implemented now:
 - Phase 3 PR-1 completed: sidebar rail shell with persisted section/collapse/width state.
 - Phase 3 PR-2 completed: hierarchical sidebar tree with expand/collapse, keyboard navigation basics, and folder/file icons.
 - Phase 3 PR-3 completed: debounced sidebar filter/search with scoped matching, auto-expanded branches, and expanded-state restore on clear.
+- Phase 3 PR-4 completed: create article/category actions wired end-to-end (renderer actions, typed IPC channels, preload bridge, main-process handlers, and repository create operations).
 - Sidebar IA updated in docs before implementation: sections will map to different project subfolders (`book/`, `outline/`, `lore/`) and Explorer will focus on manuscript Act/Chapter/Scene content.
 
 Not implemented yet (planned in later phases):
 - File operations beyond read/save (create/rename/delete workflows).
 - Wiki links, templates, corkboard DnD, AI import/export pipeline.
-- Create actions over IPC (PR-4).
+- Sidebar hardening pass (PR-5: focus and keyboard flow, responsive polish, and edge-state UX).
 
 ## Reliability status
 
@@ -52,7 +53,7 @@ Additional regression checks currently in the suite:
 ## Suggested next milestones
 
 1. Continue Phase 3 workspace UX:
-- Sidebar PR-4: create article/category actions over IPC.
+- Sidebar PR-5: hardening (focus management, empty/loading/error state polish, responsive collapse behavior).
 - Theme preferences and fullscreen/focus mode wiring.
 
 2. Improve editor capabilities:

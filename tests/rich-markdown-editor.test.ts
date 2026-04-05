@@ -292,4 +292,37 @@ describe('RichMarkdownEditor', () => {
     await sleep(20)
     expect(editorAfterSync.getText().trim()).toBe('Externo')
   })
+
+  it('con estado controlado no reinicia cursor al inicio al teclear al final', async () => {
+    function TestHarness() {
+      const [value, setValue] = useState('Linea inicial')
+
+      return h(RichMarkdownEditor, buildEditorProps({
+        documentId: 'cursor-controlled-doc',
+        value,
+        onChange: setValue,
+      }))
+    }
+
+    act(() => {
+      render(h(TestHarness, {}), container)
+    })
+
+    await sleep(80)
+
+    const editor = getQuillInstance(container)
+    const endIndex = Math.max(0, editor.getLength() - 1)
+
+    act(() => {
+      editor.setSelection(endIndex, 0, 'silent')
+      editor.insertText(endIndex, ' plus', 'user')
+    })
+
+    await sleep(40)
+
+    const after = getQuillInstance(container)
+    const selection = after.getSelection()
+    expect(selection).toBeTruthy()
+    expect(selection?.index ?? 0).toBeGreaterThan(0)
+  })
 })

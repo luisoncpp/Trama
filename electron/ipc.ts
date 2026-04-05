@@ -1,5 +1,7 @@
 import type { BrowserWindow, IpcMain } from 'electron'
 import {
+  type CreateDocumentRequest,
+  type CreateFolderRequest,
   debugLogRequestSchema,
   IPC_CHANNELS,
   type DebugLogRequest,
@@ -11,6 +13,8 @@ import {
 import {
   buildPingResponse,
   configureMainWindowResolver,
+  handleCreateDocument,
+  handleCreateFolder,
   handleGetIndex,
   handleOpenProject,
   handleReadDocument,
@@ -57,6 +61,14 @@ export function registerIpcHandlers(ipcMain: IpcMain, getMainWindow: () => Brows
 
   ipcMain.handle(IPC_CHANNELS.saveDocument, (_event, payload: SaveDocumentRequest) => {
     return handleSaveDocument(payload)
+  })
+
+  ipcMain.handle(IPC_CHANNELS.createDocument, (_event, payload: CreateDocumentRequest) => {
+    return handleCreateDocument(payload)
+  })
+
+  ipcMain.handle(IPC_CHANNELS.createFolder, (_event, payload: CreateFolderRequest) => {
+    return handleCreateFolder(payload)
   })
 
   ipcMain.handle(IPC_CHANNELS.getIndex, () => {

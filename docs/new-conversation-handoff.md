@@ -8,7 +8,7 @@ Use this file to quickly bootstrap a fresh chat session and avoid rediscovering 
 
 Trama is a file-first desktop writing tool. The codebase currently delivers a complete Phase 2 slice: open project folder, scan markdown files, edit/save documents with YAML frontmatter support, maintain index reconciliation, rich visual markdown editing, and handle external file conflicts with reload/keep/compare/save-as-copy actions.
 
-Phase 3 (sidebar navigation) is in progress. PR-1 (sidebar state/persistence via `localStorage`) and PR-2 (hierarchical folder/file tree with expand/collapse, keyboard navigation, chevron icons, and folder/file SVG icons) are complete. Next: PR-3 filter/search, PR-4 create article/category via IPC, PR-5 hardening.
+Phase 3 (sidebar navigation) is in progress. PR-1 (sidebar state/persistence via `localStorage`), PR-2 (hierarchical folder/file tree with expand/collapse, keyboard navigation, chevron icons, and folder/file SVG icons), PR-3 (debounced filter/search with auto-expand + restore), and PR-4 (create article/category via typed IPC) are complete. Next: PR-5 hardening.
 
 ## Read first (in order)
 
@@ -71,7 +71,6 @@ Shared contract:
 
 ## Current high-value next tasks
 
-1. **PR-3** — Sidebar filter/search: debounced text input, auto-expand matched branches, restore expanded state on clear. Implement in `sidebar-tree-logic.ts` (pure) + `sidebar-filter.tsx` (UI). See `docs/sidebar-technical-design-and-implementation-plan.md`.
-2. **PR-4** — Create article/category via IPC: new channels `trama:document:create` / `trama:folder:create`, Zod-validated, with optimistic UI update.
-3. **PR-5** — Hardening: keyboard focus management (Ctrl+F → filter), empty/loading/error states, responsive sidebar collapse.
-4. Continue expanding tests for watcher bursts and larger conflict scenarios.
+1. **PR-5** — Hardening: keyboard focus management (Ctrl+F → filter), empty/loading/error states, responsive sidebar collapse.
+2. Continue expanding tests for watcher bursts and larger conflict scenarios.
+3. Theme preferences and fullscreen/focus mode wiring.

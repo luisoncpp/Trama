@@ -7,6 +7,8 @@ export const IPC_CHANNELS = {
   selectProjectFolder: 'trama:project:select-folder',
   readDocument: 'trama:document:read',
   saveDocument: 'trama:document:save',
+  createDocument: 'trama:document:create',
+  createFolder: 'trama:folder:create',
   getIndex: 'trama:index:get',
   externalFileEvent: 'trama:project:external-file-event',
 } as const
@@ -87,6 +89,25 @@ export const saveDocumentResponseSchema = z.object({
   version: z.string(),
 })
 
+export const createDocumentRequestSchema = z.object({
+  path: z.string().trim().min(1),
+  initialContent: z.string().optional(),
+})
+
+export const createDocumentResponseSchema = z.object({
+  path: z.string(),
+  createdAt: z.string(),
+})
+
+export const createFolderRequestSchema = z.object({
+  path: z.string().trim().min(1),
+})
+
+export const createFolderResponseSchema = z.object({
+  path: z.string(),
+  createdAt: z.string(),
+})
+
 export const externalFileEventSchema = z.object({
   path: z.string(),
   event: z.enum(['add', 'change', 'unlink']),
@@ -119,6 +140,10 @@ export type ReadDocumentRequest = z.infer<typeof readDocumentRequestSchema>
 export type ReadDocumentResponse = z.infer<typeof readDocumentResponseSchema>
 export type SaveDocumentRequest = z.infer<typeof saveDocumentRequestSchema>
 export type SaveDocumentResponse = z.infer<typeof saveDocumentResponseSchema>
+export type CreateDocumentRequest = z.infer<typeof createDocumentRequestSchema>
+export type CreateDocumentResponse = z.infer<typeof createDocumentResponseSchema>
+export type CreateFolderRequest = z.infer<typeof createFolderRequestSchema>
+export type CreateFolderResponse = z.infer<typeof createFolderResponseSchema>
 export type ExternalFileEvent = z.infer<typeof externalFileEventSchema>
 
 export type IpcError = z.infer<typeof ipcErrorSchema>

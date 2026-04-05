@@ -28,6 +28,20 @@ function normalizePath(path: string): string {
   return path.replaceAll('\\', '/').replace(/^\/+/, '').replace(/\/+$/, '')
 }
 
+function parseSidebarPath(rawPath: string): { path: string; type: SidebarTreeNodeType } | null {
+  const normalizedSlashes = rawPath.replaceAll('\\', '/').replace(/^\/+/, '')
+  const isFolder = normalizedSlashes.endsWith('/')
+  const normalizedPath = normalizedSlashes.replace(/\/+$/, '')
+  if (!normalizedPath) {
+    return null
+  }
+
+  return {
+    path: normalizedPath,
+    type: isFolder ? 'folder' : 'file',
+  }
+}
+
 function compareNodeOrder(a: SidebarTreeNode, b: SidebarTreeNode): number {
   if (a.type !== b.type) {
     return a.type === 'folder' ? -1 : 1
@@ -94,29 +108,32 @@ function ensureFileNode(
   }
 }
 
-export function buildSidebarTree(markdownFiles: string[]): SidebarTreeState {
+export function buildSidebarTree(sidebarPaths: string[]): SidebarTreeState {
   const nodesById: Record<string, SidebarTreeNode> = {}
   const rootIds: string[] = []
 
-  for (const rawPath of markdownFiles) {
-    const normalized = normalizePath(rawPath)
-    if (!normalized) {
+  for (const rawPath of sidebarPaths) {
+    const parsedPath = parseSidebarPath(rawPath)
+    if (!parsedPath) {
       continue
     }
 
-    const segments = normalized.split('/').filter(Boolean)
+    const segments = normalizePath(parsedPath.path).split('/').filter(Boolean)
     if (segments.length === 0) {
       continue
     }
 
     let parentId: string | null = null
 
-    for (let i = 0; i < segments.length - 1; i += 1) {
+    const folderEnd = parsedPath.type === 'folder' ? segments.length : segments.length - 1
+    for (let i = 0; i < folderEnd; i += 1) {
       const folderPath = segments.slice(0, i + 1).join('/')
       parentId = ensureFolderNode(nodesById, rootIds, folderPath, parentId, i)
     }
 
-    ensureFileNode(nodesById, rootIds, normalized, parentId, segments.length - 1)
+    if (parsedPath.type === 'file') {
+      ensureFileNode(nodesById, rootIds, parsedPath.path, parentId, segments.length - 1)
+    }
   }
 
   for (const node of Object.values(nodesById)) {

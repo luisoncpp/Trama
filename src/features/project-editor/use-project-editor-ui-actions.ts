@@ -4,6 +4,7 @@ import { buildConflictCopyPath, canSelectFile } from './project-editor-logic'
 import { PROJECT_EDITOR_STRINGS } from './project-editor-strings'
 import type { ProjectEditorActions } from './project-editor-types'
 import { useSetSidebarPanelWidthAction, useSetSidebarSectionAction, useToggleSidebarPanelCollapsedAction } from './use-project-editor-sidebar-actions'
+import { useProjectEditorCreateActions } from './use-project-editor-create-actions'
 import type { UseProjectEditorStateResult } from './use-project-editor-state'
 
 interface UseProjectEditorUiActionsParams {
@@ -180,6 +181,7 @@ export function useProjectEditorUiActions({
 }: UseProjectEditorUiActionsParams): ProjectEditorActions {
   const pickProjectFolder = usePickProjectFolderAction({ openProject, setters })
   const selectFile = useSelectFileAction({ values, setters, loadDocument })
+  const { createArticle, createCategory } = useProjectEditorCreateActions({ values, setters, openProject })
   const setSidebarSection = useSetSidebarSectionAction(setters)
   const toggleSidebarPanelCollapsed = useToggleSidebarPanelCollapsedAction(values, setters)
   const setSidebarPanelWidth = useSetSidebarPanelWidthAction(setters)
@@ -194,6 +196,8 @@ export function useProjectEditorUiActions({
   return {
     pickProjectFolder,
     selectFile,
+    createArticle,
+    createCategory,
     setSidebarSection,
     toggleSidebarPanelCollapsed,
     setSidebarPanelWidth,

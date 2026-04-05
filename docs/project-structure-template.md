@@ -39,6 +39,7 @@ mi-proyecto/
     systems/
       magia.md
       politica.md
+    timeline.md
 
   assets/
     references/

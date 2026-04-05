@@ -35,16 +35,13 @@ async function scanDirectory(
   for (const directory of directories) {
     const childRelative = relativeDir ? path.join(relativeDir, directory.name) : directory.name
     const children = await scanDirectory(projectRoot, childRelative, markdownFiles)
-
-    if (children.length > 0) {
-      result.push({
-        id: toPosix(childRelative),
-        title: directory.name,
-        path: toPosix(childRelative),
-        type: 'folder',
-        children,
-      })
-    }
+    result.push({
+      id: toPosix(childRelative),
+      title: directory.name,
+      path: toPosix(childRelative),
+      type: 'folder',
+      children,
+    })
   }
 
   for (const file of files) {

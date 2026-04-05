@@ -79,12 +79,18 @@
 - `src/features/project-editor/components/sidebar/sidebar-panel.tsx`
   - Sidebar shell/orchestrator.
   - Composes rail + active section panel.
+- `src/features/project-editor/components/sidebar/sidebar-panel-logic.ts`
+  - Sidebar section scoping and per-section filter state helpers.
 - `src/features/project-editor/components/sidebar/sidebar-rail.tsx`
   - Left rail with section selection and collapse toggle.
-  - Sections: explorer, corkboard, planner, settings.
+  - Sections: explorer, outline, lore, settings.
 - `src/features/project-editor/components/sidebar/sidebar-explorer-content.tsx`
   - Explorer section container/header.
-  - Renders root path and hierarchical file tree.
+  - Renders root path, filter input, hierarchical tree, and create actions.
+- `src/features/project-editor/components/sidebar/sidebar-filter.tsx`
+  - Debounced sidebar filter input UI.
+- `src/features/project-editor/components/sidebar/sidebar-filter-logic.ts`
+  - Pure matching/visibility/auto-expand helpers for sidebar filtering.
 - `src/features/project-editor/components/sidebar/sidebar-tree.tsx`
   - Interactive tree UI.
   - Expand/collapse, selection, and keyboard navigation.
@@ -95,8 +101,12 @@
 - `src/features/project-editor/components/sidebar/sidebar-settings-content.tsx`
   - Sidebar settings section.
   - Panel width slider UI.
+- `src/features/project-editor/components/sidebar/sidebar-footer-actions.tsx`
+  - Quick actions (`+Article`, `+Category`) for content sections.
 - `src/features/project-editor/components/sidebar/sidebar-section-placeholder.tsx`
   - Placeholder section body for corkboard/planner until implemented.
+- `src/features/project-editor/use-project-editor-create-actions.ts`
+  - Create article/category action hooks mapped to active content section roots.
 - `src/features/project-editor/use-sidebar-ui-state.ts`
   - Sidebar UI local persistence (`trama.sidebar.ui.v1`).
 - `src/features/project-editor/use-project-editor-sidebar-actions.ts`

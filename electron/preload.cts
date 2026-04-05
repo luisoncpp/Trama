@@ -2,6 +2,10 @@ import { contextBridge, ipcRenderer } from 'electron'
 import {
   debugLogRequestSchema,
   IPC_CHANNELS,
+  type CreateDocumentRequest,
+  type CreateDocumentResponse,
+  type CreateFolderRequest,
+  type CreateFolderResponse,
   type DebugLogRequest,
   type ExternalFileEvent,
   type IpcEnvelope,
@@ -40,6 +44,12 @@ const tramaApi = {
   },
   saveDocument(payload: SaveDocumentRequest): Promise<IpcEnvelope<SaveDocumentResponse>> {
     return ipcRenderer.invoke(IPC_CHANNELS.saveDocument, payload)
+  },
+  createDocument(payload: CreateDocumentRequest): Promise<IpcEnvelope<CreateDocumentResponse>> {
+    return ipcRenderer.invoke(IPC_CHANNELS.createDocument, payload)
+  },
+  createFolder(payload: CreateFolderRequest): Promise<IpcEnvelope<CreateFolderResponse>> {
+    return ipcRenderer.invoke(IPC_CHANNELS.createFolder, payload)
   },
   getIndex(): Promise<IpcEnvelope<ProjectIndex>> {
     return ipcRenderer.invoke(IPC_CHANNELS.getIndex)

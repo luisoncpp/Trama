@@ -1,6 +1,10 @@
 import { PROJECT_EDITOR_STRINGS } from '../../project-editor-strings'
+import type { SidebarCreateInput } from '../../project-editor-types'
+import { SidebarCreateDialog } from './sidebar-create-dialog.tsx'
+import { SidebarFooterActions } from './sidebar-footer-actions.tsx'
 import { SidebarFilter } from './sidebar-filter.tsx'
 import { SidebarTree } from './sidebar-tree.tsx'
+import { useSidebarCreateDialog } from './use-sidebar-create-dialog'
 
 function SelectProjectFolderIcon() {
   return (
@@ -30,7 +34,77 @@ interface SidebarExplorerContentProps {
   scopePathLabel: string
   filterQuery: string
   onFilterQueryChange: (value: string) => void
+  onCreateArticle: (input: SidebarCreateInput) => void
+  onCreateCategory: (input: SidebarCreateInput) => void
   onPickFolder: () => void
+}
+
+interface SidebarExplorerBodyProps {
+  title: string
+  visibleFiles: string[]
+  selectedPath: string | null
+  loadingDocument: boolean
+  onSelectFile: (filePath: string) => void
+  loadingProject: boolean
+  apiAvailable: boolean
+  scopePathLabel: string
+  filterQuery: string
+  onFilterQueryChange: (value: string) => void
+  createMode: ReturnType<typeof useSidebarCreateDialog>['createMode']
+  createInput: SidebarCreateInput
+  openCreateDialog: ReturnType<typeof useSidebarCreateDialog>['openCreateDialog']
+  closeCreateDialog: ReturnType<typeof useSidebarCreateDialog>['closeCreateDialog']
+  submitCreateDialog: ReturnType<typeof useSidebarCreateDialog>['submitCreateDialog']
+  onDirectoryChange: (value: string) => void
+  onNameChange: (value: string) => void
+}
+
+function SidebarExplorerBody({
+  title,
+  visibleFiles,
+  selectedPath,
+  loadingDocument,
+  onSelectFile,
+  loadingProject,
+  apiAvailable,
+  scopePathLabel,
+  filterQuery,
+  onFilterQueryChange,
+  createMode,
+  createInput,
+  openCreateDialog,
+  closeCreateDialog,
+  submitCreateDialog,
+  onDirectoryChange,
+  onNameChange,
+}: SidebarExplorerBodyProps) {
+  return (
+    <>
+      <p class="project-menu__path">{scopePathLabel || PROJECT_EDITOR_STRINGS.noFolderSelected}</p>
+      <SidebarFilter value={filterQuery} onChange={onFilterQueryChange} />
+      <SidebarTree
+        visibleFiles={visibleFiles}
+        selectedPath={selectedPath}
+        loadingDocument={loadingDocument}
+        onSelectFile={onSelectFile}
+        filterQuery={filterQuery}
+      />
+      <SidebarFooterActions
+        disabled={loadingProject || !apiAvailable}
+        onCreateArticle={() => openCreateDialog('article')}
+        onCreateCategory={() => openCreateDialog('category')}
+      />
+      <SidebarCreateDialog
+        mode={createMode}
+        sectionTitle={title}
+        value={createInput}
+        onDirectoryChange={onDirectoryChange}
+        onNameChange={onNameChange}
+        onSubmit={submitCreateDialog}
+        onCancel={closeCreateDialog}
+      />
+    </>
+  )
 }
 
 function SidebarHeader({ title, apiAvailable, loadingProject, onPickFolder }: SidebarHeaderProps) {
@@ -66,25 +140,34 @@ export function SidebarExplorerContent({
   scopePathLabel,
   filterQuery,
   onFilterQueryChange,
+  onCreateArticle,
+  onCreateCategory,
   onPickFolder,
 }: SidebarExplorerContentProps) {
+  const { createMode, createInput, setCreateDirectory, setCreateName, openCreateDialog, closeCreateDialog, submitCreateDialog } = useSidebarCreateDialog({ selectedPath, onCreateArticle, onCreateCategory })
+
   return (
     <div class="sidebar-panel-content">
       <aside class="workspace-panel workspace-panel--sidebar">
-        <SidebarHeader
+        <SidebarHeader title={title} apiAvailable={apiAvailable} loadingProject={loadingProject} onPickFolder={onPickFolder} />
+        <SidebarExplorerBody
           title={title}
-          apiAvailable={apiAvailable}
-          loadingProject={loadingProject}
-          onPickFolder={onPickFolder}
-        />
-        <p class="project-menu__path">{scopePathLabel || PROJECT_EDITOR_STRINGS.noFolderSelected}</p>
-        <SidebarFilter value={filterQuery} onChange={onFilterQueryChange} />
-        <SidebarTree
           visibleFiles={visibleFiles}
           selectedPath={selectedPath}
           loadingDocument={loadingDocument}
           onSelectFile={onSelectFile}
+          loadingProject={loadingProject}
+          apiAvailable={apiAvailable}
+          scopePathLabel={scopePathLabel}
           filterQuery={filterQuery}
+          onFilterQueryChange={onFilterQueryChange}
+          createMode={createMode}
+          createInput={createInput}
+          openCreateDialog={openCreateDialog}
+          closeCreateDialog={closeCreateDialog}
+          submitCreateDialog={submitCreateDialog}
+          onDirectoryChange={setCreateDirectory}
+          onNameChange={setCreateName}
         />
       </aside>
     </div>

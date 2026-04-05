@@ -4,6 +4,28 @@ import { PROJECT_EDITOR_STRINGS } from './project-editor-strings'
 import type { SidebarSection } from './project-editor-types'
 import { useSidebarUiState } from './use-sidebar-ui-state'
 
+function collectSidebarPaths(items: ProjectSnapshot['tree'], result: string[]): void {
+  for (const item of items) {
+    if (item.type === 'folder') {
+      result.push(`${item.path}/`)
+      collectSidebarPaths(item.children ?? [], result)
+      continue
+    }
+
+    result.push(item.path)
+  }
+}
+
+function getVisibleSidebarPaths(snapshot: ProjectSnapshot | null): string[] {
+  if (!snapshot) {
+    return []
+  }
+
+  const paths: string[] = []
+  collectSidebarPaths(snapshot.tree, paths)
+  return paths
+}
+
 export interface UseProjectEditorStateResult {
   values: {
     apiAvailable: boolean
@@ -131,7 +153,7 @@ export function useProjectEditorState(): UseProjectEditorStateResult {
   const sidebarUiState = useSidebarUiState()
 
   const apiAvailable = Boolean(window.tramaApi?.openProject)
-  const visibleFiles = useMemo(() => snapshot?.markdownFiles ?? [], [snapshot])
+  const visibleFiles = useMemo(() => getVisibleSidebarPaths(snapshot), [snapshot])
 
   const values = buildValues({
     apiAvailable,

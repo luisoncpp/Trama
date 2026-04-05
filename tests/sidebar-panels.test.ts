@@ -23,6 +23,8 @@ function buildPanelProps(
     onSelectSidebarSection: () => undefined,
     onToggleSidebarPanelCollapsed: () => undefined,
     onSidebarPanelWidthChange: () => undefined,
+    onCreateArticle: () => undefined,
+    onCreateCategory: () => undefined,
     apiAvailable: true,
     loadingProject: false,
     rootPath: 'C:/Proyectos/test_trama',
@@ -125,6 +127,8 @@ describe('sidebar panels', () => {
           scopePathLabel: 'C:/Proyectos/test_trama/book',
           filterQuery: '',
           onFilterQueryChange,
+          onCreateArticle: () => undefined,
+          onCreateCategory: () => undefined,
           onPickFolder,
         }),
         container,
@@ -145,6 +149,97 @@ describe('sidebar panels', () => {
 
     const filterInput = container.querySelector('.sidebar-filter__input') as HTMLInputElement
     expect(filterInput).toBeTruthy()
+  })
+
+  it('triggers create article/category callbacks from footer actions', () => {
+    const onCreateArticle = vi.fn()
+    const onCreateCategory = vi.fn()
+
+    act(() => {
+      render(
+        h(SidebarPanel, buildPanelProps({ onCreateArticle, onCreateCategory })),
+        container,
+      )
+    })
+
+    const createArticleButton = Array.from(container.querySelectorAll('.sidebar-footer-actions .editor-button')).find(
+      (node) => node.textContent?.includes('+ Article'),
+    ) as HTMLButtonElement
+    const createCategoryButton = Array.from(container.querySelectorAll('.sidebar-footer-actions .editor-button')).find(
+      (node) => node.textContent?.includes('+ Category'),
+    ) as HTMLButtonElement
+
+    expect(createArticleButton).toBeTruthy()
+    expect(createCategoryButton).toBeTruthy()
+
+    act(() => {
+      createArticleButton.click()
+    })
+
+    const articleDirectoryInput = container.querySelector(
+      '.sidebar-create-dialog input[placeholder="Act-01/Chapter-01"]',
+    ) as HTMLInputElement
+    const articleNameInput = container.querySelector(
+      '.sidebar-create-dialog input[placeholder="Scene-001"]',
+    ) as HTMLInputElement
+    const articleSubmitButton = Array.from(container.querySelectorAll('.sidebar-create-dialog .editor-button')).find(
+      (node) => node.textContent?.includes('Create article'),
+    ) as HTMLButtonElement
+
+    expect(articleDirectoryInput).toBeTruthy()
+    expect(articleNameInput).toBeTruthy()
+    expect(articleSubmitButton).toBeTruthy()
+
+    act(() => {
+      articleDirectoryInput.value = 'Act-01/Chapter-03'
+      articleDirectoryInput.dispatchEvent(new Event('input', { bubbles: true }))
+      articleNameInput.value = 'Scene-007'
+      articleNameInput.dispatchEvent(new Event('input', { bubbles: true }))
+    })
+
+    act(() => {
+      articleSubmitButton.click()
+    })
+
+    expect(onCreateArticle).toHaveBeenCalledWith({
+      directory: 'Act-01/Chapter-03',
+      name: 'Scene-007',
+    })
+
+    act(() => {
+      createCategoryButton.click()
+    })
+
+    const categoryDirectoryInput = container.querySelector(
+      '.sidebar-create-dialog input[placeholder="Act-01/Chapter-01"]',
+    ) as HTMLInputElement
+    const categoryNameInput = container.querySelector(
+      '.sidebar-create-dialog input[placeholder="Locations"]',
+    ) as HTMLInputElement
+    const categorySubmitButton = Array.from(container.querySelectorAll('.sidebar-create-dialog .editor-button')).find(
+      (node) => node.textContent?.includes('Create category'),
+    ) as HTMLButtonElement
+
+    expect(categoryDirectoryInput).toBeTruthy()
+    expect(categoryNameInput).toBeTruthy()
+    expect(categorySubmitButton).toBeTruthy()
+
+    act(() => {
+      categoryDirectoryInput.value = 'World'
+      categoryDirectoryInput.dispatchEvent(new Event('input', { bubbles: true }))
+      categoryNameInput.value = 'Cities'
+      categoryNameInput.dispatchEvent(new Event('input', { bubbles: true }))
+    })
+
+    act(() => {
+      categorySubmitButton.click()
+    })
+
+    expect(onCreateArticle).toHaveBeenCalledTimes(1)
+    expect(onCreateCategory).toHaveBeenCalledWith({
+      directory: 'World',
+      name: 'Cities',
+    })
   })
 
   it('updates panel width from settings slider', () => {
