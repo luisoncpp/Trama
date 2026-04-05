@@ -518,8 +518,17 @@ select {
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  padding: 10px 12px;
+  padding: 8px 12px;
   border-bottom: 1px solid var(--border);
+}
+
+.workspace-split-pane__meta {
+  min-width: 0;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
+  overflow: hidden;
+  white-space: nowrap;
 }
 
 .workspace-split-pane__label {
@@ -530,6 +539,21 @@ select {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  flex: 0 0 auto;
+}
+
+.workspace-split-pane__path-inline {
+  color: var(--text-muted);
+  font-family: 'Cascadia Code', Consolas, 'Courier New', monospace;
+  font-size: 0.72rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.workspace-split-pane__path-inline.is-empty {
+  font-family: 'Segoe UI Variable Text', 'Trebuchet MS', sans-serif;
+  color: var(--text-dim);
 }
 
 .workspace-split-pane__active-indicator {
@@ -541,21 +565,6 @@ select {
 
 .workspace-split-pane__active-indicator.is-active {
   color: #a9c8ff;
-}
-
-.workspace-split-pane__path {
-  margin: 0;
-  padding: 8px 12px;
-  color: var(--text-muted);
-  font-family: 'Cascadia Code', Consolas, 'Courier New', monospace;
-  font-size: 0.72rem;
-  border-bottom: 1px solid var(--border);
-  word-break: break-word;
-}
-
-.workspace-split-pane__path.is-empty {
-  font-family: 'Segoe UI Variable Text', 'Trebuchet MS', sans-serif;
-  color: var(--text-dim);
 }
 
 .workspace-split-pane__body {

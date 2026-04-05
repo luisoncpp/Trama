@@ -38,10 +38,14 @@ function PaneEditor({ model, pane }: PaneEditorProps) {
   return (
     <section class={`workspace-split-pane ${isActive ? 'is-active' : ''}`} onPointerDownCapture={onActivate}>
       <header class="workspace-split-pane__header">
-        <span class="workspace-split-pane__label" title={paneState.path ?? undefined}>{toPaneTitle(paneState.path)}</span>
+        <span class="workspace-split-pane__meta" title={paneState.path ?? undefined}>
+          <span class="workspace-split-pane__label">{toPaneTitle(paneState.path)}</span>
+          <span class={`workspace-split-pane__path-inline ${paneState.path ? '' : 'is-empty'}`}>
+            {paneState.path ?? 'Click a file to assign it to this pane.'}
+          </span>
+        </span>
         <span class={`workspace-split-pane__active-indicator ${isActive ? 'is-active' : ''}`}>{isActive ? 'Active' : 'Inactive'}</span>
       </header>
-      <p class={`workspace-split-pane__path ${paneState.path ? '' : 'is-empty'}`}>{paneState.path ?? 'Click a file to assign it to this pane.'}</p>
       <div class="workspace-split-pane__body">
         <EditorPanel
           selectedPath={paneState.path}

@@ -10,6 +10,49 @@ const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 let mainWindow: BrowserWindow | null = null
 const isSmokeTest = process.env.TRAMA_SMOKE_TEST === '1'
+const DEV_LOAD_RETRIES = 12
+const DEV_LOAD_RETRY_DELAY_MS = 400
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms)
+  })
+}
+
+function isRetryableLoadError(error: unknown): boolean {
+  const message = error instanceof Error ? error.message : String(error)
+  return (
+    message.includes('ERR_CONNECTION_REFUSED') ||
+    message.includes('ERR_CONNECTION_RESET') ||
+    message.includes('ERR_ABORTED')
+  )
+}
+
+async function loadRendererDevUrlWithRetry(win: BrowserWindow, url: string): Promise<void> {
+  for (let attempt = 1; attempt <= DEV_LOAD_RETRIES; attempt += 1) {
+    try {
+      await win.loadURL(url)
+      return
+    } catch (error) {
+      if (!isRetryableLoadError(error) || attempt === DEV_LOAD_RETRIES) {
+        throw error
+      }
+
+      await sleep(DEV_LOAD_RETRY_DELAY_MS)
+    }
+  }
+}
+
+async function loadRendererEntry(win: BrowserWindow, renderer: { isDev: boolean; entry: string }): Promise<void> {
+  if (renderer.isDev) {
+    console.log('MAIN_LOAD_DEV_URL', renderer.entry)
+    await loadRendererDevUrlWithRetry(win, renderer.entry)
+    return
+  }
+
+  console.log('MAIN_LOAD_FILE', renderer.entry)
+  await win.loadFile(renderer.entry)
+}
 
 async function runSmokeTest(win: BrowserWindow): Promise<void> {
   try {
@@ -56,6 +99,25 @@ function getRendererEntry(): { isDev: boolean; entry: string } {
   return { isDev: false, entry }
 }
 
+function showWindow(win: BrowserWindow): void {
+  if (!win.isDestroyed() && !win.isVisible()) {
+    win.show()
+  }
+}
+
+function configureWindowShowBehavior(win: BrowserWindow): void {
+  win.once('ready-to-show', () => {
+    console.log('MAIN_READY_TO_SHOW')
+    showWindow(win)
+  })
+
+  win.webContents.once('did-finish-load', () => {
+    // Fallback for cases where ready-to-show can fire before listener wiring.
+    console.log('MAIN_DID_FINISH_LOAD')
+    showWindow(win)
+  })
+}
+
 async function createMainWindow(): Promise<void> {
   const preloadPath = path.join(__dirname, 'preload.cjs')
   const win = new BrowserWindow(createMainWindowOptions(preloadPath))
@@ -63,21 +125,17 @@ async function createMainWindow(): Promise<void> {
 
   if (isSmokeTest) {
     setupSmokeTestHooks(win)
+  } else {
+    configureWindowShowBehavior(win)
   }
 
   const renderer = getRendererEntry()
-  if (renderer.isDev) {
-    await win.loadURL(renderer.entry)
-  } else {
-    await win.loadFile(renderer.entry)
-  }
+  await loadRendererEntry(win, renderer)
 
   if (isSmokeTest) {
     void runSmokeTest(win)
   } else {
-    win.once('ready-to-show', () => {
-      win.show()
-    })
+    showWindow(win)
   }
   setupContextMenu(win)
 
@@ -86,16 +144,23 @@ async function createMainWindow(): Promise<void> {
   })
 }
 
-app.whenReady().then(async () => {
-  registerIpcHandlers(ipcMain, () => mainWindow)
-  await createMainWindow()
+app
+  .whenReady()
+  .then(async () => {
+    registerIpcHandlers(ipcMain, () => mainWindow)
+    await createMainWindow()
 
-  app.on('activate', () => {
-    if (BrowserWindow.getAllWindows().length === 0) {
-      void createMainWindow()
-    }
+    app.on('activate', () => {
+      if (BrowserWindow.getAllWindows().length === 0) {
+        void createMainWindow()
+      }
+    })
   })
-})
+  .catch((error: unknown) => {
+    const message = error instanceof Error ? error.message : String(error)
+    console.error('MAIN_STARTUP_FAIL', message)
+    app.exit(1)
+  })
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {

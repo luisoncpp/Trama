@@ -137,13 +137,10 @@ When things break after refactors, run:
 
 ### Current mitigation
 
-- `dev:electron` now calls `build:electron:guarded`.
-- Guarded build behavior:
-	- timeout after 60s
-	- retries up to 3 attempts
-	- short delay between retries
+- Desktop startup now waits for an actual HTTP response (`wait-on http-get://localhost:5173`) before launching Electron.
+- Main-process startup now includes explicit error logging (`MAIN_STARTUP_FAIL`) and retryable dev URL load behavior for transient renderer availability races.
 
 ### Quick checks
 
-- Run `npm run build:electron:guarded` directly to confirm retries/timeout behavior.
-- If all retries fail, run `npm run build:electron` once manually to inspect deterministic TypeScript errors.
+- Run `npm run build:electron` directly to confirm deterministic TypeScript compile status.
+- Run `npm run dev` and, if startup fails, capture any `MAIN_STARTUP_FAIL` log line from Electron output.

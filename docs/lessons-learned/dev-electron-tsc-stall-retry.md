@@ -18,21 +18,18 @@
 
 ## Fix applied
 
-- Added `scripts/build-electron-with-retry.cjs`.
-- New script runs Electron TypeScript compile with:
-  - timeout (`60s`)
-  - retry (`3` attempts)
-  - short delay between retries (`1.2s`)
-- Updated `package.json`:
-  - `build:electron:guarded` -> `node scripts/build-electron-with-retry.cjs`
-  - `dev:electron` now uses guarded build before launching Electron.
+- Updated desktop wait condition from raw TCP to HTTP readiness:
+  - `wait-on http-get://localhost:5173 --timeout 30000`
+- Hardened main-window visibility in `electron/main.ts`:
+  - register show listeners before renderer load
+  - force `show()` once load completes to avoid hidden-window race states
 
 ## Result
 
-- Intermittent hangs in the Electron compile step now self-recover without manual restart in most cases.
+- Dev startup now has a stronger readiness gate and deterministic main-window show flow.
 - CI/prod build path remains unchanged (`build:electron` still calls raw `tsc`).
 
 ## Follow-up if this reappears frequently
 
 - Run `npm run build:electron` manually once to check for deterministic compiler errors.
-- If the guarded script times out repeatedly, capture terminal output and investigate TypeScript process-level hangs in the environment (antivirus/file-locking/path watcher interactions).
+- If startup still hangs, capture `MAIN_STARTUP_FAIL`, `MAIN_LOAD_DEV_URL`, `MAIN_DID_FINISH_LOAD`, and `MAIN_READY_TO_SHOW` logs to isolate whether failure is before or after renderer load.
