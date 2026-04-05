@@ -1,30 +1,10 @@
-import type { SidebarSection } from '../../project-editor-types'
-import type { SidebarCreateInput } from '../../project-editor-types'
 import { SidebarPanelBody, buildSidebarPanelBodyProps } from './sidebar-panel-body.tsx'
 import { SidebarRail } from './sidebar-rail'
 import { useSidebarContentSection } from './sidebar-panel-logic'
+import type { SidebarPanelCommonProps } from './sidebar-types'
 import { useSidebarResponsiveCollapse } from './use-sidebar-responsive-collapse'
 
-interface SidebarPanelProps {
-  visibleFiles: string[]
-  selectedPath: string | null
-  loadingDocument: boolean
-  onSelectFile: (filePath: string) => void
-  sidebarActiveSection: SidebarSection
-  sidebarPanelCollapsed: boolean
-  sidebarPanelWidth: number
-  onSelectSidebarSection: (section: SidebarSection) => void
-  onToggleSidebarPanelCollapsed: () => void
-  onSidebarPanelWidthChange: (width: number) => void
-  onCreateArticle: (input: SidebarCreateInput) => void
-  onCreateCategory: (input: SidebarCreateInput) => void
-  onRenameFile: (path: string, newName: string) => void
-  onDeleteFile: (path: string) => void
-  apiAvailable: boolean
-  loadingProject: boolean
-  rootPath: string
-  onPickFolder: () => void
-}
+type SidebarPanelProps = SidebarPanelCommonProps
 
 function buildSidebarPanelContentProps(props: SidebarPanelProps) {
   return {

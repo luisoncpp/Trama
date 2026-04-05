@@ -1,30 +1,9 @@
 import type { SidebarSection } from '../../project-editor-types'
-import type { SidebarCreateInput } from '../../project-editor-types'
 import { SidebarExplorerContent } from './sidebar-explorer-content'
 import { SIDEBAR_SECTION_CONFIG, type ContentSidebarSection } from './sidebar-section-roots'
 import { SidebarSettingsContent } from './sidebar-settings-content.tsx'
 import { joinProjectPath } from './sidebar-panel-logic'
-
-interface SidebarPanelBaseProps {
-  visibleFiles: string[]
-  selectedPath: string | null
-  loadingDocument: boolean
-  onSelectFile: (filePath: string) => void
-  sidebarActiveSection: SidebarSection
-  sidebarPanelCollapsed: boolean
-  sidebarPanelWidth: number
-  onSelectSidebarSection: (section: SidebarSection) => void
-  onToggleSidebarPanelCollapsed: () => void
-  onSidebarPanelWidthChange: (width: number) => void
-  onCreateArticle: (input: SidebarCreateInput) => void
-  onCreateCategory: (input: SidebarCreateInput) => void
-  onRenameFile: (path: string, newName: string) => void
-  onDeleteFile: (path: string) => void
-  apiAvailable: boolean
-  loadingProject: boolean
-  rootPath: string
-  onPickFolder: () => void
-}
+import type { SidebarFileActions, SidebarProjectContextProps, SidebarSelectionProps } from './sidebar-types'
 
 export interface SidebarPanelBodyProps {
   effectiveCollapsed: boolean
@@ -35,28 +14,17 @@ export interface SidebarPanelBodyProps {
   scopedSelectedPath: string | null
   activeFilterQuery: string
   onFilterQueryChange: (value: string) => void
-  onCreateArticle: (input: SidebarCreateInput) => void
-  onCreateCategory: (input: SidebarCreateInput) => void
-  onRenameFile: (path: string, newName: string) => void
-  onDeleteFile: (path: string) => void
-  onSelectFile: (filePath: string) => void
+  onSelectFile: SidebarSelectionProps['onSelectFile']
   sidebarPanelWidth: number
   onSidebarPanelWidthChange: (width: number) => void
+  onCreateArticle: SidebarFileActions['onCreateArticle']
+  onCreateCategory: SidebarFileActions['onCreateCategory']
+  onRenameFile: SidebarFileActions['onRenameFile']
+  onDeleteFile: SidebarFileActions['onDeleteFile']
   contentProps: Omit<
-    SidebarPanelBaseProps,
+    SidebarProjectContextProps & SidebarSelectionProps,
     | 'visibleFiles'
     | 'selectedPath'
-    | 'sidebarActiveSection'
-    | 'sidebarPanelCollapsed'
-    | 'sidebarPanelWidth'
-    | 'onSelectSidebarSection'
-    | 'onToggleSidebarPanelCollapsed'
-    | 'onSidebarPanelWidthChange'
-    | 'onCreateArticle'
-    | 'onCreateCategory'
-    | 'onRenameFile'
-    | 'onDeleteFile'
-    | 'onSelectFile'
     | 'rootPath'
   >
 }
@@ -118,11 +86,11 @@ export function buildSidebarPanelBodyProps(params: {
   scopedSelectedPath: string | null
   activeFilterQuery: string
   onFilterQueryChange: (value: string) => void
-  onCreateArticle: (input: SidebarCreateInput) => void
-  onCreateCategory: (input: SidebarCreateInput) => void
-  onRenameFile: (path: string, newName: string) => void
-  onDeleteFile: (path: string) => void
-  onSelectFile: (filePath: string) => void
+  onCreateArticle: SidebarFileActions['onCreateArticle']
+  onCreateCategory: SidebarFileActions['onCreateCategory']
+  onRenameFile: SidebarFileActions['onRenameFile']
+  onDeleteFile: SidebarFileActions['onDeleteFile']
+  onSelectFile: SidebarSelectionProps['onSelectFile']
   sidebarPanelWidth: number
   onSidebarPanelWidthChange: (width: number) => void
   contentProps: SidebarPanelBodyProps['contentProps']

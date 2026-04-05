@@ -1,6 +1,6 @@
 import { useRef } from 'preact/hooks'
-import type { SidebarCreateInput } from '../../project-editor-types'
 import { SidebarExplorerBody } from './sidebar-explorer-body.tsx'
+import type { SidebarExplorerCommonProps } from './sidebar-types'
 import { useSidebarCreateDialog } from './use-sidebar-create-dialog'
 import { useSidebarFileActionsDialog } from './use-sidebar-file-actions-dialog'
 import { useSidebarFilterShortcut } from './use-sidebar-filter-shortcut'
@@ -24,20 +24,20 @@ interface SidebarHeaderProps {
 
 interface SidebarExplorerContentProps {
   title: string
-  visibleFiles: string[]
-  selectedPath: string | null
-  loadingDocument: boolean
-  onSelectFile: (filePath: string) => void
-  apiAvailable: boolean
-  loadingProject: boolean
+  visibleFiles: SidebarExplorerCommonProps['visibleFiles']
+  selectedPath: SidebarExplorerCommonProps['selectedPath']
+  loadingDocument: SidebarExplorerCommonProps['loadingDocument']
+  onSelectFile: SidebarExplorerCommonProps['onSelectFile']
+  apiAvailable: SidebarExplorerCommonProps['apiAvailable']
+  loadingProject: SidebarExplorerCommonProps['loadingProject']
   scopePathLabel: string
   filterQuery: string
   onFilterQueryChange: (value: string) => void
-  onCreateArticle: (input: SidebarCreateInput) => void
-  onCreateCategory: (input: SidebarCreateInput) => void
-  onRenameFile: (path: string, newName: string) => void
-  onDeleteFile: (path: string) => void
-  onPickFolder: () => void
+  onCreateArticle: SidebarExplorerCommonProps['onCreateArticle']
+  onCreateCategory: SidebarExplorerCommonProps['onCreateCategory']
+  onRenameFile: SidebarExplorerCommonProps['onRenameFile']
+  onDeleteFile: SidebarExplorerCommonProps['onDeleteFile']
+  onPickFolder: SidebarExplorerCommonProps['onPickFolder']
 }
 
 function useSidebarExplorerDialogs(props: SidebarExplorerContentProps) {

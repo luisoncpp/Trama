@@ -26,46 +26,7 @@ function getVisibleSidebarPaths(snapshot: ProjectSnapshot | null): string[] {
   return paths
 }
 
-export interface UseProjectEditorStateResult {
-  values: {
-    apiAvailable: boolean
-    rootPath: string
-    snapshot: ProjectSnapshot | null
-    selectedPath: string | null
-    editorValue: string
-    editorMeta: DocumentMeta
-    isDirty: boolean
-    loadingProject: boolean
-    loadingDocument: boolean
-    saving: boolean
-    externalConflictPath: string | null
-    conflictComparisonContent: string | null
-    statusMessage: string
-    visibleFiles: string[]
-    sidebarActiveSection: SidebarSection
-    sidebarPanelCollapsed: boolean
-    sidebarPanelWidth: number
-  }
-  setters: {
-    setRootPath: (value: string) => void
-    setSnapshot: (value: ProjectSnapshot | null) => void
-    setSelectedPath: (value: string | null) => void
-    setEditorValue: (value: string) => void
-    setEditorMeta: (value: DocumentMeta) => void
-    setIsDirty: (value: boolean) => void
-    setLoadingProject: (value: boolean) => void
-    setLoadingDocument: (value: boolean) => void
-    setSaving: (value: boolean) => void
-    setExternalConflictPath: (value: string | null) => void
-    setConflictComparisonContent: (value: string | null) => void
-    setStatusMessage: (value: string) => void
-    setSidebarActiveSection: (value: SidebarSection) => void
-    setSidebarPanelCollapsed: (value: boolean) => void
-    setSidebarPanelWidth: (value: number) => void
-  }
-}
-
-function buildValues(params: {
+export interface ProjectEditorStateValues {
   apiAvailable: boolean
   rootPath: string
   snapshot: ProjectSnapshot | null
@@ -80,8 +41,45 @@ function buildValues(params: {
   conflictComparisonContent: string | null
   statusMessage: string
   visibleFiles: string[]
-  sidebarUiState: ReturnType<typeof useSidebarUiState>
-}): UseProjectEditorStateResult['values'] {
+  sidebarActiveSection: SidebarSection
+  sidebarPanelCollapsed: boolean
+  sidebarPanelWidth: number
+}
+
+export interface ProjectEditorStateSetters {
+  setRootPath: (value: string) => void
+  setSnapshot: (value: ProjectSnapshot | null) => void
+  setSelectedPath: (value: string | null) => void
+  setEditorValue: (value: string) => void
+  setEditorMeta: (value: DocumentMeta) => void
+  setIsDirty: (value: boolean) => void
+  setLoadingProject: (value: boolean) => void
+  setLoadingDocument: (value: boolean) => void
+  setSaving: (value: boolean) => void
+  setExternalConflictPath: (value: string | null) => void
+  setConflictComparisonContent: (value: string | null) => void
+  setStatusMessage: (value: string) => void
+  setSidebarActiveSection: (value: SidebarSection) => void
+  setSidebarPanelCollapsed: (value: boolean) => void
+  setSidebarPanelWidth: (value: number) => void
+}
+
+export interface UseProjectEditorStateResult {
+  values: ProjectEditorStateValues
+  setters: ProjectEditorStateSetters
+}
+
+type SidebarUiStateResult = ReturnType<typeof useSidebarUiState>
+
+type BuildValuesParams = Omit<ProjectEditorStateValues, 'sidebarActiveSection' | 'sidebarPanelCollapsed' | 'sidebarPanelWidth'> & {
+  sidebarUiState: SidebarUiStateResult
+}
+
+type BuildSettersParams = Omit<ProjectEditorStateSetters, 'setSidebarActiveSection' | 'setSidebarPanelCollapsed' | 'setSidebarPanelWidth'> & {
+  sidebarUiState: SidebarUiStateResult
+}
+
+function buildValues(params: BuildValuesParams): ProjectEditorStateValues {
   return {
     apiAvailable: params.apiAvailable,
     rootPath: params.rootPath,
@@ -103,21 +101,7 @@ function buildValues(params: {
   }
 }
 
-function buildSetters(params: {
-  setRootPath: (value: string) => void
-  setSnapshot: (value: ProjectSnapshot | null) => void
-  setSelectedPath: (value: string | null) => void
-  setEditorValue: (value: string) => void
-  setEditorMeta: (value: DocumentMeta) => void
-  setIsDirty: (value: boolean) => void
-  setLoadingProject: (value: boolean) => void
-  setLoadingDocument: (value: boolean) => void
-  setSaving: (value: boolean) => void
-  setExternalConflictPath: (value: string | null) => void
-  setConflictComparisonContent: (value: string | null) => void
-  setStatusMessage: (value: string) => void
-  sidebarUiState: ReturnType<typeof useSidebarUiState>
-}): UseProjectEditorStateResult['setters'] {
+function buildSetters(params: BuildSettersParams): ProjectEditorStateSetters {
   return {
     setRootPath: params.setRootPath,
     setSnapshot: params.setSnapshot,
