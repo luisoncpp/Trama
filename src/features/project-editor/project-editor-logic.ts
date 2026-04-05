@@ -3,8 +3,8 @@ import type { WorkspaceLayoutState } from './project-editor-types'
 
 export const WORKSPACE_LAYOUT_STORAGE_KEY = 'trama.workspace.layout.v1'
 
-const MIN_SPLIT_RATIO = 0.3
-const MAX_SPLIT_RATIO = 0.7
+const MIN_SPLIT_RATIO = 0.2
+const MAX_SPLIT_RATIO = 0.8
 
 function clampSplitRatio(value: number): number {
   return Math.min(MAX_SPLIT_RATIO, Math.max(MIN_SPLIT_RATIO, value))

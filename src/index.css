@@ -58,6 +58,10 @@ select {
   margin: 0 auto;
 }
 
+.editor-shell.is-split .editor-app {
+  width: 100%;
+}
+
 .workspace-panel,
 .editor-conflict-banner {
   border: 1px solid var(--border);
@@ -973,6 +977,12 @@ select {
   font-size: 1.04rem;
   line-height: 1.62;
   padding: 1.1rem 1.25rem 1.35rem;
+}
+
+.workspace-split-pane .rich-editor .ql-editor {
+  max-width: none;
+  margin: 0;
+  padding: 1rem 0.95rem 1.25rem;
 }
 
 .rich-editor .ql-editor p {

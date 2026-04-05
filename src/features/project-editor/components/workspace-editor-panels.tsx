@@ -7,7 +7,7 @@ interface LayoutControlsProps {
 }
 
 function clampRatio(value: number): number {
-  return Math.min(0.7, Math.max(0.3, value))
+  return Math.min(0.8, Math.max(0.2, value))
 }
 
 function toPaneTitle(path: string | null): string {

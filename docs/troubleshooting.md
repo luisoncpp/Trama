@@ -125,3 +125,25 @@ When things break after refactors, run:
 - Keep preload API minimal, typed, and mirrored in declarations.
 - Avoid heavy logic in `electron/main.ts` and `electron/ipc.ts`; push into handlers/services.
 - For CSS edits, patch in small chunks and re-check file structure.
+
+## 9) `npm run dev` appears stuck at `build:electron`
+
+### Symptom
+
+- Dev startup stops after:
+	- `npm run build:electron`
+	- `tsc -p tsconfig.electron.json`
+- No further output appears and Electron does not open.
+
+### Current mitigation
+
+- `dev:electron` now calls `build:electron:guarded`.
+- Guarded build behavior:
+	- timeout after 60s
+	- retries up to 3 attempts
+	- short delay between retries
+
+### Quick checks
+
+- Run `npm run build:electron:guarded` directly to confirm retries/timeout behavior.
+- If all retries fail, run `npm run build:electron` once manually to inspect deterministic TypeScript errors.

@@ -39,9 +39,10 @@ function ProjectEditorMainPane({ model }: ProjectEditorViewProps) {
 
 export function ProjectEditorView({ model }: ProjectEditorViewProps) {
   const { state, actions } = model
+  const shellClassName = state.workspaceLayout.mode === 'split' ? 'editor-shell is-split' : 'editor-shell'
 
   return (
-    <main class="editor-shell">
+    <main class={shellClassName}>
       <div class="editor-app">
         <section
           class="editor-workspace"

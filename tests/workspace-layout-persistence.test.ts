@@ -122,7 +122,7 @@ describe('workspace layout persistence', () => {
 
     expect(model?.state.workspaceLayout).toEqual({
       mode: 'split',
-      ratio: 0.7,
+      ratio: 0.8,
       primaryPath: 'docs/a.md',
       secondaryPath: 'docs/b.md',
       activePane: 'secondary',

@@ -82,7 +82,7 @@ describe('project editor logic helpers', () => {
       activePane: 'primary',
     })
 
-    expect(normalized.ratio).toBe(0.7)
+    expect(normalized.ratio).toBe(0.8)
   })
 
   it('reconciles split layout with available markdown files', () => {

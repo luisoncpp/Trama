@@ -28,3 +28,4 @@ Create a new file in this directory named after the topic (e.g., `auth-token-ref
 | `sidebar-path-scoping.md` | Sidebar operations can break when section-relative tree paths are not remapped to project-relative paths before IPC file actions | 2026-04-04 |
 | `split-pane-preferred-pane-reset.md` | `preferredPane` reopen issues resolved by migrating from single-document state to explicit per-pane document state and pane-targeted loads | 2026-04-04 |
 | `split-pane-test-determinism.md` | Split-mode tests can flip unexpectedly if persisted layout state is not normalized during setup; force mode/pane explicitly before assertions | 2026-04-04 |
+| `dev-electron-tsc-stall-retry.md` | `npm run dev` could intermittently stall on Electron `tsc` compile; add guarded build script with timeout and retry for dev startup resiliency | 2026-04-04 |
