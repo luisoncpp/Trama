@@ -11,6 +11,8 @@
     "dev:desktop": "concurrently --names \"renderer,electron\" --success \"command-electron\" --kill-others \"npm run dev:renderer\" \"wait-on http-get://localhost:5173 --timeout 30000 && npm run dev:electron\"",
     "build": "tsc -b && vite build && npm run build:electron",
     "build:electron": "tsc -p tsconfig.electron.json",
+    "pack:win": "npm run build && electron-builder --win --dir",
+    "dist:win": "npm run build && electron-builder --win nsis",
     "preview": "vite preview",
     "lint": "eslint . --max-warnings 0",
     "test": "vitest run",
@@ -34,6 +36,7 @@
     "@vitest/coverage-v8": "^4.1.2",
     "concurrently": "^9.2.1",
     "cross-env": "^10.1.0",
+    "electron-builder": "^26.0.12",
     "electron": "^41.1.1",
     "eslint": "^9.38.0",
     "jsdom": "^29.0.1",
@@ -44,5 +47,43 @@
     "vitest": "^4.1.2",
     "wait-on": "^9.0.4",
     "zod": "^4.3.6"
+  },
+  "build": {
+    "appId": "com.trama.desktop",
+    "productName": "Trama",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**",
+      "dist-electron/**",
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "example-fantasia",
+        "to": "example-fantasia"
+      }
+    ],
+    "extraMetadata": {
+      "main": "dist-electron/electron/main.js"
+    },
+    "win": {
+      "signAndEditExecutable": false,
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "artifactName": "Trama-Setup-${version}.${ext}"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true
+    }
   }
 }
