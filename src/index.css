@@ -463,6 +463,9 @@ select {
   border: 0;
   box-shadow: none;
   height: 100%;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
 }
 
 .sidebar-placeholder {
@@ -494,7 +497,7 @@ select {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  max-height: calc(100svh - 130px);
+  flex: 1 1 auto;
   overflow: auto;
   padding-right: 4px;
 }
