@@ -392,10 +392,19 @@ Exit criteria:
 Goals:
 - Final polish and non-regression guarantees.
 
+Status:
+- Completed on 2026-04-04.
+
 Changes:
 - Complete keyboard navigation map.
 - Improve empty/loading/error states.
 - Add responsive collapse behavior for narrow widths.
+
+Implemented now:
+- `Ctrl/Cmd+F` focuses the sidebar filter input in content sections.
+- Explorer shows explicit loading and API-unavailable states.
+- Sidebar auto-collapses on narrow viewports while preserving manual collapse state on wider screens.
+- Expanded-folder state now preserves "all collapsed" intent and no longer auto-reopens unexpectedly.
 
 Tests:
 - Integration test for watcher add/unlink sync with sidebar.

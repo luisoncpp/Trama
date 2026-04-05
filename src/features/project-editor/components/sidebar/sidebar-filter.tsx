@@ -3,10 +3,12 @@ import { useEffect, useState } from 'preact/hooks'
 interface SidebarFilterProps {
   value: string
   debounceMs?: number
+  disabled?: boolean
+  inputRef?: (element: HTMLInputElement | null) => void
   onChange: (value: string) => void
 }
 
-export function SidebarFilter({ value, debounceMs = 180, onChange }: SidebarFilterProps) {
+export function SidebarFilter({ value, debounceMs = 180, disabled = false, inputRef, onChange }: SidebarFilterProps) {
   const [draftValue, setDraftValue] = useState(value)
 
   useEffect(() => {
@@ -30,6 +32,8 @@ export function SidebarFilter({ value, debounceMs = 180, onChange }: SidebarFilt
         class="sidebar-filter__input"
         placeholder="Filter files..."
         value={draftValue}
+        disabled={disabled}
+        ref={inputRef}
         onInput={(event) => setDraftValue((event.currentTarget as HTMLInputElement).value)}
         aria-label="Filter project files"
       />

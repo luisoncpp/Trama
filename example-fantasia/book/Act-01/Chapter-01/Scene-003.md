@@ -9,6 +9,7 @@ Marek, que se ha quedado a dormir en el puesto por curiosidad, observa atento.
 —No lo sé todavía. Pero al amanecer intentaremos trazar el patrón. Tal vez nos muestre el camino.
 
 Antes de quedarse dormida, Aina marca mentalmente la dirección que la proyección sugiere: un camino hacia el este que, pensándolo bien, podría conducir al primer indicio real sobre el emblema.
+
 —Mañana comenzamos temprano —susurra Aina—. Quiero ver hasta dónde llega esto.
 
 —Estoy contigo —responde Marek—. Nos veremos al alba.

@@ -151,6 +151,86 @@ describe('sidebar panels', () => {
     expect(filterInput).toBeTruthy()
   })
 
+  it('focuses the sidebar filter with Ctrl+F shortcut', () => {
+    act(() => {
+      render(
+        h(SidebarExplorerContent, {
+          title: 'Manuscript',
+          visibleFiles: ['docs/README.md'],
+          selectedPath: 'docs/README.md',
+          loadingDocument: false,
+          onSelectFile: () => undefined,
+          apiAvailable: true,
+          loadingProject: false,
+          scopePathLabel: 'C:/Proyectos/test_trama/book',
+          filterQuery: '',
+          onFilterQueryChange: () => undefined,
+          onCreateArticle: () => undefined,
+          onCreateCategory: () => undefined,
+          onPickFolder: () => undefined,
+        }),
+        container,
+      )
+    })
+
+    const filterInput = container.querySelector('.sidebar-filter__input') as HTMLInputElement
+    expect(filterInput).toBeTruthy()
+
+    act(() => {
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'f', ctrlKey: true, bubbles: true }))
+    })
+
+    expect(document.activeElement).toBe(filterInput)
+  })
+
+  it('shows loading and api-unavailable sidebar states', () => {
+    act(() => {
+      render(
+        h(SidebarExplorerContent, {
+          title: 'Manuscript',
+          visibleFiles: ['docs/README.md'],
+          selectedPath: 'docs/README.md',
+          loadingDocument: false,
+          onSelectFile: () => undefined,
+          apiAvailable: true,
+          loadingProject: true,
+          scopePathLabel: 'C:/Proyectos/test_trama/book',
+          filterQuery: '',
+          onFilterQueryChange: () => undefined,
+          onCreateArticle: () => undefined,
+          onCreateCategory: () => undefined,
+          onPickFolder: () => undefined,
+        }),
+        container,
+      )
+    })
+
+    expect(container.textContent).toContain('Loading project files...')
+
+    act(() => {
+      render(
+        h(SidebarExplorerContent, {
+          title: 'Manuscript',
+          visibleFiles: ['docs/README.md'],
+          selectedPath: 'docs/README.md',
+          loadingDocument: false,
+          onSelectFile: () => undefined,
+          apiAvailable: false,
+          loadingProject: false,
+          scopePathLabel: 'C:/Proyectos/test_trama/book',
+          filterQuery: '',
+          onFilterQueryChange: () => undefined,
+          onCreateArticle: () => undefined,
+          onCreateCategory: () => undefined,
+          onPickFolder: () => undefined,
+        }),
+        container,
+      )
+    })
+
+    expect(container.textContent).toContain('Preload API unavailable.')
+  })
+
   it('triggers create article/category callbacks from footer actions', () => {
     const onCreateArticle = vi.fn()
     const onCreateCategory = vi.fn()
@@ -264,5 +344,20 @@ describe('sidebar panels', () => {
     })
 
     expect(onPanelWidthChange).toHaveBeenCalledWith(410)
+  })
+
+  it('auto-collapses sidebar on narrow viewport', () => {
+    const originalInnerWidth = window.innerWidth
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 860 })
+
+    act(() => {
+      render(h(SidebarPanel, buildPanelProps()), container)
+    })
+
+    const shell = container.querySelector('.sidebar-shell') as HTMLElement
+    expect(shell.className).toContain('is-collapsed')
+    expect(container.textContent).not.toContain('Scene-001.md')
+
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalInnerWidth })
   })
 })

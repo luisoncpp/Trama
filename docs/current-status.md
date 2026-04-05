@@ -23,12 +23,13 @@ Implemented now:
 - Phase 3 PR-2 completed: hierarchical sidebar tree with expand/collapse, keyboard navigation basics, and folder/file icons.
 - Phase 3 PR-3 completed: debounced sidebar filter/search with scoped matching, auto-expanded branches, and expanded-state restore on clear.
 - Phase 3 PR-4 completed: create article/category actions wired end-to-end (renderer actions, typed IPC channels, preload bridge, main-process handlers, and repository create operations).
+- Phase 3 PR-5 completed: sidebar hardening with Ctrl/Cmd+F filter focus, improved loading/API-unavailable sidebar states, responsive auto-collapse on narrow viewports, and collapse-all persistence fixes.
 - Sidebar IA updated in docs before implementation: sections will map to different project subfolders (`book/`, `outline/`, `lore/`) and Explorer will focus on manuscript Act/Chapter/Scene content.
 
 Not implemented yet (planned in later phases):
 - File operations beyond read/save (create/rename/delete workflows).
 - Wiki links, templates, corkboard DnD, AI import/export pipeline.
-- Sidebar hardening pass (PR-5: focus and keyboard flow, responsive polish, and edge-state UX).
+- Move/rename/delete workflows from sidebar context interactions.
 
 ## Reliability status
 
@@ -53,7 +54,7 @@ Additional regression checks currently in the suite:
 ## Suggested next milestones
 
 1. Continue Phase 3 workspace UX:
-- Sidebar PR-5: hardening (focus management, empty/loading/error state polish, responsive collapse behavior).
+- Sidebar file operations (rename/move/delete) and context-menu actions.
 - Theme preferences and fullscreen/focus mode wiring.
 
 2. Improve editor capabilities:

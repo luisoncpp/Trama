@@ -1,10 +1,8 @@
-import { PROJECT_EDITOR_STRINGS } from '../../project-editor-strings'
+import { useRef } from 'preact/hooks'
 import type { SidebarCreateInput } from '../../project-editor-types'
-import { SidebarCreateDialog } from './sidebar-create-dialog.tsx'
-import { SidebarFooterActions } from './sidebar-footer-actions.tsx'
-import { SidebarFilter } from './sidebar-filter.tsx'
-import { SidebarTree } from './sidebar-tree.tsx'
+import { SidebarExplorerBody } from './sidebar-explorer-body.tsx'
 import { useSidebarCreateDialog } from './use-sidebar-create-dialog'
+import { useSidebarFilterShortcut } from './use-sidebar-filter-shortcut'
 
 function SelectProjectFolderIcon() {
   return (
@@ -39,74 +37,6 @@ interface SidebarExplorerContentProps {
   onPickFolder: () => void
 }
 
-interface SidebarExplorerBodyProps {
-  title: string
-  visibleFiles: string[]
-  selectedPath: string | null
-  loadingDocument: boolean
-  onSelectFile: (filePath: string) => void
-  loadingProject: boolean
-  apiAvailable: boolean
-  scopePathLabel: string
-  filterQuery: string
-  onFilterQueryChange: (value: string) => void
-  createMode: ReturnType<typeof useSidebarCreateDialog>['createMode']
-  createInput: SidebarCreateInput
-  openCreateDialog: ReturnType<typeof useSidebarCreateDialog>['openCreateDialog']
-  closeCreateDialog: ReturnType<typeof useSidebarCreateDialog>['closeCreateDialog']
-  submitCreateDialog: ReturnType<typeof useSidebarCreateDialog>['submitCreateDialog']
-  onDirectoryChange: (value: string) => void
-  onNameChange: (value: string) => void
-}
-
-function SidebarExplorerBody({
-  title,
-  visibleFiles,
-  selectedPath,
-  loadingDocument,
-  onSelectFile,
-  loadingProject,
-  apiAvailable,
-  scopePathLabel,
-  filterQuery,
-  onFilterQueryChange,
-  createMode,
-  createInput,
-  openCreateDialog,
-  closeCreateDialog,
-  submitCreateDialog,
-  onDirectoryChange,
-  onNameChange,
-}: SidebarExplorerBodyProps) {
-  return (
-    <>
-      <p class="project-menu__path">{scopePathLabel || PROJECT_EDITOR_STRINGS.noFolderSelected}</p>
-      <SidebarFilter value={filterQuery} onChange={onFilterQueryChange} />
-      <SidebarTree
-        visibleFiles={visibleFiles}
-        selectedPath={selectedPath}
-        loadingDocument={loadingDocument}
-        onSelectFile={onSelectFile}
-        filterQuery={filterQuery}
-      />
-      <SidebarFooterActions
-        disabled={loadingProject || !apiAvailable}
-        onCreateArticle={() => openCreateDialog('article')}
-        onCreateCategory={() => openCreateDialog('category')}
-      />
-      <SidebarCreateDialog
-        mode={createMode}
-        sectionTitle={title}
-        value={createInput}
-        onDirectoryChange={onDirectoryChange}
-        onNameChange={onNameChange}
-        onSubmit={submitCreateDialog}
-        onCancel={closeCreateDialog}
-      />
-    </>
-  )
-}
-
 function SidebarHeader({ title, apiAvailable, loadingProject, onPickFolder }: SidebarHeaderProps) {
   return (
     <div class="workspace-panel__header">
@@ -129,38 +59,40 @@ function SidebarHeader({ title, apiAvailable, loadingProject, onPickFolder }: Si
   )
 }
 
-export function SidebarExplorerContent({
-  title,
-  visibleFiles,
-  selectedPath,
-  loadingDocument,
-  onSelectFile,
-  apiAvailable,
-  loadingProject,
-  scopePathLabel,
-  filterQuery,
-  onFilterQueryChange,
-  onCreateArticle,
-  onCreateCategory,
-  onPickFolder,
-}: SidebarExplorerContentProps) {
-  const { createMode, createInput, setCreateDirectory, setCreateName, openCreateDialog, closeCreateDialog, submitCreateDialog } = useSidebarCreateDialog({ selectedPath, onCreateArticle, onCreateCategory })
+export function SidebarExplorerContent(props: SidebarExplorerContentProps) {
+  const { createMode, createInput, setCreateDirectory, setCreateName, openCreateDialog, closeCreateDialog, submitCreateDialog } = useSidebarCreateDialog({
+    selectedPath: props.selectedPath,
+    onCreateArticle: props.onCreateArticle,
+    onCreateCategory: props.onCreateCategory,
+  })
+  const filterInputElementRef = useRef<HTMLInputElement | null>(null)
+  const setFilterInputRef = (element: HTMLInputElement | null) => {
+    filterInputElementRef.current = element
+  }
+
+  useSidebarFilterShortcut({
+    enabled: props.apiAvailable && !props.loadingProject,
+    focusFilterInput: () => {
+      filterInputElementRef.current?.focus()
+      filterInputElementRef.current?.select()
+    },
+  })
 
   return (
     <div class="sidebar-panel-content">
-      <aside class="workspace-panel workspace-panel--sidebar">
-        <SidebarHeader title={title} apiAvailable={apiAvailable} loadingProject={loadingProject} onPickFolder={onPickFolder} />
+      <aside class="workspace-panel workspace-panel--sidebar" aria-busy={props.loadingProject ? 'true' : 'false'}>
+        <SidebarHeader title={props.title} apiAvailable={props.apiAvailable} loadingProject={props.loadingProject} onPickFolder={props.onPickFolder} />
         <SidebarExplorerBody
-          title={title}
-          visibleFiles={visibleFiles}
-          selectedPath={selectedPath}
-          loadingDocument={loadingDocument}
-          onSelectFile={onSelectFile}
-          loadingProject={loadingProject}
-          apiAvailable={apiAvailable}
-          scopePathLabel={scopePathLabel}
-          filterQuery={filterQuery}
-          onFilterQueryChange={onFilterQueryChange}
+          title={props.title}
+          visibleFiles={props.visibleFiles}
+          selectedPath={props.selectedPath}
+          loadingDocument={props.loadingDocument}
+          onSelectFile={props.onSelectFile}
+          loadingProject={props.loadingProject}
+          apiAvailable={props.apiAvailable}
+          scopePathLabel={props.scopePathLabel}
+          filterQuery={props.filterQuery}
+          onFilterQueryChange={props.onFilterQueryChange}
           createMode={createMode}
           createInput={createInput}
           openCreateDialog={openCreateDialog}
@@ -168,6 +100,7 @@ export function SidebarExplorerContent({
           submitCreateDialog={submitCreateDialog}
           onDirectoryChange={setCreateDirectory}
           onNameChange={setCreateName}
+          filterInputRef={setFilterInputRef}
         />
       </aside>
     </div>

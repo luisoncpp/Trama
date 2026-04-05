@@ -87,8 +87,14 @@
 - `src/features/project-editor/components/sidebar/sidebar-explorer-content.tsx`
   - Explorer section container/header.
   - Renders root path, filter input, hierarchical tree, and create actions.
+- `src/features/project-editor/components/sidebar/sidebar-explorer-body.tsx`
+  - Explorer body composition with loading/API-unavailable states and create modal wiring.
 - `src/features/project-editor/components/sidebar/sidebar-filter.tsx`
   - Debounced sidebar filter input UI.
+- `src/features/project-editor/components/sidebar/use-sidebar-filter-shortcut.ts`
+  - Ctrl/Cmd+F keyboard shortcut hook that focuses the sidebar filter input.
+- `src/features/project-editor/components/sidebar/use-sidebar-responsive-collapse.ts`
+  - Responsive auto-collapse behavior for narrow viewport widths.
 - `src/features/project-editor/components/sidebar/sidebar-filter-logic.ts`
   - Pure matching/visibility/auto-expand helpers for sidebar filtering.
 - `src/features/project-editor/components/sidebar/sidebar-tree.tsx`

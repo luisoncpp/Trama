@@ -5,6 +5,7 @@ import { SidebarExplorerContent } from './sidebar-explorer-content'
 import { SIDEBAR_SECTION_CONFIG, type ContentSidebarSection } from './sidebar-section-roots'
 import { SidebarSettingsContent } from './sidebar-settings-content.tsx'
 import { joinProjectPath, useSidebarContentSection } from './sidebar-panel-logic'
+import { useSidebarResponsiveCollapse } from './use-sidebar-responsive-collapse'
 
 interface SidebarPanelProps {
   visibleFiles: string[]
@@ -26,7 +27,7 @@ interface SidebarPanelProps {
 }
 
 interface SidebarPanelBodyProps {
-  sidebarPanelCollapsed: boolean
+  effectiveCollapsed: boolean
   sidebarActiveSection: SidebarSection
   sectionConfig: (typeof SIDEBAR_SECTION_CONFIG)[ContentSidebarSection] | null
   rootPath: string
@@ -57,7 +58,7 @@ interface SidebarPanelBodyProps {
 }
 
 function SidebarPanelBody({
-  sidebarPanelCollapsed,
+  effectiveCollapsed,
   sidebarActiveSection,
   sectionConfig,
   rootPath,
@@ -72,7 +73,7 @@ function SidebarPanelBody({
   onSidebarPanelWidthChange,
   contentProps,
 }: SidebarPanelBodyProps) {
-  if (sidebarPanelCollapsed) {
+  if (effectiveCollapsed) {
     return null
   }
 
@@ -120,22 +121,24 @@ export function SidebarPanel({
   onCreateCategory,
   ...props
 }: SidebarPanelProps) {
+  const isResponsiveCollapsed = useSidebarResponsiveCollapse()
+  const effectiveCollapsed = sidebarPanelCollapsed || isResponsiveCollapsed
   const { sectionConfig, scopedFiles, scopedSelectedPath, activeFilterQuery, onFilterQueryChange } =
     useSidebarContentSection(sidebarActiveSection, visibleFiles, selectedPath)
 
   return (
     <aside
-      class={`sidebar-shell ${sidebarPanelCollapsed ? 'is-collapsed' : ''}`}
-      style={{ width: `${sidebarPanelCollapsed ? 72 : sidebarPanelWidth}px` }}
+      class={`sidebar-shell ${effectiveCollapsed ? 'is-collapsed' : ''}`}
+      style={{ width: `${effectiveCollapsed ? 72 : sidebarPanelWidth}px` }}
     >
       <SidebarRail
         activeSection={sidebarActiveSection}
-        collapsed={sidebarPanelCollapsed}
+        collapsed={effectiveCollapsed}
         onSelectSection={onSelectSidebarSection}
         onToggleCollapsed={onToggleSidebarPanelCollapsed}
       />
       <SidebarPanelBody
-        sidebarPanelCollapsed={sidebarPanelCollapsed}
+        effectiveCollapsed={effectiveCollapsed}
         sidebarActiveSection={sidebarActiveSection}
         sectionConfig={sectionConfig}
         rootPath={rootPath}
