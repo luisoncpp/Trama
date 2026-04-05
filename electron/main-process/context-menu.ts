@@ -1,6 +1,14 @@
 import { BrowserWindow, Menu } from 'electron'
 import type { ContextMenuParams, MenuItemConstructorOptions } from 'electron'
 
+function triggerSplitLayoutToggle(win: BrowserWindow): void {
+  const modifierKey = process.platform === 'darwin' ? 'metaKey' : 'ctrlKey'
+  void win.webContents.executeJavaScript(
+    `window.dispatchEvent(new KeyboardEvent('keydown', { code: 'Period', ${modifierKey}: true, bubbles: true }));`,
+    true,
+  )
+}
+
 function buildContextMenuTemplate(
   win: BrowserWindow,
   params: ContextMenuParams,
@@ -22,7 +30,7 @@ function buildContextMenuTemplate(
     }
 
     template.push({
-      label: 'Agregar al diccionario',
+      label: 'Add to Dictionary',
       click: () => {
         win.webContents.session.addWordToSpellCheckerDictionary(params.misspelledWord)
       },
@@ -31,11 +39,19 @@ function buildContextMenuTemplate(
   }
 
   if (params.isEditable) {
-    template.push({ label: 'Cortar', role: 'cut' })
-    template.push({ label: 'Copiar', role: 'copy' })
-    template.push({ label: 'Pegar', role: 'paste' })
+    template.push({ label: 'Cut', role: 'cut' })
+    template.push({ label: 'Copy', role: 'copy' })
+    template.push({ label: 'Paste', role: 'paste' })
+    template.push({ type: 'separator' })
+    template.push({
+      label: 'Toggle Split Layout',
+      accelerator: 'CmdOrCtrl+.',
+      click: () => {
+        triggerSplitLayoutToggle(win)
+      },
+    })
   } else if (params.selectionText) {
-    template.push({ label: 'Copiar', role: 'copy' })
+    template.push({ label: 'Copy', role: 'copy' })
   }
 
   return template

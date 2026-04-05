@@ -2,7 +2,11 @@ import { describe, expect, it } from 'vitest'
 import {
   buildConflictCopyPath,
   canSelectFile,
+  createDefaultWorkspaceLayoutState,
+  normalizeWorkspaceLayoutState,
+  reconcileWorkspaceLayout,
   resolvePreferredFile,
+  restoreWorkspaceLayoutState,
   shouldRefreshTreeOnExternalEvent,
 } from '../src/features/project-editor/project-editor-logic'
 import type { ProjectSnapshot } from '../src/shared/ipc'
@@ -62,5 +66,59 @@ describe('project editor logic helpers', () => {
     ])
 
     expect(copyPath).toBe('docs/a.conflict-copy-3.md')
+  })
+
+  it('restores default workspace layout when persisted data is invalid', () => {
+    const restored = restoreWorkspaceLayoutState('invalid-json')
+    expect(restored).toEqual(createDefaultWorkspaceLayoutState())
+  })
+
+  it('normalizes split ratio to accepted bounds', () => {
+    const normalized = normalizeWorkspaceLayoutState({
+      mode: 'single',
+      ratio: 0.9,
+      primaryPath: null,
+      secondaryPath: null,
+      activePane: 'primary',
+    })
+
+    expect(normalized.ratio).toBe(0.7)
+  })
+
+  it('reconciles split layout with available markdown files', () => {
+    const reconciled = reconcileWorkspaceLayout(
+      {
+        mode: 'split',
+        ratio: 0.5,
+        primaryPath: 'docs/old.md',
+        secondaryPath: null,
+        activePane: 'secondary',
+      },
+      ['docs/a.md', 'docs/b.md'],
+      undefined,
+    )
+
+    expect(reconciled.mode).toBe('split')
+    expect(reconciled.primaryPath).toBe('docs/a.md')
+    expect(reconciled.secondaryPath).toBe('docs/b.md')
+    expect(reconciled.activePane).toBe('secondary')
+  })
+
+  it('applies preferred file to active secondary pane in split layout', () => {
+    const reconciled = reconcileWorkspaceLayout(
+      {
+        mode: 'split',
+        ratio: 0.5,
+        primaryPath: 'docs/a.md',
+        secondaryPath: 'docs/b.md',
+        activePane: 'secondary',
+      },
+      ['docs/a.md', 'docs/b.md', 'docs/c.md'],
+      'docs/c.md',
+    )
+
+    expect(reconciled.primaryPath).toBe('docs/a.md')
+    expect(reconciled.secondaryPath).toBe('docs/c.md')
+    expect(reconciled.activePane).toBe('secondary')
   })
 })

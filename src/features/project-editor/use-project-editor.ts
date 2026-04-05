@@ -2,6 +2,7 @@ import type { ProjectEditorModel } from './project-editor-types'
 import { useProjectEditorActions } from './use-project-editor-actions'
 import { useProjectEditorAutosaveEffect } from './use-project-editor-autosave-effect'
 import { useProjectEditorExternalEventsEffect } from './use-project-editor-external-events-effect'
+import { useProjectEditorShortcutsEffect } from './use-project-editor-shortcuts-effect'
 import { useProjectEditorState } from './use-project-editor-state'
 
 export function useProjectEditor(): ProjectEditorModel {
@@ -20,6 +21,7 @@ export function useProjectEditor(): ProjectEditorModel {
   useProjectEditorExternalEventsEffect({
     snapshotRootPath: values.snapshot?.rootPath ?? null,
     selectedPath: values.selectedPath,
+    activePane: values.workspaceLayout.activePane,
     isDirty: values.isDirty,
     clearEditor: core.clearEditor,
     loadDocument: core.loadDocument,
@@ -27,6 +29,10 @@ export function useProjectEditor(): ProjectEditorModel {
     setExternalConflictPath: setters.setExternalConflictPath,
     setConflictComparisonContent: setters.setConflictComparisonContent,
     setStatusMessage: setters.setStatusMessage,
+  })
+
+  useProjectEditorShortcutsEffect({
+    onToggleSplitLayout: actions.toggleWorkspaceLayoutMode,
   })
 
   return {
@@ -37,9 +43,12 @@ export function useProjectEditor(): ProjectEditorModel {
       sidebarActiveSection: values.sidebarActiveSection,
       sidebarPanelCollapsed: values.sidebarPanelCollapsed,
       sidebarPanelWidth: values.sidebarPanelWidth,
+      workspaceLayout: values.workspaceLayout,
       externalConflictPath: values.externalConflictPath,
       conflictComparisonContent: values.conflictComparisonContent,
       visibleFiles: values.visibleFiles,
+      primaryPane: values.primaryPane,
+      secondaryPane: values.secondaryPane,
       selectedPath: values.selectedPath,
       editorValue: values.editorValue,
       isDirty: values.isDirty,

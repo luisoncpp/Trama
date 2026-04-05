@@ -1,7 +1,7 @@
 import type { ProjectEditorModel } from './project-editor-types'
 import { ConflictBanner } from './components/conflict-banner'
 import { ConflictComparePanel } from './components/conflict-compare-panel'
-import { EditorPanel } from './components/editor-panel'
+import { WorkspaceLayoutPanel } from './components/workspace-editor-panels.tsx'
 import { SidebarPanel } from './components/sidebar/sidebar-panel.tsx'
 
 interface ProjectEditorViewProps {
@@ -32,15 +32,7 @@ function ProjectEditorMainPane({ model }: ProjectEditorViewProps) {
         />
       )}
 
-      <EditorPanel
-        selectedPath={state.selectedPath}
-        saving={state.saving}
-        isDirty={state.isDirty}
-        loadingDocument={state.loadingDocument}
-        editorValue={state.editorValue}
-        onSaveNow={actions.saveNow}
-        onEditorChange={actions.updateEditorValue}
-      />
+      <WorkspaceLayoutPanel model={model} />
     </div>
   )
 }

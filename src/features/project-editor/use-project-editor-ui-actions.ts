@@ -1,14 +1,29 @@
 import { useCallback } from 'preact/hooks'
 import type { DocumentMeta } from '../../shared/ipc'
-import { buildConflictCopyPath, canSelectFile } from './project-editor-logic'
+import { canSelectFile } from './project-editor-logic'
 import { PROJECT_EDITOR_STRINGS } from './project-editor-strings'
 import type { ProjectEditorActions } from './project-editor-types'
+import {
+  useCloseConflictCompareAction,
+  useResolveConflictCompareAction,
+  useResolveConflictKeepAction,
+  useResolveConflictReloadAction,
+  useResolveConflictSaveAsCopyAction,
+} from './use-project-editor-conflict-actions'
+import {
+  useAssignFileToActivePaneAction,
+  useSetWorkspaceActivePaneAction,
+  useSetWorkspaceLayoutRatioAction,
+  useToggleWorkspaceLayoutModeAction,
+} from './use-project-editor-layout-actions'
 import { useSetSidebarPanelWidthAction, useSetSidebarSectionAction, useToggleSidebarPanelCollapsedAction } from './use-project-editor-sidebar-actions'
 import { useProjectEditorCreateActions } from './use-project-editor-create-actions'
 import { useProjectEditorFileActions } from './use-project-editor-file-actions'
 import type { UseProjectEditorStateResult } from './use-project-editor-state'
 
-interface UseProjectEditorUiActionsParams { values: UseProjectEditorStateResult['values']; setters: UseProjectEditorStateResult['setters']; openProject: (projectRoot: string, preferredFilePath?: string) => Promise<void>; loadDocument: (path: string) => Promise<void>; saveDocumentNow: (path: string, content: string, meta: DocumentMeta) => Promise<void> }
+import type { WorkspacePane } from './project-editor-types'
+interface UseProjectEditorUiActionsParams { values: UseProjectEditorStateResult['values']; setters: UseProjectEditorStateResult['setters']; openProject: (projectRoot: string, preferredFilePath?: string, preferredPane?: 'primary' | 'secondary') => Promise<void>; loadDocument: (path: string, pane: WorkspacePane) => Promise<void>; saveDocumentNow: (path: string, content: string, meta: DocumentMeta) => Promise<void> }
+
 function usePickProjectFolderAction({
   openProject,
   setters,
@@ -35,10 +50,12 @@ function useSelectFileAction({
   values,
   setters,
   loadDocument,
+  assignFileToActivePane,
 }: {
   values: UseProjectEditorStateResult['values']
   setters: UseProjectEditorStateResult['setters']
-  loadDocument: (path: string) => Promise<void>
+  loadDocument: (path: string, pane: WorkspacePane) => Promise<void>
+  assignFileToActivePane: (filePath: string) => void
 }): ProjectEditorActions['selectFile'] {
   return useCallback(
     (filePath: string) => {
@@ -47,18 +64,25 @@ function useSelectFileAction({
         return
       }
 
-      void loadDocument(filePath)
+      assignFileToActivePane(filePath)
+      void loadDocument(filePath, values.workspaceLayout.activePane)
     },
-    [loadDocument, setters, values.isDirty, values.selectedPath],
+    [assignFileToActivePane, loadDocument, setters, values.isDirty, values.selectedPath],
   )
 }
-function useUpdateEditorValueAction(setters: UseProjectEditorStateResult['setters']): ProjectEditorActions['updateEditorValue'] {
+function useUpdateEditorValueAction(
+  values: UseProjectEditorStateResult['values'],
+  setters: UseProjectEditorStateResult['setters'],
+): ProjectEditorActions['updateEditorValue'] {
   return useCallback(
     (nextValue: string) => {
-      setters.setEditorValue(nextValue)
-      setters.setIsDirty(true)
+      if (values.workspaceLayout.activePane === 'secondary') {
+        setters.setSecondaryPane((prev) => ({ ...prev, content: nextValue, isDirty: true }))
+      } else {
+        setters.setPrimaryPane((prev) => ({ ...prev, content: nextValue, isDirty: true }))
+      }
     },
-    [setters],
+    [setters, values.workspaceLayout.activePane],
   )
 }
 function useSaveNowAction({
@@ -76,96 +100,6 @@ function useSaveNowAction({
     void saveDocumentNow(values.selectedPath, values.editorValue, values.editorMeta)
   }, [saveDocumentNow, values.editorMeta, values.editorValue, values.isDirty, values.saving, values.selectedPath])
 }
-function useResolveConflictReloadAction({
-  values,
-  setters,
-  loadDocument,
-}: {
-  values: UseProjectEditorStateResult['values']
-  setters: UseProjectEditorStateResult['setters']
-  loadDocument: (path: string) => Promise<void>
-}): ProjectEditorActions['resolveConflictReload'] {
-  return useCallback(() => {
-    if (values.externalConflictPath) {
-      void loadDocument(values.externalConflictPath)
-    }
-
-    setters.setExternalConflictPath(null)
-    setters.setConflictComparisonContent(null)
-    setters.setStatusMessage(PROJECT_EDITOR_STRINGS.statusReloadDiscarded)
-  }, [loadDocument, setters, values.externalConflictPath])
-}
-function useResolveConflictKeepAction(setters: UseProjectEditorStateResult['setters']): ProjectEditorActions['resolveConflictKeep'] {
-  return useCallback(() => {
-    setters.setExternalConflictPath(null)
-    setters.setConflictComparisonContent(null)
-    setters.setStatusMessage(PROJECT_EDITOR_STRINGS.statusSaveAsCopyHint)
-  }, [setters])
-}
-function useResolveConflictSaveAsCopyAction({
-  values,
-  setters,
-  openProject,
-}: {
-  values: UseProjectEditorStateResult['values']
-  setters: UseProjectEditorStateResult['setters']
-  openProject: (projectRoot: string, preferredFilePath?: string) => Promise<void>
-}): ProjectEditorActions['resolveConflictSaveAsCopy'] {
-  return useCallback(() => {
-    if (!values.selectedPath || !values.rootPath) {
-      return
-    }
-
-    const copyPath = buildConflictCopyPath(values.selectedPath, values.visibleFiles)
-    void (async () => {
-      const response = await window.tramaApi.saveDocument({
-        path: copyPath,
-        content: values.editorValue,
-        meta: values.editorMeta,
-      })
-
-      if (!response.ok) {
-        setters.setStatusMessage(`${PROJECT_EDITOR_STRINGS.statusSaveAsCopyFailed} ${response.error.message}`)
-        return
-      }
-
-      setters.setExternalConflictPath(null)
-      setters.setConflictComparisonContent(null)
-      setters.setStatusMessage(PROJECT_EDITOR_STRINGS.statusSaveAsCopyCreated)
-      await openProject(values.rootPath, response.data.path)
-    })()
-  }, [openProject, setters, values.editorMeta, values.editorValue, values.rootPath, values.selectedPath, values.visibleFiles])
-}
-function useResolveConflictCompareAction({
-  values,
-  setters,
-}: {
-  values: UseProjectEditorStateResult['values']
-  setters: UseProjectEditorStateResult['setters']
-}): ProjectEditorActions['resolveConflictCompare'] {
-  return useCallback(() => {
-    const conflictPath = values.externalConflictPath
-    if (!conflictPath) {
-      return
-    }
-
-    void (async () => {
-      const response = await window.tramaApi.readDocument({ path: conflictPath })
-      if (!response.ok) {
-        setters.setStatusMessage(`${PROJECT_EDITOR_STRINGS.statusCompareFailed} ${response.error.message}`)
-        return
-      }
-
-      setters.setConflictComparisonContent(response.data.content)
-      setters.setStatusMessage(PROJECT_EDITOR_STRINGS.statusCompareReady)
-    })()
-  }, [setters, values.externalConflictPath])
-}
-function useCloseConflictCompareAction(setters: UseProjectEditorStateResult['setters']): ProjectEditorActions['closeConflictCompare'] {
-  return useCallback(() => {
-    setters.setConflictComparisonContent(null)
-  }, [setters])
-}
 
 export function useProjectEditorUiActions({
   values,
@@ -174,14 +108,18 @@ export function useProjectEditorUiActions({
   loadDocument,
   saveDocumentNow,
 }: UseProjectEditorUiActionsParams): ProjectEditorActions {
+  const assignFileToActivePane = useAssignFileToActivePaneAction(values, setters)
   const pickProjectFolder = usePickProjectFolderAction({ openProject, setters })
-  const selectFile = useSelectFileAction({ values, setters, loadDocument })
+  const selectFile = useSelectFileAction({ values, setters, loadDocument, assignFileToActivePane })
   const { createArticle, createCategory } = useProjectEditorCreateActions({ values, setters, openProject })
   const { renameFile, deleteFile } = useProjectEditorFileActions({ values, setters, openProject })
   const setSidebarSection = useSetSidebarSectionAction(setters)
   const toggleSidebarPanelCollapsed = useToggleSidebarPanelCollapsedAction(values, setters)
   const setSidebarPanelWidth = useSetSidebarPanelWidthAction(setters)
-  const updateEditorValue = useUpdateEditorValueAction(setters)
+  const toggleWorkspaceLayoutMode = useToggleWorkspaceLayoutModeAction(values, setters)
+  const setWorkspaceLayoutRatio = useSetWorkspaceLayoutRatioAction(setters)
+  const setWorkspaceActivePane = useSetWorkspaceActivePaneAction({ values, setters, loadDocument })
+  const updateEditorValue = useUpdateEditorValueAction(values, setters)
   const saveNow = useSaveNowAction({ values, saveDocumentNow })
   const resolveConflictReload = useResolveConflictReloadAction({ values, setters, loadDocument })
   const resolveConflictKeep = useResolveConflictKeepAction(setters)
@@ -199,6 +137,9 @@ export function useProjectEditorUiActions({
     setSidebarSection,
     toggleSidebarPanelCollapsed,
     setSidebarPanelWidth,
+    toggleWorkspaceLayoutMode,
+    setWorkspaceLayoutRatio,
+    setWorkspaceActivePane,
     updateEditorValue,
     saveNow,
     resolveConflictReload,

@@ -1,4 +1,23 @@
+import type { DocumentMeta } from '../../shared/ipc'
+
 export type SidebarSection = 'explorer' | 'outline' | 'lore' | 'settings'
+export type WorkspaceLayoutMode = 'single' | 'split'
+export type WorkspacePane = 'primary' | 'secondary'
+
+export interface WorkspaceLayoutState {
+  mode: WorkspaceLayoutMode
+  ratio: number
+  primaryPath: string | null
+  secondaryPath: string | null
+  activePane: WorkspacePane
+}
+
+export interface PaneDocumentState {
+  path: string | null
+  content: string
+  meta: DocumentMeta
+  isDirty: boolean
+}
 
 export interface SidebarCreateInput {
   directory: string
@@ -17,9 +36,12 @@ export interface ProjectEditorState {
   sidebarActiveSection: SidebarSection
   sidebarPanelCollapsed: boolean
   sidebarPanelWidth: number
+  workspaceLayout: WorkspaceLayoutState
   externalConflictPath: string | null
   conflictComparisonContent: string | null
   visibleFiles: string[]
+  primaryPane: PaneDocumentState
+  secondaryPane: PaneDocumentState
   selectedPath: string | null
   editorValue: string
   isDirty: boolean
@@ -38,6 +60,9 @@ export interface ProjectEditorActions {
   setSidebarSection: (section: SidebarSection) => void
   toggleSidebarPanelCollapsed: () => void
   setSidebarPanelWidth: (width: number) => void
+  toggleWorkspaceLayoutMode: () => void
+  setWorkspaceLayoutRatio: (ratio: number) => void
+  setWorkspaceActivePane: (pane: WorkspacePane) => void
   updateEditorValue: (value: string) => void
   saveNow: () => void
   resolveConflictReload: () => void

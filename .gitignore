@@ -23,3 +23,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+/.agents/skills/frontend-design/LICENSE.txt
+/.agents/skills/frontend-design/SKILL.md
+/.jscpd-report/jscpd-report.json
+/skills-lock.json

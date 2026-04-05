@@ -285,4 +285,154 @@ describe('project editor conflict flow', () => {
     expect(model?.state.conflictComparisonContent).toBeNull()
     expect(model?.state.isDirty).toBe(false)
   })
+
+  it('blocks pane switch in split mode when active document is dirty', async () => {
+    setupTramaApiMock({
+      openProject: async () => ({
+        ok: true,
+        data: {
+          rootPath: 'C:/tmp/project',
+          tree: [],
+          markdownFiles: ['docs/a.md', 'docs/b.md'],
+          index: { version: '1.0.0', corkboardOrder: {}, cache: {} },
+        },
+      }),
+      readDocument: async (payload: { path: string }) => ({
+        ok: true,
+        data: {
+          path: payload.path,
+          content: payload.path === 'docs/b.md' ? '# B' : '# A',
+          meta: {},
+        },
+      }),
+    })
+
+    let model: ProjectEditorModel | undefined
+
+    function Harness() {
+      model = useProjectEditor()
+      return null
+    }
+
+    const container = document.createElement('div')
+    act(() => {
+      render(h(Harness, {}), container)
+    })
+
+    await act(async () => {
+      await model?.actions.pickProjectFolder()
+    })
+
+    expect(model?.state.selectedPath).toBe('docs/a.md')
+    expect(model?.state.workspaceLayout.primaryPath).toBe('docs/a.md')
+
+    await act(async () => {
+      model?.actions.toggleWorkspaceLayoutMode()
+      await Promise.resolve()
+    })
+
+    expect(model?.state.workspaceLayout.mode).toBe('split')
+    expect(model?.state.workspaceLayout.secondaryPath).toBe('docs/b.md')
+
+    await act(async () => {
+      model?.actions.setWorkspaceActivePane('secondary')
+      await Promise.resolve()
+    })
+
+    expect(model?.state.workspaceLayout.activePane).toBe('secondary')
+    expect(model?.state.selectedPath).toBe('docs/b.md')
+    expect(model?.state.editorValue).toBe('# B')
+
+    act(() => {
+      model?.actions.updateEditorValue('# B\n\nlocal dirty')
+    })
+
+    await act(async () => {
+      model?.actions.setWorkspaceActivePane('primary')
+      await Promise.resolve()
+    })
+
+    expect(model?.state.workspaceLayout.activePane).toBe('secondary')
+    expect(model?.state.selectedPath).toBe('docs/b.md')
+    expect(model?.state.statusMessage).toBe('Save or wait for autosave before switching files.')
+  })
+
+  it('keeps copied conflict document in active secondary pane after reopening project', async () => {
+    const savedFiles = new Map<string, string>([
+      ['docs/a.md', '# A'],
+      ['docs/b.md', '# B'],
+    ])
+    const openProjectMock = vi.fn(async () => ({
+      ok: true as const,
+      data: {
+        rootPath: 'C:/tmp/project',
+        tree: [],
+        markdownFiles: [...savedFiles.keys()],
+        index: { version: '1.0.0', corkboardOrder: {}, cache: {} },
+      },
+    }))
+    const { emitExternalEvent } = setupTramaApiMock({
+      openProject: openProjectMock,
+      readDocument: async (payload: { path: string }) => ({
+        ok: true as const,
+        data: { path: payload.path, content: savedFiles.get(payload.path) ?? '# Missing', meta: {} },
+      }),
+      saveDocument: async (payload: { path: string; content: string; meta: Record<string, unknown> }) => {
+        savedFiles.set(payload.path, payload.content)
+        openProjectMock.mockResolvedValue({
+          ok: true as const,
+          data: {
+            rootPath: 'C:/tmp/project',
+            tree: [],
+            markdownFiles: [...savedFiles.keys()],
+            index: { version: '1.0.0', corkboardOrder: {}, cache: {} },
+          },
+        })
+        return { ok: true as const, data: { path: payload.path, version: new Date().toISOString() } }
+      },
+    })
+
+    let model: ProjectEditorModel | undefined
+    function Harness() { model = useProjectEditor(); return null }
+    const container = document.createElement('div')
+    act(() => { render(h(Harness, {}), container) })
+
+    await act(async () => { await model?.actions.pickProjectFolder() })
+    expect(model?.state.workspaceLayout.primaryPath).toBe('docs/a.md')
+
+    if (model?.state.workspaceLayout.mode !== 'split') {
+      await act(async () => { model?.actions.toggleWorkspaceLayoutMode(); await Promise.resolve() })
+    }
+    expect(model?.state.workspaceLayout.mode).toBe('split')
+
+    await act(async () => {
+      model?.actions.setWorkspaceActivePane('secondary')
+      await Promise.resolve()
+      await Promise.resolve()
+    })
+    expect(model?.state.workspaceLayout.activePane).toBe('secondary')
+    expect(model?.state.selectedPath).toBe('docs/b.md')
+
+    act(() => { model?.actions.updateEditorValue('# B\n\nlocal edit') })
+    expect(model?.state.isDirty).toBe(true)
+
+    act(() => {
+      emitExternalEvent({ path: 'docs/b.md', event: 'change', source: 'external', timestamp: new Date().toISOString() })
+    })
+    expect(model?.state.externalConflictPath).toBe('docs/b.md')
+
+    await act(async () => {
+      model?.actions.resolveConflictSaveAsCopy()
+      await Promise.resolve()
+      await Promise.resolve()
+      await Promise.resolve()
+    })
+
+    const copyPath = 'docs/b.conflict-copy.md'
+    expect(model?.state.workspaceLayout.activePane).toBe('secondary')
+    expect(model?.state.workspaceLayout.secondaryPath).toBe(copyPath)
+    expect(model?.state.selectedPath).toBe(copyPath)
+    expect(model?.state.externalConflictPath).toBeNull()
+  })
+
 })

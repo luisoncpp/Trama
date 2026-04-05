@@ -1,7 +1,7 @@
 # Phase 3 Detailed Plan - Workspace UX
 
 Date: 2026-04-04
-Status: Proposed plan aligned to current codebase state
+Status: **In Progress** — WS1 re-scoped for split-pane usability
 Related: `docs/current-status.md`, `docs/implementation-overview.md`, `DESIGN_SPEC.md`
 
 ## 1. Context and Starting Point
@@ -62,45 +62,42 @@ Known constraint to keep in mind:
 
 ## 5. Workstreams and Deliverables
 
-## WS1 - Layout Foundation (Split Panes + Tabs + Persistence)
+## WS1 - Split Workspace Usability (Re-scoped)
 
 Objective:
-- Introduce a layout state model capable of two-pane workspace operation with persisted panel sizes and active contexts.
+- Make split-pane mode actually usable for writing and reviewing side-by-side content.
 
 Deliverables:
-- Layout model and actions integrated into project editor state.
-- Resizable split workspace (horizontal first, optional vertical toggle).
-- Active pane selection and tab memory for open documents.
-- Persistent layout storage and restoration.
+- Both panel editors remain visible and readable at the same time (no inactive editor disappearing).
+- Clicking directly inside an editor makes that pane active (without requiring an "Activate" button).
+- Split width is adjusted by dragging a center divider (mouse drag interaction).
+- Pane headers show the current file name (not "Primary"/"Secondary").
+- Top control bar is removed from split workspace mode.
 
-Suggested implementation details:
-- Add a `workspaceLayout` object to project editor state (or dedicated layout module):
-  - `mode`: `single | split`
-  - `ratio`: number (left pane width fraction)
-  - `primaryPath`: string | null
-  - `secondaryPath`: string | null
-  - `activePane`: `primary | secondary`
-- Persist via local storage in renderer first (fast path), with clean abstraction so future migration to config file is easy.
-- Keep file list single-source; both panes open docs from same project file registry.
+Implementation notes (updated):
+- Remove UI patterns that compete with direct manipulation (top slider + activate buttons).
+- Keep split interactions in-pane: click-to-focus and drag-to-resize from divider.
+- Preserve existing persistence behavior, but avoid exposing internal pane names in end-user labels.
+- Treat old WS1 details as historical context, not current guidance.
 
 Primary files likely touched:
-- `src/features/project-editor/project-editor-types.ts`
-- `src/features/project-editor/use-project-editor-state.ts`
-- `src/features/project-editor/use-project-editor-ui-actions.ts`
-- `src/features/project-editor/use-project-editor.ts`
+- `src/features/project-editor/components/workspace-editor-panels.tsx`
 - `src/features/project-editor/project-editor-view.tsx`
-- `src/features/project-editor/components/editor-panel.tsx`
-- `src/features/project-editor/components/sidebar/sidebar-panel.tsx`
+- `src/features/project-editor/use-project-editor-ui-actions.ts`
+- `src/features/project-editor/use-project-editor-layout-actions.ts`
+- `src/index.css`
 
 Acceptance criteria:
-- User can toggle single/split modes.
-- User can resize split and ratio persists after restart.
-- User can assign/open documents independently in both panes.
-- Active pane is visually clear and keyboard addressable.
+- In split mode, both editor surfaces are visible simultaneously and text remains readable in both panes.
+- User can switch active pane by clicking inside the pane/editor area.
+- User can resize panes via drag handle centered between panes.
+- Pane labels show file name (or a clear empty-state label if pane has no file).
+- Top split control bar is removed and no longer required for core split interaction.
 
 Tests:
-- `tests/use-project-editor.test.ts`: layout state transitions and persistence restore.
-- New `tests/workspace-layout-persistence.test.ts`: split ratio, pane assignment, startup restore.
+- Extend `tests/sidebar-panels.test.ts` or add dedicated split-pane interaction tests for click-to-focus and dual-pane visibility.
+- Extend `tests/workspace-layout-persistence.test.ts` to validate divider-driven ratio changes still persist.
+- Extend `tests/project-editor-conflict-flow.test.ts` to ensure split conflict UX remains stable after UI control changes.
 
 ## WS2 - Theme System (Light/Dark/System)
 
@@ -229,15 +226,17 @@ Validation gate:
 
 ## 6. Proposed Execution Sequence (PR Plan)
 
-PR-1: Layout state + split rendering skeleton
-- Add state model and UI skeleton.
-- Persist split ratio and mode.
-- Tests for state transitions.
+PR-1: Split UX interaction overhaul
+- Keep both editors rendered in split mode.
+- Activate pane by editor click.
+- Replace top ratio slider with center drag divider.
+- Replace "Primary/Secondary" labels with file names.
+- Remove top control bar.
 
-PR-2: Two-pane document workflows
-- Pane assignment/open behavior.
-- Active pane controls and visual states.
-- Conflict flow compatibility in split mode.
+PR-2: Split UX stabilization and regression safety
+- Verify conflict flow and autosave behavior with new split interactions.
+- Expand persistence tests for drag-based resizing.
+- Polish empty-state and focus affordances.
 
 PR-3: Theme subsystem
 - Introduce semantic tokens and switcher.
@@ -263,7 +262,7 @@ Risk: State complexity explosion in `use-project-editor`.
 - Mitigation: keep layout/theme/fullscreen logic in isolated hooks/modules; avoid monolithic hook growth.
 
 Risk: Split-pane introduces save/conflict race conditions.
-- Mitigation: maintain one canonical document state map keyed by path; pane views are projections only.
+- Mitigation: use explicit per-pane document state (`primaryPane` and `secondaryPane`) and require pane-aware `loadDocument` calls.
 
 Risk: Fullscreen desync between OS window state and renderer state.
 - Mitigation: subscribe to native fullscreen change events and reconcile renderer state from source-of-truth events.
@@ -272,7 +271,7 @@ Risk: Theme regressions reduce readability.
 - Mitigation: semantic token audit and explicit contrast checks on conflict/disabled states.
 
 Risk: Test fragility due to UI restructuring.
-- Mitigation: prioritize behavior-level tests over brittle DOM shape assertions.
+- Mitigation: prioritize behavior-level tests over brittle DOM shape assertions and normalize persisted layout state in test setup before assertions.
 
 ## 8. Exit Criteria for Phase 3
 
@@ -286,4 +285,4 @@ Phase 3 is complete when all are true:
 
 ## 9. Immediate Next Step
 
-Start PR-3 for sidebar filter/search UX (auto-expansion + restore expanded-state), then continue with PR-4 create actions and window/theme tracks.
+Start WS1 re-scoped implementation for split-pane usability (dual readable editors, click-to-focus, center drag divider, filename labels, and no top control bar).

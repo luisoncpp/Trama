@@ -1,14 +1,16 @@
 import { useEffect } from 'preact/hooks'
 import type { ExternalFileEvent } from '../../shared/ipc'
+import type { WorkspacePane } from './project-editor-types'
 import { shouldRefreshTreeOnExternalEvent } from './project-editor-logic'
 import { PROJECT_EDITOR_STRINGS } from './project-editor-strings'
 
 interface UseProjectEditorExternalEventsEffectParams {
   snapshotRootPath: string | null
   selectedPath: string | null
+  activePane: WorkspacePane
   isDirty: boolean
   clearEditor: () => void
-  loadDocument: (path: string) => Promise<void>
+  loadDocument: (path: string, pane: WorkspacePane) => Promise<void>
   openProject: (projectRoot: string, preferredFilePath?: string) => Promise<void>
   setExternalConflictPath: (path: string | null) => void
   setConflictComparisonContent: (value: string | null) => void
@@ -18,10 +20,11 @@ interface UseProjectEditorExternalEventsEffectParams {
 interface HandleExternalEventParams {
   event: ExternalFileEvent
   selectedPath: string | null
+  activePane: WorkspacePane
   snapshotRootPath: string
   isDirty: boolean
   clearEditor: () => void
-  loadDocument: (path: string) => Promise<void>
+  loadDocument: (path: string, pane: WorkspacePane) => Promise<void>
   openProject: (projectRoot: string, preferredFilePath?: string) => Promise<void>
   setExternalConflictPath: (path: string | null) => void
   setConflictComparisonContent: (value: string | null) => void
@@ -31,6 +34,7 @@ interface HandleExternalEventParams {
 function handleExternalEvent({
   event,
   selectedPath,
+  activePane,
   snapshotRootPath,
   isDirty,
   clearEditor,
@@ -64,7 +68,7 @@ function handleExternalEvent({
     }
 
     setConflictComparisonContent(null)
-    void loadDocument(event.path)
+    void loadDocument(event.path, activePane)
     setStatusMessage(`Automatically reloaded after external change: ${event.path}`)
     return
   }
@@ -84,6 +88,7 @@ function handleExternalEvent({
 export function useProjectEditorExternalEventsEffect({
   snapshotRootPath,
   selectedPath,
+  activePane,
   isDirty,
   clearEditor,
   loadDocument,
@@ -101,6 +106,7 @@ export function useProjectEditorExternalEventsEffect({
       handleExternalEvent({
         event,
         selectedPath,
+        activePane,
         snapshotRootPath,
         isDirty,
         clearEditor,

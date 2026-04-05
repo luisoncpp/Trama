@@ -9,6 +9,7 @@ interface EditorPanelProps {
   editorValue: string
   onSaveNow: () => void
   onEditorChange: (value: string) => void
+  onInteract?: () => void
 }
 
 export function EditorPanel({
@@ -19,6 +20,7 @@ export function EditorPanel({
   editorValue,
   onSaveNow,
   onEditorChange,
+  onInteract,
 }: EditorPanelProps) {
   const saveDisabled = !selectedPath || saving || !isDirty
   const saveLabel = saving
@@ -38,7 +40,7 @@ export function EditorPanel({
           : PROJECT_EDITOR_STRINGS.noFileSelected
 
   return (
-    <article class="editor-panel-root">
+    <article class="editor-panel-root" onPointerDownCapture={onInteract}>
       <div class={`editor-manuscript ${!selectedPath || loadingDocument ? 'is-muted' : ''}`}>
         <RichMarkdownEditor
           documentId={selectedPath}

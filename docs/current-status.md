@@ -26,6 +26,12 @@ Implemented now:
 - Sidebar hardening: Ctrl/Cmd+F filter focus, loading/API-unavailable states, responsive auto-collapse, and collapse-all persistence fixes.
 - Sidebar file actions (`Rename`, `Delete`) via right-click file context menu.
 - Main-process file operations expanded to create/rename/delete markdown files plus folder create.
+- Workspace split-layout foundation: single/split mode toggle, ratio control, active pane switching, pane document assignment, and local persistence (`trama.workspace.layout.v1`).
+- Layout reconciliation hardening: preferred-document restores now respect active pane intent during project reopen flows.
+- Per-pane editor state model: independent `primaryPane`/`secondaryPane` document content, metadata, and dirty flags.
+- Pane-targeted document loading and save dirty-flag clearing by matching path.
+- Split reopen flow hardened through dedicated open-project module (`use-project-editor-open-project.ts`) to satisfy lint limits and reduce hook complexity.
+- Split conflict regression restored: save-as-copy from secondary pane remains in secondary after project reopen.
 
 Not implemented yet (planned in later phases):
 - Folder rename/delete and move workflows.
@@ -53,16 +59,26 @@ Additional regression checks in suite include:
 - Index refresh still does full reconciliation in several write flows (safe, but can be optimized later).
 - External change handling favors safety over convenience (prevents accidental overwrite when local doc is dirty).
 
-## Suggested next milestones
+## 🎯 Next Immediate Step: Phase 3 Workstream 1 - Split Workspace Usability
 
-1. Complete file-tree operations:
-- Folder rename/delete.
-- Move file/folder between branches.
+**Status**: Re-scoped and ready
 
-2. Editor and UX polish:
-- Accessibility and keyboard flow improvements around dialogs/menus.
-- Markdown fidelity edge-case expansion.
+Prioritize split-pane UX fixes before WS2:
 
-3. Performance and architecture cleanup:
-- Reduce repeated full-project scans/index reconciliations.
-- Add integration coverage for watcher bursts and concurrent edits.
+1. Keep both panel editors readable at the same time.
+2. Activate pane by clicking inside editor content.
+3. Resize split with a draggable center divider (no top slider).
+4. Show file names in pane headers (not Primary/Secondary).
+5. Remove top split control bar.
+
+**📖 Detailed plan**: See [phase-3-detailed-plan.md](./phase-3-detailed-plan.md) (WS1 section re-scoped).
+
+After WS1 usability completion → WS2 (Theme System) → WS3 (Fullscreen & Focus Mode)
+
+## Other planned improvements (Phase 4+)
+
+- Complete file-tree operations (folder rename/delete, move workflows)
+- Editor accessibility and keyboard flow
+- Performance optimization (reduce full-project scans)
+- Wiki links, templates, corkboard UX
+- AI import/export pipeline

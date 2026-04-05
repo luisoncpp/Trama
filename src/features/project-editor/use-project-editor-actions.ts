@@ -1,15 +1,18 @@
 import { useCallback } from 'preact/hooks'
 import type { DocumentMeta } from '../../shared/ipc'
-import { resolvePreferredFile } from './project-editor-logic'
-import { PROJECT_EDITOR_STRINGS } from './project-editor-strings'
-import type { ProjectEditorActions } from './project-editor-types'
+import type { PaneDocumentState, ProjectEditorActions, WorkspacePane } from './project-editor-types'
 import type { UseProjectEditorStateResult } from './use-project-editor-state'
+import { useOpenProject } from './use-project-editor-open-project'
 import { useProjectEditorUiActions } from './use-project-editor-ui-actions'
 
 interface CoreProjectEditorActions {
   clearEditor: () => void
-  loadDocument: (path: string) => Promise<void>
-  openProject: (projectRoot: string, preferredFilePath?: string) => Promise<void>
+  loadDocument: (path: string, targetPane: WorkspacePane) => Promise<void>
+  openProject: (
+    projectRoot: string,
+    preferredFilePath?: string,
+    preferredPane?: 'primary' | 'secondary',
+  ) => Promise<void>
   saveDocumentNow: (path: string, content: string, meta: DocumentMeta) => Promise<void>
 }
 
@@ -20,18 +23,24 @@ export interface UseProjectEditorActionsResult {
 
 function useClearEditor(setters: UseProjectEditorStateResult['setters']): () => void {
   return useCallback(() => {
-    setters.setSelectedPath(null)
-    setters.setEditorValue('')
-    setters.setEditorMeta({})
-    setters.setIsDirty(false)
+    const emptyPane: PaneDocumentState = { path: null, content: '', meta: {}, isDirty: false }
+    setters.setPrimaryPane(emptyPane)
+    setters.setSecondaryPane(emptyPane)
     setters.setExternalConflictPath(null)
     setters.setConflictComparisonContent(null)
+    setters.setWorkspaceLayout((previous) => ({
+      ...previous,
+      primaryPath: null,
+      secondaryPath: null,
+      activePane: 'primary',
+      mode: 'single',
+    }))
   }, [setters])
 }
 
-function useLoadDocument(setters: UseProjectEditorStateResult['setters']): (path: string) => Promise<void> {
+function useLoadDocument(setters: UseProjectEditorStateResult['setters']): (path: string, targetPane: WorkspacePane) => Promise<void> {
   return useCallback(
-    async (filePath: string): Promise<void> => {
+    async (filePath: string, targetPane: WorkspacePane): Promise<void> => {
       setters.setLoadingDocument(true)
 
       try {
@@ -41,57 +50,23 @@ function useLoadDocument(setters: UseProjectEditorStateResult['setters']): (path
           return
         }
 
-        setters.setSelectedPath(response.data.path)
-        setters.setEditorValue(response.data.content)
-        setters.setEditorMeta(response.data.meta)
-        setters.setIsDirty(false)
-        setters.setConflictComparisonContent(null)
+        const loadedPane: PaneDocumentState = {
+          path: response.data.path,
+          content: response.data.content,
+          meta: response.data.meta,
+          isDirty: false,
+        }
+        if (targetPane === 'secondary') {
+          setters.setSecondaryPane(loadedPane)
+        } else {
+          setters.setPrimaryPane(loadedPane)
+        }
         setters.setStatusMessage(`Loaded document: ${response.data.path}`)
       } finally {
         setters.setLoadingDocument(false)
       }
     },
     [setters],
-  )
-}
-
-function useOpenProject(
-  setters: UseProjectEditorStateResult['setters'],
-  clearEditor: () => void,
-  loadDocument: (path: string) => Promise<void>,
-): (projectRoot: string, preferredFilePath?: string) => Promise<void> {
-  return useCallback(
-    async (projectRoot: string, preferredFilePath?: string): Promise<void> => {
-      setters.setLoadingProject(true)
-      setters.setStatusMessage(PROJECT_EDITOR_STRINGS.projectOpeningStatus)
-
-      try {
-        const response = await window.tramaApi.openProject({ rootPath: projectRoot })
-        if (!response.ok) {
-          setters.setStatusMessage(`Could not open project: ${response.error.message}`)
-          return
-        }
-
-        setters.setRootPath(response.data.rootPath)
-        setters.setSnapshot(response.data)
-        setters.setStatusMessage(`Project opened: ${response.data.rootPath}`)
-
-        const nextFile = resolvePreferredFile(response.data, preferredFilePath)
-        if (!nextFile) {
-          clearEditor()
-          setters.setStatusMessage(PROJECT_EDITOR_STRINGS.projectWithoutMarkdown)
-          return
-        }
-
-        await loadDocument(nextFile)
-      } catch (error) {
-        const message = error instanceof Error ? error.message : 'Unknown error'
-        setters.setStatusMessage(`Error opening project: ${message}`)
-      } finally {
-        setters.setLoadingProject(false)
-      }
-    },
-    [clearEditor, loadDocument, setters],
   )
 }
 
@@ -109,7 +84,9 @@ function useSaveDocumentNow(
           return
         }
 
-        setters.setIsDirty(false)
+        const savedPath = response.data.path
+        setters.setPrimaryPane((prev) => prev.path === savedPath ? { ...prev, isDirty: false } : prev)
+        setters.setSecondaryPane((prev) => prev.path === savedPath ? { ...prev, isDirty: false } : prev)
         setters.setStatusMessage(`Saved: ${response.data.path} (${response.data.version})`)
       } finally {
         setters.setSaving(false)

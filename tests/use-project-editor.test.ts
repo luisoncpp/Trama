@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { h, render } from 'preact'
 import { act } from 'preact/test-utils'
+import { WORKSPACE_LAYOUT_STORAGE_KEY } from '../src/features/project-editor/project-editor-logic'
 import { useProjectEditor } from '../src/features/project-editor/use-project-editor'
 import type { ProjectEditorModel } from '../src/features/project-editor/project-editor-types'
 
@@ -98,6 +99,7 @@ function setupTramaApiMock(overrides?: Partial<TramaApiMock>) {
 describe('useProjectEditor', () => {
   it('exposes initial state from hook', () => {
     window.localStorage.removeItem('trama.sidebar.ui.v1')
+    window.localStorage.removeItem(WORKSPACE_LAYOUT_STORAGE_KEY)
     setupTramaApiMock()
 
     let model: ProjectEditorModel | undefined
@@ -118,10 +120,18 @@ describe('useProjectEditor', () => {
     expect(model?.state.sidebarActiveSection).toBe('explorer')
     expect(model?.state.sidebarPanelCollapsed).toBe(false)
     expect(model?.state.sidebarPanelWidth).toBe(300)
+    expect(model?.state.workspaceLayout).toEqual({
+      mode: 'single',
+      ratio: 0.5,
+      primaryPath: null,
+      secondaryPath: null,
+      activePane: 'primary',
+    })
   })
 
   it('updates status when folder picking is canceled', async () => {
     window.localStorage.removeItem('trama.sidebar.ui.v1')
+    window.localStorage.removeItem(WORKSPACE_LAYOUT_STORAGE_KEY)
     setupTramaApiMock({
       selectProjectFolder: async () => ({ ok: true, data: { rootPath: null } }),
     })
@@ -147,6 +157,7 @@ describe('useProjectEditor', () => {
 
   it('persists sidebar section and layout preferences', async () => {
     window.localStorage.removeItem('trama.sidebar.ui.v1')
+    window.localStorage.removeItem(WORKSPACE_LAYOUT_STORAGE_KEY)
     setupTramaApiMock()
 
     let model: ProjectEditorModel | undefined
@@ -178,10 +189,27 @@ describe('useProjectEditor', () => {
       panelCollapsed: true,
       panelWidth: 420,
     })
+
+    await act(async () => {
+      model?.actions.toggleWorkspaceLayoutMode()
+      model?.actions.setWorkspaceLayoutRatio(0.62)
+      model?.actions.setWorkspaceActivePane('primary')
+    })
+
+    const layoutPersisted = window.localStorage.getItem(WORKSPACE_LAYOUT_STORAGE_KEY)
+    expect(layoutPersisted).toBeTruthy()
+    expect(JSON.parse(layoutPersisted as string)).toEqual({
+      mode: 'single',
+      ratio: 0.62,
+      primaryPath: null,
+      secondaryPath: null,
+      activePane: 'primary',
+    })
   })
 
   it('creates a new article with generated name in active section', async () => {
     window.localStorage.removeItem('trama.sidebar.ui.v1')
+    window.localStorage.removeItem(WORKSPACE_LAYOUT_STORAGE_KEY)
     const createDocumentCalls: string[] = []
     setupTramaApiMock({
       selectProjectFolder: async () => ({ ok: true, data: { rootPath: 'C:/tmp/project' } }),
@@ -221,5 +249,55 @@ describe('useProjectEditor', () => {
     })
 
     expect(createDocumentCalls[0]).toBe('book/New-Article.md')
+  })
+
+  it('toggles workspace split layout with Ctrl+Period shortcut', async () => {
+    window.localStorage.removeItem('trama.sidebar.ui.v1')
+    window.localStorage.removeItem(WORKSPACE_LAYOUT_STORAGE_KEY)
+    setupTramaApiMock({
+      selectProjectFolder: async () => ({ ok: true, data: { rootPath: 'C:/tmp/project' } }),
+      openProject: async () => ({
+        ok: true,
+        data: {
+          rootPath: 'C:/tmp/project',
+          tree: [],
+          markdownFiles: ['docs/a.md', 'docs/b.md'],
+          index: { version: '1.0.0', corkboardOrder: {}, cache: {} },
+        },
+      }),
+      readDocument: async () => ({ ok: true, data: { path: 'docs/a.md', content: '# A', meta: {} } }),
+    })
+
+    let model: ProjectEditorModel | undefined
+
+    function Harness() {
+      model = useProjectEditor()
+      return null
+    }
+
+    const container = document.createElement('div')
+    act(() => {
+      render(h(Harness, {}), container)
+    })
+
+    await act(async () => {
+      await model?.actions.pickProjectFolder()
+    })
+
+    expect(model?.state.workspaceLayout.mode).toBe('single')
+
+    await act(async () => {
+      window.dispatchEvent(new KeyboardEvent('keydown', { code: 'Period', ctrlKey: true, bubbles: true }))
+      await Promise.resolve()
+    })
+
+    expect(model?.state.workspaceLayout.mode).toBe('split')
+
+    await act(async () => {
+      window.dispatchEvent(new KeyboardEvent('keydown', { code: 'Period', ctrlKey: true, bubbles: true }))
+      await Promise.resolve()
+    })
+
+    expect(model?.state.workspaceLayout.mode).toBe('single')
   })
 })
