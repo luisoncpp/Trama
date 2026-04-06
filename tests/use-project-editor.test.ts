@@ -356,4 +356,54 @@ describe('useProjectEditor', () => {
     expect(model?.state.workspaceLayout.ratio).toBe(0.5)
     expect(model?.state.isFullscreen).toBe(true)
   })
+
+  it('collapses sidebar when enabling focus mode and blocks reopening while focus is active', async () => {
+    window.localStorage.removeItem('trama.sidebar.ui.v1')
+    window.localStorage.removeItem(WORKSPACE_LAYOUT_STORAGE_KEY)
+    setupTramaApiMock()
+
+    let model: ProjectEditorModel | undefined
+
+    function Harness() {
+      model = useProjectEditor()
+      return null
+    }
+
+    const container = document.createElement('div')
+    act(() => {
+      render(h(Harness, {}), container)
+    })
+
+    expect(model?.state.sidebarPanelCollapsed).toBe(false)
+    expect(model?.state.workspaceLayout.focusModeEnabled).toBe(false)
+
+    await act(async () => {
+      model?.actions.toggleFocusMode()
+      await Promise.resolve()
+    })
+
+    expect(model?.state.workspaceLayout.focusModeEnabled).toBe(true)
+    expect(model?.state.sidebarPanelCollapsed).toBe(true)
+
+    await act(async () => {
+      model?.actions.toggleSidebarPanelCollapsed()
+      await Promise.resolve()
+    })
+
+    expect(model?.state.sidebarPanelCollapsed).toBe(true)
+
+    await act(async () => {
+      model?.actions.toggleFocusMode()
+      await Promise.resolve()
+    })
+
+    expect(model?.state.workspaceLayout.focusModeEnabled).toBe(false)
+
+    await act(async () => {
+      model?.actions.toggleSidebarPanelCollapsed()
+      await Promise.resolve()
+    })
+
+    expect(model?.state.sidebarPanelCollapsed).toBe(false)
+  })
 })

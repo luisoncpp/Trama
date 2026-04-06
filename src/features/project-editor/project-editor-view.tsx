@@ -76,6 +76,7 @@ function SidebarSection({
       themePreference={themePreference}
       resolvedTheme={resolvedTheme}
       onThemePreferenceChange={onThemePreferenceChange}
+      focusModeEnabled={state.workspaceLayout.focusModeEnabled}
       focusScope={state.workspaceLayout.focusScope}
       onFocusScopeChange={actions.setFocusScope}
     />

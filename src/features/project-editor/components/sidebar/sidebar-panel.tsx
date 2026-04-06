@@ -75,6 +75,7 @@ export function SidebarPanel(props: SidebarPanelProps) {
       <SidebarRail
         activeSection={props.sidebarActiveSection}
         collapsed={effectiveCollapsed}
+        focusModeEnabled={props.focusModeEnabled}
         onSelectSection={props.onSelectSidebarSection}
         onToggleCollapsed={props.onToggleSidebarPanelCollapsed}
       />

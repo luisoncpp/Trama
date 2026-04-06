@@ -128,7 +128,7 @@ function usePrimaryProjectEditorActions(
   const updateEditorValue = useUpdateEditorValueAction(values, setters)
   const saveNow = useSaveNowAction({ values, saveDocumentNow })
   const setFullscreenEnabled = useSetFullscreenEnabledAction(setters)
-  const toggleFocusMode = useToggleFocusModeAction(setters)
+  const toggleFocusMode = useToggleFocusModeAction(values, setters)
   const setFocusScope = useSetFocusScopeAction(setters)
 
   return {

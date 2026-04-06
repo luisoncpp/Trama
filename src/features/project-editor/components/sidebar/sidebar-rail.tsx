@@ -5,6 +5,7 @@ import { LoreIcon, ManuscriptIcon, OutlineIcon, SettingsIcon } from './sidebar-r
 interface SidebarRailProps {
   activeSection: SidebarSection
   collapsed: boolean
+  focusModeEnabled: boolean
   onSelectSection: (section: SidebarSection) => void
   onToggleCollapsed: () => void
 }
@@ -27,7 +28,7 @@ function RailItemLabel({ item }: { item: SidebarRailItem }): JSX.Element {
   return <Icon />
 }
 
-export function SidebarRail({ activeSection, collapsed, onSelectSection, onToggleCollapsed }: SidebarRailProps) {
+export function SidebarRail({ activeSection, collapsed, focusModeEnabled, onSelectSection, onToggleCollapsed }: SidebarRailProps) {
   return (
     <nav class="sidebar-rail" aria-label="Workspace sections">
       <div class="sidebar-rail__items">
@@ -49,8 +50,9 @@ export function SidebarRail({ activeSection, collapsed, onSelectSection, onToggl
         type="button"
         class="sidebar-rail__toggle"
         onClick={onToggleCollapsed}
+        disabled={focusModeEnabled}
         aria-label={collapsed ? 'Expand sidebar panel' : 'Collapse sidebar panel'}
-        title={collapsed ? 'Expand panel' : 'Collapse panel'}
+        title={focusModeEnabled ? 'Sidebar is locked while focus mode is active' : collapsed ? 'Expand panel' : 'Collapse panel'}
       >
         {collapsed ? '>>' : '<<'}
       </button>

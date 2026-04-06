@@ -31,6 +31,7 @@ export interface SidebarThemeProps {
 }
 
 export interface SidebarWorkspacePrefsProps {
+  focusModeEnabled: boolean
   focusScope: FocusScope
   onFocusScopeChange: (scope: FocusScope) => void
 }

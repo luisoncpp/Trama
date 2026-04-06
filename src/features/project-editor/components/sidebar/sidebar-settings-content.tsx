@@ -46,7 +46,7 @@ function FocusScopeSelect({
 }: Pick<SidebarSettingsContentProps, 'focusScope' | 'onFocusScopeChange'>) {
   return (
     <label class="project-menu__field">
-      <span>Focus Scope</span>
+      <span>Focus Mode Scope</span>
       <select
         value={focusScope}
         onChange={(event) =>

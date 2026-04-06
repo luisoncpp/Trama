@@ -92,6 +92,37 @@
 - `src/features/project-editor/use-sidebar-ui-state.ts`
   - Persist sidebar UI (`trama.sidebar.ui.v1`).
 
+### Project editor hooks (detailed)
+
+- `src/features/project-editor/use-project-editor-state.ts`
+  - Core local state for the editor feature (panes, loading/saving flags, conflict state, status messages).
+- `src/features/project-editor/use-project-editor-actions.ts`
+  - Composes UI actions and core operations (load/save/open/clear) and wires them into the state.
+- `src/features/project-editor/use-project-editor-autosave-effect.ts`
+  - Debounced autosave effect that persists edits after a short idle period.
+- `src/features/project-editor/use-project-editor-external-events-effect.ts`
+  - Subscribes to external file events (watcher) and handles reloads/conflicts/tree refresh.
+- `src/features/project-editor/use-project-editor-context-menu-effect.ts`
+  - Handles workspace-level context menu commands (split/fullscreen/focus/split ratio).
+- `src/features/project-editor/use-project-editor-fullscreen-effect.ts`
+  - Listens for native fullscreen changes and mirrors them into UI state.
+- `src/features/project-editor/use-project-editor-shortcuts-effect.ts`
+  - Global keyboard shortcuts handling for editor workspace actions.
+- `src/features/project-editor/use-project-editor-open-project.ts`
+  - Orchestrates opening a project: load snapshot, reconcile layout, preload inactive pane.
+- `src/features/project-editor/use-project-editor-ui-actions.ts`
+  - High-level UI action builders used by components (pick folder, select file, save, create, rename, delete, focus/fullscreen toggles).
+- `src/features/project-editor/use-project-editor-create-actions.ts`
+  - Helpers to create new articles and category folders in the project.
+- `src/features/project-editor/use-project-editor-file-actions.ts`
+  - File operations (rename, delete) with status updates and project reopen flows.
+- `src/features/project-editor/use-project-editor-conflict-actions.ts`
+  - Actions to resolve external edit conflicts (reload, keep, save-as-copy, compare).
+- `src/features/project-editor/use-project-editor-layout-actions.ts`
+  - Workspace layout actions (assign file to pane, toggle split, set ratio, switch active pane).
+- `src/features/project-editor/use-project-editor-focus-actions.ts`
+  - Focus-mode controls (enable/disable, set scope: line/sentence/paragraph).
+
 ### Editor workspace components
 
 - `src/features/project-editor/components/workspace-editor-panels.tsx`
@@ -101,7 +132,15 @@
 - `src/features/project-editor/components/editor-panel.tsx`
   - Editor panel shell, sync labels, save affordance.
 - `src/features/project-editor/components/rich-markdown-editor.tsx`
-  - Quill editor composition and focus-scope emphasis behavior.
+  - Quill-based rich Markdown editor component (lifecycle, toolbar integration, focus-mode hookup).
+- `src/features/project-editor/components/rich-markdown-editor-core.ts`
+  - Core editor lifecycle and sync logic (initialize Quill, apply markdown, sync external values, enable/disable).
+- `src/features/project-editor/components/rich-markdown-editor-focus-scope.ts`
+  - Focus-mode implementation: applies inline/paragraph emphasis and uses Highlight API when available.
+- `src/features/project-editor/components/rich-markdown-editor-focus-scope-geometry.ts`
+  - Geometry helpers for focus-mode (text offset resolution, visual line/sentence boundary calculations).
+- `src/features/project-editor/components/rich-markdown-editor-toolbar.ts`
+  - Injects and synchronizes toolbar controls (save button, sync indicator) into the Quill toolbar.
 
 ### Sidebar components
 

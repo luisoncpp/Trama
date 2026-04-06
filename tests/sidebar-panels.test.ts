@@ -35,6 +35,7 @@ function buildPanelProps(
     themePreference: 'dark',
     resolvedTheme: 'dark',
     onThemePreferenceChange: () => undefined,
+    focusModeEnabled: false,
     focusScope: 'paragraph',
     onFocusScopeChange: () => undefined,
     ...overrides,
@@ -95,7 +96,7 @@ describe('sidebar panels', () => {
 
     expect(container.textContent).toContain('Settings')
     expect(container.textContent).toContain('Theme')
-    expect(container.textContent).toContain('Focus Scope')
+    expect(container.textContent).toContain('Focus Mode Scope')
     expect(container.textContent).toContain('Resolved now: Dark')
     expect(container.textContent).toContain('Panel width: 320px')
   })

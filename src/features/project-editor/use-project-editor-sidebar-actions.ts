@@ -18,8 +18,13 @@ export function useToggleSidebarPanelCollapsedAction(
   setters: UseProjectEditorStateResult['setters'],
 ): ProjectEditorActions['toggleSidebarPanelCollapsed'] {
   return useCallback(() => {
+    if (values.workspaceLayout.focusModeEnabled) {
+      setters.setSidebarPanelCollapsed(true)
+      return
+    }
+
     setters.setSidebarPanelCollapsed(!values.sidebarPanelCollapsed)
-  }, [setters, values.sidebarPanelCollapsed])
+  }, [setters, values.sidebarPanelCollapsed, values.workspaceLayout.focusModeEnabled])
 }
 
 export function useSetSidebarPanelWidthAction(

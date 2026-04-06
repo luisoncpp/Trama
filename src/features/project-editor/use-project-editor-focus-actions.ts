@@ -21,13 +21,20 @@ export function useSetFullscreenEnabledAction(
   )
 }
 
-export function useToggleFocusModeAction(setters: UseProjectEditorStateResult['setters']): ProjectEditorActions['toggleFocusMode'] {
+export function useToggleFocusModeAction(
+  values: UseProjectEditorStateResult['values'],
+  setters: UseProjectEditorStateResult['setters'],
+): ProjectEditorActions['toggleFocusMode'] {
   return useCallback(() => {
+    if (!values.workspaceLayout.focusModeEnabled) {
+      setters.setSidebarPanelCollapsed(true)
+    }
+
     setters.setWorkspaceLayout((previous) => ({
       ...previous,
       focusModeEnabled: !previous.focusModeEnabled,
     }))
-  }, [setters])
+  }, [setters, values.workspaceLayout.focusModeEnabled])
 }
 
 export function useSetFocusScopeAction(setters: UseProjectEditorStateResult['setters']): ProjectEditorActions['setFocusScope'] {
