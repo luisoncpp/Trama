@@ -1,7 +1,7 @@
 {
   "name": "trama",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.1.0-alpha",
   "license": "GPL-3.0-or-later",
   "type": "module",
   "main": "dist-electron/electron/main.js",
@@ -26,7 +26,8 @@
     "preact": "^10.29.0",
     "quill": "^2.0.3",
     "turndown": "^7.2.4",
-    "yaml": "^2.8.3"
+    "yaml": "^2.8.3",
+    "zod": "^3.24.2"
   },
   "devDependencies": {
     "@preact/preset-vite": "^2.10.4",
@@ -46,8 +47,7 @@
     "typescript": "~5.9.3",
     "vite": "^8.0.1",
     "vitest": "^4.1.2",
-    "wait-on": "^9.0.4",
-    "zod": "^4.3.6"
+    "wait-on": "^9.0.4"
   },
   "build": {
     "appId": "com.trama.desktop",
@@ -58,6 +58,7 @@
     "files": [
       "dist/**",
       "dist-electron/**",
+      "node_modules/**",
       "package.json"
     ],
     "extraResources": [
