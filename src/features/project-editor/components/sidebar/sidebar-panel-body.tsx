@@ -8,6 +8,7 @@ import type {
   SidebarProjectContextProps,
   SidebarSelectionProps,
   SidebarThemeProps,
+  SidebarWorkspacePrefsProps,
 } from './sidebar-types'
 
 export interface SidebarPanelBodyProps {
@@ -25,6 +26,8 @@ export interface SidebarPanelBodyProps {
   themePreference: SidebarThemeProps['themePreference']
   resolvedTheme: SidebarThemeProps['resolvedTheme']
   onThemePreferenceChange: SidebarThemeProps['onThemePreferenceChange']
+  focusScope: SidebarWorkspacePrefsProps['focusScope']
+  onFocusScopeChange: SidebarWorkspacePrefsProps['onFocusScopeChange']
   onCreateArticle: SidebarFileActions['onCreateArticle']
   onCreateCategory: SidebarFileActions['onCreateCategory']
   onRenameFile: SidebarFileActions['onRenameFile']
@@ -79,6 +82,8 @@ function renderSidebarSettingsContent({
   themePreference,
   resolvedTheme,
   onThemePreferenceChange,
+  focusScope,
+  onFocusScopeChange,
 }: SidebarPanelBodyProps) {
   return (
     <SidebarSettingsContent
@@ -87,6 +92,8 @@ function renderSidebarSettingsContent({
       themePreference={themePreference}
       resolvedTheme={resolvedTheme}
       onThemePreferenceChange={onThemePreferenceChange}
+      focusScope={focusScope}
+      onFocusScopeChange={onFocusScopeChange}
     />
   )
 }
@@ -126,6 +133,8 @@ export function buildSidebarPanelBodyProps(params: {
   themePreference: SidebarThemeProps['themePreference']
   resolvedTheme: SidebarThemeProps['resolvedTheme']
   onThemePreferenceChange: SidebarThemeProps['onThemePreferenceChange']
+  focusScope: SidebarWorkspacePrefsProps['focusScope']
+  onFocusScopeChange: SidebarWorkspacePrefsProps['onFocusScopeChange']
   contentProps: SidebarPanelBodyProps['contentProps']
 }): SidebarPanelBodyProps {
   return {
@@ -147,6 +156,8 @@ export function buildSidebarPanelBodyProps(params: {
     themePreference: params.themePreference,
     resolvedTheme: params.resolvedTheme,
     onThemePreferenceChange: params.onThemePreferenceChange,
+    focusScope: params.focusScope,
+    onFocusScopeChange: params.onFocusScopeChange,
     contentProps: params.contentProps,
   }
 }

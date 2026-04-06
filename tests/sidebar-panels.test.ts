@@ -35,6 +35,8 @@ function buildPanelProps(
     themePreference: 'dark',
     resolvedTheme: 'dark',
     onThemePreferenceChange: () => undefined,
+    focusScope: 'paragraph',
+    onFocusScopeChange: () => undefined,
     ...overrides,
   }
 }
@@ -93,6 +95,7 @@ describe('sidebar panels', () => {
 
     expect(container.textContent).toContain('Settings')
     expect(container.textContent).toContain('Theme')
+    expect(container.textContent).toContain('Focus Scope')
     expect(container.textContent).toContain('Resolved now: Dark')
     expect(container.textContent).toContain('Panel width: 320px')
   })
@@ -427,6 +430,8 @@ describe('sidebar panels', () => {
           themePreference: 'dark',
           resolvedTheme: 'dark',
           onThemePreferenceChange: () => undefined,
+          focusScope: 'paragraph',
+          onFocusScopeChange: () => undefined,
         }),
         container,
       )
@@ -454,6 +459,8 @@ describe('sidebar panels', () => {
           themePreference: 'dark',
           resolvedTheme: 'dark',
           onThemePreferenceChange,
+          focusScope: 'paragraph',
+          onFocusScopeChange: () => undefined,
         }),
         container,
       )
@@ -470,6 +477,35 @@ describe('sidebar panels', () => {
     })
 
     expect(onThemePreferenceChange).toHaveBeenCalledWith('system')
+  })
+
+  it('updates focus scope from settings select', () => {
+    const onFocusScopeChange = vi.fn()
+
+    act(() => {
+      render(
+        h(SidebarSettingsContent, {
+          panelWidth: 320,
+          onPanelWidthChange: () => undefined,
+          themePreference: 'dark',
+          resolvedTheme: 'dark',
+          onThemePreferenceChange: () => undefined,
+          focusScope: 'paragraph',
+          onFocusScopeChange,
+        }),
+        container,
+      )
+    })
+
+    const select = container.querySelector('select') as HTMLSelectElement
+    expect(select).toBeTruthy()
+
+    act(() => {
+      select.value = 'sentence'
+      select.dispatchEvent(new Event('change', { bubbles: true }))
+    })
+
+    expect(onFocusScopeChange).toHaveBeenCalledWith('sentence')
   })
 
   it('auto-collapses sidebar on narrow viewport', () => {

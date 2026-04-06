@@ -29,6 +29,8 @@ function buildSidebarPanelContentProps(props: SidebarPanelProps) {
     themePreference: props.themePreference,
     resolvedTheme: props.resolvedTheme,
     onThemePreferenceChange: props.onThemePreferenceChange,
+    focusScope: props.focusScope,
+    onFocusScopeChange: props.onFocusScopeChange,
   }
 }
 
@@ -60,6 +62,8 @@ export function SidebarPanel(props: SidebarPanelProps) {
     themePreference: props.themePreference,
     resolvedTheme: props.resolvedTheme,
     onThemePreferenceChange: props.onThemePreferenceChange,
+    focusScope: props.focusScope,
+    onFocusScopeChange: props.onFocusScopeChange,
     contentProps: buildSidebarPanelContentProps(props),
   })
 

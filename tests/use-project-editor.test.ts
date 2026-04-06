@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { h, render } from 'preact'
 import { act } from 'preact/test-utils'
 import { WORKSPACE_LAYOUT_STORAGE_KEY } from '../src/features/project-editor/project-editor-logic'
+import { WORKSPACE_CONTEXT_MENU_EVENT } from '../src/shared/workspace-context-menu'
 import { useProjectEditor } from '../src/features/project-editor/use-project-editor'
 import type { ProjectEditorModel } from '../src/features/project-editor/project-editor-types'
 
@@ -307,5 +308,52 @@ describe('useProjectEditor', () => {
     })
 
     expect(model?.state.workspaceLayout.mode).toBe('single')
+  })
+
+  it('applies workspace commands from context menu bridge event', async () => {
+    window.localStorage.removeItem('trama.sidebar.ui.v1')
+    window.localStorage.removeItem(WORKSPACE_LAYOUT_STORAGE_KEY)
+    setupTramaApiMock({
+      selectProjectFolder: async () => ({ ok: true, data: { rootPath: 'C:/tmp/project' } }),
+      openProject: async () => ({
+        ok: true,
+        data: {
+          rootPath: 'C:/tmp/project',
+          tree: [],
+          markdownFiles: ['docs/a.md', 'docs/b.md'],
+          index: { version: '1.0.0', corkboardOrder: {}, cache: {} },
+        },
+      }),
+      readDocument: async () => ({ ok: true, data: { path: 'docs/a.md', content: '# A', meta: {} } }),
+    })
+
+    let model: ProjectEditorModel | undefined
+
+    function Harness() {
+      model = useProjectEditor()
+      return null
+    }
+
+    const container = document.createElement('div')
+    act(() => {
+      render(h(Harness, {}), container)
+    })
+
+    await act(async () => {
+      await model?.actions.pickProjectFolder()
+    })
+
+    await act(async () => {
+      window.dispatchEvent(new CustomEvent(WORKSPACE_CONTEXT_MENU_EVENT, { detail: { type: 'toggle-split' } }))
+      window.dispatchEvent(new CustomEvent(WORKSPACE_CONTEXT_MENU_EVENT, { detail: { type: 'toggle-focus' } }))
+      window.dispatchEvent(new CustomEvent(WORKSPACE_CONTEXT_MENU_EVENT, { detail: { type: 'toggle-fullscreen' } }))
+      await Promise.resolve()
+    })
+
+    expect(model?.state.workspaceLayout.mode).toBe('split')
+    expect(model?.state.workspaceLayout.focusModeEnabled).toBe(true)
+    expect(model?.state.workspaceLayout.focusScope).toBe('paragraph')
+    expect(model?.state.workspaceLayout.ratio).toBe(0.5)
+    expect(model?.state.isFullscreen).toBe(true)
   })
 })

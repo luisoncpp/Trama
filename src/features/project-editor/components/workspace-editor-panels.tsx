@@ -1,7 +1,6 @@
 import { useRef } from 'preact/hooks'
 import type { ProjectEditorModel } from '../project-editor-types'
 import { EditorPanel } from './editor-panel'
-import { WorkspaceLayoutControls } from './workspace-layout-controls'
 
 interface LayoutControlsProps {
   model: ProjectEditorModel
@@ -140,10 +139,5 @@ export function WorkspaceEditorPanels({ model }: LayoutControlsProps) {
 }
 
 export function WorkspaceLayoutPanel({ model }: LayoutControlsProps) {
-  return (
-    <>
-      <WorkspaceLayoutControls model={model} />
-      <WorkspaceEditorPanels model={model} />
-    </>
-  )
+  return <WorkspaceEditorPanels model={model} />
 }

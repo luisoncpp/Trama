@@ -1,6 +1,7 @@
 import type { ProjectEditorModel } from './project-editor-types'
 import { useProjectEditorActions } from './use-project-editor-actions'
 import { useProjectEditorAutosaveEffect } from './use-project-editor-autosave-effect'
+import { useProjectEditorContextMenuEffect } from './use-project-editor-context-menu-effect'
 import { useProjectEditorExternalEventsEffect } from './use-project-editor-external-events-effect'
 import { useProjectEditorFullscreenEffect } from './use-project-editor-fullscreen-effect'
 import { useProjectEditorShortcutsEffect } from './use-project-editor-shortcuts-effect'
@@ -49,6 +50,15 @@ function useProjectEditorEffects(
       const nextPane = values.workspaceLayout.activePane === 'primary' ? 'secondary' : 'primary'
       actions.setWorkspaceActivePane(nextPane)
     },
+  })
+
+  useProjectEditorContextMenuEffect({
+    isFullscreen: values.isFullscreen,
+    toggleWorkspaceLayoutMode: actions.toggleWorkspaceLayoutMode,
+    setFullscreenEnabled: actions.setFullscreenEnabled,
+    toggleFocusMode: actions.toggleFocusMode,
+    setFocusScope: actions.setFocusScope,
+    setWorkspaceLayoutRatio: actions.setWorkspaceLayoutRatio,
   })
 }
 

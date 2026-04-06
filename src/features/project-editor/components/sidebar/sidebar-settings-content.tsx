@@ -1,4 +1,5 @@
 import type { ResolvedTheme, ThemePreference } from '../../../../theme/theme-types'
+import type { FocusScope } from '../../project-editor-types'
 
 interface SidebarSettingsContentProps {
   panelWidth: number
@@ -6,6 +7,8 @@ interface SidebarSettingsContentProps {
   themePreference: ThemePreference
   resolvedTheme: ResolvedTheme
   onThemePreferenceChange: (preference: ThemePreference) => void
+  focusScope: FocusScope
+  onFocusScopeChange: (scope: FocusScope) => void
 }
 
 const THEME_OPTIONS: Array<{ value: ThemePreference; label: string }> = [
@@ -37,12 +40,56 @@ function ThemePreferenceButtons({
   )
 }
 
+function FocusScopeSelect({
+  focusScope,
+  onFocusScopeChange,
+}: Pick<SidebarSettingsContentProps, 'focusScope' | 'onFocusScopeChange'>) {
+  return (
+    <label class="project-menu__field">
+      <span>Focus Scope</span>
+      <select
+        value={focusScope}
+        onChange={(event) =>
+          onFocusScopeChange((event.currentTarget as HTMLSelectElement).value as FocusScope)
+        }
+      >
+        <option value="line">Line</option>
+        <option value="sentence">Sentence</option>
+        <option value="paragraph">Paragraph</option>
+      </select>
+    </label>
+  )
+}
+
+function PanelWidthControl({
+  panelWidth,
+  onPanelWidthChange,
+}: Pick<SidebarSettingsContentProps, 'panelWidth' | 'onPanelWidthChange'>) {
+  return (
+    <label class="project-menu__field">
+      <span>Panel width: {panelWidth}px</span>
+      <input
+        type="range"
+        min={260}
+        max={460}
+        step={10}
+        value={panelWidth}
+        onInput={(event) =>
+          onPanelWidthChange(Number((event.currentTarget as HTMLInputElement).value))
+        }
+      />
+    </label>
+  )
+}
+
 export function SidebarSettingsContent({
   panelWidth,
   onPanelWidthChange,
   themePreference,
   resolvedTheme,
   onThemePreferenceChange,
+  focusScope,
+  onFocusScopeChange,
 }: SidebarSettingsContentProps) {
   return (
     <div class="sidebar-panel-content">
@@ -63,19 +110,8 @@ export function SidebarSettingsContent({
               Resolved now: {resolvedTheme === 'dark' ? 'Dark' : 'Light'}
             </span>
           </label>
-          <label class="project-menu__field">
-            <span>Panel width: {panelWidth}px</span>
-            <input
-              type="range"
-              min={260}
-              max={460}
-              step={10}
-              value={panelWidth}
-              onInput={(event) =>
-                onPanelWidthChange(Number((event.currentTarget as HTMLInputElement).value))
-              }
-            />
-          </label>
+          <FocusScopeSelect focusScope={focusScope} onFocusScopeChange={onFocusScopeChange} />
+          <PanelWidthControl panelWidth={panelWidth} onPanelWidthChange={onPanelWidthChange} />
         </div>
       </aside>
     </div>

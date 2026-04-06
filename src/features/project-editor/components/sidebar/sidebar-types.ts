@@ -1,4 +1,4 @@
-import type { SidebarCreateInput, SidebarSection } from '../../project-editor-types'
+import type { FocusScope, SidebarCreateInput, SidebarSection } from '../../project-editor-types'
 import type { ResolvedTheme, ThemePreference } from '../../../../theme/theme-types'
 
 export interface SidebarSelectionProps {
@@ -30,6 +30,11 @@ export interface SidebarThemeProps {
   onThemePreferenceChange: (preference: ThemePreference) => void
 }
 
+export interface SidebarWorkspacePrefsProps {
+  focusScope: FocusScope
+  onFocusScopeChange: (scope: FocusScope) => void
+}
+
 export interface SidebarFileActions {
   onCreateArticle: (input: SidebarCreateInput) => void
   onCreateCategory: (input: SidebarCreateInput) => void
@@ -41,6 +46,7 @@ export type SidebarPanelCommonProps = SidebarSelectionProps &
   SidebarPanelLayoutProps &
   SidebarFileActions &
   SidebarProjectContextProps &
-  SidebarThemeProps
+  SidebarThemeProps &
+  SidebarWorkspacePrefsProps
 
 export type SidebarExplorerCommonProps = SidebarSelectionProps & SidebarProjectContextProps & SidebarFileActions

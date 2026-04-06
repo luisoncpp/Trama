@@ -1,12 +1,36 @@
 import { BrowserWindow, Menu } from 'electron'
 import type { ContextMenuParams, MenuItemConstructorOptions } from 'electron'
+import {
+  WORKSPACE_CONTEXT_MENU_EVENT,
+  type WorkspaceContextCommand,
+} from '../../src/shared/workspace-context-menu.js'
 
-function triggerSplitLayoutToggle(win: BrowserWindow): void {
-  const modifierKey = process.platform === 'darwin' ? 'metaKey' : 'ctrlKey'
+function dispatchWorkspaceCommand(win: BrowserWindow, command: WorkspaceContextCommand): void {
+  const commandPayload = JSON.stringify(command)
   void win.webContents.executeJavaScript(
-    `window.dispatchEvent(new KeyboardEvent('keydown', { code: 'Period', ${modifierKey}: true, bubbles: true }));`,
+    `window.dispatchEvent(new CustomEvent(${JSON.stringify(WORKSPACE_CONTEXT_MENU_EVENT)}, { detail: ${commandPayload} }));`,
     true,
   )
+}
+
+function buildWorkspaceMenuItems(win: BrowserWindow): MenuItemConstructorOptions[] {
+  return [
+    {
+      label: 'Toggle Split Layout',
+      accelerator: 'CmdOrCtrl+.',
+      click: () => dispatchWorkspaceCommand(win, { type: 'toggle-split' }),
+    },
+    {
+      label: 'Toggle Fullscreen',
+      accelerator: 'CmdOrCtrl+Shift+F',
+      click: () => dispatchWorkspaceCommand(win, { type: 'toggle-fullscreen' }),
+    },
+    {
+      label: 'Toggle Focus Mode',
+      accelerator: 'CmdOrCtrl+Shift+M',
+      click: () => dispatchWorkspaceCommand(win, { type: 'toggle-focus' }),
+    },
+  ]
 }
 
 function buildContextMenuTemplate(
@@ -43,13 +67,7 @@ function buildContextMenuTemplate(
     template.push({ label: 'Copy', role: 'copy' })
     template.push({ label: 'Paste', role: 'paste' })
     template.push({ type: 'separator' })
-    template.push({
-      label: 'Toggle Split Layout',
-      accelerator: 'CmdOrCtrl+.',
-      click: () => {
-        triggerSplitLayoutToggle(win)
-      },
-    })
+    template.push(...buildWorkspaceMenuItems(win))
   } else if (params.selectionText) {
     template.push({ label: 'Copy', role: 'copy' })
   }

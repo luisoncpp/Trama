@@ -45,6 +45,43 @@ function ProjectEditorMainPane({ model }: ProjectEditorMainPaneProps) {
   )
 }
 
+function SidebarSection({
+  model,
+  themePreference,
+  resolvedTheme,
+  onThemePreferenceChange,
+}: Pick<ProjectEditorViewProps, 'model' | 'themePreference' | 'resolvedTheme' | 'onThemePreferenceChange'>) {
+  const { state, actions } = model
+
+  return (
+    <SidebarPanel
+      visibleFiles={state.visibleFiles}
+      selectedPath={state.selectedPath}
+      loadingDocument={state.loadingDocument}
+      onSelectFile={actions.selectFile}
+      sidebarActiveSection={state.sidebarActiveSection}
+      sidebarPanelCollapsed={state.sidebarPanelCollapsed}
+      sidebarPanelWidth={state.sidebarPanelWidth}
+      onSelectSidebarSection={actions.setSidebarSection}
+      onToggleSidebarPanelCollapsed={actions.toggleSidebarPanelCollapsed}
+      onSidebarPanelWidthChange={actions.setSidebarPanelWidth}
+      onCreateArticle={(input) => void actions.createArticle(input)}
+      onCreateCategory={(input) => void actions.createCategory(input)}
+      onRenameFile={(path, newName) => void actions.renameFile({ path, newName })}
+      onDeleteFile={(path) => void actions.deleteFile(path)}
+      apiAvailable={state.apiAvailable}
+      loadingProject={state.loadingProject}
+      rootPath={state.rootPath}
+      onPickFolder={() => void actions.pickProjectFolder()}
+      themePreference={themePreference}
+      resolvedTheme={resolvedTheme}
+      onThemePreferenceChange={onThemePreferenceChange}
+      focusScope={state.workspaceLayout.focusScope}
+      onFocusScopeChange={actions.setFocusScope}
+    />
+  )
+}
+
 export function ProjectEditorView({
   model,
   themePreference,
@@ -67,25 +104,8 @@ export function ProjectEditorView({
           class="editor-workspace"
           style={{ '--sidebar-width': `${state.sidebarPanelCollapsed ? 72 : state.sidebarPanelWidth}px` }}
         >
-          <SidebarPanel
-            visibleFiles={state.visibleFiles}
-            selectedPath={state.selectedPath}
-            loadingDocument={state.loadingDocument}
-            onSelectFile={actions.selectFile}
-            sidebarActiveSection={state.sidebarActiveSection}
-            sidebarPanelCollapsed={state.sidebarPanelCollapsed}
-            sidebarPanelWidth={state.sidebarPanelWidth}
-            onSelectSidebarSection={actions.setSidebarSection}
-            onToggleSidebarPanelCollapsed={actions.toggleSidebarPanelCollapsed}
-            onSidebarPanelWidthChange={actions.setSidebarPanelWidth}
-            onCreateArticle={(input) => void actions.createArticle(input)}
-            onCreateCategory={(input) => void actions.createCategory(input)}
-            onRenameFile={(path, newName) => void actions.renameFile({ path, newName })}
-            onDeleteFile={(path) => void actions.deleteFile(path)}
-            apiAvailable={state.apiAvailable}
-            loadingProject={state.loadingProject}
-            rootPath={state.rootPath}
-            onPickFolder={() => void actions.pickProjectFolder()}
+          <SidebarSection
+            model={model}
             themePreference={themePreference}
             resolvedTheme={resolvedTheme}
             onThemePreferenceChange={onThemePreferenceChange}
