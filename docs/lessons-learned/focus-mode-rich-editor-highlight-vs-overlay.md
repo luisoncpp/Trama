@@ -12,8 +12,14 @@ Focus mode (`line | sentence | paragraph`) went through several iterations where
   - Build a DOM `Range` from line-relative offsets.
   - Register it in `CSS.highlights` with a stable key.
   - Style with `::highlight(...)`.
-- Keep overlay as fallback only when Highlights API is unavailable.
+- Keep non-mutating emphasis fallback (`is-focus-emphasis`) when Highlights API is unavailable.
 - Keep `paragraph` as block-level emphasis.
+
+## Why `is-focus-text-highlight` must stay
+
+- It is an explicit runtime marker for the highlight path, even if it does not drive CSS directly.
+- In JSDOM we cannot trust visual assertions for `::highlight(...)`; this marker is the reliable observable for tests.
+- Removing it tends to hide regressions because behavior can silently move to fallback without obvious test failure.
 
 ## Why this worked
 
@@ -29,6 +35,8 @@ Focus mode (`line | sentence | paragraph`) went through several iterations where
 - Overlay-only strategy:
   - Visually emphasized background more than text.
   - Produced a paragraph-like dim look instead of clear sentence/line focus.
+- Removing state marker during cleanup:
+  - The marker looked redundant (no direct CSS consumer), but its removal reduced observability in tests and made regressions easier to miss.
 - Keeping all logic in `rich-markdown-editor.tsx`:
   - Increased coupling and repeatedly violated lint size constraints.
   - Slowed debugging and made regressions easier.
@@ -43,4 +51,6 @@ Focus mode (`line | sentence | paragraph`) went through several iterations where
 
 - Any focus visual change must be non-mutating relative to Quill content.
 - Preserve the rendering order: try highlight first, then fallback overlay.
+- Preserve the rendering order: try highlight first, then fallback emphasis.
+- Keep `is-focus-text-highlight` as test-observable state for the highlight path.
 - Re-run focus tests plus rich editor tests after changes.

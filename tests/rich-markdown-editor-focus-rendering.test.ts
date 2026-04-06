@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { h, render } from 'preact'
+import { Fragment, h, render } from 'preact'
 import { act } from 'preact/test-utils'
+import { useState } from 'preact/hooks'
 import Quill from 'quill'
 import { RichMarkdownEditor } from '../src/features/project-editor/components/rich-markdown-editor'
 
@@ -110,6 +111,85 @@ describe('RichMarkdownEditor focus rendering regression', () => {
     expect(editorRoot.classList.contains('is-focus-text-highlight')).toBe(false)
     expect(editorRoot.classList.contains('is-focus-overlay-visible')).toBe(false)
     expect(emphasized).toBeTruthy()
+  })
+
+  it('mantiene marcador de highlight al cambiar scope y lo limpia al salir de inline focus', async () => {
+    const setHighlight = vi.fn()
+    const deleteHighlight = vi.fn()
+    globalAny.CSS = {
+      ...(globalAny.CSS ?? {}),
+      highlights: {
+        set: setHighlight,
+        delete: deleteHighlight,
+      },
+    }
+    globalAny.Highlight = class MockHighlight {
+      constructor(..._ranges: Range[]) {}
+    }
+
+    function TestHarness() {
+      const [focusScope, setFocusScope] = useState<'sentence' | 'line' | 'paragraph'>('sentence')
+      const [focusModeEnabled, setFocusModeEnabled] = useState(true)
+
+      return h(Fragment, null, [
+        h(RichMarkdownEditor, buildProps({
+          value: 'Primera frase. Segunda frase para cambiar el foco.',
+          focusScope,
+          focusModeEnabled,
+        })),
+        h('button', {
+          id: 'scope-line',
+          onClick: () => setFocusScope('line'),
+          textContent: 'Line',
+        }),
+        h('button', {
+          id: 'scope-paragraph',
+          onClick: () => setFocusScope('paragraph'),
+          textContent: 'Paragraph',
+        }),
+        h('button', {
+          id: 'toggle-focus',
+          onClick: () => setFocusModeEnabled((enabled) => !enabled),
+          textContent: 'Toggle Focus',
+        }),
+      ])
+    }
+
+    act(() => {
+      render(h(TestHarness, {}), container)
+    })
+
+    await sleep(120)
+
+    const editorRoot = container.querySelector('.ql-editor') as HTMLElement
+    expect(editorRoot.classList.contains('is-focus-text-highlight')).toBe(true)
+    expect(setHighlight).toHaveBeenCalled()
+
+    const lineButton = container.querySelector('#scope-line') as HTMLButtonElement
+    act(() => {
+      lineButton.click()
+    })
+    await sleep(80)
+
+    expect(editorRoot.classList.contains('is-focus-text-highlight')).toBe(true)
+
+    const paragraphButton = container.querySelector('#scope-paragraph') as HTMLButtonElement
+    act(() => {
+      paragraphButton.click()
+    })
+    await sleep(80)
+
+    expect(editorRoot.classList.contains('is-focus-text-highlight')).toBe(false)
+    expect(deleteHighlight).toHaveBeenCalled()
+
+    const toggleButton = container.querySelector('#toggle-focus') as HTMLButtonElement
+    act(() => {
+      toggleButton.click()
+    })
+    await sleep(80)
+
+    expect(editorRoot.classList.contains('is-focus-mode')).toBe(false)
+    expect(editorRoot.classList.contains('is-focus-text-highlight')).toBe(false)
   })
 
   it('no muta contenido al recalcular foco repetidamente', async () => {

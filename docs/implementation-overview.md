@@ -117,14 +117,20 @@ WS3 verification now includes:
 Final stable approach in `rich-markdown-editor-focus-scope`:
 
 - For `sentence` and `line`, first try native text highlighting through CSS Highlights API (`::highlight(...)`) with a DOM `Range` built from line-relative offsets.
-- If Highlights API is unavailable at runtime, fall back to non-mutating geometry overlay.
+- If Highlights API is unavailable at runtime, fall back to non-mutating line/block emphasis (`is-focus-emphasis`) without DOM injection.
 - Keep `paragraph` as block emphasis only.
+
+Why keeping `is-focus-text-highlight` marker is necessary:
+
+- In test runtime (JSDOM), rendered `::highlight(...)` output is not visually assertable.
+- The marker class provides a deterministic observable that the highlight path actually executed.
+- Removing the marker encouraged broad refactors that accidentally altered focus control flow; keeping it as an explicit state boundary reduces risky cleanups.
 
 Why this worked:
 
 - It highlights glyphs first, not only background. The previous overlay-only variants looked "close" but did not read like true focused text.
 - It does not mutate Quill content. Rendering stays outside Delta/content ownership, preventing blank-line growth and editor instability.
-- It separates concerns: scope detection (sentence/line math) is independent from rendering path (highlight vs fallback overlay).
+- It separates concerns: scope detection (sentence/line math) is independent from rendering path (highlight vs emphasis fallback).
 
 Why previous attempts failed:
 
