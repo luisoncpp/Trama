@@ -89,7 +89,7 @@ export function ProjectEditorView({
   resolvedTheme,
   onThemePreferenceChange,
 }: ProjectEditorViewProps) {
-  const { state, actions } = model
+  const { state } = model
   const shellClassName = [
     'editor-shell',
     state.workspaceLayout.mode === 'split' ? 'is-split' : '',
