@@ -77,9 +77,18 @@ Theme groundwork is now live:
 ## Regression hotspots
 
 - Rich editor cursor jumping: watch re-init dependencies in editor core.
+- Focus mode sentence/line rendering: prefer CSS Highlights API + fallback overlay; do not inject nodes into `.ql-editor`.
 - Sidebar collapse-all restoring unexpectedly: expanded-folder state logic.
 - Sidebar create/rename/delete wiring: path scoping between section-relative and project-relative paths.
 - Empty folder visibility in tree: scanner + tree builder interplay.
+
+## Focus mode notes (important)
+
+- The stable fix is hybrid rendering:
+  - Primary: `::highlight(trama-focus-scope)` (true text-level emphasis).
+  - Fallback: geometric overlay only when Highlights API is unavailable.
+- Keep `paragraph` logic separate from inline scopes (`line`, `sentence`).
+- Do not move focus rendering internals back into `rich-markdown-editor.tsx`; keep them in dedicated hook/helpers to preserve lint compliance and maintainability.
 
 ## Quick sanity checks after meaningful changes
 

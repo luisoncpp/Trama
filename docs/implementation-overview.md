@@ -112,6 +112,32 @@ WS3 verification now includes:
 - `tests/workspace-layout-persistence.test.ts`
 - `tests/workspace-keyboard-shortcuts.test.ts`
 
+## Focus mode postmortem (why the final fix worked)
+
+Final stable approach in `rich-markdown-editor-focus-scope`:
+
+- For `sentence` and `line`, first try native text highlighting through CSS Highlights API (`::highlight(...)`) with a DOM `Range` built from line-relative offsets.
+- If Highlights API is unavailable at runtime, fall back to non-mutating geometry overlay.
+- Keep `paragraph` as block emphasis only.
+
+Why this worked:
+
+- It highlights glyphs first, not only background. The previous overlay-only variants looked "close" but did not read like true focused text.
+- It does not mutate Quill content. Rendering stays outside Delta/content ownership, preventing blank-line growth and editor instability.
+- It separates concerns: scope detection (sentence/line math) is independent from rendering path (highlight vs fallback overlay).
+
+Why previous attempts failed:
+
+- Injecting DOM nodes inside `.ql-editor` (wrappers/overlays) conflicted with Quill's model and caused content side effects.
+- Treating background overlay as equivalent to text highlight produced visual regressions (dimmed paragraph look instead of true sentence/line emphasis).
+- Over-centralizing logic in `rich-markdown-editor.tsx` made iteration fragile and repeatedly hit lint limits (`max-lines`), slowing safe fixes.
+
+Key misunderstandings around `rich-markdown-editor`:
+
+- The component should orchestrate editor lifecycle and hooks, not contain complex focus rendering internals.
+- Quill's rendered DOM is not a safe place for ad-hoc structural mutation; visual effects must be non-destructive.
+- A single "overlay solution" was assumed to be enough for all runtimes, but practical stability required capability detection and fallback behavior.
+
 For the current Phase 3 sequence:
 
 - WS1 split usability is complete and stable.
