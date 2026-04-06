@@ -94,7 +94,7 @@ describe('RichMarkdownEditor focus rendering regression', () => {
     expect(setHighlight).toHaveBeenCalledWith('trama-focus-scope', expect.anything())
   })
 
-  it('cae a overlay geometrico cuando Highlights API no existe', async () => {
+  it('sin Highlights API usa enfasis de bloque sin overlay', async () => {
     globalAny.CSS = { ...(globalAny.CSS ?? {}) }
     delete (globalAny.CSS as { highlights?: unknown }).highlights
     delete globalAny.Highlight
@@ -106,8 +106,10 @@ describe('RichMarkdownEditor focus rendering regression', () => {
     await sleep(120)
 
     const editorRoot = container.querySelector('.ql-editor') as HTMLElement
+    const emphasized = editorRoot.querySelector('.is-focus-emphasis')
     expect(editorRoot.classList.contains('is-focus-text-highlight')).toBe(false)
-    expect(editorRoot.classList.contains('is-focus-overlay-visible')).toBe(true)
+    expect(editorRoot.classList.contains('is-focus-overlay-visible')).toBe(false)
+    expect(emphasized).toBeTruthy()
   })
 
   it('no muta contenido al recalcular foco repetidamente', async () => {

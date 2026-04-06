@@ -3,7 +3,6 @@ import Quill from 'quill'
 import {
 	findVisualLineBoundaries,
 	findSentenceBoundaries,
-	measureInlineBounds,
 	resolveTextOffsetToDomPosition,
 } from './rich-markdown-editor-focus-scope-geometry'
 import type { FocusScope } from '../project-editor-types'
@@ -70,22 +69,6 @@ function clearBlockFocusScope(editorRoot: HTMLElement): void {
 	}
 }
 
-function hideFocusOverlay(editorRoot: HTMLElement): void {
-	editorRoot.classList.remove('is-focus-overlay-visible')
-	editorRoot.style.removeProperty('--focus-overlay-left')
-	editorRoot.style.removeProperty('--focus-overlay-top')
-	editorRoot.style.removeProperty('--focus-overlay-width')
-	editorRoot.style.removeProperty('--focus-overlay-height')
-}
-
-function showFocusOverlay(editorRoot: HTMLElement, bounds: { left: number; top: number; width: number; height: number }): void {
-	editorRoot.style.setProperty('--focus-overlay-left', `${bounds.left}px`)
-	editorRoot.style.setProperty('--focus-overlay-top', `${bounds.top}px`)
-	editorRoot.style.setProperty('--focus-overlay-width', `${Math.max(8, bounds.width)}px`)
-	editorRoot.style.setProperty('--focus-overlay-height', `${Math.max(16, bounds.height)}px`)
-	editorRoot.classList.add('is-focus-overlay-visible')
-}
-
 function applyInlineFocusScope(quill: Quill, editorRoot: HTMLElement, scope: FocusScope): void {
 	const selection = quill.getSelection()
 	const selectionIndex = selection?.index ?? 0
@@ -93,13 +76,13 @@ function applyInlineFocusScope(quill: Quill, editorRoot: HTMLElement, scope: Foc
 	const [line, lineOffset] = quill.getLine(selectionIndex)
 	const lineNode = line?.domNode
 	if (!(lineNode instanceof HTMLElement)) {
-		hideFocusOverlay(editorRoot)
+		clearFocusTextHighlight(editorRoot)
 		return
 	}
 
 	const lineText = lineNode.textContent ?? ''
 	if (!lineText.trim()) {
-		hideFocusOverlay(editorRoot)
+		clearFocusTextHighlight(editorRoot)
 		return
 	}
 
@@ -111,30 +94,11 @@ function applyInlineFocusScope(quill: Quill, editorRoot: HTMLElement, scope: Foc
 
 	clearFocusTextHighlight(editorRoot)
 	if (applyFocusTextHighlight(editorRoot, lineNode, boundaries.start, boundaries.end)) {
-		hideFocusOverlay(editorRoot)
 		return
 	}
 
-	const bounds = measureInlineBounds(lineNode, editorRoot, boundaries.start, boundaries.end)
-	if (bounds) {
-		showFocusOverlay(editorRoot, bounds)
-		return
-	}
-
-	const cursorBounds = quill.getBounds(selectionIndex, 1)
-	if (cursorBounds && cursorBounds.width > 0 && cursorBounds.height > 0) {
-		showFocusOverlay(editorRoot, cursorBounds)
-		return
-	}
-
-	const rootRect = editorRoot.getBoundingClientRect()
-	const lineRect = lineNode.getBoundingClientRect()
-	showFocusOverlay(editorRoot, {
-		left: lineRect.left - rootRect.left + editorRoot.scrollLeft,
-		top: lineRect.top - rootRect.top + editorRoot.scrollTop,
-		width: Math.max(10, lineRect.width),
-		height: Math.max(16, lineRect.height),
-	})
+	// If native Highlights API is unavailable, fallback to line-level emphasis without DOM overlays.
+	lineNode.classList.add('is-focus-emphasis')
 }
 
 function applyFocusScope(quill: Quill, editorRoot: HTMLElement, scope: FocusScope): void {
@@ -145,7 +109,6 @@ function applyFocusScope(quill: Quill, editorRoot: HTMLElement, scope: FocusScop
 	}
 
 	clearFocusTextHighlight(editorRoot)
-	hideFocusOverlay(editorRoot)
 	const selection = quill.getSelection()
 	const [line] = quill.getLine(selection?.index ?? 0)
 	const targetNode = line?.domNode
@@ -158,7 +121,6 @@ function clearFocusScope(editorRoot: HTMLElement): void {
 	editorRoot.classList.remove('is-focus-mode', 'is-focus-scope-line', 'is-focus-scope-sentence', 'is-focus-scope-paragraph')
 	clearBlockFocusScope(editorRoot)
 	clearFocusTextHighlight(editorRoot)
-	hideFocusOverlay(editorRoot)
 }
 
 export function useFocusModeScopeEffect(
