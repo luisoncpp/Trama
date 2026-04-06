@@ -67,7 +67,11 @@ export function restoreWorkspaceLayoutState(storageValue: string | null): Worksp
       return createDefaultWorkspaceLayoutState()
     }
 
-    return normalizeWorkspaceLayoutState(parsed)
+    return {
+      ...normalizeWorkspaceLayoutState(parsed),
+      // Startup policy: focus mode should always begin disabled.
+      focusModeEnabled: false,
+    }
   } catch {
     return createDefaultWorkspaceLayoutState()
   }

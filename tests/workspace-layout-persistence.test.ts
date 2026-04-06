@@ -99,6 +99,37 @@ function setupTramaApiMock(overrides?: Partial<TramaApiMock>) {
 }
 
 describe('workspace layout persistence', () => {
+  it('forces focus mode off on startup even if persisted layout has it enabled', () => {
+    window.localStorage.setItem(
+      WORKSPACE_LAYOUT_STORAGE_KEY,
+      JSON.stringify({
+        mode: 'single',
+        ratio: 0.5,
+        primaryPath: null,
+        secondaryPath: null,
+        activePane: 'primary',
+        focusModeEnabled: true,
+        focusScope: 'sentence',
+      }),
+    )
+    setupTramaApiMock()
+
+    let model: ProjectEditorModel | undefined
+
+    function Harness() {
+      model = useProjectEditor()
+      return null
+    }
+
+    const container = document.createElement('div')
+    act(() => {
+      render(h(Harness, {}), container)
+    })
+
+    expect(model?.state.workspaceLayout.focusModeEnabled).toBe(false)
+    expect(model?.state.workspaceLayout.focusScope).toBe('sentence')
+  })
+
   it('restores and normalizes persisted layout values on startup', () => {
     window.localStorage.setItem(
       WORKSPACE_LAYOUT_STORAGE_KEY,
