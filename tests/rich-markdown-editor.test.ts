@@ -325,4 +325,62 @@ describe('RichMarkdownEditor', () => {
     expect(selection).toBeTruthy()
     expect(selection?.index ?? 0).toBeGreaterThan(0)
   })
+
+  it('reemplaza -- por — y << por « y >> por »', async () => {
+    act(() => {
+      render(
+        h(RichMarkdownEditor, buildEditorProps({ documentId: 'typo-doc', value: '' })),
+        container,
+      )
+    })
+
+    await sleep(80)
+    const editor = getQuillInstance(container)
+
+    act(() => {
+      editor.insertText(0, '-', 'user')
+      editor.insertText(1, '-', 'user')
+    })
+    await sleep(20)
+    expect(editor.getText(0, 1)).toBe('\u2014')
+
+    act(() => {
+      editor.insertText(1, '<', 'user')
+      editor.insertText(2, '<', 'user')
+    })
+    await sleep(20)
+    expect(editor.getText(1, 1)).toBe('\u00ab')
+
+    act(() => {
+      editor.insertText(2, '>', 'user')
+      editor.insertText(3, '>', 'user')
+    })
+    await sleep(20)
+    expect(editor.getText(2, 1)).toBe('\u00bb')
+  })
+
+  it('revierte reemplazo tipografico con undo', async () => {
+    act(() => {
+      render(
+        h(RichMarkdownEditor, buildEditorProps({ documentId: 'typo-undo-doc', value: '' })),
+        container,
+      )
+    })
+
+    await sleep(80)
+    const editor = getQuillInstance(container)
+
+    act(() => {
+      editor.insertText(0, '-', 'user')
+      editor.insertText(1, '-', 'user')
+    })
+    await sleep(20)
+    expect(editor.getText(0, 1)).toBe('\u2014')
+
+    act(() => {
+      editor.history.undo()
+    })
+    await sleep(20)
+    expect(editor.getText(0, 2)).toBe('--')
+  })
 })

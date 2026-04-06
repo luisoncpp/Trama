@@ -2,6 +2,7 @@ import { useEffect } from 'preact/hooks'
 import Quill from 'quill'
 import TurndownService from 'turndown'
 import { marked } from 'marked'
+import { registerTypographyHandler } from './rich-markdown-editor-typography'
 
 type QuillChangeSource = 'api' | 'user' | 'silent'
 
@@ -101,6 +102,7 @@ function useInitializeEditor({
       lastEditorValueRef,
       onChangeRef,
     })
+    registerTypographyHandler(editor)
 
     return () => {
       editorRef.current = null

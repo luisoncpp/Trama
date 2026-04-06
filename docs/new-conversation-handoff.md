@@ -24,12 +24,18 @@ Theme groundwork is now live:
 - Theme preference persists and applies through root `data-theme` tokens.
 - System mode listens to OS theme changes.
 WS3 Fullscreen/Focus Mode is now live:
-- Native fullscreen toggle via `Ctrl/Cmd+Shift+F` and WorkspaceLayoutControls toolbar.
+- Native fullscreen toggle via `Ctrl/Cmd+Shift+F`.
 - Renderer state mirrors native events (enter-full-screen / leave-full-screen).
 - Scrivener-style focus mode: `line | sentence | paragraph` scope dimming around caret.
-- Focus mode toggle via `Ctrl/Cmd+Shift+M`; state persists in `trama.workspace.layout.v1`.
+- Focus mode toggle via `Ctrl/Cmd+Shift+M`; state persists in `trama.workspace.layout.v1`. Always starts disabled.
+- Focus Scope selector is in the sidebar Settings tab (not in menu/toolbar).
+- Sidebar auto-collapses when focus activates and cannot be reopened until focus is off.
 
-Theme groundwork is now live:
+UX hardening (WS4) is now live:
+- Workspace toolbar removed. Split/fullscreen/focus controls are in the native right-click context menu only.
+- Event bridge pattern: Electron dispatches `trama:workspace-command` CustomEvent; renderer hook routes to actions.
+- Smart typography: `--` → `—`, `<<` → `«`, `>>` → `»` on user input, each reversible with Ctrl+Z.
+- `npm run dev` auto-builds Electron main before starting the dev server.
 ## Read first (in order)
 
 1. `docs/current-status.md`
@@ -73,6 +79,7 @@ Theme groundwork is now live:
 - Preload API surface in `electron/preload.cts` must match `src/types/trama-api.d.ts`.
 - Sidebar imports for `.tsx` components should keep explicit `.tsx` extension.
 - Lint limits are strict (`max-lines` and `max-lines-per-function`), so split components/hooks early.
+- Workspace commands from the context menu travel via `WORKSPACE_CONTEXT_MENU_EVENT` in `src/shared/workspace-context-menu.ts`; do not bypass this contract.
 
 ## Regression hotspots
 

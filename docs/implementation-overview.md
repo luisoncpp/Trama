@@ -19,9 +19,13 @@ The project now includes:
 - Sidebar filter, responsive behavior, and right-click file context actions.
 - Split workspace mode with per-pane document state, persistent layout, drag resize, click-to-activate panes, and native/context-menu split toggle.
 - Fullscreen mode via native Electron window APIs with renderer-state synchronization.
-- Focus mode with scope options (`line | sentence | paragraph`) and contextual text dimming around caret.
-- Workspace layout controls for split/fullscreen/focus/scope plus persisted focus settings in layout storage.
+- Focus mode with scope options (`line | sentence | paragraph`) and contextual text dimming around caret. Always starts disabled at launch.
+- Focus Scope selector located in the sidebar Settings tab.
+- Sidebar auto-collapses when focus mode activates and is locked closed during focus.
+- Workspace toolbar removed; split/fullscreen/focus controls available exclusively through the native right-click context menu (event bridge via `src/shared/workspace-context-menu.ts`).
+- Smart typography substitutions in the rich editor: `--` → `—`, `<<` → `«`, `>>` → `»`, each reversible with a single Ctrl+Z undo.
 - Extended keyboard shortcuts for workspace control (`Ctrl/Cmd+.` split, `Ctrl/Cmd+Shift+F` fullscreen, `Ctrl/Cmd+Shift+M` focus mode, `Ctrl/Cmd+Shift+Tab` pane switch).
+- `npm run dev` auto-builds the Electron main process before starting the dev server.
 
 ## Runtime architecture
 
@@ -38,13 +42,16 @@ The project now includes:
 - Shared contract:
   - `src/shared/ipc.ts`
 
-Notable WS3 renderer modules:
+Notable modules added in WS3 and UX hardening:
 
 - `src/features/project-editor/use-project-editor-fullscreen-effect.ts`
 - `src/features/project-editor/use-project-editor-focus-actions.ts`
 - `src/features/project-editor/use-project-editor-shortcuts-effect.ts`
-- `src/features/project-editor/components/workspace-layout-controls.tsx`
+- `src/features/project-editor/use-project-editor-context-menu-effect.ts`
 - `src/features/project-editor/components/rich-markdown-editor.tsx`
+- `src/features/project-editor/components/rich-markdown-editor-typography.ts`
+- `src/shared/workspace-context-menu.ts`
+- `electron/main-process/context-menu.ts`
 
 See `ipc-architecture.md` for endpoint mapping and extension workflow.
 
@@ -149,7 +156,8 @@ For the current Phase 3 sequence:
 - WS1 split usability is complete and stable.
 - WS2 theme layer and polish are complete.
 - WS3 fullscreen/focus mode is complete.
-- Current active next workstream is WS4 (UX hardening and accessibility).
+- WS4 UX hardening (toolbar removal, context menu migration, typography substitutions, sidebar focus lock) is complete.
+- Current active next workstream is WS5 (accessibility and further polish).
 
 ## Known tradeoffs
 

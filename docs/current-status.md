@@ -36,14 +36,17 @@ Implemented now:
 - Theme system foundation landed: persisted `light | dark | system` preference, root `data-theme` application, live `matchMedia` sync for `system`, settings-panel theme switcher, and first-pass semantic tokens across sidebar, editor, split panes, and conflict UI.
 - Theme visual polish completed: all 5 light-mode colors audited and updated for WCAG AA contrast compliance (4.5:1 for text, 3:1 for UI components).
 - Theme visual polish completed: all 5 light-mode colors audited and updated for WCAG AA contrast compliance (4.5:1 for text, 3:1 for UI components).
-- Fullscreen/Focus Mode (WS3) complete: native fullscreen via IPC with BrowserWindow event sync, Scrivener-style focus mode with line/sentence/paragraph scope dimming, keyboard shortcuts (Ctrl/Cmd+Shift+F = fullscreen, Ctrl/Cmd+Shift+M = focus mode), and WorkspaceLayoutControls toolbar component. Focus state persisted in `trama.workspace.layout.v1`.
+- Fullscreen/Focus Mode (WS3) complete: native fullscreen via IPC with BrowserWindow event sync, Scrivener-style focus mode with line/sentence/paragraph scope dimming, and keyboard shortcuts (Ctrl/Cmd+Shift+F = fullscreen, Ctrl/Cmd+Shift+M = focus mode). Focus state persisted in `trama.workspace.layout.v1`. Focus mode always starts disabled at launch.
+- Workspace toolbar removed; all workspace controls (split, fullscreen, focus) moved to native right-click context menu via event bridge (`src/shared/workspace-context-menu.ts`).
+- Focus Scope selector (line/sentence/paragraph) moved to sidebar Settings tab.
+- Sidebar auto-collapses when focus mode activates and is locked closed while focus is active.
+- Typography auto-replacement in the rich editor: typing `--` inserts `—`, `<<` inserts `«`, `>>` inserts `»`. Each replacement is a discrete Ctrl+Z undo entry.
+- `npm run dev` automatically builds the Electron main process before starting the dev server (`build:electron && dev:desktop`).
 
 Not implemented yet (planned in later phases):
 - Folder rename/delete and move workflows.
 - Drag-and-drop reorder/move workflows.
 - Wiki links, templates, corkboard DnD, AI import/export pipeline.
-- Fullscreen/focus mode (WS3).
-- ~~Fullscreen/focus mode (WS3).~~ ✓ Completed.
 
 ## Reliability status
 
@@ -65,18 +68,9 @@ Additional regression checks in suite include:
 - Index refresh still does full reconciliation in several write flows (safe, but can be optimized later).
 - External change handling favors safety over convenience (prevents accidental overwrite when local doc is dirty).
 
-## 🎯 Next Immediate Step: Phase 3 Workstream 3 - Fullscreen & Focus Mode
+## 🎯 Next Immediate Step: Phase 3 Workstream 4 - UX Hardening
 
-**Status**: Ready to start (WS2 closed)
-
-WS1 and WS2 are complete. The active focus now moves to WS3:
-
-1. Add fullscreen IPC contract and main/renderer wiring.
-2. Mirror native fullscreen changes back into renderer state.
-3. Add focus mode controls to reduce workspace chrome without data loss.
-4. Extend tests for fullscreen contract and smoke coverage.
-
-**📖 Detailed plan**: See [phase-3-detailed-plan.md](./phase-3-detailed-plan.md) (WS3 section).
+**Status**: WS1–WS3 complete. WS4 (UX hardening and accessibility) is the active next workstream.
 
 Planned sequence from here: WS3 (Fullscreen & Focus Mode) → WS4 (UX Hardening & Accessibility) → WS5 (Final Hardening & Docs)
 

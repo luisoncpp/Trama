@@ -1,5 +1,7 @@
 # File Map and Responsibilities
 
+Note for agents: each time you are asked to update the documentation, if you found a ts or tsx file not specified here, you have to add it.
+
 ## Root-level project files
 
 - `package.json`
@@ -22,7 +24,7 @@
 - `electron/window-config.ts`
   - BrowserWindow security-related defaults.
 - `electron/main-process/context-menu.ts`
-  - Native editor context menu (copy/paste/spellcheck).
+  - Native editor context menu: flat workspace commands (toggle split, toggle fullscreen, toggle focus mode) dispatched to renderer via `WORKSPACE_CONTEXT_MENU_EVENT`.
 - `electron/main-process/smoke-hooks.ts`
   - Startup smoke hooks.
 - `electron/ipc.ts`
@@ -72,13 +74,13 @@
 - `src/features/project-editor/use-project-editor-ui-actions.ts`
   - Composes UI actions.
 - `src/features/project-editor/use-project-editor-focus-actions.ts`
-  - Fullscreen/focus-mode action hooks.
+  - Fullscreen/focus-mode action hooks. When enabling focus, auto-collapses the sidebar.
 - `src/features/project-editor/use-project-editor-file-actions.ts`
   - Rename/delete file actions.
 - `src/features/project-editor/use-project-editor-create-actions.ts`
   - Create article/category actions.
 - `src/features/project-editor/use-project-editor-sidebar-actions.ts`
-  - Sidebar UI actions.
+  - Sidebar UI actions. Blocks sidebar expand while focus mode is active.
 - `src/features/project-editor/use-project-editor-layout-actions.ts`
   - Workspace split and pane activation actions.
 - `src/features/project-editor/use-project-editor-open-project.ts`
@@ -121,20 +123,20 @@
 - `src/features/project-editor/use-project-editor-layout-actions.ts`
   - Workspace layout actions (assign file to pane, toggle split, set ratio, switch active pane).
 - `src/features/project-editor/use-project-editor-focus-actions.ts`
-  - Focus-mode controls (enable/disable, set scope: line/sentence/paragraph).
+  - Focus-mode controls (enable/disable, set scope: line/sentence/paragraph). Auto-collapses sidebar on focus enable.
 
 ### Editor workspace components
 
 - `src/features/project-editor/components/workspace-editor-panels.tsx`
   - Single/split editor rendering and pane interactions.
-- `src/features/project-editor/components/workspace-layout-controls.tsx`
-  - Workspace toolbar controls (split/fullscreen/focus/scope/ratio).
 - `src/features/project-editor/components/editor-panel.tsx`
   - Editor panel shell, sync labels, save affordance.
 - `src/features/project-editor/components/rich-markdown-editor.tsx`
   - Quill-based rich Markdown editor component (lifecycle, toolbar integration, focus-mode hookup).
 - `src/features/project-editor/components/rich-markdown-editor-core.ts`
-  - Core editor lifecycle and sync logic (initialize Quill, apply markdown, sync external values, enable/disable).
+  - Core editor lifecycle and sync logic (initialize Quill, apply markdown, sync external values, enable/disable, register typography handlers).
+- `src/features/project-editor/components/rich-markdown-editor-typography.ts`
+  - Smart typography auto-replacement on user input: `--` → `—`, `<<` → `«`, `>>` → `»`. Each substitution is isolated as its own Ctrl+Z undo entry via `history.cutoff()`.
 - `src/features/project-editor/components/rich-markdown-editor-focus-scope.ts`
   - Focus-mode implementation: applies inline/paragraph emphasis and uses Highlight API when available.
 - `src/features/project-editor/components/rich-markdown-editor-focus-scope-geometry.ts`
@@ -189,6 +191,8 @@
 
 - `src/shared/ipc.ts`
   - IPC channel constants, Zod schemas, shared envelope/types.
+- `src/shared/workspace-context-menu.ts`
+  - Event bridge contract between Electron context menu and the renderer: `WORKSPACE_CONTEXT_MENU_EVENT` constant and `WorkspaceContextCommand` union type.
 - `src/types/trama-api.d.ts`
   - Global declaration for `window.tramaApi`.
 
