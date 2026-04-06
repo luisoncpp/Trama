@@ -31,6 +31,8 @@ type TramaApiMock = {
     data: { version: string; corkboardOrder: Record<string, string[]>; cache: Record<string, unknown> }
   }>
   onExternalFileEvent: (callback: (event: ExternalFileEvent) => void) => () => void
+  setFullscreen: (payload: { enabled: boolean }) => Promise<{ ok: true; data: { enabled: boolean } }>
+  onFullscreenChanged: (callback: (event: { enabled: boolean }) => void) => () => void
 }
 
 interface SetupResult {
@@ -100,6 +102,8 @@ function setupTramaApiMock(overrides?: Partial<TramaApiMock>): SetupResult {
         externalListener = null
       }
     },
+    setFullscreen: async (_payload) => ({ ok: true, data: { enabled: _payload.enabled } }),
+    onFullscreenChanged: (_callback) => () => undefined,
   }
 
   ;(window as unknown as { tramaApi: TramaApiMock }).tramaApi = {

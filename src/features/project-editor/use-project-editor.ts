@@ -2,14 +2,16 @@ import type { ProjectEditorModel } from './project-editor-types'
 import { useProjectEditorActions } from './use-project-editor-actions'
 import { useProjectEditorAutosaveEffect } from './use-project-editor-autosave-effect'
 import { useProjectEditorExternalEventsEffect } from './use-project-editor-external-events-effect'
+import { useProjectEditorFullscreenEffect } from './use-project-editor-fullscreen-effect'
 import { useProjectEditorShortcutsEffect } from './use-project-editor-shortcuts-effect'
 import { useProjectEditorState } from './use-project-editor-state'
 
-export function useProjectEditor(): ProjectEditorModel {
-  const state = useProjectEditorState()
-  const { values, setters } = state
-  const { actions, core } = useProjectEditorActions(state)
-
+function useProjectEditorEffects(
+  values: ReturnType<typeof useProjectEditorState>['values'],
+  setters: ReturnType<typeof useProjectEditorState>['setters'],
+  actions: ReturnType<typeof useProjectEditorActions>['actions'],
+  core: ReturnType<typeof useProjectEditorActions>['core'],
+): void {
   useProjectEditorAutosaveEffect({
     selectedPath: values.selectedPath,
     isDirty: values.isDirty,
@@ -31,31 +33,57 @@ export function useProjectEditor(): ProjectEditorModel {
     setStatusMessage: setters.setStatusMessage,
   })
 
-  useProjectEditorShortcutsEffect({
-    onToggleSplitLayout: actions.toggleWorkspaceLayoutMode,
+  useProjectEditorFullscreenEffect({
+    setIsFullscreen: setters.setIsFullscreen,
   })
 
-  return {
-    state: {
-      apiAvailable: values.apiAvailable,
-      rootPath: values.rootPath,
-      statusMessage: values.statusMessage,
-      sidebarActiveSection: values.sidebarActiveSection,
-      sidebarPanelCollapsed: values.sidebarPanelCollapsed,
-      sidebarPanelWidth: values.sidebarPanelWidth,
-      workspaceLayout: values.workspaceLayout,
-      externalConflictPath: values.externalConflictPath,
-      conflictComparisonContent: values.conflictComparisonContent,
-      visibleFiles: values.visibleFiles,
-      primaryPane: values.primaryPane,
-      secondaryPane: values.secondaryPane,
-      selectedPath: values.selectedPath,
-      editorValue: values.editorValue,
-      isDirty: values.isDirty,
-      loadingProject: values.loadingProject,
-      loadingDocument: values.loadingDocument,
-      saving: values.saving,
+  useProjectEditorShortcutsEffect({
+    onToggleSplitLayout: actions.toggleWorkspaceLayoutMode,
+    onToggleFullscreen: () => void actions.setFullscreenEnabled(!values.isFullscreen),
+    onToggleFocusMode: actions.toggleFocusMode,
+    onSwitchActivePane: () => {
+      if (values.workspaceLayout.mode !== 'split') {
+        return
+      }
+
+      const nextPane = values.workspaceLayout.activePane === 'primary' ? 'secondary' : 'primary'
+      actions.setWorkspaceActivePane(nextPane)
     },
+  })
+}
+
+function buildProjectEditorModelState(values: ReturnType<typeof useProjectEditorState>['values']): ProjectEditorModel['state'] {
+  return {
+    apiAvailable: values.apiAvailable,
+    rootPath: values.rootPath,
+    statusMessage: values.statusMessage,
+    sidebarActiveSection: values.sidebarActiveSection,
+    sidebarPanelCollapsed: values.sidebarPanelCollapsed,
+    sidebarPanelWidth: values.sidebarPanelWidth,
+    workspaceLayout: values.workspaceLayout,
+    externalConflictPath: values.externalConflictPath,
+    conflictComparisonContent: values.conflictComparisonContent,
+    visibleFiles: values.visibleFiles,
+    primaryPane: values.primaryPane,
+    secondaryPane: values.secondaryPane,
+    selectedPath: values.selectedPath,
+    editorValue: values.editorValue,
+    isDirty: values.isDirty,
+    loadingProject: values.loadingProject,
+    loadingDocument: values.loadingDocument,
+    saving: values.saving,
+    isFullscreen: values.isFullscreen,
+  }
+}
+
+export function useProjectEditor(): ProjectEditorModel {
+  const state = useProjectEditorState()
+  const { values, setters } = state
+  const { actions, core } = useProjectEditorActions(state)
+  useProjectEditorEffects(values, setters, actions, core)
+
+  return {
+    state: buildProjectEditorModelState(values),
     actions,
   }
 }

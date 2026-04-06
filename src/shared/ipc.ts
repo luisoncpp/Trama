@@ -13,6 +13,8 @@ export const IPC_CHANNELS = {
   deleteDocument: 'trama:document:delete',
   getIndex: 'trama:index:get',
   externalFileEvent: 'trama:project:external-file-event',
+  setFullscreen: 'trama:window:set-fullscreen',
+  fullscreenChanged: 'trama:window:fullscreen-changed',
 } as const
 
 export const pingRequestSchema = z.object({
@@ -137,6 +139,19 @@ export const externalFileEventSchema = z.object({
   timestamp: z.string(),
 })
 
+export const setFullscreenRequestSchema = z.object({
+  enabled: z.boolean(),
+})
+
+export const setFullscreenResponseSchema = z.object({
+  enabled: z.boolean(),
+})
+
+export const fullscreenChangedEventSchema = z.object({
+  enabled: z.boolean(),
+  timestamp: z.string(),
+})
+
 export const ipcErrorSchema = z.object({
   code: z.string(),
   message: z.string(),
@@ -171,6 +186,9 @@ export type RenameDocumentResponse = z.infer<typeof renameDocumentResponseSchema
 export type DeleteDocumentRequest = z.infer<typeof deleteDocumentRequestSchema>
 export type DeleteDocumentResponse = z.infer<typeof deleteDocumentResponseSchema>
 export type ExternalFileEvent = z.infer<typeof externalFileEventSchema>
+export type SetFullscreenRequest = z.infer<typeof setFullscreenRequestSchema>
+export type SetFullscreenResponse = z.infer<typeof setFullscreenResponseSchema>
+export type FullscreenChangedEvent = z.infer<typeof fullscreenChangedEventSchema>
 
 export type IpcError = z.infer<typeof ipcErrorSchema>
 

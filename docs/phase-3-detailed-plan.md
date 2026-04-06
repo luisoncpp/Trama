@@ -2,6 +2,7 @@
 
 Date: 2026-04-05
 Status: **In Progress** — WS1 complete, WS2 complete (theme + polish), WS3-5 pending
+Status: **In Progress** — WS1 complete, WS2 complete (theme + polish), WS3 complete (fullscreen + focus mode), WS4-5 pending
 Related: `docs/current-status.md`, `docs/implementation-overview.md`, `DESIGN_SPEC.md`
 
 ## 1. Context and Starting Point
@@ -168,6 +169,7 @@ Deliverables:
 - Main handler invoking BrowserWindow fullscreen APIs.
 - Renderer actions and UI controls for entering/exiting fullscreen.
 - Focus mode toggle that simplifies visible chrome (file list optional collapse).
+- Focus text scope options: `line | sentence | paragraph` with contextual dimming around caret.
 
 Suggested implementation details:
 - Extend IPC contracts with:
@@ -175,6 +177,17 @@ Suggested implementation details:
   - `trama:window:on-fullscreen-changed` (event)
 - Keep focus mode renderer-local initially; only fullscreen should be native.
 - Ensure renderer state reconciles if user exits fullscreen via OS shortcut (F11/Escape where applicable).
+
+Focus mode operational contract:
+- Focus mode is a renderer UI state that reduces distraction without changing document data.
+- When enabled: hide/collapse non-essential chrome (sidebar body and secondary controls), keep editor workspace dominant.
+- Focus text scope is user-selectable: `line`, `sentence`, or `paragraph`.
+- Active scope remains emphasized while surrounding text is dimmed; behavior tracks caret during typing and navigation.
+- If sentence detection in rich content is uncertain, fallback to paragraph-level emphasis.
+- Always keep critical safety surfaces visible: save/sync status, conflict banner, compare/reload/save-as-copy actions.
+- Exiting focus mode restores previous layout visibility and active pane context.
+- Focus mode can coexist with fullscreen (independent toggles).
+- Persist preference in workspace layout storage and restore on startup.
 
 Primary files likely touched:
 - `src/shared/ipc.ts`
@@ -191,10 +204,13 @@ Acceptance criteria:
 - Fullscreen toggle works from UI command.
 - Renderer reflects actual fullscreen state after native changes.
 - Focus mode hides secondary chrome and is reversible without data loss.
+- Focus mode preserves conflict and save affordances while active.
+- User can switch focus scope (`line|sentence|paragraph`) and see consistent dimming behavior around caret.
 
 Tests:
 - New `tests/fullscreen-ipc.test.ts`: payload validation and envelope behavior.
 - Extend `tests/electron-smoke.test.ts`: fullscreen contract available in preload.
+- New `tests/focus-mode-scope.test.ts`: verifies scope selection state, persistence, and fallback to paragraph behavior.
 
 ## WS4 - UX Hardening and Accessibility
 
@@ -330,4 +346,4 @@ Phase 3 is complete when all are true:
 
 ## 9. Immediate Next Step
 
-Finish WS2 rollout polish: manual contrast validation, cleanup of any remaining untokenized surfaces, and decide whether WS2 can close before moving to WS3.
+Start WS3 fullscreen/focus mode implementation: add native fullscreen IPC wiring, keep renderer fullscreen state synchronized with window events, and land initial focus-mode UX controls.

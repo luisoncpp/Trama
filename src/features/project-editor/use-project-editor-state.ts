@@ -40,6 +40,7 @@ export interface ProjectEditorStateValues {
   loadingProject: boolean
   loadingDocument: boolean
   saving: boolean
+  isFullscreen: boolean
   externalConflictPath: string | null
   conflictComparisonContent: string | null
   statusMessage: string
@@ -58,6 +59,7 @@ export interface ProjectEditorStateSetters {
   setLoadingProject: (value: boolean) => void
   setLoadingDocument: (value: boolean) => void
   setSaving: (value: boolean) => void
+  setIsFullscreen: (value: boolean) => void
   setExternalConflictPath: (value: string | null) => void
   setConflictComparisonContent: (value: string | null) => void
   setStatusMessage: (value: string) => void
@@ -99,6 +101,7 @@ function buildValues(params: BuildValuesParams): ProjectEditorStateValues {
     loadingProject: params.loadingProject,
     loadingDocument: params.loadingDocument,
     saving: params.saving,
+    isFullscreen: params.isFullscreen,
     externalConflictPath: params.externalConflictPath,
     conflictComparisonContent: params.conflictComparisonContent,
     statusMessage: params.statusMessage,
@@ -119,6 +122,7 @@ function buildSetters(params: BuildSettersParams): ProjectEditorStateSetters {
     setLoadingProject: params.setLoadingProject,
     setLoadingDocument: params.setLoadingDocument,
     setSaving: params.setSaving,
+    setIsFullscreen: params.setIsFullscreen,
     setExternalConflictPath: params.setExternalConflictPath,
     setConflictComparisonContent: params.setConflictComparisonContent,
     setStatusMessage: params.setStatusMessage,
@@ -137,6 +141,7 @@ function useProjectEditorCoreState() {
   const [loadingProject, setLoadingProject] = useState(false)
   const [loadingDocument, setLoadingDocument] = useState(false)
   const [saving, setSaving] = useState(false)
+  const [isFullscreen, setIsFullscreen] = useState(false)
   const [externalConflictPath, setExternalConflictPath] = useState<string | null>(null)
   const [conflictComparisonContent, setConflictComparisonContent] = useState<string | null>(null)
   const [statusMessage, setStatusMessage] = useState<string>(PROJECT_EDITOR_STRINGS.initialStatus)
@@ -156,6 +161,8 @@ function useProjectEditorCoreState() {
     setLoadingDocument,
     saving,
     setSaving,
+    isFullscreen,
+    setIsFullscreen,
     externalConflictPath,
     setExternalConflictPath,
     conflictComparisonContent,
@@ -182,6 +189,7 @@ export function useProjectEditorState(): UseProjectEditorStateResult {
     loadingProject: coreState.loadingProject,
     loadingDocument: coreState.loadingDocument,
     saving: coreState.saving,
+    isFullscreen: coreState.isFullscreen,
     externalConflictPath: coreState.externalConflictPath,
     conflictComparisonContent: coreState.conflictComparisonContent,
     statusMessage: coreState.statusMessage,
@@ -198,6 +206,7 @@ export function useProjectEditorState(): UseProjectEditorStateResult {
     setLoadingProject: coreState.setLoadingProject,
     setLoadingDocument: coreState.setLoadingDocument,
     setSaving: coreState.setSaving,
+    setIsFullscreen: coreState.setIsFullscreen,
     setExternalConflictPath: coreState.setExternalConflictPath,
     setConflictComparisonContent: coreState.setConflictComparisonContent,
     setStatusMessage: coreState.setStatusMessage,

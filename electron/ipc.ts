@@ -11,6 +11,7 @@ import {
   type ReadDocumentRequest,
   type RenameDocumentRequest,
   type SaveDocumentRequest,
+  setFullscreenRequestSchema,
 } from '../src/shared/ipc.js'
 import {
   buildPingResponse,
@@ -29,9 +30,42 @@ import {
 
 export { buildPingResponse, shutdownIpcServices }
 
-export function registerIpcHandlers(ipcMain: IpcMain, getMainWindow: () => BrowserWindow | null): void {
-  configureMainWindowResolver(getMainWindow)
+function registerFullscreenHandler(ipcMain: IpcMain, getMainWindow: () => BrowserWindow | null): void {
+  ipcMain.handle(IPC_CHANNELS.setFullscreen, (_event, payload: unknown) => {
+    const parsed = setFullscreenRequestSchema.safeParse(payload)
+    if (!parsed.success) {
+      return {
+        ok: false,
+        error: {
+          code: 'VALIDATION_ERROR',
+          message: 'Invalid fullscreen payload',
+          details: parsed.error.flatten(),
+        },
+      }
+    }
 
+    const win = getMainWindow()
+    if (!win || win.isDestroyed()) {
+      return {
+        ok: false,
+        error: {
+          code: 'WINDOW_UNAVAILABLE',
+          message: 'Main window is not available',
+        },
+      }
+    }
+
+    win.setFullScreen(parsed.data.enabled)
+    return {
+      ok: true,
+      data: {
+        enabled: win.isFullScreen(),
+      },
+    }
+  })
+}
+
+function registerCoreHandlers(ipcMain: IpcMain): void {
   ipcMain.handle(IPC_CHANNELS.debugLog, (_event, payload: DebugLogRequest) => {
     const parsed = debugLogRequestSchema.safeParse(payload)
     if (!parsed.success) {
@@ -86,4 +120,10 @@ export function registerIpcHandlers(ipcMain: IpcMain, getMainWindow: () => Brows
   ipcMain.handle(IPC_CHANNELS.getIndex, () => {
     return handleGetIndex()
   })
+}
+
+export function registerIpcHandlers(ipcMain: IpcMain, getMainWindow: () => BrowserWindow | null): void {
+  configureMainWindowResolver(getMainWindow)
+  registerCoreHandlers(ipcMain)
+  registerFullscreenHandler(ipcMain, getMainWindow)
 }

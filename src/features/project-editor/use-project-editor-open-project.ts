@@ -55,7 +55,7 @@ async function applyOpenedProject({
   })
 
   const resolvedLayout = nextLayout ?? reconcileWorkspaceLayout(
-    { mode: 'single', ratio: 0.5, primaryPath: null, secondaryPath: null, activePane: 'primary' },
+    { mode: 'single', ratio: 0.5, primaryPath: null, secondaryPath: null, activePane: 'primary', focusModeEnabled: false, focusScope: 'paragraph' },
     snapshot.markdownFiles,
     preferredFilePath,
   )

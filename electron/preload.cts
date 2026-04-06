@@ -10,6 +10,7 @@ import {
   type DeleteDocumentResponse,
   type DebugLogRequest,
   type ExternalFileEvent,
+  type FullscreenChangedEvent,
   type IpcEnvelope,
   type OpenProjectRequest,
   type PingRequest,
@@ -22,6 +23,8 @@ import {
   type RenameDocumentResponse,
   type SaveDocumentRequest,
   type SaveDocumentResponse,
+  type SetFullscreenRequest,
+  type SetFullscreenResponse,
   type SelectProjectFolderResponse,
 } from '../src/shared/ipc'
 
@@ -64,6 +67,9 @@ const tramaApi = {
   getIndex(): Promise<IpcEnvelope<ProjectIndex>> {
     return ipcRenderer.invoke(IPC_CHANNELS.getIndex)
   },
+  setFullscreen(payload: SetFullscreenRequest): Promise<IpcEnvelope<SetFullscreenResponse>> {
+    return ipcRenderer.invoke(IPC_CHANNELS.setFullscreen, payload)
+  },
   onExternalFileEvent(callback: (event: ExternalFileEvent) => void): () => void {
     const listener = (_event: unknown, payload: ExternalFileEvent) => {
       callback(payload)
@@ -72,6 +78,16 @@ const tramaApi = {
     ipcRenderer.on(IPC_CHANNELS.externalFileEvent, listener)
     return () => {
       ipcRenderer.removeListener(IPC_CHANNELS.externalFileEvent, listener)
+    }
+  },
+  onFullscreenChanged(callback: (event: FullscreenChangedEvent) => void): () => void {
+    const listener = (_event: unknown, payload: FullscreenChangedEvent) => {
+      callback(payload)
+    }
+
+    ipcRenderer.on(IPC_CHANNELS.fullscreenChanged, listener)
+    return () => {
+      ipcRenderer.removeListener(IPC_CHANNELS.fullscreenChanged, listener)
     }
   },
 }

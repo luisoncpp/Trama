@@ -23,7 +23,13 @@ Theme groundwork is now live:
 - Settings exposes `light`, `dark`, and `system`.
 - Theme preference persists and applies through root `data-theme` tokens.
 - System mode listens to OS theme changes.
+WS3 Fullscreen/Focus Mode is now live:
+- Native fullscreen toggle via `Ctrl/Cmd+Shift+F` and WorkspaceLayoutControls toolbar.
+- Renderer state mirrors native events (enter-full-screen / leave-full-screen).
+- Scrivener-style focus mode: `line | sentence | paragraph` scope dimming around caret.
+- Focus mode toggle via `Ctrl/Cmd+Shift+M`; state persists in `trama.workspace.layout.v1`.
 
+Theme groundwork is now live:
 ## Read first (in order)
 
 1. `docs/current-status.md`
@@ -89,7 +95,8 @@ Theme groundwork is now live:
 
 ## Current high-value next tasks
 
-1. Finish WS2 contrast and visual polish pass in both themes.
-2. Confirm there are no meaningful untokenized surfaces left in the renderer.
-3. Start WS3 fullscreen/focus mode after WS2 polish is signed off.
-4. Folder rename/delete and move workflows in later scope.
+1. Start WS4 UX hardening and accessibility pass.
+2. Ensure keyboard shortcuts for all workspace actions are reachable (split toggle, pane focus switch, fullscreen/focus toggle already done).
+3. Add empty states and disabled-state handling for split mode with no secondary file.
+4. Responsiveness rules for narrow widths (auto-fallback to single pane).
+5. Keep folder rename/delete and move workflows for a later scope.

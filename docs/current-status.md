@@ -35,12 +35,15 @@ Implemented now:
 - Split workspace usability pass completed: both panes stay visible, pane activation is click-in-editor, resize uses a center drag divider, headers show document names, split toggle is available through `Ctrl/Cmd + .` and the editor context menu, and split mode removes extra side gutters.
 - Theme system foundation landed: persisted `light | dark | system` preference, root `data-theme` application, live `matchMedia` sync for `system`, settings-panel theme switcher, and first-pass semantic tokens across sidebar, editor, split panes, and conflict UI.
 - Theme visual polish completed: all 5 light-mode colors audited and updated for WCAG AA contrast compliance (4.5:1 for text, 3:1 for UI components).
+- Theme visual polish completed: all 5 light-mode colors audited and updated for WCAG AA contrast compliance (4.5:1 for text, 3:1 for UI components).
+- Fullscreen/Focus Mode (WS3) complete: native fullscreen via IPC with BrowserWindow event sync, Scrivener-style focus mode with line/sentence/paragraph scope dimming, keyboard shortcuts (Ctrl/Cmd+Shift+F = fullscreen, Ctrl/Cmd+Shift+M = focus mode), and WorkspaceLayoutControls toolbar component. Focus state persisted in `trama.workspace.layout.v1`.
 
 Not implemented yet (planned in later phases):
 - Folder rename/delete and move workflows.
 - Drag-and-drop reorder/move workflows.
 - Wiki links, templates, corkboard DnD, AI import/export pipeline.
 - Fullscreen/focus mode (WS3).
+- ~~Fullscreen/focus mode (WS3).~~ ✓ Completed.
 
 ## Reliability status
 
@@ -62,20 +65,20 @@ Additional regression checks in suite include:
 - Index refresh still does full reconciliation in several write flows (safe, but can be optimized later).
 - External change handling favors safety over convenience (prevents accidental overwrite when local doc is dirty).
 
-## 🎯 Next Immediate Step: Phase 3 Workstream 2 - Theme Rollout Polish
+## 🎯 Next Immediate Step: Phase 3 Workstream 3 - Fullscreen & Focus Mode
 
-**Status**: In progress
+**Status**: Ready to start (WS2 closed)
 
-WS1 split usability is complete and WS2 theme foundation is in place. The active remaining focus for WS2 is rollout polish:
+WS1 and WS2 are complete. The active focus now moves to WS3:
 
-1. Run a manual contrast pass in light and dark mode on real content.
-2. Catch any remaining hardcoded surfaces outside the current tokenized path.
-3. Tighten visual polish for theme-specific affordances in settings, split panes, and conflict states.
-4. Decide whether WS2 is complete or needs one more UI cleanup pass before WS3.
+1. Add fullscreen IPC contract and main/renderer wiring.
+2. Mirror native fullscreen changes back into renderer state.
+3. Add focus mode controls to reduce workspace chrome without data loss.
+4. Extend tests for fullscreen contract and smoke coverage.
 
-**📖 Detailed plan**: See [phase-3-detailed-plan.md](./phase-3-detailed-plan.md) (WS2 section).
+**📖 Detailed plan**: See [phase-3-detailed-plan.md](./phase-3-detailed-plan.md) (WS3 section).
 
-Planned sequence after WS2: WS3 (Fullscreen & Focus Mode) → WS4 (UX Hardening & Accessibility) → WS5 (Final Hardening & Docs)
+Planned sequence from here: WS3 (Fullscreen & Focus Mode) → WS4 (UX Hardening & Accessibility) → WS5 (Final Hardening & Docs)
 
 ## Other planned improvements (Phase 4+)
 

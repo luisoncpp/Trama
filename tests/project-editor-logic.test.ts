@@ -80,6 +80,8 @@ describe('project editor logic helpers', () => {
       primaryPath: null,
       secondaryPath: null,
       activePane: 'primary',
+      focusModeEnabled: false,
+      focusScope: 'paragraph',
     })
 
     expect(normalized.ratio).toBe(0.8)
@@ -93,6 +95,8 @@ describe('project editor logic helpers', () => {
         primaryPath: 'docs/old.md',
         secondaryPath: null,
         activePane: 'secondary',
+        focusModeEnabled: false,
+        focusScope: 'paragraph',
       },
       ['docs/a.md', 'docs/b.md'],
       undefined,
@@ -112,6 +116,8 @@ describe('project editor logic helpers', () => {
         primaryPath: 'docs/a.md',
         secondaryPath: 'docs/b.md',
         activePane: 'secondary',
+        focusModeEnabled: false,
+        focusScope: 'paragraph',
       },
       ['docs/a.md', 'docs/b.md', 'docs/c.md'],
       'docs/c.md',

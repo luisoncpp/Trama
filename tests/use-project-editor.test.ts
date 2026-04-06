@@ -40,6 +40,8 @@ type TramaApiMock = {
     data: { version: string; corkboardOrder: Record<string, string[]>; cache: Record<string, unknown> }
   }>
   onExternalFileEvent: () => () => void
+  setFullscreen: (payload: { enabled: boolean }) => Promise<{ ok: true; data: { enabled: boolean } }>
+  onFullscreenChanged: (callback: (event: { enabled: boolean }) => void) => () => void
 }
 
 function setupTramaApiMock(overrides?: Partial<TramaApiMock>) {
@@ -88,6 +90,8 @@ function setupTramaApiMock(overrides?: Partial<TramaApiMock>) {
     }),
     getIndex: async () => ({ ok: true, data: { version: '1.0.0', corkboardOrder: {}, cache: {} } }),
     onExternalFileEvent: () => () => undefined,
+    setFullscreen: async (_payload) => ({ ok: true, data: { enabled: _payload.enabled } }),
+    onFullscreenChanged: (_callback) => () => undefined,
   }
 
   ;(window as unknown as { tramaApi: TramaApiMock }).tramaApi = {
@@ -126,6 +130,8 @@ describe('useProjectEditor', () => {
       primaryPath: null,
       secondaryPath: null,
       activePane: 'primary',
+      focusModeEnabled: false,
+      focusScope: 'paragraph',
     })
   })
 
@@ -204,6 +210,8 @@ describe('useProjectEditor', () => {
       primaryPath: null,
       secondaryPath: null,
       activePane: 'primary',
+      focusModeEnabled: false,
+      focusScope: 'paragraph',
     })
   })
 

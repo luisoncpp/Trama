@@ -211,6 +211,18 @@ select {
   padding: 18px;
 }
 
+.editor-shell.is-fullscreen {
+  padding: 8px;
+}
+
+.editor-shell.is-focus-mode .sidebar-shell {
+  width: 72px !important;
+}
+
+.editor-shell.is-focus-mode .sidebar-panel-content {
+  display: none;
+}
+
 .editor-app {
   width: min(1500px, 100%);
   height: calc(100svh - 36px);
@@ -656,6 +668,20 @@ select {
 
 .workspace-layout-controls input[type='range'] {
   width: min(240px, 100%);
+}
+
+.workspace-layout-controls select {
+  min-width: 130px;
+  border: 1px solid var(--border-strong);
+  border-radius: 10px;
+  background: var(--surface-input-bg);
+  color: var(--text-main);
+  padding: 6px 8px;
+  font-size: 0.75rem;
+}
+
+.workspace-layout-controls select:disabled {
+  opacity: 0.5;
 }
 
 .editor-button--inline.is-active {
@@ -1186,6 +1212,62 @@ select {
   font-size: 1.04rem;
   line-height: 1.62;
   padding: 1.1rem 1.25rem 1.35rem;
+}
+
+.rich-editor .ql-editor.is-focus-mode.is-focus-scope-paragraph > * {
+  opacity: 0.24;
+  transition: opacity 140ms ease;
+}
+
+.rich-editor .ql-editor.is-focus-mode.is-focus-scope-paragraph > *.is-focus-emphasis {
+  opacity: 1;
+}
+
+.rich-editor .ql-editor.is-focus-mode.is-focus-scope-sentence,
+.rich-editor .ql-editor.is-focus-mode.is-focus-scope-line {
+  position: relative;
+}
+
+.rich-editor .ql-editor.is-focus-mode.is-focus-overlay-visible.is-focus-scope-sentence::after,
+.rich-editor .ql-editor.is-focus-mode.is-focus-overlay-visible.is-focus-scope-line::after {
+  content: '';
+  position: absolute;
+  pointer-events: none;
+  z-index: 2;
+  left: var(--focus-overlay-left, 0);
+  top: var(--focus-overlay-top, 0);
+  width: var(--focus-overlay-width, 0);
+  height: var(--focus-overlay-height, 0);
+  border-radius: 0.15rem;
+  background: rgba(255, 255, 255, 0.12);
+  mix-blend-mode: screen;
+}
+
+.rich-editor .ql-editor.is-focus-mode.is-focus-scope-sentence > *,
+.rich-editor .ql-editor.is-focus-mode.is-focus-scope-line > * {
+  opacity: 1;
+  color: color-mix(in oklab, var(--canvas-ink) 14%, transparent);
+  transition: color 140ms ease;
+  position: relative;
+  z-index: 1;
+}
+
+.rich-editor .ql-editor.is-focus-mode.is-focus-scope-sentence > *.is-focus-emphasis,
+.rich-editor .ql-editor.is-focus-mode.is-focus-scope-line > *.is-focus-emphasis {
+  color: var(--canvas-ink);
+}
+
+.rich-editor .ql-editor.is-focus-mode.is-focus-text-highlight.is-focus-scope-sentence::highlight(trama-focus-scope),
+.rich-editor .ql-editor.is-focus-mode.is-focus-text-highlight.is-focus-scope-line::highlight(trama-focus-scope) {
+  color: var(--canvas-ink);
+  background-color: transparent;
+  text-shadow: 0 0 0.01px currentColor;
+}
+
+.rich-editor .ql-editor.is-focus-mode.is-focus-scope-paragraph > *.is-focus-emphasis,
+.rich-editor .ql-editor.is-focus-mode.is-focus-scope-sentence > *.is-focus-emphasis,
+.rich-editor .ql-editor.is-focus-mode.is-focus-scope-line > *.is-focus-emphasis {
+  opacity: 1;
 }
 
 .workspace-split-pane .rich-editor .ql-editor {

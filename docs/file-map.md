@@ -17,6 +17,7 @@
 - `electron/main.ts`
   - App lifecycle and BrowserWindow creation.
   - Wires smoke hooks and editor context-menu helpers.
+  - Emits native fullscreen state changes to renderer.
   - Registers IPC handlers.
 - `electron/window-config.ts`
   - BrowserWindow security-related defaults.
@@ -32,6 +33,7 @@
   - Shared IPC error envelope helper.
 - `electron/preload.cts`
   - Typed `window.tramaApi` bridge.
+  - Includes fullscreen command and fullscreen-change subscription bridge.
 
 ### IPC handlers
 
@@ -69,14 +71,37 @@
   - Screen-level composition (sidebar + editor + status).
 - `src/features/project-editor/use-project-editor-ui-actions.ts`
   - Composes UI actions.
+- `src/features/project-editor/use-project-editor-focus-actions.ts`
+  - Fullscreen/focus-mode action hooks.
 - `src/features/project-editor/use-project-editor-file-actions.ts`
   - Rename/delete file actions.
 - `src/features/project-editor/use-project-editor-create-actions.ts`
   - Create article/category actions.
 - `src/features/project-editor/use-project-editor-sidebar-actions.ts`
   - Sidebar UI actions.
+- `src/features/project-editor/use-project-editor-layout-actions.ts`
+  - Workspace split and pane activation actions.
+- `src/features/project-editor/use-project-editor-open-project.ts`
+  - Open-project flow and pane/layout reconciliation.
+- `src/features/project-editor/use-project-editor-fullscreen-effect.ts`
+  - Renderer subscription to native fullscreen state changes.
+- `src/features/project-editor/use-project-editor-shortcuts-effect.ts`
+  - Global workspace shortcuts (split/fullscreen/focus/pane switch).
+- `src/features/project-editor/use-workspace-layout-state.ts`
+  - Persist workspace layout (`trama.workspace.layout.v1`).
 - `src/features/project-editor/use-sidebar-ui-state.ts`
   - Persist sidebar UI (`trama.sidebar.ui.v1`).
+
+### Editor workspace components
+
+- `src/features/project-editor/components/workspace-editor-panels.tsx`
+  - Single/split editor rendering and pane interactions.
+- `src/features/project-editor/components/workspace-layout-controls.tsx`
+  - Workspace toolbar controls (split/fullscreen/focus/scope/ratio).
+- `src/features/project-editor/components/editor-panel.tsx`
+  - Editor panel shell, sync labels, save affordance.
+- `src/features/project-editor/components/rich-markdown-editor.tsx`
+  - Quill editor composition and focus-scope emphasis behavior.
 
 ### Sidebar components
 
@@ -133,14 +158,21 @@
 Core and regression suites:
 
 - `tests/ipc-contract.test.ts`
+- `tests/fullscreen-ipc.test.ts`
 - `tests/use-project-editor.test.ts`
+- `tests/workspace-layout-persistence.test.ts`
 - `tests/project-editor-conflict-flow.test.ts`
+- `tests/project-editor-logic.test.ts`
 - `tests/rich-markdown-editor.test.ts`
+- `tests/focus-mode-scope.test.ts`
 - `tests/sidebar-tree.test.ts`
 - `tests/sidebar-filter.test.ts`
 - `tests/sidebar-panels.test.ts`
+- `tests/sidebar-scroll-regression.test.ts`
+- `tests/workspace-keyboard-shortcuts.test.ts`
 - `tests/frontmatter-parser.test.ts`
 - `tests/index-reconciliation.test.ts`
+- `tests/theme-preference.test.ts`
 - `tests/startup-smoke.test.ts`
 - `tests/electron-smoke.test.ts`
 - `tests/typescript-compile.test.ts`

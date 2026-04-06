@@ -2,7 +2,9 @@ import { useEffect, useRef } from 'preact/hooks'
 import TurndownService from 'turndown'
 import Quill from 'quill'
 import { normalizeMarkdown, useRichEditorLifecycle } from './rich-markdown-editor-core'
+import { useFocusModeScopeEffect } from './rich-markdown-editor-focus-scope'
 import { type RichEditorSyncState, useSyncToolbarControls } from './rich-markdown-editor-toolbar'
+import type { FocusScope } from '../project-editor-types'
 
 interface RichMarkdownEditorProps {
   documentId: string | null
@@ -14,6 +16,8 @@ interface RichMarkdownEditorProps {
   onSaveNow: () => void
   syncState: RichEditorSyncState
   syncStateLabel: string
+  focusModeEnabled?: boolean
+  focusScope?: FocusScope
 }
 
 export function RichMarkdownEditor({
@@ -26,6 +30,8 @@ export function RichMarkdownEditor({
   onSaveNow,
   syncState,
   syncStateLabel,
+  focusModeEnabled = false,
+  focusScope = 'paragraph',
 }: RichMarkdownEditorProps) {
   const hostRef = useRef<HTMLDivElement | null>(null)
   const editorRef = useRef<Quill | null>(null)
@@ -59,5 +65,8 @@ export function RichMarkdownEditor({
     syncState,
     syncStateLabel,
   })
+
+  useFocusModeScopeEffect(editorRef, hostRef, focusModeEnabled, focusScope)
+
   return <div ref={hostRef} class="rich-editor w-full" />
 }

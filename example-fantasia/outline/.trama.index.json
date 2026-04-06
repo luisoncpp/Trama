@@ -1,0 +1,35 @@
+{
+  "version": "1.0.0",
+  "corkboardOrder": {
+    "Act-01/Chapter-01": [
+      "Act-01/Chapter-01/chapter-beats.md"
+    ],
+    "Act-01/Chapter-02": [
+      "Act-01/Chapter-02/chapter-beats.md"
+    ],
+    "Act-01/Chapter-03": [
+      "Act-01/Chapter-03/chapter-beats.md"
+    ],
+    "Act-02/Chapter-01": [
+      "Act-02/Chapter-01/chapter-beats.md"
+    ],
+    "Act-02/Chapter-02": [
+      "Act-02/Chapter-02/chapter-beats.md"
+    ],
+    "Act-02/Chapter-03": [
+      "Act-02/Chapter-03/chapter-beats.md"
+    ],
+    "": [
+      "arc-general.md"
+    ]
+  },
+  "cache": {
+    "Act-01/Chapter-01/chapter-beats.md": {},
+    "Act-01/Chapter-02/chapter-beats.md": {},
+    "Act-01/Chapter-03/chapter-beats.md": {},
+    "Act-02/Chapter-01/chapter-beats.md": {},
+    "Act-02/Chapter-02/chapter-beats.md": {},
+    "Act-02/Chapter-03/chapter-beats.md": {},
+    "arc-general.md": {}
+  }
+}

@@ -39,6 +39,8 @@ type TramaApiMock = {
     data: { version: string; corkboardOrder: Record<string, string[]>; cache: Record<string, unknown> }
   }>
   onExternalFileEvent: () => () => void
+  setFullscreen: (payload: { enabled: boolean }) => Promise<{ ok: true; data: { enabled: boolean } }>
+  onFullscreenChanged: (callback: (event: { enabled: boolean }) => void) => () => void
 }
 
 function setupTramaApiMock(overrides?: Partial<TramaApiMock>) {
@@ -86,6 +88,8 @@ function setupTramaApiMock(overrides?: Partial<TramaApiMock>) {
     }),
     getIndex: async () => ({ ok: true, data: { version: '1.0.0', corkboardOrder: {}, cache: {} } }),
     onExternalFileEvent: () => () => undefined,
+    setFullscreen: async (_payload) => ({ ok: true, data: { enabled: _payload.enabled } }),
+    onFullscreenChanged: (_callback) => () => undefined,
   }
 
   ;(window as unknown as { tramaApi: TramaApiMock }).tramaApi = {
@@ -126,6 +130,8 @@ describe('workspace layout persistence', () => {
       primaryPath: 'docs/a.md',
       secondaryPath: 'docs/b.md',
       activePane: 'secondary',
+      focusModeEnabled: false,
+      focusScope: 'paragraph',
     })
   })
 
@@ -184,6 +190,8 @@ describe('workspace layout persistence', () => {
       primaryPath: 'docs/a.md',
       secondaryPath: 'docs/b.md',
       activePane: 'secondary',
+      focusModeEnabled: false,
+      focusScope: 'paragraph',
     })
     expect(model?.state.selectedPath).toBe('docs/b.md')
     expect(model?.state.editorValue).toBe('# B')

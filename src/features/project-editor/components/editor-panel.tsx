@@ -1,4 +1,5 @@
 import { PROJECT_EDITOR_STRINGS } from '../project-editor-strings'
+import type { FocusScope } from '../project-editor-types'
 import { RichMarkdownEditor } from './rich-markdown-editor'
 
 interface EditorPanelProps {
@@ -9,6 +10,8 @@ interface EditorPanelProps {
   editorValue: string
   onSaveNow: () => void
   onEditorChange: (value: string) => void
+  focusModeEnabled: boolean
+  focusScope: FocusScope
   onInteract?: () => void
 }
 
@@ -20,6 +23,8 @@ export function EditorPanel({
   editorValue,
   onSaveNow,
   onEditorChange,
+  focusModeEnabled,
+  focusScope,
   onInteract,
 }: EditorPanelProps) {
   const saveDisabled = !selectedPath || saving || !isDirty
@@ -52,6 +57,8 @@ export function EditorPanel({
           onSaveNow={onSaveNow}
           syncState={syncState}
           syncStateLabel={syncStateLabel}
+          focusModeEnabled={focusModeEnabled}
+          focusScope={focusScope}
         />
       </div>
     </article>

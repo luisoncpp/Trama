@@ -252,6 +252,19 @@ All IPC APIs are exposed via contextBridge (`window.api`) and use runtime schema
 
 * **Dark Mode:** `ThemeController` toggles theme tokens and persists preference; optional system sync fallback.  
 * **Fullscreen / Focus Mode:** Renderer requests `setFullscreen(true|false)` and updates `LayoutStore` for distraction-free writing.  
+  * **Operational definition (Focus Mode):**
+    * Focus Mode is renderer-local UI state (not a native window mode).
+    * Entering Focus Mode minimizes non-essential chrome: collapses/hides sidebar panel content, de-emphasizes secondary controls, and keeps editor surface primary.
+    * Focus Mode includes a text emphasis scope around the caret, inspired by Scrivener-style behavior:
+      * `line`: emphasize current line, dim surrounding text.
+      * `sentence`: emphasize current sentence, dim surrounding text.
+      * `paragraph`: emphasize current paragraph, dim surrounding text.
+    * Dimming is visual-only (no text mutation) and follows caret movement while typing or editing.
+    * If scope detection is ambiguous (rich text boundaries), fallback to `paragraph` to avoid erratic highlighting.
+    * Core safety UI remains visible: save/sync state, external-change conflict banner, and conflict actions.
+    * Focus Mode must be reversible with no data loss and no document reassignment side effects.
+    * Fullscreen and Focus Mode are independent toggles: either can be enabled alone, or both together.
+    * Preference is persisted in layout settings and restored on startup.
 * **Real Split Workspace:** `LayoutStore` persists panel count, sizes, and pinned documents so users can keep editor + notes/wiki side-by-side.
 
 ### **8.6. Boundaries and Scaling Notes**

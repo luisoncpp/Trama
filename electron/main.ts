@@ -5,6 +5,7 @@ import { registerIpcHandlers, shutdownIpcServices } from './ipc.js'
 import { setupContextMenu } from './main-process/context-menu.js'
 import { setupSmokeTestHooks } from './main-process/smoke-hooks.js'
 import { createMainWindowOptions } from './window-config.js'
+import { IPC_CHANNELS } from '../src/shared/ipc.js'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -118,6 +119,27 @@ function configureWindowShowBehavior(win: BrowserWindow): void {
   })
 }
 
+function emitFullscreenState(win: BrowserWindow): void {
+  if (win.isDestroyed()) {
+    return
+  }
+
+  win.webContents.send(IPC_CHANNELS.fullscreenChanged, {
+    enabled: win.isFullScreen(),
+    timestamp: new Date().toISOString(),
+  })
+}
+
+function configureFullscreenEvents(win: BrowserWindow): void {
+  win.on('enter-full-screen', () => {
+    emitFullscreenState(win)
+  })
+
+  win.on('leave-full-screen', () => {
+    emitFullscreenState(win)
+  })
+}
+
 async function createMainWindow(): Promise<void> {
   const preloadPath = path.join(__dirname, 'preload.cjs')
   const win = new BrowserWindow(createMainWindowOptions(preloadPath))
@@ -128,6 +150,8 @@ async function createMainWindow(): Promise<void> {
   } else {
     configureWindowShowBehavior(win)
   }
+
+  configureFullscreenEvents(win)
 
   const renderer = getRendererEntry()
   await loadRendererEntry(win, renderer)

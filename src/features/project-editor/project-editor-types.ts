@@ -3,6 +3,7 @@ import type { DocumentMeta } from '../../shared/ipc'
 export type SidebarSection = 'explorer' | 'outline' | 'lore' | 'settings'
 export type WorkspaceLayoutMode = 'single' | 'split'
 export type WorkspacePane = 'primary' | 'secondary'
+export type FocusScope = 'line' | 'sentence' | 'paragraph'
 
 export interface WorkspaceLayoutState {
   mode: WorkspaceLayoutMode
@@ -10,6 +11,8 @@ export interface WorkspaceLayoutState {
   primaryPath: string | null
   secondaryPath: string | null
   activePane: WorkspacePane
+  focusModeEnabled: boolean
+  focusScope: FocusScope
 }
 
 export interface PaneDocumentState {
@@ -48,6 +51,7 @@ export interface ProjectEditorState {
   loadingProject: boolean
   loadingDocument: boolean
   saving: boolean
+  isFullscreen: boolean
 }
 
 export interface ProjectEditorActions {
@@ -63,6 +67,9 @@ export interface ProjectEditorActions {
   toggleWorkspaceLayoutMode: () => void
   setWorkspaceLayoutRatio: (ratio: number) => void
   setWorkspaceActivePane: (pane: WorkspacePane) => void
+  setFullscreenEnabled: (enabled: boolean) => Promise<void>
+  toggleFocusMode: () => void
+  setFocusScope: (scope: FocusScope) => void
   updateEditorValue: (value: string) => void
   saveNow: () => void
   resolveConflictReload: () => void

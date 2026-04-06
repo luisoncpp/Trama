@@ -4,7 +4,6 @@ import { ConflictComparePanel } from './components/conflict-compare-panel'
 import { WorkspaceLayoutPanel } from './components/workspace-editor-panels.tsx'
 import { SidebarPanel } from './components/sidebar/sidebar-panel.tsx'
 import type { ResolvedTheme, ThemePreference } from '../../theme/theme-types'
-import { useWorkspaceKeyboardShortcuts } from './use-workspace-keyboard-shortcuts'
 
 interface ProjectEditorViewProps {
   model: ProjectEditorModel
@@ -53,10 +52,13 @@ export function ProjectEditorView({
   onThemePreferenceChange,
 }: ProjectEditorViewProps) {
   const { state, actions } = model
-  const shellClassName = state.workspaceLayout.mode === 'split' ? 'editor-shell is-split' : 'editor-shell'
-
-  // Enable keyboard shortcuts for workspace operations
-  useWorkspaceKeyboardShortcuts({ model })
+  const shellClassName = [
+    'editor-shell',
+    state.workspaceLayout.mode === 'split' ? 'is-split' : '',
+    state.workspaceLayout.focusModeEnabled ? 'is-focus-mode' : '',
+    state.isFullscreen ? 'is-fullscreen' : '',
+    `focus-scope-${state.workspaceLayout.focusScope}`,
+  ].filter(Boolean).join(' ')
 
   return (
     <main class={shellClassName}>

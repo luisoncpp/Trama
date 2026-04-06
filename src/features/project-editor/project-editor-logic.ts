@@ -17,6 +17,8 @@ export function createDefaultWorkspaceLayoutState(): WorkspaceLayoutState {
     primaryPath: null,
     secondaryPath: null,
     activePane: 'primary',
+    focusModeEnabled: false,
+    focusScope: 'paragraph',
   }
 }
 
@@ -27,6 +29,8 @@ export function normalizeWorkspaceLayoutState(layout: WorkspaceLayoutState): Wor
     primaryPath: layout.primaryPath,
     secondaryPath: layout.secondaryPath,
     activePane: layout.activePane,
+    focusModeEnabled: layout.focusModeEnabled ?? false,
+    focusScope: layout.focusScope ?? 'paragraph',
   }
 }
 
@@ -42,6 +46,13 @@ function isWorkspaceLayoutShape(value: unknown): value is WorkspaceLayoutState {
     && (candidate.primaryPath === null || typeof candidate.primaryPath === 'string')
     && (candidate.secondaryPath === null || typeof candidate.secondaryPath === 'string')
     && (candidate.activePane === 'primary' || candidate.activePane === 'secondary')
+    && (candidate.focusModeEnabled === undefined || typeof candidate.focusModeEnabled === 'boolean')
+    && (
+      candidate.focusScope === undefined
+      || candidate.focusScope === 'line'
+      || candidate.focusScope === 'sentence'
+      || candidate.focusScope === 'paragraph'
+    )
   )
 }
 

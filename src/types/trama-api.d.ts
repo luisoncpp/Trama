@@ -7,6 +7,7 @@ import type {
   DeleteDocumentResponse,
   DebugLogRequest,
   ExternalFileEvent,
+  FullscreenChangedEvent,
   IpcEnvelope,
   OpenProjectRequest,
   PingRequest,
@@ -19,6 +20,8 @@ import type {
   RenameDocumentResponse,
   SaveDocumentRequest,
   SaveDocumentResponse,
+  SetFullscreenRequest,
+  SetFullscreenResponse,
   SelectProjectFolderResponse,
 } from '../shared/ipc'
 
@@ -36,7 +39,9 @@ declare global {
       renameDocument(payload: RenameDocumentRequest): Promise<IpcEnvelope<RenameDocumentResponse>>
       deleteDocument(payload: DeleteDocumentRequest): Promise<IpcEnvelope<DeleteDocumentResponse>>
       getIndex(): Promise<IpcEnvelope<ProjectIndex>>
+      setFullscreen(payload: SetFullscreenRequest): Promise<IpcEnvelope<SetFullscreenResponse>>
       onExternalFileEvent(callback: (event: ExternalFileEvent) => void): () => void
+      onFullscreenChanged(callback: (event: FullscreenChangedEvent) => void): () => void
     }
   }
 }
