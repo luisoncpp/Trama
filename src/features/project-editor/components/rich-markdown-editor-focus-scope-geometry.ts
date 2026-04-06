@@ -87,26 +87,6 @@ export function findSentenceBoundaries(text: string, cursorOffset: number): { st
   return { start, end }
 }
 
-export function findLineLikeBoundaries(text: string, cursorOffset: number): { start: number; end: number } {
-  const limit = Math.max(0, Math.min(cursorOffset, text.length))
-  const radius = 24
-
-  const softStart = Math.max(0, limit - radius)
-  const softEnd = Math.min(text.length, limit + radius)
-
-  const leftSpace = text.lastIndexOf(' ', limit)
-  const rightSpace = text.indexOf(' ', limit)
-
-  const start = leftSpace >= softStart ? leftSpace + 1 : softStart
-  const end = rightSpace !== -1 && rightSpace <= softEnd ? rightSpace : softEnd
-
-  if (end <= start) {
-    return { start: 0, end: text.length }
-  }
-
-  return { start, end }
-}
-
 export function findVisualLineBoundaries(
   quill: Quill,
   selectionIndex: number,

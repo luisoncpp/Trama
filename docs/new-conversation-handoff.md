@@ -77,6 +77,7 @@ Theme groundwork is now live:
 ## Regression hotspots
 
 - Rich editor cursor jumping: watch re-init dependencies in editor core.
+- Focus scope rendering: treat `.ql-editor` as Quill-owned DOM; avoid structural DOM mutations for highlight effects and keep text-highlight-first + fallback strategy (see `docs/lessons-learned/focus-mode-rich-markdown-highlighting.md`).
 - Sidebar collapse-all restoring unexpectedly: expanded-folder state logic.
 - Sidebar create/rename/delete wiring: path scoping between section-relative and project-relative paths.
 - Empty folder visibility in tree: scanner + tree builder interplay.

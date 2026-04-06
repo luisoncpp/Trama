@@ -325,4 +325,5 @@ describe('RichMarkdownEditor', () => {
     expect(selection).toBeTruthy()
     expect(selection?.index ?? 0).toBeGreaterThan(0)
   })
+
 })

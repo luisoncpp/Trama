@@ -124,3 +124,15 @@ For the current Phase 3 sequence:
 - Dev startup uses `concurrently + wait-on`; if Electron exits, all child processes are stopped.
 - Preload uses `.cts` and emits `preload.cjs`; main must load that exact artifact.
 - Lint limits are strict (`max-lines`, `max-lines-per-function`), so decomposition is required, not optional.
+
+## Focus mode stabilization note (important)
+
+WS3 focus scope behavior (`line | sentence | paragraph`) proved sensitive in the rich editor. The stable implementation uses this priority order:
+
+1. Text highlight via CSS Highlights API when available (`CSS.highlights` + `Highlight`).
+2. Geometry-based overlay fallback when highlight API is not available.
+3. Quill/line bounds fallback to avoid disappearing emphasis.
+
+The key architectural rule is: do not structurally mutate Quill content for visual focus effects. Keep focus rendering external to document content and isolate this logic in dedicated focus-scope modules instead of growing `rich-markdown-editor.tsx`.
+
+See `docs/lessons-learned/focus-mode-rich-markdown-highlighting.md` for failure history, misconceptions, and guardrails.
