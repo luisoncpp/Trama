@@ -143,10 +143,18 @@ Note for agents: each time you are asked to update the documentation, if you fou
   - Floating find bar UI (input, counter, prev/next, close) plus active-match overlay rendering.
 - `src/features/project-editor/components/rich-markdown-editor-find-visual.ts`
   - Active-match visual sync helpers: computes Quill bounds and keeps highlighted match visible while preserving input focus.
+  - Includes focus-mode-aware centering via `handleFocusModeMatch()`.
 - `src/features/project-editor/components/rich-markdown-editor-typography.ts`
   - Smart typography auto-replacement on user input: `--` → `—`, `<<` → `«`, `>>` → `»`. Each substitution is isolated as its own Ctrl+Z undo entry via `history.cutoff()`.
 - `src/features/project-editor/components/rich-markdown-editor-focus-scope.ts`
-  - Focus-mode implementation: applies inline/paragraph emphasis and uses Highlight API when available.
+  - Focus-mode hook orchestration: applies emphasis classes and wires scroll centering, selection tracking, and listener setup.
+  - Coordinates between focus scope helpers and centered scroll updates.
+- `src/features/project-editor/components/rich-markdown-editor-focus-scope-helpers.ts`
+  - Focus scope helper functions: applies/clears CSS class emphasis, manages CSS Highlights API, handles fallback text emphasis.
+  - Contains `getSelectionViewportRect()` for real DOM viewport geometry of the current selection.
+- `src/features/project-editor/components/rich-markdown-editor-focus-scope-scroll.ts`
+  - Centered scroll logic: computes target scroll position to keep active line centered vertically.
+  - Uses requestAnimationFrame phases to recalculate after padding changes; expands top/bottom edge space dynamically.
 - `src/features/project-editor/components/rich-markdown-editor-focus-scope-geometry.ts`
   - Geometry helpers for focus-mode (text offset resolution, visual line/sentence boundary calculations).
 - `src/features/project-editor/components/rich-markdown-editor-toolbar.ts`
