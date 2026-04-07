@@ -29,3 +29,4 @@ Create a new file in this directory named after the topic (e.g., `auth-token-ref
 | `split-pane-preferred-pane-reset.md` | `preferredPane` reopen issues resolved by migrating from single-document state to explicit per-pane document state and pane-targeted loads | 2026-04-04 |
 | `split-pane-test-determinism.md` | Split-mode tests can flip unexpectedly if persisted layout state is not normalized during setup; force mode/pane explicitly before assertions | 2026-04-04 |
 | `focus-mode-rich-editor-highlight-vs-overlay.md` | Focus mode stabilized by using CSS Highlights API as primary text emphasis and non-mutating overlay only as fallback; avoid DOM injection into Quill editor | 2026-04-05 |
+| `focus-mode-centered-scroll-spacers.md` | Focus mode centering near document edges is reliable only with viewport-based caret geometry and real content-side spacers; avoid scroll-container padding | 2026-04-07 |

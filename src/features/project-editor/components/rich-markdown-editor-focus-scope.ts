@@ -227,13 +227,10 @@ export function useFocusModeScopeEffect(
 
 			const selectionRect = getSelectionViewportRect(quill)
 			if (!selectionRect) {
-				console.log('[focus-scroll] selectionRect es null, abortando')
 				return
 			}
 
 			const basePad = Math.max(0, Math.round(container.clientHeight / 2 - selectionRect.height / 2))
-			console.log('[focus-scroll] SYNC: clientHeight=%d selectionRect.height=%d basePad=%d scrollHeight=%d scrollTop=%d',
-				container.clientHeight, selectionRect.height, basePad, container.scrollHeight, container.scrollTop)
 			editorRoot.style.setProperty('--focus-extra-top', `${basePad}px`)
 			editorRoot.style.setProperty('--focus-extra-bottom', `${basePad}px`)
 
@@ -245,19 +242,13 @@ export function useFocusModeScopeEffect(
 					- (container.clientHeight / 2 - refreshedRect.height / 2)
 				let maxScroll = Math.max(0, container.scrollHeight - container.clientHeight)
 
-				console.log('[focus-scroll] RAF1: scrollTop=%d scrollHeight=%d clientHeight=%d maxScroll=%d desired=%d rectTop=%d containerTop=%d',
-					container.scrollTop, container.scrollHeight, container.clientHeight, maxScroll, desired,
-					refreshedRect.top, containerRect.top)
-
 				if (desired > maxScroll + 1) {
 					const extraBottom = Math.ceil(desired - maxScroll) + 16
-					console.log('[focus-scroll] RAF1: desired>maxScroll, extraBottom=%d, nuevo --focus-extra-bottom=%d', extraBottom, basePad + extraBottom)
 					editorRoot.style.setProperty('--focus-extra-bottom', `${basePad + extraBottom}px`)
 				}
 
 				if (desired < -1) {
 					const extraTop = Math.ceil(Math.abs(desired)) + 16
-					console.log('[focus-scroll] RAF1: desired<0, extraTop=%d, nuevo --focus-extra-top=%d', extraTop, basePad + extraTop)
 					editorRoot.style.setProperty('--focus-extra-top', `${basePad + extraTop}px`)
 				}
 
@@ -269,8 +260,6 @@ export function useFocusModeScopeEffect(
 						- (container.clientHeight / 2 - finalRect.height / 2)
 					maxScroll = Math.max(0, container.scrollHeight - container.clientHeight)
 					const target = Math.max(0, Math.min(desired, maxScroll))
-					console.log('[focus-scroll] RAF2: scrollHeight=%d maxScroll=%d desired=%d target=%d scrollTop=%d',
-						container.scrollHeight, maxScroll, desired, target, container.scrollTop)
 					if (Math.abs(container.scrollTop - target) > 1) {
 						container.scrollTop = Math.round(target)
 					}
