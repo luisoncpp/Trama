@@ -3,7 +3,6 @@ import { SidebarExplorerBody } from './sidebar-explorer-body.tsx'
 import type { SidebarExplorerCommonProps } from './sidebar-types'
 import { useSidebarCreateDialog } from './use-sidebar-create-dialog'
 import { useSidebarFileActionsDialog } from './use-sidebar-file-actions-dialog'
-import { useSidebarFilterShortcut } from './use-sidebar-filter-shortcut'
 
 function SelectProjectFolderIcon() {
   return (
@@ -83,14 +82,6 @@ export function SidebarExplorerContent(props: SidebarExplorerContentProps) {
   const setFilterInputRef = (element: HTMLInputElement | null) => {
     filterInputElementRef.current = element
   }
-
-  useSidebarFilterShortcut({
-    enabled: props.apiAvailable && !props.loadingProject,
-    focusFilterInput: () => {
-      filterInputElementRef.current?.focus()
-      filterInputElementRef.current?.select()
-    },
-  })
 
   return (
     <div class="sidebar-panel-content">

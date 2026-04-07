@@ -15,6 +15,7 @@ The project now includes:
 - `.trama.index.json` reconciliation (prune missing + append new).
 - External file watcher events (`internal` vs `external`) and conflict handling actions.
 - Rich markdown visual editor loop with autosave debounce.
+- In-document Find in the rich editor: floating search UI (`Ctrl/Cmd+F`) with result counter, previous/next navigation, and active-match highlight while keeping focus in the find input.
 - Paste from Markdown: native context-menu option ("Paste Markdown") that converts clipboard Markdown into rich editor HTML via the workspace event bridge.
 - Sidebar with section-scoped tree (`book/`, `outline/`, `lore/`) and settings.
 - Sidebar filter, responsive behavior, and right-click file context actions.
@@ -25,7 +26,7 @@ The project now includes:
 - Sidebar auto-collapses when focus mode activates and is locked closed during focus.
 - Workspace toolbar removed; split/fullscreen/focus controls available exclusively through the native right-click context menu (event bridge via `src/shared/workspace-context-menu.ts`).
 - Smart typography substitutions in the rich editor: `--` → `—`, `<<` → `«`, `>>` → `»`, each reversible with a single Ctrl+Z undo.
-- Extended keyboard shortcuts for workspace control (`Ctrl/Cmd+.` split, `Ctrl/Cmd+Shift+F` fullscreen, `Ctrl/Cmd+Shift+M` focus mode, `Ctrl/Cmd+Shift+Tab` pane switch).
+- Extended keyboard shortcuts for workspace control (`Ctrl/Cmd+.` split, `Ctrl/Cmd+F` in-document find, `Ctrl/Cmd+Shift+F` fullscreen, `Ctrl/Cmd+Shift+M` focus mode, `Ctrl/Cmd+Shift+Tab` pane switch).
 - `npm run dev` auto-builds the Electron main process before starting the dev server.
 
 ## Runtime architecture
@@ -51,6 +52,9 @@ Notable modules added in WS3 and UX hardening:
 - `src/features/project-editor/use-project-editor-context-menu-effect.ts`
 - `src/features/project-editor/components/rich-markdown-editor.tsx`
 - `src/features/project-editor/components/rich-markdown-editor-core.ts`
+- `src/features/project-editor/components/rich-markdown-editor-find.tsx`
+- `src/features/project-editor/components/rich-markdown-editor-find-overlay.tsx`
+- `src/features/project-editor/components/rich-markdown-editor-find-visual.ts`
 - `src/features/project-editor/components/rich-markdown-editor-typography.ts`
 - `src/shared/workspace-context-menu.ts`
 - `electron/main-process/context-menu.ts`

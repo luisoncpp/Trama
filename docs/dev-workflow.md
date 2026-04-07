@@ -25,6 +25,7 @@
   - `npm run test -- tests/sidebar-panels.test.ts`
   - `npm run test -- tests/use-project-editor.test.ts`
   - `npm run test -- tests/ipc-contract.test.ts`
+  - `npm run test -- tests/rich-markdown-editor.test.ts`
 
 ## Typical development loop
 
@@ -38,11 +39,18 @@
 
 ## Sidebar-specific manual checks
 
-- Filter with Ctrl/Cmd+F.
+- Filter from sidebar input manually.
 - Collapse all folders and confirm state remains collapsed.
 - Create article/category from footer.
 - Right-click file row and validate rename/delete flow.
 - Confirm newly created empty folders are visible in tree.
+
+## Editor search manual checks
+
+- Focus editor and press Ctrl/Cmd+F to open floating find bar.
+- Type query and verify active match highlight appears in the document.
+- Press Enter / Shift+Enter and verify next/previous navigation updates counter and highlight.
+- Verify typing keeps focus in find input (no focus steal to editor).
 
 ## IPC change checklist
 

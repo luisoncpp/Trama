@@ -165,7 +165,7 @@ describe('sidebar panels', () => {
     expect(filterInput).toBeTruthy()
   })
 
-  it('focuses the sidebar filter with Ctrl+F shortcut', () => {
+  it('does not capture Ctrl+F in the sidebar filter anymore', () => {
     act(() => {
       render(
         h(SidebarExplorerContent, {
@@ -192,11 +192,13 @@ describe('sidebar panels', () => {
     const filterInput = container.querySelector('.sidebar-filter__input') as HTMLInputElement
     expect(filterInput).toBeTruthy()
 
+    const before = document.activeElement
     act(() => {
       window.dispatchEvent(new KeyboardEvent('keydown', { key: 'f', ctrlKey: true, bubbles: true }))
     })
 
-    expect(document.activeElement).toBe(filterInput)
+    expect(document.activeElement).toBe(before)
+    expect(document.activeElement).not.toBe(filterInput)
   })
 
   it('shows loading and api-unavailable sidebar states', () => {

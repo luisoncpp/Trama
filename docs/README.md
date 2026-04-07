@@ -28,6 +28,7 @@ Implemented foundation:
 - Native editor context menu with spellcheck.
 - Sidebar sections (manuscript/outline/lore/settings), filter, responsive collapse, and right-click file actions.
 - Paste from Markdown: native menu option to convert clipboard Markdown to rich editor content.
+- In-document Find: floating find bar (Ctrl/Cmd+F) with next/previous navigation and active-match highlight.
 
 ## Quick intent routing (for new chats)
 

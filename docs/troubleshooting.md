@@ -167,3 +167,27 @@ When things break after refactors, run:
 1. Verify the renderer receives the workspace event by adding a console log in `src/shared/workspace-context-menu.ts` listener path.
 2. Confirm `navigator.clipboard.readText()` is available in the renderer devtools console.
 3. If unavailable, implement `window.tramaApi.readClipboard()` in `electron/preload.cts` and call the preload method from the renderer handler.
+
+## 11) In-document Find highlight/focus issues
+
+### Symptom
+
+- Ctrl/Cmd+F opens the floating find bar, but active match is not visually obvious in editor.
+- Typing in the find input steals focus back to editor after each character.
+
+### Root causes seen
+
+- Selection updates can move focus to Quill if `editor.focus()` or user-source selection APIs are used in the find loop.
+- Updating active match and overlay from unstable callbacks can trigger repeated effects and flaky behavior.
+
+### Current fix
+
+- Keep find input focused while searching; avoid explicit editor focus in query-update flow.
+- Use silent selection updates for active match and a separate visual overlay (`editor-find-highlight`) to make the match visible.
+- Keep find modules split (`rich-markdown-editor-find.tsx`, `rich-markdown-editor-find-overlay.tsx`, `rich-markdown-editor-find-visual.ts`) to satisfy lint limits.
+
+### Quick checks
+
+1. Run `npm run test -- tests/rich-markdown-editor.test.ts` and verify find tests pass.
+2. In app: focus editor, press Ctrl/Cmd+F, type query, confirm focus remains in input.
+3. Press Enter/Shift+Enter and confirm highlight moves with counter updates.

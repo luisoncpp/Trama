@@ -137,6 +137,12 @@ Note for agents: each time you are asked to update the documentation, if you fou
 - `src/features/project-editor/components/rich-markdown-editor-core.ts`
   - Core editor lifecycle and sync logic (initialize Quill, apply markdown, sync external values, enable/disable, register typography handlers).
   - Also listens for workspace `paste-markdown` commands and handles reading/parsing clipboard Markdown and inserting HTML into Quill.
+- `src/features/project-editor/components/rich-markdown-editor-find.tsx`
+  - In-document find hook: Ctrl/Cmd+F activation, query/match state, and integration between floating UI and editor selection.
+- `src/features/project-editor/components/rich-markdown-editor-find-overlay.tsx`
+  - Floating find bar UI (input, counter, prev/next, close) plus active-match overlay rendering.
+- `src/features/project-editor/components/rich-markdown-editor-find-visual.ts`
+  - Active-match visual sync helpers: computes Quill bounds and keeps highlighted match visible while preserving input focus.
 - `src/features/project-editor/components/rich-markdown-editor-typography.ts`
   - Smart typography auto-replacement on user input: `--` → `—`, `<<` → `«`, `>>` → `»`. Each substitution is isolated as its own Ctrl+Z undo entry via `history.cutoff()`.
 - `src/features/project-editor/components/rich-markdown-editor-focus-scope.ts`
@@ -169,7 +175,7 @@ Note for agents: each time you are asked to update the documentation, if you fou
 - `src/features/project-editor/components/sidebar/sidebar-filter.tsx`
   - Filter input UI.
 - `src/features/project-editor/components/sidebar/use-sidebar-filter-shortcut.ts`
-  - Ctrl/Cmd+F focuses sidebar filter.
+  - Legacy sidebar filter shortcut helper (Ctrl/Cmd+F), currently not wired after in-document find shortcut reassignment.
 - `src/features/project-editor/components/sidebar/use-sidebar-responsive-collapse.ts`
   - Auto-collapse on narrow viewport.
 - `src/features/project-editor/components/sidebar/sidebar-create-dialog.tsx`

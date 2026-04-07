@@ -383,4 +383,107 @@ describe('RichMarkdownEditor', () => {
     await sleep(20)
     expect(editor.getText(0, 2)).toBe('--')
   })
+
+  it('abre barra flotante de busqueda con Ctrl+F cuando el editor tiene foco', async () => {
+    act(() => {
+      render(
+        h(RichMarkdownEditor, buildEditorProps({ documentId: 'find-doc', value: '# Buscar\n\nalpha beta alpha' })),
+        container,
+      )
+    })
+
+    await sleep(80)
+    const editor = getQuillInstance(container)
+
+    act(() => {
+      editor.focus()
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'f', ctrlKey: true, bubbles: true }))
+    })
+
+    await sleep(20)
+
+    const findInput = container.querySelector('.editor-findbar__input') as HTMLInputElement | null
+    expect(findInput).toBeTruthy()
+  })
+
+  it('encuentra coincidencias y navega con Enter en la barra de busqueda', async () => {
+    act(() => {
+      render(
+        h(RichMarkdownEditor, buildEditorProps({ documentId: 'find-doc-nav', value: 'uno dos uno tres uno' })),
+        container,
+      )
+    })
+
+    await sleep(80)
+    const editor = getQuillInstance(container)
+
+    act(() => {
+      editor.focus()
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'f', ctrlKey: true, bubbles: true }))
+    })
+
+    await sleep(20)
+
+    const findInput = container.querySelector('.editor-findbar__input') as HTMLInputElement
+    expect(findInput).toBeTruthy()
+
+    act(() => {
+      findInput.value = 'uno'
+      findInput.dispatchEvent(new Event('input', { bubbles: true }))
+    })
+
+    await sleep(20)
+    let count = container.querySelector('.editor-findbar__count') as HTMLSpanElement
+    expect(count.textContent).toBe('1/3')
+    expect(container.querySelector('.editor-find-highlight')).toBeTruthy()
+
+    act(() => {
+      findInput.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }))
+    })
+
+    await sleep(20)
+    count = container.querySelector('.editor-findbar__count') as HTMLSpanElement
+    expect(count.textContent).toBe('2/3')
+    expect(document.activeElement).toBe(findInput)
+    expect(container.querySelector('.editor-find-highlight')).toBeTruthy()
+  })
+
+  it('mantiene foco en la barra de busqueda mientras se escribe', async () => {
+    act(() => {
+      render(
+        h(RichMarkdownEditor, buildEditorProps({ documentId: 'find-focus-doc', value: 'lorem ipsum lorem' })),
+        container,
+      )
+    })
+
+    await sleep(80)
+    const editor = getQuillInstance(container)
+
+    act(() => {
+      editor.focus()
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'f', ctrlKey: true, bubbles: true }))
+    })
+
+    await sleep(20)
+
+    const findInput = container.querySelector('.editor-findbar__input') as HTMLInputElement
+    expect(findInput).toBeTruthy()
+
+    act(() => {
+      findInput.focus()
+      findInput.value = 'l'
+      findInput.dispatchEvent(new Event('input', { bubbles: true }))
+    })
+
+    await sleep(20)
+    expect(document.activeElement).toBe(findInput)
+
+    act(() => {
+      findInput.value = 'lo'
+      findInput.dispatchEvent(new Event('input', { bubbles: true }))
+    })
+
+    await sleep(20)
+    expect(document.activeElement).toBe(findInput)
+  })
 })

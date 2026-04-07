@@ -20,11 +20,12 @@ Implemented now:
 - Rich markdown visual editor (formatted editing surface, markdown persisted).
 - Native right-click editor context menu with spellcheck suggestions.
 - Paste from Markdown: native context-menu option to convert Markdown from clipboard into rich editor content.
+- In-document Find: floating search bar inside the editor (`Ctrl/Cmd+F`) with next/previous match navigation and active-match visual highlight.
 - Sidebar rail with persisted section/collapse/width state.
 - Hierarchical sidebar tree with expand/collapse and keyboard navigation basics.
 - Sidebar filter/search with auto-expand and expanded-state restore.
 - Sidebar create actions (`+Article`, `+Category`) wired end-to-end via IPC.
-- Sidebar hardening: Ctrl/Cmd+F filter focus, loading/API-unavailable states, responsive auto-collapse, and collapse-all persistence fixes.
+- Sidebar hardening: loading/API-unavailable states, responsive auto-collapse, and collapse-all persistence fixes.
 - Sidebar file actions (`Rename`, `Delete`) via right-click file context menu.
 - Main-process file operations expanded to create/rename/delete markdown files plus folder create.
 - Workspace split-layout foundation: single/split mode toggle, ratio control, active pane switching, pane document assignment, and local persistence (`trama.workspace.layout.v1`).
@@ -62,6 +63,7 @@ Additional regression checks in suite include:
 - TypeScript compilation guard (`tests/typescript-compile.test.ts`).
 - Rich markdown editor behavior (`tests/rich-markdown-editor.test.ts`).
 - Paste Markdown behavior (`tests/paste-markdown.test.ts`).
+- In-document Find behavior (`tests/rich-markdown-editor.test.ts`).
 - Sidebar panel interactions including right-click rename/delete (`tests/sidebar-panels.test.ts`).
 
 ## Known technical tradeoffs

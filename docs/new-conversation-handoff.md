@@ -36,6 +36,7 @@ UX hardening (WS4) is now live:
 - Event bridge pattern: Electron dispatches `trama:workspace-command` CustomEvent; renderer hook routes to actions.
 - Smart typography: `--` → `—`, `<<` → `«`, `>>` → `»` on user input, each reversible with Ctrl+Z.
 - Paste from Markdown: native context-menu entry ("Paste Markdown") converts clipboard Markdown to rich editor HTML; the renderer listens to `trama:workspace-command` and inserts parsed HTML (see `tests/paste-markdown.test.ts`).
+- In-document Find: Ctrl/Cmd+F opens a floating search bar inside the editor with result counter, next/previous navigation, and active-match highlight while keeping focus in the find input.
 - `npm run dev` auto-builds Electron main before starting the dev server.
 ## Read first (in order)
 
