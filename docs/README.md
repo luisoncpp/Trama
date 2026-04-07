@@ -27,6 +27,7 @@ Implemented foundation:
 - Rich markdown visual editor.
 - Native editor context menu with spellcheck.
 - Sidebar sections (manuscript/outline/lore/settings), filter, responsive collapse, and right-click file actions.
+- Paste from Markdown: native menu option to convert clipboard Markdown to rich editor content.
 
 ## Quick intent routing (for new chats)
 

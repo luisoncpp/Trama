@@ -25,6 +25,7 @@ Note for agents: each time you are asked to update the documentation, if you fou
   - BrowserWindow security-related defaults.
 - `electron/main-process/context-menu.ts`
   - Native editor context menu: flat workspace commands (toggle split, toggle fullscreen, toggle focus mode) dispatched to renderer via `WORKSPACE_CONTEXT_MENU_EVENT`.
+  - Includes the `Paste Markdown` menu entry for editable contexts; the menu dispatches `{ type: 'paste-markdown' }` to the renderer when selected.
 - `electron/main-process/smoke-hooks.ts`
   - Startup smoke hooks.
 - `electron/ipc.ts`
@@ -135,6 +136,7 @@ Note for agents: each time you are asked to update the documentation, if you fou
   - Quill-based rich Markdown editor component (lifecycle, toolbar integration, focus-mode hookup).
 - `src/features/project-editor/components/rich-markdown-editor-core.ts`
   - Core editor lifecycle and sync logic (initialize Quill, apply markdown, sync external values, enable/disable, register typography handlers).
+  - Also listens for workspace `paste-markdown` commands and handles reading/parsing clipboard Markdown and inserting HTML into Quill.
 - `src/features/project-editor/components/rich-markdown-editor-typography.ts`
   - Smart typography auto-replacement on user input: `--` → `—`, `<<` → `«`, `>>` → `»`. Each substitution is isolated as its own Ctrl+Z undo entry via `history.cutoff()`.
 - `src/features/project-editor/components/rich-markdown-editor-focus-scope.ts`
@@ -193,6 +195,7 @@ Note for agents: each time you are asked to update the documentation, if you fou
   - IPC channel constants, Zod schemas, shared envelope/types.
 - `src/shared/workspace-context-menu.ts`
   - Event bridge contract between Electron context menu and the renderer: `WORKSPACE_CONTEXT_MENU_EVENT` constant and `WorkspaceContextCommand` union type.
+  - The `WorkspaceContextCommand` includes the `{ type: 'paste-markdown' }` case used by the native menu and editor listeners.
 - `src/types/trama-api.d.ts`
   - Global declaration for `window.tramaApi`.
 
@@ -207,6 +210,7 @@ Core and regression suites:
 - `tests/project-editor-conflict-flow.test.ts`
 - `tests/project-editor-logic.test.ts`
 - `tests/rich-markdown-editor.test.ts`
+- `tests/paste-markdown.test.ts`
 - `tests/focus-mode-scope.test.ts`
 - `tests/sidebar-tree.test.ts`
 - `tests/sidebar-filter.test.ts`

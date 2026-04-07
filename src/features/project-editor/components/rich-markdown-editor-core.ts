@@ -3,6 +3,7 @@ import Quill from 'quill'
 import TurndownService from 'turndown'
 import { marked } from 'marked'
 import { registerTypographyHandler } from './rich-markdown-editor-typography'
+import { WORKSPACE_CONTEXT_MENU_EVENT, type WorkspaceContextCommand } from '../../../shared/workspace-context-menu'
 
 type QuillChangeSource = 'api' | 'user' | 'silent'
 
@@ -75,6 +76,36 @@ function registerEditorTextChangeHandler({
   })
 }
 
+function registerWorkspaceCommandListener(editor: Quill): (event: Event) => void {
+  const handler = async (event: Event) => {
+    const customEvent = event as CustomEvent<WorkspaceContextCommand | undefined>
+    const command = customEvent.detail
+    if (!command || command.type !== 'paste-markdown') {
+      return
+    }
+
+    // Only act when the editor has focus
+    try {
+      if (!editor.hasFocus()) {
+        return
+      }
+
+      const clipboardText = await navigator.clipboard.readText()
+      if (!clipboardText) {
+        return
+      }
+
+      const index = editor.getSelection()?.index ?? editor.getLength() - 1
+      editor.clipboard.dangerouslyPasteHTML(index, marked.parse(clipboardText) as string, 'user')
+    } catch {
+      // ignore clipboard errors
+    }
+  }
+
+  window.addEventListener(WORKSPACE_CONTEXT_MENU_EVENT, handler as EventListener)
+  return handler
+}
+
 function useInitializeEditor({
   documentId,
   value,
@@ -102,9 +133,11 @@ function useInitializeEditor({
       lastEditorValueRef,
       onChangeRef,
     })
+    const workspaceHandler = registerWorkspaceCommandListener(editor)
     registerTypographyHandler(editor)
 
     return () => {
+      window.removeEventListener(WORKSPACE_CONTEXT_MENU_EVENT, workspaceHandler as EventListener)
       editorRef.current = null
     }
   }, [documentId, hostRef, editorRef, isApplyingExternalValueRef, lastEditorValueRef, onChangeRef, turndownRef])

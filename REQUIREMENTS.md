@@ -87,12 +87,8 @@ Descripción general del personaje...
 
 
 
-5. Siguientes Pasos
+5. Wishlist
 
-Inicialización: Configurar el boilerplate de Electron con Vite, Preact y Tailwind.
-
-Módulo FileSystem: Crear las funciones en el proceso principal de Electron (Node.js) para leer el directorio del proyecto y parsear el YAML Frontmatter.
-
-UI - Sidebar: Construir el árbol de navegación leyendo la estructura de carpetas obtenida por Node.
-
-UI - Editor: Implementar un editor Markdown básico con panel de vista previa o modo híbrido (WYSIWYG).
+* Buscar dentro de un documento
+* Moverse dentro de un documento de markdown
+* Que en el focus mode la linea/párrafo enfocado esté en el centro(aunque se esté en el final del documento y se desperdicie media pantalla)

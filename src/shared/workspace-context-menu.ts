@@ -6,3 +6,4 @@ export type WorkspaceContextCommand =
   | { type: 'toggle-focus' }
   | { type: 'set-focus-scope'; scope: 'line' | 'sentence' | 'paragraph' }
   | { type: 'set-split-ratio'; ratio: number }
+  | { type: 'paste-markdown' }

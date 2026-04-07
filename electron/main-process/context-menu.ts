@@ -65,6 +65,10 @@ function buildContextMenuTemplate(
   if (params.isEditable) {
     template.push({ label: 'Cut', role: 'cut' })
     template.push({ label: 'Copy', role: 'copy' })
+    template.push({
+      label: 'Paste Markdown',
+      click: () => dispatchWorkspaceCommand(win, { type: 'paste-markdown' as any }),
+    })
     template.push({ label: 'Paste', role: 'paste' })
     template.push({ type: 'separator' })
     template.push(...buildWorkspaceMenuItems(win))

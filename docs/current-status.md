@@ -19,6 +19,7 @@ Implemented now:
 - Refactored renderer feature structure (`project-editor` hook + view/components split).
 - Rich markdown visual editor (formatted editing surface, markdown persisted).
 - Native right-click editor context menu with spellcheck suggestions.
+- Paste from Markdown: native context-menu option to convert Markdown from clipboard into rich editor content.
 - Sidebar rail with persisted section/collapse/width state.
 - Hierarchical sidebar tree with expand/collapse and keyboard navigation basics.
 - Sidebar filter/search with auto-expand and expanded-state restore.
@@ -60,6 +61,7 @@ Additional regression checks in suite include:
 - Electron smoke startup flow (`tests/electron-smoke.test.ts`).
 - TypeScript compilation guard (`tests/typescript-compile.test.ts`).
 - Rich markdown editor behavior (`tests/rich-markdown-editor.test.ts`).
+- Paste Markdown behavior (`tests/paste-markdown.test.ts`).
 - Sidebar panel interactions including right-click rename/delete (`tests/sidebar-panels.test.ts`).
 
 ## Known technical tradeoffs

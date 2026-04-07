@@ -46,6 +46,7 @@ Request/response channels:
 
 Event channel:
 - `trama:project:external-file-event` emitted from `ipc-runtime.ts` when watcher classifies a change as `external`.
+- `trama:workspace-command` dispatched from the main process to the renderer as a CustomEvent for native workspace context-menu actions (see `src/shared/workspace-context-menu.ts`).
 
 ## Add-a-new-endpoint checklist
 

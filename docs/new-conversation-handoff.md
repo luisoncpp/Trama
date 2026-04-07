@@ -35,6 +35,7 @@ UX hardening (WS4) is now live:
 - Workspace toolbar removed. Split/fullscreen/focus controls are in the native right-click context menu only.
 - Event bridge pattern: Electron dispatches `trama:workspace-command` CustomEvent; renderer hook routes to actions.
 - Smart typography: `--` → `—`, `<<` → `«`, `>>` → `»` on user input, each reversible with Ctrl+Z.
+- Paste from Markdown: native context-menu entry ("Paste Markdown") converts clipboard Markdown to rich editor HTML; the renderer listens to `trama:workspace-command` and inserts parsed HTML (see `tests/paste-markdown.test.ts`).
 - `npm run dev` auto-builds Electron main before starting the dev server.
 ## Read first (in order)
 

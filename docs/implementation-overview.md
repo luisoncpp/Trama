@@ -15,6 +15,7 @@ The project now includes:
 - `.trama.index.json` reconciliation (prune missing + append new).
 - External file watcher events (`internal` vs `external`) and conflict handling actions.
 - Rich markdown visual editor loop with autosave debounce.
+- Paste from Markdown: native context-menu option ("Paste Markdown") that converts clipboard Markdown into rich editor HTML via the workspace event bridge.
 - Sidebar with section-scoped tree (`book/`, `outline/`, `lore/`) and settings.
 - Sidebar filter, responsive behavior, and right-click file context actions.
 - Split workspace mode with per-pane document state, persistent layout, drag resize, click-to-activate panes, and native/context-menu split toggle.
@@ -49,6 +50,7 @@ Notable modules added in WS3 and UX hardening:
 - `src/features/project-editor/use-project-editor-shortcuts-effect.ts`
 - `src/features/project-editor/use-project-editor-context-menu-effect.ts`
 - `src/features/project-editor/components/rich-markdown-editor.tsx`
+- `src/features/project-editor/components/rich-markdown-editor-core.ts`
 - `src/features/project-editor/components/rich-markdown-editor-typography.ts`
 - `src/shared/workspace-context-menu.ts`
 - `electron/main-process/context-menu.ts`
@@ -89,6 +91,7 @@ Current channels:
 - `trama:project:external-file-event` (event)
 - `trama:window:set-fullscreen`
 - `trama:window:fullscreen-changed` (event)
+ - `trama:workspace-command` (renderer CustomEvent used for native workspace context-menu commands; see `src/shared/workspace-context-menu.ts`)
 
 ## Token-saving mental model for new chats
 

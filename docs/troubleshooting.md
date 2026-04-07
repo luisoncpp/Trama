@@ -144,3 +144,26 @@ When things break after refactors, run:
 
 - Run `npm run build:electron` directly to confirm deterministic TypeScript compile status.
 - Run `npm run dev` and, if startup fails, capture any `MAIN_STARTUP_FAIL` log line from Electron output.
+
+## 10) Paste from Markdown / Clipboard access
+
+### Symptom
+
+- "Paste Markdown" menu item appears to do nothing, or clipboard text is not inserted into the editor when invoked from the native context menu.
+
+### Root causes
+
+- `navigator.clipboard.readText()` may be unavailable or restricted in certain Electron renderer contexts (sandboxing, permissions, or older Electron versions).
+- The native menu dispatch may not target the correct renderer window or the editor may not have focus when the command is executed.
+
+### Current mitigations
+
+- Prefer reading the clipboard from the preload or main process and sending the text to the renderer as payload if `navigator.clipboard.readText()` is unreliable. Expose a `readClipboard()` helper on `window.tramaApi` from `electron/preload.cts` and call it from the renderer handler.
+- Ensure the editor has focus before handling the paste command; the current implementation checks `editor.hasFocus()` before inserting.
+- Add focused tests (see `tests/paste-markdown.test.ts`) to reproduce and assert behavior in CI.
+
+### Quick checks
+
+1. Verify the renderer receives the workspace event by adding a console log in `src/shared/workspace-context-menu.ts` listener path.
+2. Confirm `navigator.clipboard.readText()` is available in the renderer devtools console.
+3. If unavailable, implement `window.tramaApi.readClipboard()` in `electron/preload.cts` and call the preload method from the renderer handler.

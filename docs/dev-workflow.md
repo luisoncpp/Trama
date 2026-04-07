@@ -53,6 +53,7 @@
 5. Update typings in `src/types/trama-api.d.ts`.
 6. Update renderer action hooks/components.
 7. Add/update tests.
+8. When adding workspace context-menu commands, update `src/shared/workspace-context-menu.ts`, add the native menu entry in `electron/main-process/context-menu.ts`, and handle the command in the renderer (`use-project-editor-context-menu-effect.ts` and any editor listeners such as `rich-markdown-editor-core.ts`). Add focused tests for the command.
 
 ## Lint and structure constraints (important)
 
