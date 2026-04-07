@@ -33,6 +33,31 @@ function getActiveMatchBounds(
   }
 }
 
+function handleFocusModeMatch(
+  container: HTMLElement,
+  editorRoot: HTMLElement,
+  editor: Quill,
+  index: number,
+  length: number,
+): void {
+  const bounds = editor.getBounds(index, length)
+  if (!bounds) {
+    return
+  }
+
+  const pad = Math.max(0, Math.round(container.clientHeight / 2 - bounds.height / 2))
+  editorRoot.style.setProperty('--focus-extra-top', `${pad}px`)
+  editorRoot.style.setProperty('--focus-extra-bottom', `${pad}px`)
+
+  requestAnimationFrame(() => {
+    const refreshed = editor.getBounds(index, length) ?? bounds
+    const desired = refreshed.top - (container.clientHeight / 2 - refreshed.height / 2)
+    const maxScroll = Math.max(0, container.scrollHeight - container.clientHeight)
+    const target = Math.max(0, Math.min(desired, maxScroll))
+    container.scrollTop = Math.round(target)
+  })
+}
+
 export function useActiveMatchOverlayEffect({
   isOpen,
   state,
@@ -67,22 +92,13 @@ export function useActiveMatchOverlayEffect({
 
     const container = host.querySelector('.ql-container')
     const editorRoot = host.querySelector('.ql-editor')
-    if (container instanceof HTMLElement && editorRoot instanceof HTMLElement && editorRoot.classList.contains('is-focus-mode')) {
+    if (
+      container instanceof HTMLElement &&
+      editorRoot instanceof HTMLElement &&
+      editorRoot.classList.contains('is-focus-mode')
+    ) {
       const length = Math.max(1, queryLength)
-      const bounds = editor.getBounds(index, length)
-      if (bounds) {
-        const pad = Math.max(0, Math.round(container.clientHeight / 2 - bounds.height / 2))
-        editorRoot.style.setProperty('--focus-extra-top', `${pad}px`)
-        editorRoot.style.setProperty('--focus-extra-bottom', `${pad}px`)
-
-        requestAnimationFrame(() => {
-          const refreshed = editor.getBounds(index, length) ?? bounds
-          const desired = refreshed.top - (container.clientHeight / 2 - refreshed.height / 2)
-          const maxScroll = Math.max(0, container.scrollHeight - container.clientHeight)
-          const target = Math.max(0, Math.min(desired, maxScroll))
-          container.scrollTop = Math.round(target)
-        })
-      }
+      handleFocusModeMatch(container, editorRoot, editor, index, length)
     } else {
       editor.scrollSelectionIntoView()
     }
