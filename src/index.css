@@ -1285,6 +1285,22 @@ select {
   padding: 1.1rem 1.25rem 1.35rem;
 }
 
+.rich-editor .ql-editor.is-focus-mode::before,
+.rich-editor .ql-editor.is-focus-mode::after {
+  content: '';
+  display: block;
+  width: 100%;
+  pointer-events: none;
+}
+
+.rich-editor .ql-editor.is-focus-mode::before {
+  height: var(--focus-extra-top, 0px);
+}
+
+.rich-editor .ql-editor.is-focus-mode::after {
+  height: var(--focus-extra-bottom, 0px);
+}
+
 .rich-editor .ql-editor.is-focus-mode.is-focus-scope-paragraph > * {
   opacity: 0.24;
   transition: opacity 140ms ease;

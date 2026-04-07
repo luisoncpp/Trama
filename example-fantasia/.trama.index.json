@@ -31,6 +31,9 @@
       "book/Act-02/Chapter-03/Scene-002.md",
       "book/Act-02/Chapter-03/Scene-003.md"
     ],
+    "book": [
+      "book/adsfasf.md"
+    ],
     "lore/characters": [
       "lore/characters/Aina.md",
       "lore/characters/Marek.md",
@@ -92,6 +95,7 @@
     "book/Act-02/Chapter-03/Scene-001.md": {},
     "book/Act-02/Chapter-03/Scene-002.md": {},
     "book/Act-02/Chapter-03/Scene-003.md": {},
+    "book/adsfasf.md": {},
     "lore/characters/Aina.md": {},
     "lore/characters/Corin.md": {},
     "lore/characters/Elio.md": {},

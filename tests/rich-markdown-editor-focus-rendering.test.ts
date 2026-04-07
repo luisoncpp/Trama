@@ -226,4 +226,46 @@ describe('RichMarkdownEditor focus rendering regression', () => {
     expect(after).toBe(before)
     expect(afterNewLines).toBe(beforeNewLines)
   })
+
+  it('aplica variables CSS de padding al activar focus mode y las limpia al desactivar', async () => {
+    globalAny.CSS = { ...(globalAny.CSS ?? {}) }
+    delete (globalAny.CSS as { highlights?: unknown }).highlights
+    delete globalAny.Highlight
+
+    function TestHarness() {
+      const [focusModeEnabled, setFocusModeEnabled] = useState(true)
+      return h(Fragment, null, [
+        h(RichMarkdownEditor, buildProps({
+          value: 'Linea uno.\nLinea dos.\nLinea tres para validar padding de borde.',
+          focusScope: 'line',
+          focusModeEnabled,
+        })),
+        h('button', {
+          id: 'toggle-focus-padding',
+          onClick: () => setFocusModeEnabled((enabled) => !enabled),
+          textContent: 'Toggle Focus',
+        }),
+      ])
+    }
+
+    act(() => {
+      render(h(TestHarness, {}), container)
+    })
+
+    await sleep(140)
+
+    const editorRoot = container.querySelector('.ql-editor') as HTMLElement
+    expect(editorRoot).toBeTruthy()
+    expect(editorRoot.style.getPropertyValue('--focus-extra-top')).not.toBe('')
+    expect(editorRoot.style.getPropertyValue('--focus-extra-bottom')).not.toBe('')
+
+    const toggleButton = container.querySelector('#toggle-focus-padding') as HTMLButtonElement
+    act(() => {
+      toggleButton.click()
+    })
+    await sleep(90)
+
+    expect(editorRoot.style.getPropertyValue('--focus-extra-top')).toBe('')
+    expect(editorRoot.style.getPropertyValue('--focus-extra-bottom')).toBe('')
+  })
 })

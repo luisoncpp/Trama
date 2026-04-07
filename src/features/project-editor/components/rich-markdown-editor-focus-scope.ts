@@ -117,10 +117,71 @@ function applyFocusScope(quill: Quill, editorRoot: HTMLElement, scope: FocusScop
 	}
 }
 
+function getSelectionViewportRect(quill: Quill): DOMRect | null {
+	const selection = quill.getSelection()
+	if (!selection) {
+		return null
+	}
+
+	const docLength = Math.max(0, quill.getLength())
+	let index = selection.index
+	if (docLength > 1 && index >= docLength - 1) {
+		// At EOF Quill selection often points to trailing newline; use previous char line.
+		index = docLength - 2
+	}
+
+	const length = Math.max(1, selection.length ?? 0)
+	let [line, lineOffset] = quill.getLine(index)
+	if ((line?.domNode as Node | undefined)?.textContent === '' && index > 0) {
+		;[line, lineOffset] = quill.getLine(index - 1)
+	}
+	const lineNode = line?.domNode
+	if (!(lineNode instanceof HTMLElement)) {
+		return null
+	}
+
+	const lineText = lineNode.textContent ?? ''
+	if (!lineText.length) {
+		return lineNode.getBoundingClientRect()
+	}
+
+	let startOffset = Math.max(0, Math.min(lineOffset, lineText.length))
+	if (startOffset >= lineText.length) {
+		startOffset = Math.max(0, lineText.length - 1)
+	}
+	const endOffset = Math.max(startOffset + 1, Math.min(lineText.length, startOffset + length))
+
+	const startPos = resolveTextOffsetToDomPosition(lineNode, startOffset)
+	const endPos = resolveTextOffsetToDomPosition(lineNode, endOffset)
+	if (!startPos || !endPos) {
+		return lineNode.getBoundingClientRect()
+	}
+
+	const range = document.createRange()
+	range.setStart(startPos.node, startPos.offset)
+	range.setEnd(endPos.node, endPos.offset)
+	const rect = range.getBoundingClientRect()
+	if (rect.width > 0 || rect.height > 0) {
+		return rect
+	}
+
+	const getClientRects = (range as unknown as { getClientRects?: () => DOMRectList }).getClientRects
+	if (typeof getClientRects === 'function') {
+		const rects = getClientRects.call(range)
+		if (rects.length > 0) {
+			return rects[0] as DOMRect
+		}
+	}
+
+	return lineNode.getBoundingClientRect()
+}
+
 function clearFocusScope(editorRoot: HTMLElement): void {
 	editorRoot.classList.remove('is-focus-mode', 'is-focus-scope-line', 'is-focus-scope-sentence', 'is-focus-scope-paragraph')
 	clearBlockFocusScope(editorRoot)
 	clearFocusTextHighlight(editorRoot)
+	editorRoot.style.removeProperty('--focus-extra-top')
+	editorRoot.style.removeProperty('--focus-extra-bottom')
 }
 
 export function useFocusModeScopeEffect(
@@ -150,10 +211,78 @@ export function useFocusModeScopeEffect(
 		updateFocusScopeClasses(editorRoot, focusScope)
 		applyFocusScope(quill, editorRoot, focusScope)
 
+		const container = host.querySelector('.ql-container')
+
+		const updateCenteredScroll = () => {
+			if (!(container instanceof HTMLElement)) {
+				return
+			}
+
+			const selection = quill.getSelection()
+			if (!selection) {
+				editorRoot.style.removeProperty('--focus-extra-top')
+				editorRoot.style.removeProperty('--focus-extra-bottom')
+				return
+			}
+
+			const selectionRect = getSelectionViewportRect(quill)
+			if (!selectionRect) {
+				console.log('[focus-scroll] selectionRect es null, abortando')
+				return
+			}
+
+			const basePad = Math.max(0, Math.round(container.clientHeight / 2 - selectionRect.height / 2))
+			console.log('[focus-scroll] SYNC: clientHeight=%d selectionRect.height=%d basePad=%d scrollHeight=%d scrollTop=%d',
+				container.clientHeight, selectionRect.height, basePad, container.scrollHeight, container.scrollTop)
+			editorRoot.style.setProperty('--focus-extra-top', `${basePad}px`)
+			editorRoot.style.setProperty('--focus-extra-bottom', `${basePad}px`)
+
+			requestAnimationFrame(() => {
+				const refreshedRect = getSelectionViewportRect(quill) ?? selectionRect
+				const containerRect = container.getBoundingClientRect()
+				let desired = container.scrollTop
+					+ (refreshedRect.top - containerRect.top)
+					- (container.clientHeight / 2 - refreshedRect.height / 2)
+				let maxScroll = Math.max(0, container.scrollHeight - container.clientHeight)
+
+				console.log('[focus-scroll] RAF1: scrollTop=%d scrollHeight=%d clientHeight=%d maxScroll=%d desired=%d rectTop=%d containerTop=%d',
+					container.scrollTop, container.scrollHeight, container.clientHeight, maxScroll, desired,
+					refreshedRect.top, containerRect.top)
+
+				if (desired > maxScroll + 1) {
+					const extraBottom = Math.ceil(desired - maxScroll) + 16
+					console.log('[focus-scroll] RAF1: desired>maxScroll, extraBottom=%d, nuevo --focus-extra-bottom=%d', extraBottom, basePad + extraBottom)
+					editorRoot.style.setProperty('--focus-extra-bottom', `${basePad + extraBottom}px`)
+				}
+
+				if (desired < -1) {
+					const extraTop = Math.ceil(Math.abs(desired)) + 16
+					console.log('[focus-scroll] RAF1: desired<0, extraTop=%d, nuevo --focus-extra-top=%d', extraTop, basePad + extraTop)
+					editorRoot.style.setProperty('--focus-extra-top', `${basePad + extraTop}px`)
+				}
+
+				requestAnimationFrame(() => {
+					const finalRect = getSelectionViewportRect(quill) ?? refreshedRect
+					const finalContainerRect = container.getBoundingClientRect()
+					desired = container.scrollTop
+						+ (finalRect.top - finalContainerRect.top)
+						- (container.clientHeight / 2 - finalRect.height / 2)
+					maxScroll = Math.max(0, container.scrollHeight - container.clientHeight)
+					const target = Math.max(0, Math.min(desired, maxScroll))
+					console.log('[focus-scroll] RAF2: scrollHeight=%d maxScroll=%d desired=%d target=%d scrollTop=%d',
+						container.scrollHeight, maxScroll, desired, target, container.scrollTop)
+					if (Math.abs(container.scrollTop - target) > 1) {
+						container.scrollTop = Math.round(target)
+					}
+				})
+			})
+		}
+
 		let rafId = 0
 		const refresh = () => {
 			updateFocusScopeClasses(editorRoot, focusScope)
 			applyFocusScope(quill, editorRoot, focusScope)
+			updateCenteredScroll()
 		}
 
 		const scheduleRefresh = () => {
@@ -169,6 +298,8 @@ export function useFocusModeScopeEffect(
 
 		quill.on('selection-change', scheduleRefresh)
 		quill.on('text-change', scheduleRefresh)
+		window.addEventListener('resize', scheduleRefresh)
+		scheduleRefresh()
 
 		return () => {
 			if (rafId) {
@@ -177,6 +308,9 @@ export function useFocusModeScopeEffect(
 
 			quill.off('selection-change', scheduleRefresh)
 			quill.off('text-change', scheduleRefresh)
+			window.removeEventListener('resize', scheduleRefresh)
+			editorRoot.style.removeProperty('--focus-extra-top')
+			editorRoot.style.removeProperty('--focus-extra-bottom')
 		}
 	}, [editorRef, hostRef, focusModeEnabled, focusScope])
 }
