@@ -16,17 +16,17 @@ export function useProjectEditorAutosaveEffect({
   editorMeta,
   saveDocumentNow,
 }: UseProjectEditorAutosaveEffectParams): void {
-  useEffect(() => {
+  useEffect(/* autosaveOnDirty */ () => {
     if (!selectedPath || !isDirty) {
       return
     }
 
     const timer = window.setTimeout(() => {
       void saveDocumentNow(selectedPath, editorValue, editorMeta)
-    }, 900)
+    }, /*timeout*/ 10 * 60 * 1000)
 
     return () => {
       window.clearTimeout(timer)
     }
-  }, [editorMeta, editorValue, isDirty, saveDocumentNow, selectedPath])
+  }, [editorMeta, editorValue, isDirty, saveDocumentNow, selectedPath] /*Inputs for autosaveOnDirty*/)
 }

@@ -135,6 +135,7 @@ describe('project editor conflict flow', () => {
 
   it('autosaves after debounce and uses latest content only once', async () => {
     const { saveDocumentMock } = setupTramaApiMock()
+    const AUTOSAVE_DELAY_MS = 10 * 60 * 1000
 
     let model: ProjectEditorModel | undefined
 
@@ -158,7 +159,7 @@ describe('project editor conflict flow', () => {
     })
 
     await act(async () => {
-      vi.advanceTimersByTime(899)
+      vi.advanceTimersByTime(AUTOSAVE_DELAY_MS - 1)
       await Promise.resolve()
     })
 

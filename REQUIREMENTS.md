@@ -89,6 +89,5 @@ Descripción general del personaje...
 
 5. Wishlist
 
-* Buscar dentro de un documento
 * Moverse dentro de un documento de markdown
 * Que en el focus mode la linea/párrafo enfocado esté en el centro(aunque se esté en el final del documento y se desperdicie media pantalla)
