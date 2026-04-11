@@ -17,7 +17,7 @@ Trama is designed for managing long-form manuscripts and complex lore through a 
 
 ### ⏳ Planned / In Progress
 -   **Wiki-style Linking**: Cross-reference your lore world using `[[Links]]` with real-time autocompletion.
--   **IA-Ready Workflow**: Structured export and import tools specifically designed for seamless communication with LLMs.
+-   **IA-Ready Workflow**: Structured import tools are already available; structured export and compilation flows are in progress for seamless communication with LLMs.
 -   **Corkboard View**: Drag-and-drop cards for planning and reorganizing scenes or ideas.
 -   **Project Templates**: Pre-defined schemas for characters, locations, and world-building notes.
 
@@ -94,6 +94,17 @@ npm run dist:win
     -   `shared/`: Shared types and constants between Main and Renderer.
 -   `docs/`: Design specifications, implementation plans, and lessons learned.
 -   `tests/`: Comprehensive test suite (Unit, Integration, and Smoke tests).
+
+## 🧭 Developer Documentation Entry
+
+If you are starting a new implementation conversation, begin with:
+
+-   [docs/START-HERE.md](docs/START-HERE.md)
+
+This entrypoint routes to the mandatory docs that are often missed:
+-   [docs/file-map.md](docs/file-map.md)
+-   [docs/lessons-learned/README.md](docs/lessons-learned/README.md)
+-   [docs/ai-import-export-implementation-map.md](docs/ai-import-export-implementation-map.md)
 
 ## 📄 License
 

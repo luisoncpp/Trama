@@ -2,6 +2,11 @@ import { contextBridge, ipcRenderer } from 'electron'
 import {
   debugLogRequestSchema,
   IPC_CHANNELS,
+  type AiExportRequest,
+  type AiExportResponse,
+  type AiImportPreview,
+  type AiImportRequest,
+  type AiImportResponse,
   type CreateDocumentRequest,
   type CreateDocumentResponse,
   type CreateFolderRequest,
@@ -89,6 +94,15 @@ const tramaApi = {
     return () => {
       ipcRenderer.removeListener(IPC_CHANNELS.fullscreenChanged, listener)
     }
+  },
+  aiImportPreview(payload: AiImportRequest): Promise<IpcEnvelope<AiImportPreview>> {
+    return ipcRenderer.invoke(IPC_CHANNELS.aiImportPreview, payload)
+  },
+  aiImport(payload: AiImportRequest): Promise<IpcEnvelope<AiImportResponse>> {
+    return ipcRenderer.invoke(IPC_CHANNELS.aiImport, payload)
+  },
+  aiExport(payload: AiExportRequest): Promise<IpcEnvelope<AiExportResponse>> {
+    return ipcRenderer.invoke(IPC_CHANNELS.aiExport, payload)
   },
 }
 

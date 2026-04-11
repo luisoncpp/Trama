@@ -12,6 +12,8 @@ import {
   type RenameDocumentRequest,
   type SaveDocumentRequest,
   setFullscreenRequestSchema,
+  type AiImportRequest,
+  type AiExportRequest,
 } from '../src/shared/ipc.js'
 import {
   buildPingResponse,
@@ -26,6 +28,9 @@ import {
   handleSaveDocument,
   handleSelectProjectFolder,
   shutdownIpcServices,
+  handleAiImportPreview,
+  handleAiImport,
+  handleAiExport,
 } from './ipc/handlers/index.js'
 
 export { buildPingResponse, shutdownIpcServices }
@@ -122,8 +127,23 @@ function registerCoreHandlers(ipcMain: IpcMain): void {
   })
 }
 
+function registerAiHandlers(ipcMain: IpcMain): void {
+  ipcMain.handle(IPC_CHANNELS.aiImport, (_event, payload: AiImportRequest) => {
+    return handleAiImport(_event, payload)
+  })
+
+  ipcMain.handle(IPC_CHANNELS.aiImportPreview, (_event, payload: AiImportRequest) => {
+    return handleAiImportPreview(_event, payload)
+  })
+
+  ipcMain.handle(IPC_CHANNELS.aiExport, (_event, payload: AiExportRequest) => {
+    return handleAiExport(_event, payload)
+  })
+}
+
 export function registerIpcHandlers(ipcMain: IpcMain, getMainWindow: () => BrowserWindow | null): void {
   configureMainWindowResolver(getMainWindow)
   registerCoreHandlers(ipcMain)
   registerFullscreenHandler(ipcMain, getMainWindow)
+  registerAiHandlers(ipcMain)
 }

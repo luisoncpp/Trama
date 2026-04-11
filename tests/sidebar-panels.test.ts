@@ -32,6 +32,8 @@ function buildPanelProps(
     loadingProject: false,
     rootPath: 'C:/Proyectos/test_trama',
     onPickFolder: () => undefined,
+    onImport: () => undefined,
+    onExport: () => undefined,
     themePreference: 'dark',
     resolvedTheme: 'dark',
     onThemePreferenceChange: () => undefined,
@@ -144,6 +146,8 @@ describe('sidebar panels', () => {
           onRenameFile: () => undefined,
           onDeleteFile: () => undefined,
           onPickFolder,
+          onImport: () => undefined,
+          onExport: () => undefined,
         }),
         container,
       )
@@ -184,6 +188,8 @@ describe('sidebar panels', () => {
           onRenameFile: () => undefined,
           onDeleteFile: () => undefined,
           onPickFolder: () => undefined,
+          onImport: () => undefined,
+          onExport: () => undefined,
         }),
         container,
       )
@@ -220,6 +226,8 @@ describe('sidebar panels', () => {
           onRenameFile: () => undefined,
           onDeleteFile: () => undefined,
           onPickFolder: () => undefined,
+          onImport: () => undefined,
+          onExport: () => undefined,
         }),
         container,
       )
@@ -245,6 +253,8 @@ describe('sidebar panels', () => {
           onRenameFile: () => undefined,
           onDeleteFile: () => undefined,
           onPickFolder: () => undefined,
+          onImport: () => undefined,
+          onExport: () => undefined,
         }),
         container,
       )

@@ -22,6 +22,8 @@ export interface SidebarProjectContextProps {
   loadingProject: boolean
   rootPath: string
   onPickFolder: () => void
+  onImport: () => void
+  onExport: () => void
 }
 
 export interface SidebarThemeProps {

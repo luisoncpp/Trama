@@ -1,8 +1,10 @@
-# Current Status (Phase 3 Core Complete)
+# Current Status (Phase 3 Complete + Phase 4 WS5 Partial)
+
+> **New conversation?** Open `docs/START-HERE.md` first — it routes you to the 3-4 files you actually need.
 
 ## Product state
 
-The repository has completed Phase 2 and the core Phase 3 sidebar scope.
+The repository has completed Phase 2 and all Phase 3 workstreams (WS1–WS5).
 
 Implemented now:
 - Electron + Vite + Preact desktop shell.
@@ -44,19 +46,27 @@ Implemented now:
 - Sidebar auto-collapses when focus mode activates and is locked closed while focus is active.
 - Typography auto-replacement in the rich editor: typing `--` inserts `—`, `<<` inserts `«`, `>>` inserts `»`. Each replacement is a discrete Ctrl+Z undo entry.
 - `npm run dev` automatically builds the Electron main process before starting the dev server (`build:electron && dev:desktop`).
+- AI import (clipboard) implemented end-to-end: parser, preview, import dialog, renderer hook, IPC handlers, and main-process file creation flow.
+- AI export implemented only at contract/backend level: IPC channel + export formatter service exist, but export UI flow and dedicated regression tests are still pending.
 
 Not implemented yet (planned in later phases):
 - Folder rename/delete and move workflows.
 - Drag-and-drop reorder/move workflows.
-- Wiki links, templates, corkboard DnD, AI import/export pipeline.
+- Wiki links, templates, corkboard DnD.
+- AI export UX end-to-end (selection/dialog/clipboard action) and dedicated export/compilation tests.
 
 ## Reliability status
 
 Current verification baseline:
 - `npm run build` passes.
 - `npm run lint` passes.
-- `npm run test` passes.
+- `npm run test` passes (21 suites, 97 tests).
 - `npm run test:smoke` passes.
+
+**Running tests**: In sandboxed agent environments, `npm test` may fail due to environment restrictions. Use the PowerShell script instead, which runs in a full PowerShell context and passes consistently:
+- Script: `powershell -ExecutionPolicy Bypass -File scripts/run-tests.ps1`
+- VS Code shortcut: `Ctrl+Shift+T` (task: "Run Tests & Report")
+- Output: `reports/test-report.txt` (timestamped report + console output)
 
 Additional regression checks in suite include:
 - Electron smoke startup flow (`tests/electron-smoke.test.ts`).
@@ -72,16 +82,37 @@ Additional regression checks in suite include:
 - Index refresh still does full reconciliation in several write flows (safe, but can be optimized later).
 - External change handling favors safety over convenience (prevents accidental overwrite when local doc is dirty).
 
-## 🎯 Next Immediate Step: Phase 3 Workstream 4 - UX Hardening
+## ✅ Phase 3 Sign-off
 
-**Status**: WS1–WS3 complete. WS4 (UX hardening and accessibility) is the active next workstream.
+**Status**: All Phase 3 workstreams (WS1–WS5) are complete.
 
-Planned sequence from here: WS3 (Fullscreen & Focus Mode) → WS4 (UX Hardening & Accessibility) → WS5 (Final Hardening & Docs)
+### Completion evidence
 
-## Other planned improvements (Phase 4+)
+| Workstream | Deliverable | Status |
+|---|---|---|
+| **WS1** - Split Workspace Usability | Dual-pane layout, drag divider, click-to-activate, persistence | ✅ Complete |
+| **WS2** - Theme System | Light/dark/system preference, semantic tokens, WCAG AA, matchMedia sync | ✅ Complete |
+| **WS3** - Fullscreen & Focus Mode | Native fullscreen IPC, focus mode with scope dimming, keyboard shortcuts | ✅ Complete |
+| **WS4** - UX Hardening | Context menu migration, typography auto-replace, responsive sidebar, keyboard shortcuts | ✅ Complete |
+| **WS5** - Final Hardening & Docs | Regression pass, docs updated, quality gates passing | ✅ Complete |
 
-- Complete file-tree operations (folder rename/delete, move workflows)
-- Editor accessibility and keyboard flow
-- Performance optimization (reduce full-project scans)
-- Wiki links, templates, corkboard UX
-- AI import/export pipeline
+### Quality gates
+
+- `npm run build` ✅ passes
+- `npm run lint` ✅ passes
+- `npm run test` ✅ passes (21 suites, 97 tests)
+- `npm run test:smoke` ✅ passes
+
+**Next phase**: Phase 4 — Wiki tag links, folder operations, templates, corkboard, and closing WS5 (AI export UX + tests). See `docs/phase-4-detailed-plan.md` for full plan.
+
+## Phase 4 planned work
+
+See `docs/phase-4-detailed-plan.md` for the complete plan with 5 workstreams:
+
+| Workstream | Description | Key Deliverables |
+|---|---|---|
+| **WS1** | Wiki Tag Links | TagIndexService, implicit tag matching, Ctrl+click navigation |
+| **WS2** | Folder Operations | Rename, delete, move with conflict safety |
+| **WS3** | Templates | Create from schema, placeholder system, default templates |
+| **WS4** | Corkboard | Drag-and-drop card view, persistence |
+| **WS5** | AI Import/Export | Import implemented; export UI and compilation/export tests still pending |

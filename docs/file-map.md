@@ -2,6 +2,11 @@
 
 Note for agents: each time you are asked to update the documentation, if you found a ts or tsx file not specified here, you have to add it.
 
+Mandatory doc navigation for new chats:
+1. Start with `docs/START-HERE.md`.
+2. Read `docs/lessons-learned/README.md` before implementation changes.
+3. For AI import/export, use `docs/ai-import-export-implementation-map.md` before opening source files.
+
 ## Root-level project files
 
 - `package.json`
@@ -50,6 +55,8 @@ Note for agents: each time you are asked to update the documentation, if you fou
   - Read/save/create/rename/delete document + create folder handlers.
 - `electron/ipc/handlers/project-handlers/index-handler.ts`
   - Get index handler.
+- `electron/ipc/handlers/ai-handlers.ts`
+  - AI import/export handlers: preview import, execute import, and backend export formatting endpoint.
 
 ### Services
 
@@ -63,6 +70,10 @@ Note for agents: each time you are asked to update the documentation, if you fou
   - `.trama.index.json` load/save/reconcile.
 - `electron/services/watcher-service.ts`
   - Chokidar wrapper + internal/external write classification.
+- `electron/services/ai-import-service.ts`
+  - Parses AI clipboard blocks, builds preview metadata, and executes multi-file import writes.
+- `electron/services/ai-export-service.ts`
+  - Formats selected files into `=== FILE: ... ===` blocks and supports frontmatter include/exclude mode.
 
 ## Renderer layer
 
@@ -94,6 +105,8 @@ Note for agents: each time you are asked to update the documentation, if you fou
   - Persist workspace layout (`trama.workspace.layout.v1`).
 - `src/features/project-editor/use-sidebar-ui-state.ts`
   - Persist sidebar UI (`trama.sidebar.ui.v1`).
+- `src/features/project-editor/use-ai-import.ts`
+  - Renderer hook for AI import dialog state and calls to preview/execute import IPC actions.
 
 ### Project editor hooks (detailed)
 
@@ -132,6 +145,10 @@ Note for agents: each time you are asked to update the documentation, if you fou
   - Single/split editor rendering and pane interactions.
 - `src/features/project-editor/components/editor-panel.tsx`
   - Editor panel shell, sync labels, save affordance.
+- `src/features/project-editor/components/ai-import-dialog.tsx`
+  - Modal dialog for AI import text input, preview trigger, and import confirmation.
+- `src/features/project-editor/components/ai-import-preview-section.tsx`
+  - Preview summary/list for parsed import files (new vs existing).
 - `src/features/project-editor/components/rich-markdown-editor.tsx`
   - Quill-based rich Markdown editor component (lifecycle, toolbar integration, focus-mode hookup).
 - `src/features/project-editor/components/rich-markdown-editor-core.ts`
@@ -237,6 +254,8 @@ Core and regression suites:
 - `tests/startup-smoke.test.ts`
 - `tests/electron-smoke.test.ts`
 - `tests/typescript-compile.test.ts`
+- `tests/ai-import-parser.test.ts`
+  - Parser coverage for `=== FILE: ... ===` clipboard format and edge cases.
 
 ## Build outputs
 

@@ -1,6 +1,12 @@
-# Implementation Overview (Phase 2 + Core Phase 3 + WS3)
+# Implementation Overview (Phase 2 + Phase 3 Complete, Phase 4 WS5 Partial)
 
-For fast onboarding, read `new-conversation-handoff.md` first, then this file.
+> **New conversation?** Open `docs/START-HERE.md` first — it routes you to the 3-4 files you actually need.
+
+For deep onboarding, read `docs/START-HERE.md` → `docs/current-status.md` → this file.
+
+**Phase 3 status**: All workstreams (WS1–WS5) completed and signed off. See `docs/current-status.md` for completion evidence.
+
+**Phase 4 status (WS5)**: AI import is implemented end-to-end. AI export is currently backend-only (IPC + formatter service) and still needs renderer UX and dedicated tests.
 
 ## What is implemented
 
@@ -28,6 +34,8 @@ The project now includes:
 - Smart typography substitutions in the rich editor: `--` → `—`, `<<` → `«`, `>>` → `»`, each reversible with a single Ctrl+Z undo.
 - Extended keyboard shortcuts for workspace control (`Ctrl/Cmd+.` split, `Ctrl/Cmd+F` in-document find, `Ctrl/Cmd+Shift+F` fullscreen, `Ctrl/Cmd+Shift+M` focus mode, `Ctrl/Cmd+Shift+Tab` pane switch).
 - `npm run dev` auto-builds the Electron main process before starting the dev server.
+- AI import workflow: structured clipboard parser + preview + bulk create flow available from the sidebar import action.
+- AI export baseline: IPC contract and formatter service are available, but no user-facing export dialog/action is wired yet.
 
 ## Runtime architecture
 
@@ -113,11 +121,12 @@ Current channels:
 
 ## Why this matters for later phases
 
-Current seams are ready for Phase 4 work:
+Current seams are ready for remaining Phase 4 work:
 
-- Add IPC endpoints by extending `src/shared/ipc.ts` first.
+- Add/finish IPC endpoints by extending `src/shared/ipc.ts` first.
 - Keep preload API explicit in `electron/preload.cts` and `src/types/trama-api.d.ts`.
 - Use focused tests in `tests/sidebar-panels.test.ts`, `tests/use-project-editor.test.ts`, and `tests/ipc-contract.test.ts` before full suite.
+- Run tests via `scripts/run-tests.ps1` (or `Ctrl+Shift+T` in VS Code); see `docs/dev-workflow.md` for details.
 
 WS3 verification now includes:
 
@@ -158,13 +167,20 @@ Key misunderstandings around `rich-markdown-editor`:
 - Quill's rendered DOM is not a safe place for ad-hoc structural mutation; visual effects must be non-destructive.
 - A single "overlay solution" was assumed to be enough for all runtimes, but practical stability required capability detection and fallback behavior.
 
-For the current Phase 3 sequence:
+For the current delivery sequence:
 
 - WS1 split usability is complete and stable.
 - WS2 theme layer and polish are complete.
 - WS3 fullscreen/focus mode is complete.
 - WS4 UX hardening (toolbar removal, context menu migration, typography substitutions, sidebar focus lock) is complete.
-- Current active next workstream is WS5 (accessibility and further polish).
+- WS5 final hardening and docs sign-off is complete. Phase 3 is closed.
+
+For Phase 4 WS5 specifically:
+
+- AI import is done (parser, preview, execute import, renderer dialog, hook integration).
+- AI export remains partially done (service + handler/contracts only; renderer UX/tests pending).
+
+**Next active workstream**: Phase 4 planning.
 
 ## Known tradeoffs
 

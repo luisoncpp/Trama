@@ -34,7 +34,7 @@ Soporte Nativo de Markdown: Editor principal basado en Markdown.
 
 Soporte de Imágenes: Renderizado de imágenes dentro del documento, soportando tanto rutas locales/enlaces externos como imágenes incrustadas directamente en formato Base64.
 
-Autocompletado y Enlaces Bidireccionales: Sistema tipo Wiki ([[Personaje]]) que permite referenciar elementos del lore y ver tooltips o navegar a la nota.
+Autocompletado y Enlaces por Tags: Sistema de Wiki Tags que permite asociar términos del texto con artículos del Lore. Los tags se definen en el YAML frontmatter de los archivos de Lore y se resuelven implícitamente en el editor (Ctrl + click para abrir). Ver especificación técnica completa en `docs/wiki-tag-links-spec.md`.
 
 Plantillas (Templates): Posibilidad de crear nuevos documentos basados en esquemas predefinidos (ej. "Ficha de Personaje", "Ficha de Locación").
 
@@ -44,10 +44,10 @@ Metadatos por Escena: Uso de YAML Frontmatter en los archivos .md para almacenar
 
 Sincronización: Delegada al cliente de escritorio de Google Drive (la app lee/escribe en un directorio local sincronizado).
 
-Importación Estructurada (IA): Función de "Importar desde Portapapeles" que analiza texto generado por un LLM (ej. === ARCHIVO: nombre.md ===\n---YAML---\nContenido) y crea/actualiza múltiples archivos locales automáticamente.
+Importación Estructurada (IA): Función de "Importar desde Portapapeles" que analiza texto generado por un LLM (ej. === FILE: nombre.md ===\n---YAML---\nContenido) y crea/actualiza múltiples archivos locales automáticamente.
 
 Exportación Flexible: 1. Compilación Única: Generar un solo documento Markdown consolidado con todo el proyecto (o carpetas seleccionadas, como el Manuscrito), uniendo el contenido para lectura continua, revisión o conversión a otros formatos.
-2. Exportación Estructurada (para LLMs): Seleccionar archivos específicos y exportarlos al portapapeles utilizando el mismo formato delimitado de la importación (=== ARCHIVO: nombre.md ===). Esto permite enviar fragmentos de lore o capítulos exactos como contexto a un chatbot de IA fácilmente.
+2. Exportación Estructurada (para LLMs): Seleccionar archivos específicos y exportarlos al portapapeles utilizando el mismo formato delimitado de la importación (=== FILE: nombre.md ===). Esto permite enviar fragmentos de lore o capítulos exactos como contexto a un chatbot de IA fácilmente.
 
 4. Arquitectura de Datos (File-First)
 
@@ -90,4 +90,3 @@ Descripción general del personaje...
 5. Wishlist
 
 * Moverse dentro de un documento de markdown
-* Que en el focus mode la linea/párrafo enfocado esté en el centro(aunque se esté en el final del documento y se desperdicie media pantalla)

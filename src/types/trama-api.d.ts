@@ -1,4 +1,9 @@
 import type {
+  AiExportRequest,
+  AiExportResponse,
+  AiImportPreview,
+  AiImportRequest,
+  AiImportResponse,
   CreateDocumentRequest,
   CreateDocumentResponse,
   CreateFolderRequest,
@@ -42,6 +47,9 @@ declare global {
       setFullscreen(payload: SetFullscreenRequest): Promise<IpcEnvelope<SetFullscreenResponse>>
       onExternalFileEvent(callback: (event: ExternalFileEvent) => void): () => void
       onFullscreenChanged(callback: (event: FullscreenChangedEvent) => void): () => void
+      aiImportPreview(payload: AiImportRequest): Promise<IpcEnvelope<AiImportPreview>>
+      aiImport(payload: AiImportRequest): Promise<IpcEnvelope<AiImportResponse>>
+      aiExport(payload: AiExportRequest): Promise<IpcEnvelope<AiExportResponse>>
     }
   }
 }

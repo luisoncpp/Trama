@@ -98,7 +98,7 @@ interface ProjectIndex {
 
 1. User clicks "Import from AI".  
 2. App reads clipboard text.  
-3. Regex matches \=== ARCHIVO: (.\*?) \===\\n(\[\\s\\S\]\*?)(?==== ARCHIVO:|$).  
+3. Regex matches \=== FILE: (.\*?) \===\\n(\[\\s\\S\]\*?)(?==== FILE:|$).  
 4. For each match, Node executes fs.writeFileSync(path, content, 'utf8'). (Silently overwriting as per requirements).  
 5. chokidar detects these writes and automatically updates the UI.
 
@@ -140,7 +140,7 @@ interface ProjectIndex {
   * **DoD:** Corkboard order survives restart and remains resilient after external file add/remove operations.  
   * **Minimum Tests:** DnD ordering persistence test; index reconciliation regression test.
 * **Phase 6: AI Interoperability (Import + Dual Export)**  
-  * Implement structured clipboard import (`=== ARCHIVO: ... ===`) with robust parsing and path sanitization.  
+  * Implement structured clipboard import (`=== FILE: ... ===`) with robust parsing and path sanitization.  
   * Implement dual export modes: consolidated markdown and LLM-structured export.  
   * Convert linked local images to Base64 asynchronously during AI exports.  
   * **DoD:** User can import multi-file AI output and export either a single compiled manuscript or structured context blocks for LLMs without UI freezes.  

@@ -3,6 +3,10 @@ import { ConflictBanner } from './components/conflict-banner'
 import { ConflictComparePanel } from './components/conflict-compare-panel'
 import { WorkspaceLayoutPanel } from './components/workspace-editor-panels.tsx'
 import { SidebarPanel } from './components/sidebar/sidebar-panel.tsx'
+import { AiImportDialog } from './components/ai-import-dialog'
+import { AiExportDialog } from './components/ai-export-dialog'
+import { useAiImport } from './use-ai-import'
+import { useAiExport } from './use-ai-export'
 import type { ResolvedTheme, ThemePreference } from '../../theme/theme-types'
 
 interface ProjectEditorViewProps {
@@ -14,6 +18,17 @@ interface ProjectEditorViewProps {
 
 interface ProjectEditorMainPaneProps {
   model: ProjectEditorModel
+}
+
+function buildShellClassName(model: ProjectEditorModel): string {
+  const { state } = model
+  return [
+    'editor-shell',
+    state.workspaceLayout.mode === 'split' ? 'is-split' : '',
+    state.workspaceLayout.focusModeEnabled ? 'is-focus-mode' : '',
+    state.isFullscreen ? 'is-fullscreen' : '',
+    `focus-scope-${state.workspaceLayout.focusScope}`,
+  ].filter(Boolean).join(' ')
 }
 
 function ProjectEditorMainPane({ model }: ProjectEditorMainPaneProps) {
@@ -50,7 +65,9 @@ function SidebarSection({
   themePreference,
   resolvedTheme,
   onThemePreferenceChange,
-}: Pick<ProjectEditorViewProps, 'model' | 'themePreference' | 'resolvedTheme' | 'onThemePreferenceChange'>) {
+  onImportClick,
+  onExportClick,
+}: Pick<ProjectEditorViewProps, 'model' | 'themePreference' | 'resolvedTheme' | 'onThemePreferenceChange'> & { onImportClick: () => void; onExportClick: () => void }) {
   const { state, actions } = model
 
   return (
@@ -73,6 +90,8 @@ function SidebarSection({
       loadingProject={state.loadingProject}
       rootPath={state.rootPath}
       onPickFolder={() => void actions.pickProjectFolder()}
+      onImport={onImportClick}
+      onExport={onExportClick}
       themePreference={themePreference}
       resolvedTheme={resolvedTheme}
       onThemePreferenceChange={onThemePreferenceChange}
@@ -83,6 +102,44 @@ function SidebarSection({
   )
 }
 
+function ProjectEditorDialogs({
+  rootPath,
+  visibleFiles,
+  aiImport,
+  aiExport,
+}: {
+  rootPath: string
+  visibleFiles: string[]
+  aiImport: ReturnType<typeof useAiImport>
+  aiExport: ReturnType<typeof useAiExport>
+}) {
+  const exportableFiles = visibleFiles.filter((path) => !path.endsWith('/'))
+
+  return (
+    <>
+      <AiImportDialog
+        open={aiImport.open}
+        onClose={() => aiImport.setOpen(false)}
+        onPreview={aiImport.handlePreview}
+        onExecute={aiImport.handleExecute}
+        projectRoot={rootPath}
+      />
+      <AiExportDialog
+        open={aiExport.open}
+        onClose={() => aiExport.setOpen(false)}
+        onExport={aiExport.handleExport}
+        selectedPaths={aiExport.selectedPaths}
+        onSelectedPathsChange={aiExport.setSelectedPaths}
+        includeFrontmatter={aiExport.includeFrontmatter}
+        onIncludeFrontmatterChange={aiExport.setIncludeFrontmatter}
+        visibleFiles={exportableFiles}
+        exporting={aiExport.exporting}
+        lastError={aiExport.lastError}
+      />
+    </>
+  )
+}
+
 export function ProjectEditorView({
   model,
   themePreference,
@@ -90,16 +147,11 @@ export function ProjectEditorView({
   onThemePreferenceChange,
 }: ProjectEditorViewProps) {
   const { state } = model
-  const shellClassName = [
-    'editor-shell',
-    state.workspaceLayout.mode === 'split' ? 'is-split' : '',
-    state.workspaceLayout.focusModeEnabled ? 'is-focus-mode' : '',
-    state.isFullscreen ? 'is-fullscreen' : '',
-    `focus-scope-${state.workspaceLayout.focusScope}`,
-  ].filter(Boolean).join(' ')
+  const aiImport = useAiImport(state.rootPath)
+  const aiExport = useAiExport(state.rootPath)
 
   return (
-    <main class={shellClassName}>
+    <main class={buildShellClassName(model)}>
       <div class="editor-app">
         <section
           class="editor-workspace"
@@ -110,10 +162,13 @@ export function ProjectEditorView({
             themePreference={themePreference}
             resolvedTheme={resolvedTheme}
             onThemePreferenceChange={onThemePreferenceChange}
+            onImportClick={() => aiImport.setOpen(true)}
+            onExportClick={() => aiExport.setOpen(true)}
           />
           <ProjectEditorMainPane model={model} />
         </section>
       </div>
+      <ProjectEditorDialogs rootPath={state.rootPath} visibleFiles={state.visibleFiles} aiImport={aiImport} aiExport={aiExport} />
     </main>
   )
 }

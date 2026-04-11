@@ -15,6 +15,9 @@ export const IPC_CHANNELS = {
   externalFileEvent: 'trama:project:external-file-event',
   setFullscreen: 'trama:window:set-fullscreen',
   fullscreenChanged: 'trama:window:fullscreen-changed',
+  aiImport: 'trama:ai:import',
+  aiImportPreview: 'trama:ai:import:preview',
+  aiExport: 'trama:ai:export',
 } as const
 
 export const pingRequestSchema = z.object({
@@ -152,6 +155,43 @@ export const fullscreenChangedEventSchema = z.object({
   timestamp: z.string(),
 })
 
+export const aiImportRequestSchema = z.object({
+  clipboardContent: z.string().trim().min(1),
+  projectRoot: z.string().trim().min(1),
+})
+
+export const aiImportFileSchema = z.object({
+  path: z.string(),
+  content: z.string(),
+  frontmatter: documentMetaSchema.optional(),
+  exists: z.boolean(),
+})
+export const aiImportPreviewSchema = z.object({
+  files: z.array(aiImportFileSchema),
+  totalFiles: z.number().int().nonnegative(),
+  newFiles: z.number().int().nonnegative(),
+  existingFiles: z.number().int().nonnegative(),
+})
+
+export const aiImportResponseSchema = z.object({
+  success: z.boolean(),
+  created: z.array(z.string()),
+  skipped: z.array(z.string()),
+  errors: z.array(z.object({ path: z.string(), error: z.string() })),
+})
+
+export const aiExportRequestSchema = z.object({
+  filePaths: z.array(z.string().trim().min(1)),
+  projectRoot: z.string().trim().min(1),
+  includeFrontmatter: z.boolean().default(true),
+})
+
+export const aiExportResponseSchema = z.object({
+  success: z.boolean(),
+  formattedContent: z.string(),
+  fileCount: z.number().int().nonnegative(),
+})
+
 export const ipcErrorSchema = z.object({
   code: z.string(),
   message: z.string(),
@@ -162,13 +202,7 @@ export type PingRequest = z.infer<typeof pingRequestSchema>
 export type PingResponse = z.infer<typeof pingResponseSchema>
 export type DebugLogRequest = z.infer<typeof debugLogRequestSchema>
 export type DocumentMeta = z.infer<typeof documentMetaSchema>
-export type TreeItem = {
-  id: string
-  title: string
-  path: string
-  type: 'file' | 'folder'
-  children?: TreeItem[]
-}
+export type TreeItem = { id: string; title: string; path: string; type: 'file' | 'folder'; children?: TreeItem[] }
 export type ProjectIndex = z.infer<typeof projectIndexSchema>
 export type ProjectSnapshot = z.infer<typeof projectSnapshotSchema>
 export type OpenProjectRequest = z.infer<typeof openProjectRequestSchema>
@@ -189,15 +223,11 @@ export type ExternalFileEvent = z.infer<typeof externalFileEventSchema>
 export type SetFullscreenRequest = z.infer<typeof setFullscreenRequestSchema>
 export type SetFullscreenResponse = z.infer<typeof setFullscreenResponseSchema>
 export type FullscreenChangedEvent = z.infer<typeof fullscreenChangedEventSchema>
-
+export type AiImportRequest = z.infer<typeof aiImportRequestSchema>
+export type AiImportFile = z.infer<typeof aiImportFileSchema>
+export type AiImportPreview = z.infer<typeof aiImportPreviewSchema>
+export type AiImportResponse = z.infer<typeof aiImportResponseSchema>
+export type AiExportRequest = z.infer<typeof aiExportRequestSchema>
+export type AiExportResponse = z.infer<typeof aiExportResponseSchema>
 export type IpcError = z.infer<typeof ipcErrorSchema>
-
-export type IpcEnvelope<T> =
-  | {
-      ok: true
-      data: T
-    }
-  | {
-      ok: false
-      error: IpcError
-    }
+export type IpcEnvelope<T> = { ok: true; data: T } | { ok: false; error: IpcError }

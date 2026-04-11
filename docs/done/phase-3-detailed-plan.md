@@ -1,8 +1,7 @@
 # Phase 3 Detailed Plan - Workspace UX
 
 Date: 2026-04-05
-Status: **In Progress** — WS1 complete, WS2 complete (theme + polish), WS3-5 pending
-Status: **In Progress** — WS1 complete, WS2 complete (theme + polish), WS3 complete (fullscreen + focus mode), WS4-5 pending
+Status: **Complete** — All workstreams (WS1–WS5) finished and signed off. Phase 3 closed.
 Related: `docs/current-status.md`, `docs/implementation-overview.md`, `DESIGN_SPEC.md`
 
 ## 1. Context and Starting Point
@@ -297,25 +296,26 @@ PR-4: Theme rollout and system sync
 - Add system-theme listeners for live updates in `system` mode.
 - Validate contrast and regressions in both themes.
 
-Status: In progress.
-
-PR-3: Theme subsystem
-- Introduce semantic tokens and switcher.
-- Persistence + system sync.
-- Theme tests.
+Status: Completed.
 
 PR-4: Fullscreen IPC + focus mode
 - Add new IPC contracts and handlers.
 - Renderer controls and fullscreen state sync.
 - IPC tests and smoke updates.
 
+Status: Completed.
+
 PR-5: Accessibility polish + responsive behavior
 - Keyboard shortcuts and focus UX.
 - Narrow layout fallback behavior.
 - Integration test adjustments.
 
+Status: Completed.
+
 PR-6: Phase 3 closure and docs
 - Full regression run, docs update, completion checklist.
+
+Status: Completed.
 
 ## 7. Risks and Mitigations
 
@@ -346,4 +346,4 @@ Phase 3 is complete when all are true:
 
 ## 9. Immediate Next Step
 
-Start WS3 fullscreen/focus mode implementation: add native fullscreen IPC wiring, keep renderer fullscreen state synchronized with window events, and land initial focus-mode UX controls.
+Phase 3 is closed. Next step: Phase 4 planning (folder operations, drag-and-drop, wiki links, templates, corkboard, AI pipeline).

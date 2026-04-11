@@ -1,5 +1,20 @@
 # Development Workflow
 
+## Mandatory startup checklist (new conversations)
+
+Before searching the codebase, read in this order:
+1. `docs/START-HERE.md`
+2. `docs/file-map.md`
+3. `docs/lessons-learned/README.md`
+
+If work touches AI import/export, also read:
+4. `docs/ai-import-export-implementation-map.md`
+5. `docs/ai-export-implementation-plan.md` (when implementing export)
+
+## Current phase
+
+Phase 4 planning is documented in `docs/phase-4-detailed-plan.md`. The recommended execution sequence is: WS1 (Wiki Tag Links) → WS2 (Folder Operations) → WS3 (Templates) → WS4 (Corkboard) → WS5 (AI Import/Export) → Phase 4 closure.
+
 ## Main commands
 
 - `npm run dev`
@@ -10,6 +25,11 @@
   - Runs ESLint with `--max-warnings 0`.
 - `npm run test`
   - Runs full Vitest suite.
+  - **Note**: In sandboxed agent environments (e.g., Qwen Code), `npm test` may fail due to environment restrictions. Use the PowerShell script instead:
+    - `powershell -ExecutionPolicy Bypass -File scripts/run-tests.ps1`
+    - VS Code shortcut: `Ctrl+Shift+T` (task: "Run Tests & Report")
+    - Report saved to `reports/test-report.txt` with timestamp.
+  - Focused test runs work normally: `npm run test -- tests/sidebar-panels.test.ts`
 - `npm run test:smoke`
   - Builds app and runs Electron startup smoke test.
 
@@ -21,7 +41,7 @@
   - Build Electron layer and launch against local Vite URL.
 - `npm run build:electron`
   - Compile only Electron TypeScript layer.
-- Focused test runs:
+- Focused test runs (use PowerShell script or `npm run test --`):
   - `npm run test -- tests/sidebar-panels.test.ts`
   - `npm run test -- tests/use-project-editor.test.ts`
   - `npm run test -- tests/ipc-contract.test.ts`
@@ -33,9 +53,11 @@
 2. In app, pick folder and verify preload status is available.
 3. Validate core flow for touched area (editor/sidebar/IPC).
 4. Run `npm run lint` and focused tests while iterating.
-5. Run `npm run test` before finishing.
+5. Run tests with `npm run test` before finishing.
 6. Run `npm run build` for final compile confidence.
 7. Run `npm run test:smoke` when touching preload/window/IPC startup paths.
+8. Update the documentation
+9. If a whole md implementation plan is finished, move it to `docs/done`.
 
 ## Sidebar-specific manual checks
 

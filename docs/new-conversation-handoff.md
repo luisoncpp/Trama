@@ -1,5 +1,16 @@
 # New Conversation Handoff
 
+## Mandatory doc bootstrap (do this first)
+
+Before code exploration, open these docs in order:
+1. `docs/START-HERE.md`
+2. `docs/file-map.md`
+3. `docs/lessons-learned/README.md`
+
+If the task is about AI import/export, also open:
+4. `docs/ai-import-export-implementation-map.md`
+5. `docs/ai-export-implementation-plan.md` (for export implementation work)
+
 ## Goal
 
 Bootstrap a fresh chat in minutes and avoid spending tokens rediscovering architecture.
@@ -40,13 +51,16 @@ UX hardening (WS4) is now live:
 - `npm run dev` auto-builds Electron main before starting the dev server.
 ## Read first (in order)
 
-1. `docs/current-status.md`
-2. `docs/implementation-overview.md`
-3. `docs/ipc-architecture.md`
-4. `docs/file-map.md`
-5. `docs/dev-workflow.md`
-6. `docs/troubleshooting.md`
-7. `docs/lessons-learned/README.md`
+1. `docs/START-HERE.md`
+2. `docs/current-status.md`
+3. `docs/implementation-overview.md`
+4. `docs/ipc-architecture.md`
+5. `docs/file-map.md`
+6. `docs/ai-import-export-implementation-map.md`
+7. `docs/ai-export-implementation-plan.md`
+8. `docs/dev-workflow.md`
+9. `docs/troubleshooting.md`
+10. `docs/lessons-learned/README.md`
 
 ## Fast intent routing (what to open for each task)
 

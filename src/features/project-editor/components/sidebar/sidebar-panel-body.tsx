@@ -32,6 +32,8 @@ export interface SidebarPanelBodyProps {
   onCreateCategory: SidebarFileActions['onCreateCategory']
   onRenameFile: SidebarFileActions['onRenameFile']
   onDeleteFile: SidebarFileActions['onDeleteFile']
+  onImport: () => void
+  onExport: () => void
   contentProps: Omit<
     SidebarProjectContextProps & SidebarSelectionProps,
     | 'visibleFiles'
@@ -53,6 +55,8 @@ function renderSidebarExplorerContent({
   onRenameFile,
   onDeleteFile,
   onSelectFile,
+  onImport,
+  onExport,
 }: SidebarPanelBodyProps) {
   if (!sectionConfig) {
     return null
@@ -72,6 +76,8 @@ function renderSidebarExplorerContent({
       onRenameFile={(path, newName) => onRenameFile(`${sectionConfig.root}${path}`, newName)}
       onDeleteFile={(path) => onDeleteFile(`${sectionConfig.root}${path}`)}
       onSelectFile={(filePath) => onSelectFile(`${sectionConfig.root}${filePath}`)}
+      onImport={onImport}
+      onExport={onExport}
     />
   )
 }
@@ -114,50 +120,6 @@ export function SidebarPanelBody(props: SidebarPanelBodyProps) {
   return null
 }
 
-export function buildSidebarPanelBodyProps(params: {
-  effectiveCollapsed: boolean
-  sidebarActiveSection: SidebarSection
-  sectionConfig: (typeof SIDEBAR_SECTION_CONFIG)[ContentSidebarSection] | null
-  rootPath: string
-  scopedFiles: string[]
-  scopedSelectedPath: string | null
-  activeFilterQuery: string
-  onFilterQueryChange: (value: string) => void
-  onCreateArticle: SidebarFileActions['onCreateArticle']
-  onCreateCategory: SidebarFileActions['onCreateCategory']
-  onRenameFile: SidebarFileActions['onRenameFile']
-  onDeleteFile: SidebarFileActions['onDeleteFile']
-  onSelectFile: SidebarSelectionProps['onSelectFile']
-  sidebarPanelWidth: number
-  onSidebarPanelWidthChange: (width: number) => void
-  themePreference: SidebarThemeProps['themePreference']
-  resolvedTheme: SidebarThemeProps['resolvedTheme']
-  onThemePreferenceChange: SidebarThemeProps['onThemePreferenceChange']
-  focusScope: SidebarWorkspacePrefsProps['focusScope']
-  onFocusScopeChange: SidebarWorkspacePrefsProps['onFocusScopeChange']
-  contentProps: SidebarPanelBodyProps['contentProps']
-}): SidebarPanelBodyProps {
-  return {
-    effectiveCollapsed: params.effectiveCollapsed,
-    sidebarActiveSection: params.sidebarActiveSection,
-    sectionConfig: params.sectionConfig,
-    rootPath: params.rootPath,
-    scopedFiles: params.scopedFiles,
-    scopedSelectedPath: params.scopedSelectedPath,
-    activeFilterQuery: params.activeFilterQuery,
-    onFilterQueryChange: params.onFilterQueryChange,
-    onCreateArticle: params.onCreateArticle,
-    onCreateCategory: params.onCreateCategory,
-    onRenameFile: params.onRenameFile,
-    onDeleteFile: params.onDeleteFile,
-    onSelectFile: params.onSelectFile,
-    sidebarPanelWidth: params.sidebarPanelWidth,
-    onSidebarPanelWidthChange: params.onSidebarPanelWidthChange,
-    themePreference: params.themePreference,
-    resolvedTheme: params.resolvedTheme,
-    onThemePreferenceChange: params.onThemePreferenceChange,
-    focusScope: params.focusScope,
-    onFocusScopeChange: params.onFocusScopeChange,
-    contentProps: params.contentProps,
-  }
+export function buildSidebarPanelBodyProps(params: SidebarPanelBodyProps): SidebarPanelBodyProps {
+  return params
 }

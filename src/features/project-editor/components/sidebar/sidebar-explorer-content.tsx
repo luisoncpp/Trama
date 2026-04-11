@@ -14,11 +14,33 @@ function SelectProjectFolderIcon() {
   )
 }
 
+function ExportIcon() {
+  return (
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true">
+      <path d="M14 3h7v7" />
+      <path d="M10 14 21 3" />
+      <rect x="3" y="7" width="14" height="14" rx="2" />
+    </svg>
+  )
+}
+
+function ImportIcon() {
+  return (
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true">
+      <path d="M12 3v12" />
+      <path d="M7 10l5 5 5-5" />
+      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+    </svg>
+  )
+}
+
 interface SidebarHeaderProps {
   title: string
   apiAvailable: boolean
   loadingProject: boolean
   onPickFolder: () => void
+  onImport: () => void
+  onExport: () => void
 }
 
 interface SidebarExplorerContentProps {
@@ -37,6 +59,8 @@ interface SidebarExplorerContentProps {
   onRenameFile: SidebarExplorerCommonProps['onRenameFile']
   onDeleteFile: SidebarExplorerCommonProps['onDeleteFile']
   onPickFolder: SidebarExplorerCommonProps['onPickFolder']
+  onImport: () => void
+  onExport: () => void
 }
 
 function useSidebarExplorerDialogs(props: SidebarExplorerContentProps) {
@@ -54,7 +78,7 @@ function useSidebarExplorerDialogs(props: SidebarExplorerContentProps) {
   return { createDialog, fileDialog }
 }
 
-function SidebarHeader({ title, apiAvailable, loadingProject, onPickFolder }: SidebarHeaderProps) {
+function SidebarHeader({ title, apiAvailable, loadingProject, onPickFolder, onImport, onExport }: SidebarHeaderProps) {
   return (
     <div class="workspace-panel__header">
       <div>
@@ -71,6 +95,26 @@ function SidebarHeader({ title, apiAvailable, loadingProject, onPickFolder }: Si
         >
           <SelectProjectFolderIcon />
         </button>
+        <button
+          type="button"
+          class="sidebar-menu-btn"
+          onClick={onImport}
+          disabled={loadingProject || !apiAvailable}
+          aria-label="Import AI Content"
+          title="Import AI Content"
+        >
+          <ImportIcon />
+        </button>
+        <button
+          type="button"
+          class="sidebar-menu-btn"
+          onClick={onExport}
+          disabled={loadingProject || !apiAvailable}
+          aria-label="Export Files"
+          title="Export Files"
+        >
+          <ExportIcon />
+        </button>
       </div>
     </div>
   )
@@ -86,7 +130,7 @@ export function SidebarExplorerContent(props: SidebarExplorerContentProps) {
   return (
     <div class="sidebar-panel-content">
       <aside class="workspace-panel workspace-panel--sidebar" aria-busy={props.loadingProject ? 'true' : 'false'}>
-        <SidebarHeader title={props.title} apiAvailable={props.apiAvailable} loadingProject={props.loadingProject} onPickFolder={props.onPickFolder} />
+        <SidebarHeader title={props.title} apiAvailable={props.apiAvailable} loadingProject={props.loadingProject} onPickFolder={props.onPickFolder} onImport={props.onImport} onExport={props.onExport} />
         <SidebarExplorerBody
           title={props.title}
           visibleFiles={props.visibleFiles}
