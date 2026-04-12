@@ -104,7 +104,6 @@ If you are starting a new implementation conversation, begin with:
 This entrypoint routes to the mandatory docs that are often missed:
 -   [docs/file-map.md](docs/file-map.md)
 -   [docs/lessons-learned/README.md](docs/lessons-learned/README.md)
--   [docs/ai-import-export-implementation-map.md](docs/ai-import-export-implementation-map.md)
 
 ## 📄 License
 

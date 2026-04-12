@@ -2,7 +2,7 @@
 
 Date: 2026-04-11
 Status: **In Progress** — Planning phase
-Related: `docs/current-status.md`, `docs/dev-workflow.md`, `docs/wiki-tag-links-spec.md`, `REQUIREMENTS.md`
+Related: `docs/current-status.md`, `docs/dev-workflow.md`, `docs/wiki-tag-links-spec.md`, `docs/wiki-tag-links-implementation-plan.md`, `REQUIREMENTS.md`
 
 ## 1. Context and Starting Point
 
@@ -345,7 +345,7 @@ Known constraints:
 
 **Objective**: Enable structured import of LLM-generated content and structured export for AI context.
 
-**Status**: In progress (AI import completed, AI export still pending).
+**Status**: In progress (AI import completed, AI export completed).
 
 ### Current implementation snapshot
 
@@ -422,14 +422,6 @@ Known constraints:
 3. User selects files → exports to clipboard → paste into LLM chat shows formatted content.
 4. Compilation export produces single markdown with optional TOC.
 5. All operations pass lint, test, and build.
-
-### Acceptance status (current)
-
-- AC1: Implemented.
-- AC2: Partially implemented (current behavior supports create/skip/error reporting; overwrite/rename UX options still pending explicit flow).
-- AC3: Pending (no renderer export selection/clipboard UX yet).
-- AC4: Pending.
-- AC5: Pending WS5-specific proof (no dedicated export/compilation tests yet).
 
 ---
 

@@ -47,20 +47,20 @@ Implemented now:
 - Typography auto-replacement in the rich editor: typing `--` inserts `—`, `<<` inserts `«`, `>>` inserts `»`. Each replacement is a discrete Ctrl+Z undo entry.
 - `npm run dev` automatically builds the Electron main process before starting the dev server (`build:electron && dev:desktop`).
 - AI import (clipboard) implemented end-to-end: parser, preview, import dialog, renderer hook, IPC handlers, and main-process file creation flow.
-- AI export implemented only at contract/backend level: IPC channel + export formatter service exist, but export UI flow and dedicated regression tests are still pending.
+- AI export implemented end-to-end: sidebar export trigger, multi-file export dialog, include/exclude frontmatter option, secure path validation in backend service, IPC handler coverage, and clipboard copy flow.
 
 Not implemented yet (planned in later phases):
 - Folder rename/delete and move workflows.
 - Drag-and-drop reorder/move workflows.
 - Wiki links, templates, corkboard DnD.
-- AI export UX end-to-end (selection/dialog/clipboard action) and dedicated export/compilation tests.
+- AI export UX additional polish (toast/inline success feedback beyond console logging).
 
 ## Reliability status
 
 Current verification baseline:
 - `npm run build` passes.
 - `npm run lint` passes.
-- `npm run test` passes (21 suites, 97 tests).
+- `npm run test` passes (25 suites, 117 tests).
 - `npm run test:smoke` passes.
 
 **Running tests**: In sandboxed agent environments, `npm test` may fail due to environment restrictions. Use the PowerShell script instead, which runs in a full PowerShell context and passes consistently:
@@ -115,4 +115,4 @@ See `docs/phase-4-detailed-plan.md` for the complete plan with 5 workstreams:
 | **WS2** | Folder Operations | Rename, delete, move with conflict safety |
 | **WS3** | Templates | Create from schema, placeholder system, default templates |
 | **WS4** | Corkboard | Drag-and-drop card view, persistence |
-| **WS5** | AI Import/Export | Import implemented; export UI and compilation/export tests still pending |
+| **WS5** | AI Import/Export | Import/export implemented end-to-end, including export hardening and regression tests |

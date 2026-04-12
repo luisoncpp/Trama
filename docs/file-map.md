@@ -5,7 +5,7 @@ Note for agents: each time you are asked to update the documentation, if you fou
 Mandatory doc navigation for new chats:
 1. Start with `docs/START-HERE.md`.
 2. Read `docs/lessons-learned/README.md` before implementation changes.
-3. For AI import/export, use `docs/ai-import-export-implementation-map.md` before opening source files.
+3. If task is WS1 Wiki Tag Links, read `docs/wiki-tag-links-spec.md` and `docs/wiki-tag-links-implementation-plan.md`.
 
 ## Root-level project files
 
@@ -73,7 +73,7 @@ Mandatory doc navigation for new chats:
 - `electron/services/ai-import-service.ts`
   - Parses AI clipboard blocks, builds preview metadata, and executes multi-file import writes.
 - `electron/services/ai-export-service.ts`
-  - Formats selected files into `=== FILE: ... ===` blocks and supports frontmatter include/exclude mode.
+  - Formats selected files into `=== ARCHIVO: ... ===` blocks, validates relative paths against project root, and supports frontmatter include/exclude mode.
 
 ## Renderer layer
 
@@ -107,6 +107,8 @@ Mandatory doc navigation for new chats:
   - Persist sidebar UI (`trama.sidebar.ui.v1`).
 - `src/features/project-editor/use-ai-import.ts`
   - Renderer hook for AI import dialog state and calls to preview/execute import IPC actions.
+- `src/features/project-editor/use-ai-export.ts`
+  - Renderer hook for AI export dialog state, IPC export call, and clipboard copy flow.
 
 ### Project editor hooks (detailed)
 
@@ -149,6 +151,10 @@ Mandatory doc navigation for new chats:
   - Modal dialog for AI import text input, preview trigger, and import confirmation.
 - `src/features/project-editor/components/ai-import-preview-section.tsx`
   - Preview summary/list for parsed import files (new vs existing).
+- `src/features/project-editor/components/ai-export-dialog.tsx`
+  - Export dialog controller (portal, close behavior, keyboard handling) wired to export hook actions.
+- `src/features/project-editor/components/ai-export-dialog-body.tsx`
+  - Export dialog UI body with multi-select file list, include-frontmatter option, and export/cancel actions.
 - `src/features/project-editor/components/rich-markdown-editor.tsx`
   - Quill-based rich Markdown editor component (lifecycle, toolbar integration, focus-mode hookup).
 - `src/features/project-editor/components/rich-markdown-editor-core.ts`
@@ -255,7 +261,13 @@ Core and regression suites:
 - `tests/electron-smoke.test.ts`
 - `tests/typescript-compile.test.ts`
 - `tests/ai-import-parser.test.ts`
-  - Parser coverage for `=== FILE: ... ===` clipboard format and edge cases.
+  - Parser coverage for `=== ARCHIVO: ... ===` clipboard format and edge cases.
+- `tests/ai-export-service.test.ts`
+  - Export formatter service coverage (multi-file output, frontmatter toggle, path hardening, missing file behavior).
+- `tests/ai-export-ipc-handler.test.ts`
+  - IPC envelope validation for export handler success/error payload paths.
+- `tests/use-ai-export.test.ts`
+  - Renderer export hook coverage for IPC call shape, clipboard copy, and error state handling.
 
 ## Build outputs
 

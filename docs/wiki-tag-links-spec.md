@@ -1,5 +1,7 @@
 # Wiki Tag Links — Technical Specification
 
+Implementation guide: `docs/wiki-tag-links-implementation-plan.md`
+
 ## 1. Goal
 
 Implement a **tag-based lookup system** that lets readers open associated Lore articles by clicking tagged terms while holding `Ctrl` (or `Cmd`). Tags are unique to a single Lore article, but an article may have multiple tags.

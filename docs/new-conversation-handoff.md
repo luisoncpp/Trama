@@ -8,8 +8,10 @@ Before code exploration, open these docs in order:
 3. `docs/lessons-learned/README.md`
 
 If the task is about AI import/export, also open:
-4. `docs/ai-import-export-implementation-map.md`
-5. `docs/ai-export-implementation-plan.md` (for export implementation work)
+
+If task is about Wiki Tag Links (WS1), also open:
+- `docs/wiki-tag-links-spec.md`
+- `docs/wiki-tag-links-implementation-plan.md`
 
 ## Goal
 
@@ -56,11 +58,9 @@ UX hardening (WS4) is now live:
 3. `docs/implementation-overview.md`
 4. `docs/ipc-architecture.md`
 5. `docs/file-map.md`
-6. `docs/ai-import-export-implementation-map.md`
-7. `docs/ai-export-implementation-plan.md`
-8. `docs/dev-workflow.md`
-9. `docs/troubleshooting.md`
-10. `docs/lessons-learned/README.md`
+7. `docs/dev-workflow.md`
+8. `docs/troubleshooting.md`
+9. `docs/lessons-learned/README.md`
 
 ## Fast intent routing (what to open for each task)
 
@@ -127,8 +127,5 @@ UX hardening (WS4) is now live:
 
 ## Current high-value next tasks
 
-1. Start WS4 UX hardening and accessibility pass.
-2. Ensure keyboard shortcuts for all workspace actions are reachable (split toggle, pane focus switch, fullscreen/focus toggle already done).
-3. Add empty states and disabled-state handling for split mode with no secondary file.
-4. Responsiveness rules for narrow widths (auto-fallback to single pane).
-5. Keep folder rename/delete and move workflows for a later scope.
+1. Start WS1 Wiki Tag Links using `docs/wiki-tag-links-implementation-plan.md`.
+2. Keep WS2 folder rename/delete/move workflows queued next.

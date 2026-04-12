@@ -11,6 +11,9 @@ Start in `START-HERE.md` before reading anything else.
 - `lessons-learned/README.md`
 - feature maps (including AI import/export)
 
+Implementation plans:
+- `wiki-tag-links-implementation-plan.md` (WS1 execution guide)
+
 ## Recommended reading order
 
 1. `START-HERE.md`
@@ -19,11 +22,12 @@ Start in `START-HERE.md` before reading anything else.
 4. `implementation-overview.md`
 5. `ipc-architecture.md`
 6. `file-map.md`
-7. `ai-import-export-implementation-map.md`
-8. `ai-export-implementation-plan.md`
-9. `dev-workflow.md`
-10. `troubleshooting.md`
-11. `lessons-learned/README.md`
+8. `dev-workflow.md`
+9. `troubleshooting.md`
+10. `lessons-learned/README.md`
+
+Archived completed plans:
+- `done/README.md`
 
 ## Current scope snapshot
 
@@ -48,8 +52,7 @@ Implemented foundation:
 - File-system operations: `electron/services/document-repository.ts` + `electron/ipc/handlers/project-handlers/document-handlers.ts`.
 - Sidebar behavior/UI: `src/features/project-editor/components/sidebar/*`.
 - Project-editor orchestration/actions: `src/features/project-editor/use-project-editor*.ts`.
-- AI import/export feature planning and implementation status: `ai-import-export-implementation-map.md`.
-- AI export execution plan (Phase 4 WS5): `ai-export-implementation-plan.md`.
+- Wiki Tag Links feature work: `docs/wiki-tag-links-spec.md` + `docs/wiki-tag-links-implementation-plan.md`.
 - Regressions after refactor: check `tests/sidebar-panels.test.ts`, `tests/use-project-editor.test.ts`, `tests/ipc-contract.test.ts` first.
 
 ## Important note

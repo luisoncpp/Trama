@@ -2,18 +2,15 @@
 
 Purpose: plan and implement AI import/export without scanning many files manually.
 
-Dedicated export execution plan:
-- `docs/ai-export-implementation-plan.md`
-
 Status snapshot (April 2026):
 - AI import: implemented end-to-end.
-- AI export: backend contract/service implemented; renderer UX and dedicated tests pending.
+- AI export: implemented end-to-end (backend hardening + renderer UX + regression tests).
 
 ## Canonical format
 
 Delimited format used by import and export:
 
-`=== FILE: relative/path.md ===`
+`=== ARCHIVO: relative/path.md ===`
 
 Parser source of truth:
 - `src/shared/ai-import-parser.ts`
@@ -50,22 +47,29 @@ Parser source of truth:
 
 - `src/features/project-editor/use-ai-import.ts`
   - Import hook (preview + execute).
+- `src/features/project-editor/use-ai-export.ts`
+  - Export hook (dialog state + export IPC + clipboard copy).
 - `src/features/project-editor/components/ai-import-dialog.tsx`
   - Import modal UI.
 - `src/features/project-editor/components/ai-import-preview-section.tsx`
   - Import preview list.
+- `src/features/project-editor/components/ai-export-dialog.tsx`
+  - Export modal controller.
+- `src/features/project-editor/components/ai-export-dialog-body.tsx`
+  - Export modal body (multi-select + include frontmatter + actions).
 - `src/features/project-editor/components/sidebar/sidebar-explorer-content.tsx`
-  - Import button in sidebar header.
+  - Import/Export buttons in sidebar header.
 - `src/features/project-editor/project-editor-view.tsx`
-  - Wires import hook/dialog into app.
+  - Wires import/export hooks and dialogs into app.
 
-## What is missing for export UX
+## Export UX status
 
-1. Export action trigger in renderer UI (button/menu).
-2. Export dialog to select files from list (multi-select).
-3. Call `window.tramaApi.aiExport` with selected paths.
-4. Copy returned `formattedContent` to clipboard.
-5. Clear success/error feedback in UI.
+Implemented:
+1. Export action trigger in renderer UI (Explorer header button).
+2. Export dialog with multi-select file list (`state.visibleFiles`) and select-all toggle.
+3. `window.tramaApi.aiExport` call with selected relative paths.
+4. Clipboard copy of returned `formattedContent`.
+5. Error surface in dialog (`lastError`) and safe close/escape behavior during export.
 
 ## Selection source options
 
@@ -81,48 +85,46 @@ Why:
 
 ## Known constraints and risks
 
-- Security hardening gap:
-  - AI import/export services currently resolve paths directly from `projectRoot` without using repository path guards.
-  - Reference guard implementation: `electron/services/document-repository.ts`.
+- Security hardening applied:
+  - Export service now validates relative path segments and blocks traversal/path-escape before read.
+  - Guard model aligned with `electron/services/document-repository.ts`.
 
 - Selection model is single-active-path today:
   - `selectedPath` is single-value editor focus state.
   - Do not overload it for export multi-select.
 
-## Test baseline and missing coverage
+## Test baseline and coverage
 
 Existing:
 - `tests/ai-import-parser.test.ts`.
 
-Missing (recommended):
+Added:
 1. `tests/ai-export-service.test.ts`
   - Multiple files formatting.
   - Include/exclude frontmatter behavior.
-  - Missing file handling.
-2. Renderer dialog tests (selection + copy flow).
-3. IPC-level contract test for export envelope behavior.
+  - Missing file and invalid-path handling.
+2. `tests/ai-export-ipc-handler.test.ts`
+  - IPC-level envelope behavior for invalid/valid payloads.
+3. `tests/use-ai-export.test.ts`
+  - Renderer export flow (IPC call + clipboard copy + error state).
 
 ## Implementation checklist (export)
 
-1. Create renderer hook (example: `use-ai-export.ts`).
-2. Create export dialog component (example: `ai-export-dialog.tsx`).
-3. Add export trigger in sidebar header (near import).
-4. Wire hook/dialog in `project-editor-view.tsx`.
-5. Add status strings for success/failure user feedback.
-6. Harden export service path validation.
-7. Add unit/integration tests.
-8. Update docs:
-  - `docs/current-status.md`
-  - `docs/file-map.md`
-  - `docs/README.md`
+1. Create renderer hook (`use-ai-export.ts`). ✅
+2. Create export dialog components (`ai-export-dialog.tsx`, `ai-export-dialog-body.tsx`). ✅
+3. Add export trigger in sidebar header (near import). ✅
+4. Wire hook/dialog in `project-editor-view.tsx`. ✅
+5. Add error feedback in export UI flow. ✅
+6. Harden export service path validation. ✅
+7. Add service/IPC/renderer regression tests. ✅
+8. Update docs (`current-status`, `file-map`, this map). ✅
 
 ## Quick open list for export work
 
 Open these first:
 1. `docs/START-HERE.md`
 2. `docs/file-map.md`
-3. `docs/ai-import-export-implementation-map.md`
-4. `src/shared/ipc.ts`
-5. `electron/services/ai-export-service.ts`
-6. `src/features/project-editor/project-editor-view.tsx`
-7. `src/features/project-editor/components/sidebar/sidebar-explorer-content.tsx`
+3. `src/shared/ipc.ts`
+4. `electron/services/ai-export-service.ts`
+5. `src/features/project-editor/project-editor-view.tsx`
+6. `src/features/project-editor/components/sidebar/sidebar-explorer-content.tsx`

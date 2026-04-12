@@ -8,12 +8,12 @@ Before searching the codebase, read in this order:
 3. `docs/lessons-learned/README.md`
 
 If work touches AI import/export, also read:
-4. `docs/ai-import-export-implementation-map.md`
-5. `docs/ai-export-implementation-plan.md` (when implementing export)
 
 ## Current phase
 
 Phase 4 planning is documented in `docs/phase-4-detailed-plan.md`. The recommended execution sequence is: WS1 (Wiki Tag Links) → WS2 (Folder Operations) → WS3 (Templates) → WS4 (Corkboard) → WS5 (AI Import/Export) → Phase 4 closure.
+
+For WS1 execution details, use `docs/wiki-tag-links-implementation-plan.md` together with `docs/wiki-tag-links-spec.md`.
 
 ## Main commands
 

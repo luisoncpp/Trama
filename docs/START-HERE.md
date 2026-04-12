@@ -17,22 +17,21 @@ Goal: avoid repeated codebase-wide searches and reduce drift between implementat
 
 Open these only when relevant:
 
-- AI import/export: `docs/ai-import-export-implementation-map.md`
-- AI export execution plan: `docs/ai-export-implementation-plan.md`
 - IPC extension workflow: `docs/ipc-architecture.md`
 - Phase planning details: `docs/phase-4-detailed-plan.md`
+- Wiki Tag Links implementation plan: `docs/wiki-tag-links-implementation-plan.md`
 
 ## Fast routing by task
 
 | Task | Open these files |
 |------|-----------------|
-| Implement AI export UX | `docs/ai-export-implementation-plan.md` → `docs/ai-import-export-implementation-map.md` → `src/features/project-editor/use-ai-import.ts` (model) → `sidebar-explorer-content.tsx` |
 | Add/change IPC channel | `src/shared/ipc.ts` → `electron/ipc.ts` → `electron/preload.cts` → `src/types/trama-api.d.ts` |
 | Add/change IPC handler | `electron/ipc/handlers/` + `electron/ipc-handlers.ts` → `docs/ipc-architecture.md` |
 | Change sidebar UX | `src/features/project-editor/components/sidebar/sidebar-types.ts` → target component in `sidebar/` |
 | Change editor behavior | `src/features/project-editor/components/rich-markdown-editor*.ts*` |
 | Change filesystem/repo layer | `electron/services/document-repository.ts` → `electron/ipc/handlers/project-handlers/document-handlers.ts` |
 | Add a test | `tests/` + `docs/dev-workflow.md` (checklist) |
+| Implement Wiki Tag Links (WS1) | `docs/wiki-tag-links-spec.md` → `docs/wiki-tag-links-implementation-plan.md` → `docs/phase-4-detailed-plan.md` |
 | Understand feature status | `docs/current-status.md` → `docs/phase-4-detailed-plan.md` |
 | Understand project structure | `docs/file-map.md` |
 | Debug a runtime issue | `docs/troubleshooting.md` → `docs/lessons-learned/README.md` |
