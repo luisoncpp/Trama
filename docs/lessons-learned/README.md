@@ -31,3 +31,4 @@ Create a new file in this directory named after the topic (e.g., `auth-token-ref
 | `focus-mode-rich-editor-highlight-vs-overlay.md` | Focus mode stabilized by using CSS Highlights API as primary text emphasis and non-mutating overlay only as fallback; avoid DOM injection into Quill editor | 2026-04-05 |
 | `focus-mode-centered-scroll-spacers.md` | Focus mode centering near document edges is reliable only with viewport-based caret geometry and real content-side spacers; avoid scroll-container padding | 2026-04-07 |
 | `wiki-tag-modifier-click-race.md` | Ctrl/Cmd+click wiki-tag navigation can race when behavior depends on derived key state; use event modifier state and mousedown capture for reliability | 2026-04-11 |
+| `quill-getbounds-container-reference.md` | `quill.getBounds()` is relative to `quill.container`, not `quill.root`; using root doubles the centering margin and drifts overlays/hit-tests right as editor widens | 2026-04-11 |

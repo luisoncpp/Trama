@@ -1419,6 +1419,15 @@ select {
   border-radius: 4px;
 }
 
+.tag-link-highlight {
+  position: absolute;
+  z-index: 4;
+  pointer-events: none;
+  border-radius: 999px;
+  background: color-mix(in oklab, var(--editor-link) 72%, transparent);
+  opacity: 0.92;
+}
+
 .editor-findbar__input {
   width: 220px;
   border: 1px solid var(--border-strong);

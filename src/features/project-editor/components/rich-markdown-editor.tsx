@@ -27,13 +27,14 @@ interface RichMarkdownEditorProps {
 }
 
 function useRichEditorRefs(value: string, onChange: (value: string) => void) {
+  const shellRef = useRef<HTMLDivElement | null>(null)
   const hostRef = useRef<HTMLDivElement | null>(null)
   const editorRef = useRef<Quill | null>(null)
   const onChangeRef = useRef(onChange)
   const lastEditorValueRef = useRef(normalizeMarkdown(value))
   const isApplyingExternalValueRef = useRef(false)
   const turndownRef = useRef(new TurndownService())
-  return { hostRef, editorRef, onChangeRef, lastEditorValueRef, isApplyingExternalValueRef, turndownRef }
+  return { shellRef, hostRef, editorRef, onChangeRef, lastEditorValueRef, isApplyingExternalValueRef, turndownRef }
 }
 
 function useTagClickHandler(
@@ -53,7 +54,7 @@ function useTagClickHandler(
       : []
     if (availableMatches.length === 0) return
 
-    const rect = editor.root.getBoundingClientRect()
+    const rect = editor.container.getBoundingClientRect()
     const match = findMatchAtPosition(availableMatches, e.clientX, e.clientY, rect)
     if (match) {
       e.preventDefault()
@@ -64,7 +65,7 @@ function useTagClickHandler(
 
 export function RichMarkdownEditor(props: RichMarkdownEditorProps) {
   const { documentId, value, disabled, onChange, saveDisabled, saveLabel, onSaveNow, syncState, syncStateLabel, focusModeEnabled = false, focusScope = 'paragraph', tagIndex, onTagClick } = props
-  const { hostRef, editorRef, onChangeRef, lastEditorValueRef, isApplyingExternalValueRef, turndownRef } = useRichEditorRefs(value, onChange)
+  const { shellRef, hostRef, editorRef, onChangeRef, lastEditorValueRef, isApplyingExternalValueRef, turndownRef } = useRichEditorRefs(value, onChange)
   const ctrlPressed = useCtrlKeyState()
   const safeTagIndex = tagIndex ?? null
   const tagMatches = useTagOverlay({ editorRef, tagIndex: safeTagIndex, ctrlPressed })
@@ -75,12 +76,16 @@ export function RichMarkdownEditor(props: RichMarkdownEditorProps) {
   useFocusModeScopeEffect(editorRef, hostRef, focusModeEnabled, focusScope)
 
   const findBar = useRichEditorFind({ documentId, hostRef, editorRef })
+  const editorContainerRect = editorRef.current?.container.getBoundingClientRect() ?? null
+  const shellRect = shellRef.current?.getBoundingClientRect() ?? null
+  const tagOffsetTop = editorContainerRect && shellRect ? editorContainerRect.top - shellRect.top : 0
+  const tagOffsetLeft = editorContainerRect && shellRect ? editorContainerRect.left - shellRect.left : 0
 
   return (
-    <div class="rich-editor-shell w-full" onMouseDownCapture={handleEditorMouseDown}>
+    <div ref={shellRef} class="rich-editor-shell w-full" onMouseDownCapture={handleEditorMouseDown}>
       <div ref={hostRef} class="rich-editor w-full" />
       {findBar}
-      {ctrlPressed && tagIndex && <TagHighlights tagMatches={tagMatches} />}
+      {ctrlPressed && tagIndex && <TagHighlights tagMatches={tagMatches} offsetTop={tagOffsetTop} offsetLeft={tagOffsetLeft} />}
     </div>
   )
 }
