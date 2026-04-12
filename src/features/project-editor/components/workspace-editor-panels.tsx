@@ -1,6 +1,7 @@
 import { useRef } from 'preact/hooks'
 import type { ProjectEditorModel } from '../project-editor-types'
 import { EditorPanel } from './editor-panel'
+import { useTagIndex } from '../use-tag-index'
 
 interface LayoutControlsProps {
   model: ProjectEditorModel
@@ -23,9 +24,11 @@ function toPaneTitle(path: string | null): string {
 interface PaneEditorProps {
   model: ProjectEditorModel
   pane: 'primary' | 'secondary'
+  tagIndex: Record<string, string> | null
+  onTagClick: (filePath: string) => void
 }
 
-function PaneEditor({ model, pane }: PaneEditorProps) {
+function PaneEditor({ model, pane, tagIndex, onTagClick }: PaneEditorProps) {
   const { state, actions } = model
   const paneState = pane === 'secondary' ? state.secondaryPane : state.primaryPane
   const isActive = state.workspaceLayout.activePane === pane
@@ -59,13 +62,21 @@ function PaneEditor({ model, pane }: PaneEditorProps) {
           focusModeEnabled={state.workspaceLayout.focusModeEnabled}
           focusScope={state.workspaceLayout.focusScope}
           onInteract={onActivate}
+          tagIndex={tagIndex}
+          onTagClick={onTagClick}
         />
       </div>
     </section>
   )
 }
 
-function ActiveEditorPanel({ model }: LayoutControlsProps) {
+interface ActiveEditorPanelProps {
+  model: ProjectEditorModel
+  tagIndex: Record<string, string> | null
+  onTagClick: (filePath: string) => void
+}
+
+function ActiveEditorPanel({ model, tagIndex, onTagClick }: ActiveEditorPanelProps) {
   const { state, actions } = model
 
   return (
@@ -79,11 +90,19 @@ function ActiveEditorPanel({ model }: LayoutControlsProps) {
       onEditorChange={actions.updateEditorValue}
       focusModeEnabled={state.workspaceLayout.focusModeEnabled}
       focusScope={state.workspaceLayout.focusScope}
+      tagIndex={tagIndex}
+      onTagClick={onTagClick}
     />
   )
 }
 
-function WorkspaceSplitEditorPanels({ model }: LayoutControlsProps) {
+interface WorkspaceSplitEditorPanelsProps {
+  model: ProjectEditorModel
+  tagIndex: Record<string, string> | null
+  onTagClick: (filePath: string) => void
+}
+
+function WorkspaceSplitEditorPanels({ model, tagIndex, onTagClick }: WorkspaceSplitEditorPanelsProps) {
   const { state, actions } = model
   const splitRef = useRef<HTMLDivElement | null>(null)
 
@@ -116,7 +135,7 @@ function WorkspaceSplitEditorPanels({ model }: LayoutControlsProps) {
 
   return (
     <div class="workspace-split" ref={splitRef} style={{ '--split-ratio': `${Math.round(state.workspaceLayout.ratio * 100)}%` }}>
-      <PaneEditor model={model} pane="primary" />
+      <PaneEditor model={model} pane="primary" tagIndex={tagIndex} onTagClick={onTagClick} />
       <div
         class="workspace-split-divider"
         role="separator"
@@ -127,15 +146,20 @@ function WorkspaceSplitEditorPanels({ model }: LayoutControlsProps) {
           startResizeDrag(event.clientX)
         }}
       />
-      <PaneEditor model={model} pane="secondary" />
+      <PaneEditor model={model} pane="secondary" tagIndex={tagIndex} onTagClick={onTagClick} />
     </div>
   )
 }
 
 export function WorkspaceEditorPanels({ model }: LayoutControlsProps) {
+  const { tagIndex } = useTagIndex(model.state.rootPath)
+  const handleTagClick = (filePath: string) => {
+    model.actions.openFileInPane(filePath, 'secondary')
+  }
+
   return model.state.workspaceLayout.mode === 'split'
-    ? <WorkspaceSplitEditorPanels model={model} />
-    : <ActiveEditorPanel model={model} />
+    ? <WorkspaceSplitEditorPanels model={model} tagIndex={tagIndex} onTagClick={handleTagClick} />
+    : <ActiveEditorPanel model={model} tagIndex={tagIndex} onTagClick={handleTagClick} />
 }
 
 export function WorkspaceLayoutPanel({ model }: LayoutControlsProps) {

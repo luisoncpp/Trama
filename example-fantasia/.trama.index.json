@@ -31,9 +31,6 @@
       "book/Act-02/Chapter-03/Scene-002.md",
       "book/Act-02/Chapter-03/Scene-003.md"
     ],
-    "book": [
-      "book/adsfasf.md"
-    ],
     "lore/characters": [
       "lore/characters/Aina.md",
       "lore/characters/Marek.md",
@@ -95,17 +92,60 @@
     "book/Act-02/Chapter-03/Scene-001.md": {},
     "book/Act-02/Chapter-03/Scene-002.md": {},
     "book/Act-02/Chapter-03/Scene-003.md": {},
-    "book/adsfasf.md": {},
     "lore/characters/Aina.md": {},
     "lore/characters/Corin.md": {},
-    "lore/characters/Elio.md": {},
+    "lore/characters/Elio.md": {
+      "title": "Elio",
+      "type": "character",
+      "tags": [
+        "elio",
+        "guardian",
+        "sabio",
+        "selle"
+      ]
+    },
     "lore/characters/Marek.md": {},
-    "lore/characters/Nix.md": {},
+    "lore/characters/Nix.md": {
+      "title": "Nix",
+      "type": "character",
+      "tags": [
+        "nix",
+        "artesana",
+        "mecanica",
+        "custodia"
+      ]
+    },
     "lore/characters/Nora.md": {},
     "lore/characters/Sombra-del-Lirio.md": {},
-    "lore/places/bosque-encantado.md": {},
-    "lore/places/ciudad-principal.md": {},
-    "lore/systems/magia.md": {},
+    "lore/places/bosque-encantado.md": {
+      "title": "El Bosque Encantado",
+      "type": "location",
+      "tags": [
+        "bosque",
+        "rio",
+        "muntana"
+      ]
+    },
+    "lore/places/ciudad-principal.md": {
+      "title": "Ciudad de Lirio-Amanecer",
+      "type": "location",
+      "tags": [
+        "lirio",
+        "costa",
+        "puerto",
+        "comercio"
+      ]
+    },
+    "lore/systems/magia.md": {
+      "title": "Sistema de Magia",
+      "type": "system",
+      "tags": [
+        "magia",
+        "runas",
+        "vinculos",
+        "corrupcion"
+      ]
+    },
     "lore/systems/politica.md": {},
     "outline/Act-01/Chapter-01/chapter-beats.md": {},
     "outline/Act-01/Chapter-02/chapter-beats.md": {},

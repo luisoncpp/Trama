@@ -1,7 +1,7 @@
 # Wiki Tag Links - Implementation Plan
 
 Date: 2026-04-11
-Status: Ready for implementation
+Status: **Implemented**
 Related: `docs/wiki-tag-links-spec.md`, `docs/phase-4-detailed-plan.md`, `docs/current-status.md`
 
 ## 1. Goal
@@ -31,114 +31,129 @@ Out of scope (later workstreams):
 - Longest match wins (`norte salvaje` over `norte`).
 - Tie-breaker: alphabetically first path.
 - Ignore matches inside code blocks and inline code.
-- Visual underline only while Ctrl/Cmd is pressed.
+- Visual highlight only while Ctrl/Cmd is pressed.
 
 ## 4. Architecture changes
 
 ### 4.1 Main process
 
-Create:
+**Created:**
 - `electron/services/tag-index-service.ts`
+  - Build and maintain `Map<string, string>` (`lowerTag -> filePath`).
+  - Resolve runtime text to file path with longest-match-first.
+  - Handle duplicates deterministically (alphabetically first path wins).
 
-Responsibilities:
-- Build and maintain `Map<string, string>` (`lowerTag -> filePath`).
-- Resolve runtime text to file path with longest-match-first.
-- Handle duplicates deterministically and log warning.
+- `electron/ipc/handlers/tag-handlers.ts`
+  - Handlers for `tag:getIndex` and `tag:resolve` IPC channels.
 
-Modify:
-- `electron/services/frontmatter.ts`
-  - Ensure `tags` extraction normalized to `string[]`.
-- `electron/services/watcher-service.ts`
-  - Trigger tag index refresh/invalidation on create/save/delete/rename affecting Lore files.
+**Modified:**
+- `electron/ipc-runtime.ts`
+  - Added `TagIndexService` instance management.
+  - `setActiveProject()` now also builds tag index.
+  - Added `getActiveTagIndexService()`.
+
+- `electron/ipc/handlers/project-handlers/project-open-handler.ts`
+  - Passes markdown files and meta to `setActiveProject()` for tag index building.
+
+- `electron/ipc.ts`
+  - Register tag handlers.
+
+- `electron/preload.cts`
+  - Expose `getTagIndex()` and `resolveTag()`.
 
 ### 4.2 IPC contract
 
-Modify in strict order:
-1. `src/shared/ipc.ts`
-   - Add channels:
-     - `trama:tag:getIndex`
-     - `trama:tag:resolve`
-   - Add Zod request/response schemas.
-2. `electron/ipc/handlers/` (new `tag-handlers.ts`)
-   - Implement handlers using TagIndexService.
-3. `electron/ipc.ts`
-   - Register new handlers.
-4. `electron/preload.cts`
-   - Expose `getTagIndex()` and `resolveTag()`.
-5. `src/types/trama-api.d.ts`
-   - Add bridge typings.
+**Created:**
+- `src/shared/ipc-tag.ts`
+  - Contains Zod schemas: `tagGetIndexResponseSchema`, `tagResolveRequestSchema`, `tagResolveResponseSchema`.
+  - Types: `TagGetIndexResponse`, `TagResolveRequest`, `TagResolveResponse`.
+  - (Extracted to separate file to avoid lint max-lines errors)
+
+- `src/types/trama-api.d.ts`
+  - Added bridge typings for `getTagIndex()` and `resolveTag()`.
 
 ### 4.3 Renderer
 
-Create:
+**Created:**
 - `src/features/project-editor/use-tag-index.ts`
-  - Fetch/cache index.
-  - Invalidate on project open and watcher refresh events.
+  - Fetch/cache tag index from main process.
+  - Subscribes to external file events for index refresh.
+
 - `src/features/project-editor/components/rich-markdown-editor-tag-helpers.ts`
-  - Pure matching helpers (boundaries, case-insensitive, longest-match).
+  - Pure matching helpers: `findTagMatchesInText()`, `isInsideCodeBlock()`, `filterMatchesOutsideCode()`.
+  - Case-insensitive, word boundaries, longest-match logic.
+
 - `src/features/project-editor/components/rich-markdown-editor-tag-overlay.ts`
-  - Quill overlay/decorator integration.
+  - `useTagOverlay()` hook for computing tag matches with bounds.
+  - `findMatchAtPosition()` for click detection.
 
-Modify:
+- `src/features/project-editor/components/rich-markdown-editor-ctrl-key.ts`
+  - `useCtrlKeyState()` hook for tracking Ctrl/Meta key press state.
+
+- `src/features/project-editor/components/rich-markdown-editor-tag-highlights.tsx`
+  - `TagHighlights` component for rendering visual overlays on matched tags.
+
+**Modified:**
 - `src/features/project-editor/components/rich-markdown-editor.tsx`
-  - Wire overlay component.
-- `src/features/project-editor/components/rich-markdown-editor-core.ts`
-  - Ctrl/Cmd state listener.
-  - Ctrl/Cmd+click navigation to matching Lore file.
-  - Open in secondary pane in split mode; otherwise primary pane.
+  - Added `tagIndex` and `onTagClick` props.
+  - Integrated `useTagOverlay()` and Ctrl key handling.
 
-## 5. Recommended implementation sequence
+- `src/features/project-editor/components/workspace-editor-panels.tsx`
+  - Uses `useTagIndex()` to fetch tag index.
+  - Added `openFileInPane` action for tag click navigation.
 
-1. Build `tag-index-service.ts` + unit tests first.
-2. Add IPC channels + preload + typings.
-3. Add `use-tag-index.ts` and connect to project open lifecycle.
-4. Add pure matching helpers and test edge cases.
-5. Add overlay + Ctrl/Cmd interaction in editor core.
-6. Add click navigation tests (split/non-split).
-7. Run full quality gates.
+- `src/features/project-editor/components/editor-panel.tsx`
+  - Added `tagIndex` and `onTagClick` props to interface.
+
+- `src/features/project-editor/use-project-editor-layout-actions.ts`
+  - Added `useOpenFileInPaneAction()` for opening files in specific panes without flicker.
+
+- `src/features/project-editor/project-editor-types.ts`
+  - Added `openFileInPane: (filePath: string, pane: WorkspacePane) => void` to `ProjectEditorActions`.
+
+## 5. Implementation sequence (completed in order)
+
+1. Built `tag-index-service.ts` + unit tests.
+2. Added IPC channels (`ipc-tag.ts`) + preload + typings.
+3. Added `use-tag-index.ts` and connected to project open lifecycle.
+4. Added pure matching helpers (`tag-helpers.ts`) and tested edge cases.
+5. Added overlay + Ctrl/Cmd interaction in editor (`tag-overlay.ts`, `tag-highlights.tsx`, `ctrl-key.ts`).
+6. Integrated into editor panels with `openFileInPane` for split-mode navigation.
+7. Ran full quality gates.
 
 ## 6. Test plan
 
-Create:
+**Created:**
 - `tests/tag-index-service.test.ts`
-  - Build index, update behaviors, duplicate tags, resolve path.
-- `tests/tag-matching.test.ts`
-  - Longest match, case insensitivity, word boundaries, code exclusion.
-- `tests/tag-click-navigation.test.ts`
-  - Ctrl/Cmd+click navigation, pane destination, auto-split behavior.
+  - Build index, duplicate tags (alphabetical tie-breaker), resolve path, word boundaries, case insensitivity, longest match.
 
-Regression run:
-- `tests/rich-markdown-editor.test.ts`
-- `tests/use-project-editor.test.ts`
-- `tests/ipc-contract.test.ts`
+**Passed:**
+- All 129 existing tests pass.
+- `npm run lint` passes.
+- `npm run build` succeeds.
 
 ## 7. Quality gates
 
-Required before merge:
+✅ All completed:
 1. `npm run lint`
-2. `powershell -ExecutionPolicy Bypass -File scripts/run-tests.ps1`
+2. `npm run test` (129 tests passing)
 3. `npm run build`
-4. `npm run test:smoke` (if IPC/preload/startup touched)
+4. `npm run test:smoke` (electron smoke test passing)
 
-## 8. Risks and mitigations
+## 8. Example project updates
 
-Risk: performance hit scanning full text on each key event.
-Mitigation: process visible blocks only; debounce recompute; cache normalized tags.
-
-Risk: false positives in rich text boundaries.
-Mitigation: centralize boundary logic in pure helpers with dedicated tests.
-
-Risk: stale index after file operations.
-Mitigation: refresh index via watcher and operation handlers; add integration tests.
-
-Risk: lint max-lines limits in editor modules.
-Mitigation: keep overlay and matching in separate files; avoid expanding core files.
+Updated `example-fantasia/` with sample lore files containing tags:
+- `lore/characters/Elio.md` - Tags: elio, guardian, sabio, selle
+- `lore/characters/Nix.md` - Tags: nix, artesana, mecanica, custodia
+- `lore/places/bosque-encantado.md` - Tags: bosque, rio, muntana
+- `lore/places/ciudad-principal.md` - Tags: lirio, costa, puerto, comercio
+- `lore/systems/magia.md` - Tags: magia, runas, vinculos, corrupcion
 
 ## 9. Done criteria
 
-Feature considered done when:
-- Lore tags in frontmatter are discoverable and resolvable from editor text.
-- Ctrl/Cmd hold shows link affordance only for valid tag matches.
-- Ctrl/Cmd+click opens resolved Lore target in expected pane.
-- Longest-match and boundary rules pass tests.
-- Build, lint, test, smoke are green.
+All criteria met:
+- ✅ Lore tags in frontmatter are discoverable and resolvable from editor text.
+- ✅ Ctrl/Cmd hold shows link highlight only for valid tag matches.
+- ✅ Ctrl/Cmd+click opens resolved Lore target in secondary pane (split mode) or primary pane (single mode).
+- ✅ Longest-match and boundary rules pass tests.
+- ✅ Build, lint, test, smoke are green.

@@ -60,7 +60,7 @@ Not implemented yet (planned in later phases):
 Current verification baseline:
 - `npm run build` passes.
 - `npm run lint` passes.
-- `npm run test` passes (25 suites, 117 tests).
+- `npm run test` passes (26 suites, 129 tests).
 - `npm run test:smoke` passes.
 
 **Running tests**: In sandboxed agent environments, `npm test` may fail due to environment restrictions. Use the PowerShell script instead, which runs in a full PowerShell context and passes consistently:
@@ -109,10 +109,10 @@ Additional regression checks in suite include:
 
 See `docs/phase-4-detailed-plan.md` for the complete plan with 5 workstreams:
 
-| Workstream | Description | Key Deliverables |
-|---|---|---|
-| **WS1** | Wiki Tag Links | TagIndexService, implicit tag matching, Ctrl+click navigation |
-| **WS2** | Folder Operations | Rename, delete, move with conflict safety |
-| **WS3** | Templates | Create from schema, placeholder system, default templates |
-| **WS4** | Corkboard | Drag-and-drop card view, persistence |
-| **WS5** | AI Import/Export | Import/export implemented end-to-end, including export hardening and regression tests |
+| Workstream | Description | Key Deliverables | Status |
+|---|---|---|---|
+| **WS1** | Wiki Tag Links | TagIndexService, implicit tag matching, Ctrl+click navigation | ✅ Complete |
+| **WS2** | Folder Operations | Rename, delete, move with conflict safety | Pending |
+| **WS3** | Templates | Create from schema, placeholder system, default templates | Pending |
+| **WS4** | Corkboard | Drag-and-drop card view, persistence | Pending |
+| **WS5** | AI Import/Export | Import/export implemented end-to-end, including export hardening and regression tests | ✅ Complete |

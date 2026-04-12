@@ -32,6 +32,7 @@ import {
   type SetFullscreenResponse,
   type SelectProjectFolderResponse,
 } from '../src/shared/ipc'
+import { type TagGetIndexResponse, type TagResolveRequest, type TagResolveResponse, tagGetIndexResponseSchema, tagResolveRequestSchema } from '../src/shared/ipc-tag'
 
 const tramaApi = {
   ping(payload: PingRequest): Promise<IpcEnvelope<PingResponse>> {
@@ -103,6 +104,23 @@ const tramaApi = {
   },
   aiExport(payload: AiExportRequest): Promise<IpcEnvelope<AiExportResponse>> {
     return ipcRenderer.invoke(IPC_CHANNELS.aiExport, payload)
+  },
+  getTagIndex(): Promise<IpcEnvelope<TagGetIndexResponse>> {
+    return ipcRenderer.invoke(IPC_CHANNELS.tagGetIndex)
+  },
+  resolveTag(payload: TagResolveRequest): Promise<IpcEnvelope<TagResolveResponse>> {
+    const parsed = tagResolveRequestSchema.safeParse(payload)
+    if (!parsed.success) {
+      return Promise.resolve({
+        ok: false,
+        error: {
+          code: 'VALIDATION_ERROR',
+          message: 'Invalid payload for tag resolve',
+          details: parsed.error.flatten(),
+        },
+      })
+    }
+    return ipcRenderer.invoke(IPC_CHANNELS.tagResolve, parsed.data)
   },
 }
 

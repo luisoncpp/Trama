@@ -18,185 +18,42 @@ export const IPC_CHANNELS = {
   aiImport: 'trama:ai:import',
   aiImportPreview: 'trama:ai:import:preview',
   aiExport: 'trama:ai:export',
+  tagGetIndex: 'trama:tag:getIndex',
+  tagResolve: 'trama:tag:resolve',
 } as const
 
-export const pingRequestSchema = z.object({
-  message: z.string().trim().min(1).max(120),
-})
-
-export const pingResponseSchema = z.object({
-  echo: z.string(),
-  timestamp: z.string(),
-})
-
-export const debugLogRequestSchema = z.object({
-  source: z.string().trim().min(1).max(80),
-  message: z.string().trim().min(1).max(300),
-  details: z.unknown().optional(),
-})
-
-export const documentMetaSchema = z
-  .object({
-    id: z.string().trim().min(1).optional(),
-    type: z.enum(['character', 'location', 'scene', 'note', 'outline']).optional(),
-    name: z.string().trim().min(1).optional(),
-    tags: z.array(z.string()).optional(),
-  })
-  .catchall(z.unknown())
-
-export const treeItemSchema: z.ZodType<TreeItem> = z.lazy(() =>
-  z.object({
-    id: z.string(),
-    title: z.string(),
-    path: z.string(),
-    type: z.enum(['file', 'folder']),
-    children: z.array(treeItemSchema).optional(),
-  }),
-)
-
-export const projectIndexSchema = z.object({
-  version: z.string(),
-  corkboardOrder: z.record(z.string(), z.array(z.string())),
-  cache: z.record(z.string(), documentMetaSchema),
-})
-
-export const projectSnapshotSchema = z.object({
-  rootPath: z.string(),
-  tree: z.array(treeItemSchema),
-  markdownFiles: z.array(z.string()),
-  index: projectIndexSchema,
-})
-
-export const openProjectRequestSchema = z.object({
-  rootPath: z.string().trim().min(1),
-})
-
-export const selectProjectFolderResponseSchema = z.object({
-  rootPath: z.string().nullable(),
-})
-
-export const readDocumentRequestSchema = z.object({
-  path: z.string().trim().min(1),
-})
-
-export const readDocumentResponseSchema = z.object({
-  path: z.string(),
-  content: z.string(),
-  meta: documentMetaSchema,
-})
-
-export const saveDocumentRequestSchema = z.object({
-  path: z.string().trim().min(1),
-  content: z.string(),
-  meta: documentMetaSchema.default({}),
-})
-
-export const saveDocumentResponseSchema = z.object({
-  path: z.string(),
-  version: z.string(),
-})
-
-export const createDocumentRequestSchema = z.object({
-  path: z.string().trim().min(1),
-  initialContent: z.string().optional(),
-})
-
-export const createDocumentResponseSchema = z.object({
-  path: z.string(),
-  createdAt: z.string(),
-})
-
-export const createFolderRequestSchema = z.object({
-  path: z.string().trim().min(1),
-})
-
-export const createFolderResponseSchema = z.object({
-  path: z.string(),
-  createdAt: z.string(),
-})
-
-export const renameDocumentRequestSchema = z.object({
-  path: z.string().trim().min(1),
-  newName: z.string().trim().min(1),
-})
-
-export const renameDocumentResponseSchema = z.object({
-  path: z.string(),
-  renamedTo: z.string(),
-  updatedAt: z.string(),
-})
-
-export const deleteDocumentRequestSchema = z.object({
-  path: z.string().trim().min(1),
-})
-
-export const deleteDocumentResponseSchema = z.object({
-  path: z.string(),
-  deletedAt: z.string(),
-})
-
-export const externalFileEventSchema = z.object({
-  path: z.string(),
-  event: z.enum(['add', 'change', 'unlink']),
-  source: z.enum(['internal', 'external']),
-  timestamp: z.string(),
-})
-
-export const setFullscreenRequestSchema = z.object({
-  enabled: z.boolean(),
-})
-
-export const setFullscreenResponseSchema = z.object({
-  enabled: z.boolean(),
-})
-
-export const fullscreenChangedEventSchema = z.object({
-  enabled: z.boolean(),
-  timestamp: z.string(),
-})
-
-export const aiImportRequestSchema = z.object({
-  clipboardContent: z.string().trim().min(1),
-  projectRoot: z.string().trim().min(1),
-})
-
-export const aiImportFileSchema = z.object({
-  path: z.string(),
-  content: z.string(),
-  frontmatter: documentMetaSchema.optional(),
-  exists: z.boolean(),
-})
-export const aiImportPreviewSchema = z.object({
-  files: z.array(aiImportFileSchema),
-  totalFiles: z.number().int().nonnegative(),
-  newFiles: z.number().int().nonnegative(),
-  existingFiles: z.number().int().nonnegative(),
-})
-
-export const aiImportResponseSchema = z.object({
-  success: z.boolean(),
-  created: z.array(z.string()),
-  skipped: z.array(z.string()),
-  errors: z.array(z.object({ path: z.string(), error: z.string() })),
-})
-
-export const aiExportRequestSchema = z.object({
-  filePaths: z.array(z.string().trim().min(1)),
-  projectRoot: z.string().trim().min(1),
-  includeFrontmatter: z.boolean().default(true),
-})
-
-export const aiExportResponseSchema = z.object({
-  success: z.boolean(),
-  formattedContent: z.string(),
-  fileCount: z.number().int().nonnegative(),
-})
-
-export const ipcErrorSchema = z.object({
-  code: z.string(),
-  message: z.string(),
-  details: z.unknown().optional(),
-})
+export const pingRequestSchema = z.object({ message: z.string().trim().min(1).max(120) })
+export const pingResponseSchema = z.object({ echo: z.string(), timestamp: z.string() })
+export const debugLogRequestSchema = z.object({ source: z.string().trim().min(1).max(80), message: z.string().trim().min(1).max(300), details: z.unknown().optional() })
+export const documentMetaSchema = z.object({ id: z.string().trim().min(1).optional(), type: z.enum(['character', 'location', 'scene', 'note', 'outline']).optional(), name: z.string().trim().min(1).optional(), tags: z.array(z.string()).optional() }).catchall(z.unknown())
+export const treeItemSchema: z.ZodType<TreeItem> = z.lazy(() => z.object({ id: z.string(), title: z.string(), path: z.string(), type: z.enum(['file', 'folder']), children: z.array(treeItemSchema).optional() }))
+export const projectIndexSchema = z.object({ version: z.string(), corkboardOrder: z.record(z.string(), z.array(z.string())), cache: z.record(z.string(), documentMetaSchema) })
+export const projectSnapshotSchema = z.object({ rootPath: z.string(), tree: z.array(treeItemSchema), markdownFiles: z.array(z.string()), index: projectIndexSchema })
+export const openProjectRequestSchema = z.object({ rootPath: z.string().trim().min(1) })
+export const selectProjectFolderResponseSchema = z.object({ rootPath: z.string().nullable() })
+export const readDocumentRequestSchema = z.object({ path: z.string().trim().min(1) })
+export const readDocumentResponseSchema = z.object({ path: z.string(), content: z.string(), meta: documentMetaSchema })
+export const saveDocumentRequestSchema = z.object({ path: z.string().trim().min(1), content: z.string(), meta: documentMetaSchema.default({}) })
+export const saveDocumentResponseSchema = z.object({ path: z.string(), version: z.string() })
+export const createDocumentRequestSchema = z.object({ path: z.string().trim().min(1), initialContent: z.string().optional() })
+export const createDocumentResponseSchema = z.object({ path: z.string(), createdAt: z.string() })
+export const createFolderRequestSchema = z.object({ path: z.string().trim().min(1) })
+export const createFolderResponseSchema = z.object({ path: z.string(), createdAt: z.string() })
+export const renameDocumentRequestSchema = z.object({ path: z.string().trim().min(1), newName: z.string().trim().min(1) })
+export const renameDocumentResponseSchema = z.object({ path: z.string(), renamedTo: z.string(), updatedAt: z.string() })
+export const deleteDocumentRequestSchema = z.object({ path: z.string().trim().min(1) })
+export const deleteDocumentResponseSchema = z.object({ path: z.string(), deletedAt: z.string() })
+export const externalFileEventSchema = z.object({ path: z.string(), event: z.enum(['add', 'change', 'unlink']), source: z.enum(['internal', 'external']), timestamp: z.string() })
+export const setFullscreenRequestSchema = z.object({ enabled: z.boolean() })
+export const setFullscreenResponseSchema = z.object({ enabled: z.boolean() })
+export const fullscreenChangedEventSchema = z.object({ enabled: z.boolean(), timestamp: z.string() })
+export const aiImportRequestSchema = z.object({ clipboardContent: z.string().trim().min(1), projectRoot: z.string().trim().min(1) })
+export const aiImportFileSchema = z.object({ path: z.string(), content: z.string(), frontmatter: documentMetaSchema.optional(), exists: z.boolean() })
+export const aiImportPreviewSchema = z.object({ files: z.array(aiImportFileSchema), totalFiles: z.number().int().nonnegative(), newFiles: z.number().int().nonnegative(), existingFiles: z.number().int().nonnegative() })
+export const aiImportResponseSchema = z.object({ success: z.boolean(), created: z.array(z.string()), skipped: z.array(z.string()), errors: z.array(z.object({ path: z.string(), error: z.string() })) })
+export const aiExportRequestSchema = z.object({ filePaths: z.array(z.string().trim().min(1)), projectRoot: z.string().trim().min(1), includeFrontmatter: z.boolean().default(true) })
+export const aiExportResponseSchema = z.object({ success: z.boolean(), formattedContent: z.string(), fileCount: z.number().int().nonnegative() })
+export const ipcErrorSchema = z.object({ code: z.string(), message: z.string(), details: z.unknown().optional() })
 
 export type PingRequest = z.infer<typeof pingRequestSchema>
 export type PingResponse = z.infer<typeof pingResponseSchema>

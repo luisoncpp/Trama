@@ -31,6 +31,8 @@ import {
   handleAiImportPreview,
   handleAiImport,
   handleAiExport,
+  handleTagGetIndex,
+  handleTagResolve,
 } from './ipc/handlers/index.js'
 
 export { buildPingResponse, shutdownIpcServices }
@@ -141,9 +143,15 @@ function registerAiHandlers(ipcMain: IpcMain): void {
   })
 }
 
+function registerTagHandlers(ipcMain: IpcMain): void {
+  ipcMain.handle(IPC_CHANNELS.tagGetIndex, () => handleTagGetIndex())
+  ipcMain.handle(IPC_CHANNELS.tagResolve, (_event, payload) => handleTagResolve(payload))
+}
+
 export function registerIpcHandlers(ipcMain: IpcMain, getMainWindow: () => BrowserWindow | null): void {
   configureMainWindowResolver(getMainWindow)
   registerCoreHandlers(ipcMain)
   registerFullscreenHandler(ipcMain, getMainWindow)
   registerAiHandlers(ipcMain)
+  registerTagHandlers(ipcMain)
 }

@@ -28,3 +28,4 @@ dist-ssr
 /.jscpd-report/jscpd-report.json
 /skills-lock.json
 release
+/reports/test-report.txt

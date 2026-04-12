@@ -29,6 +29,7 @@ import type {
   SetFullscreenResponse,
   SelectProjectFolderResponse,
 } from '../shared/ipc'
+import type { TagGetIndexResponse, TagResolveRequest, TagResolveResponse } from '../shared/ipc-tag'
 
 declare global {
   interface Window {
@@ -50,6 +51,8 @@ declare global {
       aiImportPreview(payload: AiImportRequest): Promise<IpcEnvelope<AiImportPreview>>
       aiImport(payload: AiImportRequest): Promise<IpcEnvelope<AiImportResponse>>
       aiExport(payload: AiExportRequest): Promise<IpcEnvelope<AiExportResponse>>
+      getTagIndex(): Promise<IpcEnvelope<TagGetIndexResponse>>
+      resolveTag(payload: TagResolveRequest): Promise<IpcEnvelope<TagResolveResponse>>
     }
   }
 }

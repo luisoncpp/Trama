@@ -23,7 +23,7 @@ export async function handleOpenProject(rawPayload: unknown): Promise<IpcEnvelop
     const index = await indexService.reconcileIndex(markdownFiles, metaByPath)
 
     await startWatcher(projectRoot)
-    setActiveProject(projectRoot, indexService)
+    setActiveProject(projectRoot, indexService, markdownFiles, metaByPath)
 
     return {
       ok: true,

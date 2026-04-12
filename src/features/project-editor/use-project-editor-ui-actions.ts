@@ -12,6 +12,7 @@ import {
 } from './use-project-editor-conflict-actions'
 import {
   useAssignFileToActivePaneAction,
+  useOpenFileInPaneAction,
   useSetWorkspaceActivePaneAction,
   useSetWorkspaceLayoutRatioAction,
   useToggleWorkspaceLayoutModeAction,
@@ -115,6 +116,7 @@ function usePrimaryProjectEditorActions(
   saveDocumentNow: UseProjectEditorUiActionsParams['saveDocumentNow'],
 ) {
   const assignFileToActivePane = useAssignFileToActivePaneAction(values, setters)
+  const openFileInPane = useOpenFileInPaneAction({ values, setters, loadDocument })
   const pickProjectFolder = usePickProjectFolderAction({ openProject, setters })
   const selectFile = useSelectFileAction({ values, setters, loadDocument, assignFileToActivePane })
   const { createArticle, createCategory } = useProjectEditorCreateActions({ values, setters, openProject })
@@ -134,6 +136,7 @@ function usePrimaryProjectEditorActions(
   return {
     pickProjectFolder,
     selectFile,
+    openFileInPane,
     createArticle,
     createCategory,
     renameFile,

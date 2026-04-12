@@ -28,6 +28,17 @@ export function useAssignFileToActivePaneAction(
   )
 }
 
+export function useAssignFileToPaneAction(
+  setters: UseProjectEditorStateResult['setters'],
+): (filePath: string, pane: WorkspacePane) => void {
+  return useCallback(
+    (filePath: string, pane: WorkspacePane) => {
+      setters.setWorkspaceLayout((previous) => updatePathForPane(previous, pane, filePath))
+    },
+    [setters],
+  )
+}
+
 export function useToggleWorkspaceLayoutModeAction(
   values: UseProjectEditorStateResult['values'],
   setters: UseProjectEditorStateResult['setters'],
@@ -97,5 +108,47 @@ export function useSetWorkspaceActivePaneAction({
       }
     },
     [loadDocument, setters, values.isDirty, values.selectedPath, values.workspaceLayout.primaryPath, values.workspaceLayout.secondaryPath],
+  )
+}
+
+export function useOpenFileInPaneAction({
+  values,
+  setters,
+  loadDocument,
+}: UseWorkspaceLayoutActionParams): (filePath: string, pane: WorkspacePane) => void {
+  return useCallback(
+    (filePath: string, pane: WorkspacePane) => {
+      if (pane === 'secondary') {
+        const currentSecondaryPath = values.workspaceLayout.secondaryPath
+        const shouldLoad = currentSecondaryPath !== filePath
+
+        setters.setWorkspaceLayout((previous) => ({
+          ...previous,
+          mode: previous.mode === 'single' ? 'split' : previous.mode,
+          activePane: 'secondary',
+          secondaryPath: filePath,
+        }))
+
+        if (shouldLoad) {
+          void loadDocument(filePath, 'secondary')
+        }
+      } else {
+        if (!canSelectFile(values.isDirty, values.selectedPath, filePath)) {
+          setters.setStatusMessage(PROJECT_EDITOR_STRINGS.statusNeedSaveBeforeSwitch)
+          return
+        }
+
+        setters.setWorkspaceLayout((previous) => ({
+          ...previous,
+          activePane: 'primary',
+          primaryPath: filePath,
+        }))
+
+        if (values.primaryPane.path !== filePath) {
+          void loadDocument(filePath, 'primary')
+        }
+      }
+    },
+    [loadDocument, setters, values.isDirty, values.selectedPath, values.primaryPane.path, values.workspaceLayout.secondaryPath],
   )
 }

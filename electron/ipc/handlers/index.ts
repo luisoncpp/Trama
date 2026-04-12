@@ -15,4 +15,5 @@ export {
   handleAiImport,
   handleAiExport,
 } from './ai-handlers.js'
-export { configureMainWindowResolver, shutdownIpcServices } from '../../ipc-runtime.js'
+export { handleTagGetIndex, handleTagResolve } from './tag-handlers.js'
+export { configureMainWindowResolver, shutdownIpcServices, getActiveTagIndexService } from '../../ipc-runtime.js'
