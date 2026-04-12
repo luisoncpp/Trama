@@ -9,15 +9,17 @@ Trama is designed for managing long-form manuscripts and complex lore through a 
 ### ✅ Currently Implemented
 -   **File-First Architecture**: Your data stays in your folders. Trama works directly with the local file system.
 -   **Semantic Project Tree**: A specialized sidebar designed for writers with distinct sections for Manuscripts, Lore, Characters, Locations, and more.
--   **Markdown Editor**: A rich editing experience with full Markdown support and YAML frontmatter integration.
--   **Focus Mode & Fullscreen**: Zero-distraction writing environment with specialized focus rendering.
--   **Appearance**: Support for both **Light and Dark themes**.
--   **Split Pane Workspace**: Multi-pane support to keep your notes and manuscript side-by-side.
+-   **Rich Markdown Editor**: A Quill-based editing experience with full Markdown persistence, YAML frontmatter integration, and inline find.
+-   **Split Pane Workspace**: Multi-pane support to keep notes, lore, and manuscript side-by-side.
+-   **Focus Mode & Fullscreen**: Zero-distraction writing environment with native fullscreen and configurable line, sentence, or paragraph focus scope.
+-   **Appearance**: Support for **Light, Dark, and System** themes.
+-   **AI Import / Export**: Structured clipboard import and multi-file export flows for working with LLMs without leaving the file-first model.
+-   **Paste Markdown**: Convert Markdown from the clipboard directly into the rich editor.
+-   **Wiki Tag Navigation**: Tag index refreshes after saves so Ctrl/Cmd+Click tag navigation remains reliable.
 -   **Smart Conflict Resolution**: Built-in watcher detects external changes and helps resolve edit conflicts.
 
 ### ⏳ Planned / In Progress
--   **Wiki-style Linking**: Cross-reference your lore world using `[[Links]]` with real-time autocompletion.
--   **IA-Ready Workflow**: Structured import tools are already available; structured export and compilation flows are in progress for seamless communication with LLMs.
+-   **Folder Operations**: Safer folder rename, delete, and move workflows are planned for a later phase.
 -   **Corkboard View**: Drag-and-drop cards for planning and reorganizing scenes or ideas.
 -   **Project Templates**: Pre-defined schemas for characters, locations, and world-building notes.
 
@@ -74,6 +76,13 @@ Run the test suite (Vitest):
 npm run test
 ```
 
+In agent or sandboxed environments, prefer the PowerShell runner:
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/run-tests.ps1
+```
+
+In VS Code you can also run the task `Run Tests & Report`, which writes the output to `reports/test-report.txt`.
+
 For smoke tests (requires build):
 ```bash
 npm run test:smoke
@@ -102,8 +111,10 @@ If you are starting a new implementation conversation, begin with:
 -   [docs/START-HERE.md](docs/START-HERE.md)
 
 This entrypoint routes to the mandatory docs that are often missed:
+-   [docs/current-status.md](docs/current-status.md)
 -   [docs/file-map.md](docs/file-map.md)
 -   [docs/lessons-learned/README.md](docs/lessons-learned/README.md)
+-   [docs/dev-workflow.md](docs/dev-workflow.md)
 
 ## 📄 License
 
