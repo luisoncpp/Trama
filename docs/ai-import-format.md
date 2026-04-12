@@ -1,112 +1,111 @@
-# Guía de Formato para Importación AI
+# AI Import Format Guide
 
-## ¿Qué es la Importación AI?
+## What Is AI Import?
 
-La importación AI te permite crear múltiples archivos Markdown en tu proyecto Trama desde una única salida de un modelo de lenguaje (LLM). Solo necesitas pegar el contenido generado en el formato correcto.
+AI import lets you create multiple Markdown files in your Trama project from a single language model (LLM) output. You only need to paste the generated content in the correct format.
 
-> Estado actual (abril 2026): la importación AI ya está disponible en la app. La exportación AI todavía está en progreso a nivel de experiencia de usuario (UI/flujo de selección), aunque la base técnica de exportación ya existe en el backend.
+## Required Format
 
-## Formato Requerido
-
-Cada archivo debe estar delimitado por una cabecera especial:
+Each file must be delimited by a special header:
 
 ```
-=== FILE: ruta/del/archivo.md ===
-contenido del archivo aquí
+=== FILE: path/to/file.md ===
+file content goes here
 ```
 
-### Reglas Importantes
+### Important Rules
 
-1. **Cabecera de archivo**: Debe comenzar con `=== FILE:` seguido de la ruta relativa dentro del proyecto
-2. **Rutas**: Usa rutas relativas desde la raíz del proyecto (ej: `book/Capitulo-01/Escena-001.md`)
-3. **Separador**: Tres signos de igual (`===`) antes y después de `FILE:`
-4. **Contenido**: Todo el texto después del salto de línea siguiente a la cabecera será el contenido del archivo
-5. **Múltiples archivos**: Puedes incluir tantos archivos como quieras, cada uno con su propia cabecera
+1. **File header**: It must start with `=== FILE:` followed by the relative path inside the project
+2. **Paths**: Use paths relative to the project root (example: `book/Act-01/Chapter-01/Scene-001.md`)
+3. **Delimiter**: Three equals signs (`===`) before and after `FILE:`
+4. **Content**: All text after the newline following the header becomes the file content
+5. **Multiple files**: You can include as many files as you want, each with its own header
 
-## Soporte para Frontmatter
+## Frontmatter Support
 
-Los archivos pueden incluir YAML frontmatter al inicio:
+Files can include YAML frontmatter at the beginning:
 
 ```markdown
-=== FILE: lore/personajes/protagonista.md ===
+=== FILE: lore/characters/protagonist.md ===
 ---
-nombre: Elena Vance
-tipo: character
-tags: [protagonista, magia]
+name: Elena Vance
+type: character
+tags: [protagonist, magic]
 ---
 
 # Elena Vance
 
-Una poderosa hechicera con un secreto oscuro...
+A powerful sorceress with a dark secret...
 ```
 
-## Ejemplo Completo
+## Complete Example
 
 ```
-=== FILE: book/Acto-01/Capitulo-01/Escena-001.md ===
+=== FILE: book/Act-01/Chapter-01/Scene-001.md ===
 ---
-nombre: El Despertar
-tipo: scene
-orden: 1
----
-
-# El Despertar
-
-Elena abrió los ojos. La torre brillaba en la distancia.
-
-—Es hora —murmuró.
-
-=== FILE: lore/locaciones/torre-cristalina.md ===
----
-nombre: Torre Cristalina
-tipo: location
-tags: [magia, norte]
+name: The Awakening
+type: scene
+order: 1
 ---
 
-# Torre Cristalina
+# The Awakening
 
-Una estructura ancestral construida con cristales mágicos que absorben la luz de las estrellas.
+Elena opened her eyes. The tower shimmered in the distance.
 
-### Propiedades
-- Absorbe energía estelar
-- Protege contra magia oscura
-- Solo accesible durante la luna llena
+"It is time," she whispered.
 
-=== FILE: outline/arco-magia.md ===
-# Arco de Magia
+=== FILE: lore/places/crystal-tower.md ===
+---
+name: Crystal Tower
+type: location
+tags: [magic, north]
+---
 
-El sistema de magia se basa en tres principios fundamentales:
+# Crystal Tower
 
-1. **Voluntad**: El poder interior del hechicero
-2. **Conocimiento**: Las runas y encantamientos
-3. **Sacrificio**: El precio de usar magia
+An ancient structure built with magical crystals that absorb starlight.
+
+### Properties
+- Absorbs stellar energy
+- Protects against dark magic
+- Accessible only during the full moon
+
+=== FILE: outline/Act-01/chapter-beats.md ===
+# Act-01 Chapter Beats
+
+Summary of key beats for the first chapter:
+
+1. **Opening**: Elena wakes and detects an anomaly in the tower
+2. **Inciting Incident**: A messenger warns of danger in the northern region
+3. **Decision**: Elena agrees to investigate despite the personal cost
 ```
 
-## Comportamiento con Archivos Existentes
+## Behavior with Existing Files
 
-- ✅ **Archivos nuevos**: Se crearán automáticamente
-- ⚠️ **Archivos existentes**: Se omitirán para evitar sobrescribir contenido accidentalmente
+- ✅ **New files**: They will be created automatically
+- ⚠️ **Existing files**: They will be skipped to avoid accidental overwrites
 
-Si necesitas modificar un archivo existente, cámbiale el nombre o elimínalo primero.
+If you need to modify an existing file, rename it or delete it first.
 
-## Consejos de Uso
+## Usage Tips
 
-1. **Desde LLMs**: Pide al modelo que genere la salida en este formato exacto
-2. **Estructura de carpetas**: Las carpetas intermedias se crearán automáticamente si no existen
-3. **Vista previa**: Siempre revisa la vista previa antes de importar para confirmar qué archivos se crearán
-4. **Rutas válidas**: Evita caracteres especiales en nombres de archivo (`<>:"|?*`)
+1. **From LLMs**: Ask the model to generate output in this exact format
+2. **Folder structure**: Intermediate folders are created automatically if they do not exist
+3. **Preview**: Always review the preview before importing to confirm which files will be created
+4. **Valid paths**: Avoid special characters in file names (`<>:"|?*`)
 
-## Ejemplo de Prompt para LLM
+## Example Prompt for an LLM
 
 ```
-Genera los siguientes archivos para mi proyecto de fantasía en formato Trama:
+Generate the following files for my fantasy project in Trama format:
 
-Para cada archivo, usa exactamente este formato:
-=== FILE: ruta/completa.md ===
-[contenido del archivo con frontmatter YAML si es necesario]
+For each file, use exactly this format:
+=== FILE: full/path.md ===
+[file content with YAML frontmatter if needed]
 
-Archivos a generar:
-1. Un personaje protagonista llamado "Kael" con tags [héroe, espada]
-2. Una locación "Bosque de Sombras" con tags [peligro, magia]
-3. Una escena inicial ambientada en el bosque
+Files to generate:
+1. `lore/characters/kael.md` for a protagonist named "Kael" with tags [hero, sword]
+2. `lore/places/forest-of-shadows.md` for a location named "Forest of Shadows" with tags [danger, magic]
+3. `book/Act-01/Chapter-01/Scene-001.md` for an opening scene set in the forest
+4. `outline/arc-general.md` with a summary of the main story arc
 ```
