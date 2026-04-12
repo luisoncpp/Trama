@@ -49,6 +49,7 @@ Implemented now:
 - AI import (clipboard) implemented end-to-end: parser, preview, import dialog, renderer hook, IPC handlers, and main-process file creation flow.
 - AI export implemented end-to-end: sidebar export trigger, multi-file export dialog, include/exclude frontmatter option, secure path validation in backend service, IPC handler coverage, and clipboard copy flow.
 - AI export UX polish: export copy flow now shows a success toast notification after clipboard write.
+- Wiki tag link stability hardening: tag index now refreshes immediately after document save flows (including frontmatter tag edits), so Ctrl/Cmd+Click navigation works without restarting the app.
 
 Not implemented yet (planned in later phases):
 - Folder rename/delete and move workflows.
@@ -75,6 +76,7 @@ Additional regression checks in suite include:
 - Paste Markdown behavior (`tests/paste-markdown.test.ts`).
 - In-document Find behavior (`tests/rich-markdown-editor.test.ts`).
 - Sidebar panel interactions including right-click rename/delete (`tests/sidebar-panels.test.ts`).
+- Tag index hot-refresh regression coverage for save -> getTagIndex/tagResolve flows (`tests/tag-index-ipc-regression.test.ts`).
 
 ## Known technical tradeoffs
 

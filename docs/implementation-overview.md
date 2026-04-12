@@ -36,6 +36,7 @@ The project now includes:
 - `npm run dev` auto-builds the Electron main process before starting the dev server.
 - AI import workflow: structured clipboard parser + preview + bulk create flow available from the sidebar import action.
 - AI export baseline: IPC contract and formatter service are available, but no user-facing export dialog/action is wired yet.
+- Wiki tag index refresh hardening: after save/create/rename/delete document operations, main-process reconciliation now updates both `.trama.index.json` and `TagIndexService`, preventing stale Ctrl/Cmd+Click tag navigation until restart.
 
 ## Runtime architecture
 

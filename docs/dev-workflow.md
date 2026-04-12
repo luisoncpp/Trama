@@ -93,6 +93,10 @@ Before writing any code that interacts with Quill's API (coordinates, bounds, se
 - Key gotcha: `quill.getBounds()` returns coordinates **relative to `quill.container`**, not `quill.root`. See `docs/lessons-learned/quill-getbounds-container-reference.md`.
 - Quill owns its DOM (`quill.root` / `.ql-editor`). Never inject or mutate nodes inside it; overlays must be siblings outside `.ql-editor`.
 
+## When you are getting stuck
+
+- The user doesn't want you to spend long time reasoning, consider adding logs or fetching the documentation of external libraries that are causing issues.
+
 ## Lint and structure constraints (important)
 
 - `max-lines: 200` and `max-lines-per-function: 50` are enforced.
