@@ -1,3 +1,8 @@
+---
+tags:
+  - Nora
+---
+
 Ficha — Nora
 
 - Nombre: Nora

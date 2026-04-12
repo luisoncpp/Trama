@@ -1,5 +1,6 @@
 import { useState, useCallback, useEffect } from 'preact/hooks'
 import type { TagGetIndexResponse } from '../../shared/ipc-tag'
+import { TAG_INDEX_REFRESH_EVENT } from './tag-index-events'
 
 export interface TagIndexState {
   tagIndex: TagGetIndexResponse['tags'] | null
@@ -68,6 +69,17 @@ export function useTagIndex(rootPath: string | null) {
     if (!window.tramaApi) return
     const unsubscribe = window.tramaApi.onExternalFileEvent(fetchTagIndexCallback)
     return unsubscribe
+  }, [fetchTagIndexCallback])
+
+  useEffect(() => {
+    const onTagIndexRefresh = () => {
+      fetchTagIndexCallback()
+    }
+
+    window.addEventListener(TAG_INDEX_REFRESH_EVENT, onTagIndexRefresh)
+    return () => {
+      window.removeEventListener(TAG_INDEX_REFRESH_EVENT, onTagIndexRefresh)
+    }
   }, [fetchTagIndexCallback])
 
   return {

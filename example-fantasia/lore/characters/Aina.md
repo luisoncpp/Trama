@@ -1,3 +1,8 @@
+---
+tags:
+  - aina
+---
+
 Ficha — Aina
 
 - Nombre: Aina

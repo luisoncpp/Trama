@@ -92,8 +92,16 @@
     "book/Act-02/Chapter-03/Scene-001.md": {},
     "book/Act-02/Chapter-03/Scene-002.md": {},
     "book/Act-02/Chapter-03/Scene-003.md": {},
-    "lore/characters/Aina.md": {},
-    "lore/characters/Corin.md": {},
+    "lore/characters/Aina.md": {
+      "tags": [
+        "aina"
+      ]
+    },
+    "lore/characters/Corin.md": {
+      "tags": [
+        "corin"
+      ]
+    },
     "lore/characters/Elio.md": {
       "title": "Elio",
       "type": "character",
@@ -115,7 +123,11 @@
         "custodia"
       ]
     },
-    "lore/characters/Nora.md": {},
+    "lore/characters/Nora.md": {
+      "tags": [
+        "Nora"
+      ]
+    },
     "lore/characters/Sombra-del-Lirio.md": {},
     "lore/places/bosque-encantado.md": {
       "title": "El Bosque Encantado",

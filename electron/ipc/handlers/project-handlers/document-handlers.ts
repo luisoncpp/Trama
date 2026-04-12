@@ -16,6 +16,7 @@ import {
 import { errorEnvelope } from '../../../ipc-errors.js'
 import {
   getActiveIndexService,
+  getActiveTagIndexService,
   getActiveProjectRoot,
   markInternalWrite,
 } from '../../../ipc-runtime.js'
@@ -24,13 +25,19 @@ import { documentRepository, readMetaByPath } from './shared.js'
 
 async function reconcileActiveProjectIndex(projectRoot: string): Promise<void> {
   const indexService = getActiveIndexService()
-  if (!indexService) {
+  const tagIndexService = getActiveTagIndexService()
+  if (!indexService && !tagIndexService) {
     return
   }
 
   const { markdownFiles } = await scanProject(projectRoot)
   const metaByPath = await readMetaByPath(projectRoot, markdownFiles)
-  await indexService.reconcileIndex(markdownFiles, metaByPath)
+  if (indexService) {
+    await indexService.reconcileIndex(markdownFiles, metaByPath)
+  }
+  if (tagIndexService) {
+    await tagIndexService.buildIndex(markdownFiles, metaByPath)
+  }
 }
 
 export async function handleReadDocument(rawPayload: unknown): Promise<IpcEnvelope<ReadDocumentResponse>> {

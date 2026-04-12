@@ -1,3 +1,8 @@
+---
+tags:
+  - corin
+---
+
 Ficha — Corin
 
 - Nombre: Corin

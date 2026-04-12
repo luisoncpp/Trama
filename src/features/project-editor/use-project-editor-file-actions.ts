@@ -1,5 +1,6 @@
 import { useCallback } from 'preact/hooks'
 import { PROJECT_EDITOR_STRINGS } from './project-editor-strings'
+import { notifyTagIndexRefresh } from './tag-index-events'
 import type { ProjectEditorActions, SidebarRenameInput } from './project-editor-types'
 import type { UseProjectEditorStateResult } from './use-project-editor-state'
 
@@ -132,6 +133,7 @@ function useEditFileTagsAction({ values, setters }: UseProjectEditorFileActionsP
 
     setters.setPrimaryPane((prev) => prev.path === path ? { ...prev, meta: nextMeta } : prev)
     setters.setSecondaryPane((prev) => prev.path === path ? { ...prev, meta: nextMeta } : prev)
+    notifyTagIndexRefresh()
     setters.setStatusMessage(`Updated tags: ${saveResponse.data.path}`)
   }, [setters, values.primaryPane.isDirty, values.primaryPane.path, values.rootPath, values.secondaryPane.isDirty, values.secondaryPane.path])
 }
