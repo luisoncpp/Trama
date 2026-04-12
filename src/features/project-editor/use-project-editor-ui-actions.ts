@@ -120,7 +120,7 @@ function usePrimaryProjectEditorActions(
   const pickProjectFolder = usePickProjectFolderAction({ openProject, setters })
   const selectFile = useSelectFileAction({ values, setters, loadDocument, assignFileToActivePane })
   const { createArticle, createCategory } = useProjectEditorCreateActions({ values, setters, openProject })
-  const { renameFile, deleteFile } = useProjectEditorFileActions({ values, setters, openProject })
+  const { renameFile, deleteFile, editFileTags } = useProjectEditorFileActions({ values, setters, openProject })
   const setSidebarSection = useSetSidebarSectionAction(setters)
   const toggleSidebarPanelCollapsed = useToggleSidebarPanelCollapsedAction(values, setters)
   const setSidebarPanelWidth = useSetSidebarPanelWidthAction(setters)
@@ -141,6 +141,7 @@ function usePrimaryProjectEditorActions(
     createCategory,
     renameFile,
     deleteFile,
+    editFileTags,
     setSidebarSection,
     toggleSidebarPanelCollapsed,
     setSidebarPanelWidth,

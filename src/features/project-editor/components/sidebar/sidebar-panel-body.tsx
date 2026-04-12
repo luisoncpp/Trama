@@ -32,6 +32,7 @@ export interface SidebarPanelBodyProps {
   onCreateCategory: SidebarFileActions['onCreateCategory']
   onRenameFile: SidebarFileActions['onRenameFile']
   onDeleteFile: SidebarFileActions['onDeleteFile']
+  onEditFileTags: SidebarFileActions['onEditFileTags']
   onImport: () => void
   onExport: () => void
   contentProps: Omit<
@@ -54,12 +55,22 @@ function renderSidebarExplorerContent({
   onCreateCategory,
   onRenameFile,
   onDeleteFile,
+  onEditFileTags,
   onSelectFile,
   onImport,
   onExport,
 }: SidebarPanelBodyProps) {
   if (!sectionConfig) {
     return null
+  }
+
+  const loadFileTags = async (path: string): Promise<string[]> => {
+    const response = await window.tramaApi.readDocument({ path: `${sectionConfig.root}${path}` })
+    if (!response.ok || !Array.isArray(response.data.meta.tags)) {
+      return []
+    }
+
+    return response.data.meta.tags.filter((value): value is string => typeof value === 'string')
   }
 
   return (
@@ -75,6 +86,8 @@ function renderSidebarExplorerContent({
       onCreateCategory={onCreateCategory}
       onRenameFile={(path, newName) => onRenameFile(`${sectionConfig.root}${path}`, newName)}
       onDeleteFile={(path) => onDeleteFile(`${sectionConfig.root}${path}`)}
+      onEditFileTags={(path, tags) => onEditFileTags(`${sectionConfig.root}${path}`, tags)}
+      onLoadFileTags={loadFileTags}
       onSelectFile={(filePath) => onSelectFile(`${sectionConfig.root}${filePath}`)}
       onImport={onImport}
       onExport={onExport}

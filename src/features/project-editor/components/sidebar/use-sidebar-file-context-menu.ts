@@ -2,11 +2,12 @@ import { useState } from 'preact/hooks'
 
 interface UseSidebarFileContextMenuParams {
   onSelectFile: (path: string) => void
+  onOpenEditTags: (path: string) => void
   onOpenRename: (path: string) => void
   onOpenDelete: (path: string) => void
 }
 
-export function useSidebarFileContextMenu({ onSelectFile, onOpenRename, onOpenDelete }: UseSidebarFileContextMenuParams) {
+export function useSidebarFileContextMenu({ onSelectFile, onOpenEditTags, onOpenRename, onOpenDelete }: UseSidebarFileContextMenuParams) {
   const [state, setState] = useState<{ path: string; x: number; y: number } | null>(null)
 
   const closeContextMenu = () => {
@@ -27,6 +28,15 @@ export function useSidebarFileContextMenu({ onSelectFile, onOpenRename, onOpenDe
     closeContextMenu()
   }
 
+  const handleEditTagsFromContextMenu = () => {
+    if (!state) {
+      return
+    }
+
+    onOpenEditTags(state.path)
+    closeContextMenu()
+  }
+
   const handleDeleteFromContextMenu = () => {
     if (!state) {
       return
@@ -40,6 +50,7 @@ export function useSidebarFileContextMenu({ onSelectFile, onOpenRename, onOpenDe
     contextMenuState: state,
     closeContextMenu,
     handleFileContextMenu,
+    handleEditTagsFromContextMenu,
     handleRenameFromContextMenu,
     handleDeleteFromContextMenu,
   }

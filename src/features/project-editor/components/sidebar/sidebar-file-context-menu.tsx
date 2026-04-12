@@ -1,12 +1,13 @@
 interface SidebarFileContextMenuProps {
   isOpen: boolean
   position: { x: number; y: number } | null
+  onEditTags: () => void
   onRename: () => void
   onDelete: () => void
   onClose: () => void
 }
 
-export function SidebarFileContextMenu({ isOpen, position, onRename, onDelete, onClose }: SidebarFileContextMenuProps) {
+export function SidebarFileContextMenu({ isOpen, position, onEditTags, onRename, onDelete, onClose }: SidebarFileContextMenuProps) {
   if (!isOpen || !position) {
     return null
   }
@@ -20,6 +21,9 @@ export function SidebarFileContextMenu({ isOpen, position, onRename, onDelete, o
         style={{ left: `${position.x}px`, top: `${position.y}px` }}
         onClick={(event) => event.stopPropagation()}
       >
+        <button type="button" class="sidebar-context-menu__item" role="menuitem" onClick={onEditTags}>
+          Edit tags
+        </button>
         <button type="button" class="sidebar-context-menu__item" role="menuitem" onClick={onRename}>
           Rename
         </button>

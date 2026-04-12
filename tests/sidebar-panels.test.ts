@@ -28,6 +28,7 @@ function buildPanelProps(
     onCreateCategory: () => undefined,
     onRenameFile: () => undefined,
     onDeleteFile: () => undefined,
+    onEditFileTags: () => undefined,
     apiAvailable: true,
     loadingProject: false,
     rootPath: 'C:/Proyectos/test_trama',
@@ -145,9 +146,11 @@ describe('sidebar panels', () => {
           onCreateCategory: () => undefined,
           onRenameFile: () => undefined,
           onDeleteFile: () => undefined,
+          onEditFileTags: () => undefined,
           onPickFolder,
           onImport: () => undefined,
           onExport: () => undefined,
+          onLoadFileTags: () => Promise.resolve([]),
         }),
         container,
       )
@@ -187,9 +190,11 @@ describe('sidebar panels', () => {
           onCreateCategory: () => undefined,
           onRenameFile: () => undefined,
           onDeleteFile: () => undefined,
+          onEditFileTags: () => undefined,
           onPickFolder: () => undefined,
           onImport: () => undefined,
           onExport: () => undefined,
+          onLoadFileTags: () => Promise.resolve([]),
         }),
         container,
       )
@@ -225,9 +230,11 @@ describe('sidebar panels', () => {
           onCreateCategory: () => undefined,
           onRenameFile: () => undefined,
           onDeleteFile: () => undefined,
+          onEditFileTags: () => undefined,
           onPickFolder: () => undefined,
           onImport: () => undefined,
           onExport: () => undefined,
+          onLoadFileTags: () => Promise.resolve([]),
         }),
         container,
       )
@@ -252,9 +259,11 @@ describe('sidebar panels', () => {
           onCreateCategory: () => undefined,
           onRenameFile: () => undefined,
           onDeleteFile: () => undefined,
+          onEditFileTags: () => undefined,
           onPickFolder: () => undefined,
           onImport: () => undefined,
           onExport: () => undefined,
+          onLoadFileTags: () => Promise.resolve([]),
         }),
         container,
       )
@@ -354,13 +363,27 @@ describe('sidebar panels', () => {
     })
   })
 
-  it('triggers rename and delete callbacks from file context menu', () => {
+  it('triggers edit tags, rename and delete callbacks from file context menu', async () => {
     const onRenameFile = vi.fn()
     const onDeleteFile = vi.fn()
+    const onEditFileTags = vi.fn()
+
+    const readDocumentMock = vi.fn(async () => ({
+      ok: true,
+      data: {
+        path: 'book/Act-01/Chapter-01/Scene-001.md',
+        content: '# Scene',
+        meta: { tags: ['magic', 'north'] },
+      },
+    }))
+
+    ;(window as unknown as { tramaApi: { readDocument: typeof readDocumentMock } }).tramaApi = {
+      readDocument: readDocumentMock,
+    }
 
     act(() => {
       render(
-        h(SidebarPanel, buildPanelProps({ onRenameFile, onDeleteFile })),
+        h(SidebarPanel, buildPanelProps({ onRenameFile, onDeleteFile, onEditFileTags })),
         container,
       )
     })
@@ -372,6 +395,44 @@ describe('sidebar panels', () => {
 
     act(() => {
       fileRowButton.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true, clientX: 120, clientY: 140 }))
+    })
+
+    const editTagsMenuItem = Array.from(container.querySelectorAll('.sidebar-context-menu__item')).find((node) =>
+      node.textContent?.includes('Edit tags'),
+    ) as HTMLButtonElement
+    expect(editTagsMenuItem).toBeTruthy()
+
+    await act(async () => {
+      editTagsMenuItem.click()
+      await Promise.resolve()
+    })
+
+    expect(readDocumentMock).toHaveBeenCalledWith({ path: 'book/Act-01/Chapter-01/Scene-001.md' })
+
+    const tagsInput = container.querySelector(
+      '.sidebar-create-dialog textarea',
+    ) as HTMLTextAreaElement
+    const saveTagsConfirm = Array.from(container.querySelectorAll('.sidebar-create-dialog .editor-button')).find((node) =>
+      node.textContent?.includes('Save Tags'),
+    ) as HTMLButtonElement
+
+    expect(tagsInput).toBeTruthy()
+    expect(saveTagsConfirm).toBeTruthy()
+    expect(tagsInput.value).toContain('magic')
+
+    act(() => {
+      tagsInput.value = 'magic, north, magic, selene valeria'
+      tagsInput.dispatchEvent(new Event('input', { bubbles: true }))
+    })
+
+    act(() => {
+      saveTagsConfirm.click()
+    })
+
+    expect(onEditFileTags).toHaveBeenCalledWith('book/Act-01/Chapter-01/Scene-001.md', ['magic', 'north', 'selene valeria'])
+
+    act(() => {
+      fileRowButton.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true, clientX: 160, clientY: 180 }))
     })
 
     const renameMenuItem = Array.from(container.querySelectorAll('.sidebar-context-menu__item')).find((node) =>

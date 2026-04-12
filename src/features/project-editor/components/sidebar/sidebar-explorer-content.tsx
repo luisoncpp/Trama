@@ -58,6 +58,8 @@ interface SidebarExplorerContentProps {
   onCreateCategory: SidebarExplorerCommonProps['onCreateCategory']
   onRenameFile: SidebarExplorerCommonProps['onRenameFile']
   onDeleteFile: SidebarExplorerCommonProps['onDeleteFile']
+  onEditFileTags: SidebarExplorerCommonProps['onEditFileTags']
+  onLoadFileTags: (path: string) => Promise<string[]>
   onPickFolder: SidebarExplorerCommonProps['onPickFolder']
   onImport: () => void
   onExport: () => void
@@ -73,6 +75,8 @@ function useSidebarExplorerDialogs(props: SidebarExplorerContentProps) {
   const fileDialog = useSidebarFileActionsDialog({
     onRenameFile: props.onRenameFile,
     onDeleteFile: props.onDeleteFile,
+    onEditFileTags: props.onEditFileTags,
+    onLoadFileTags: props.onLoadFileTags,
   })
 
   return { createDialog, fileDialog }
@@ -152,9 +156,13 @@ export function SidebarExplorerContent(props: SidebarExplorerContentProps) {
           renameValue={fileDialog.renameValue}
           openRenameDialog={fileDialog.openRename}
           openDeleteDialog={fileDialog.openDelete}
+          openEditTagsDialog={fileDialog.openEditTags}
           closeFileActionDialog={fileDialog.closeDialog}
           confirmFileActionDialog={fileDialog.confirm}
           onRenameValueChange={fileDialog.setRenameValue}
+          tagsValue={fileDialog.tagsValue}
+          loadingTags={fileDialog.loadingTags}
+          onTagsValueChange={fileDialog.setTagsValue}
           onDirectoryChange={createDialog.setCreateDirectory}
           onNameChange={createDialog.setCreateName}
           filterInputRef={setFilterInputRef}

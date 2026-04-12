@@ -86,6 +86,7 @@ function SidebarSection({
       onCreateCategory={(input) => void actions.createCategory(input)}
       onRenameFile={(path, newName) => void actions.renameFile({ path, newName })}
       onDeleteFile={(path) => void actions.deleteFile(path)}
+      onEditFileTags={(path, tags) => void actions.editFileTags(path, tags)}
       apiAvailable={state.apiAvailable}
       loadingProject={state.loadingProject}
       rootPath={state.rootPath}

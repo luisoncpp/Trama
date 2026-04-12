@@ -40,7 +40,10 @@ interface SidebarExplorerDialogsProps {
   fileActionMode: SidebarFileActionMode | null
   fileActionTargetPath: string | null
   renameValue: string
+  tagsValue: string
+  loadingTags: boolean
   onRenameValueChange: (value: string) => void
+  onTagsValueChange: (value: string) => void
   confirmFileActionDialog: () => void
   closeFileActionDialog: () => void
   fileContextMenu: ReturnType<typeof useSidebarFileContextMenu>
@@ -65,11 +68,15 @@ interface SidebarExplorerBodyProps {
   fileActionMode: SidebarFileActionMode | null
   fileActionTargetPath: string | null
   renameValue: string
+  tagsValue: string
+  loadingTags: boolean
   openRenameDialog: (path: string) => void
   openDeleteDialog: (path: string) => void
+  openEditTagsDialog: (path: string) => void
   closeFileActionDialog: () => void
   confirmFileActionDialog: () => void
   onRenameValueChange: (value: string) => void
+  onTagsValueChange: (value: string) => void
   onDirectoryChange: (value: string) => void
   onNameChange: (value: string) => void
   filterInputRef: (element: HTMLInputElement | null) => void
@@ -119,6 +126,7 @@ function SidebarExplorerDialogs(props: SidebarExplorerDialogsProps) {
             ? { x: props.fileContextMenu.contextMenuState.x, y: props.fileContextMenu.contextMenuState.y }
             : null
         }
+        onEditTags={props.fileContextMenu.handleEditTagsFromContextMenu}
         onRename={props.fileContextMenu.handleRenameFromContextMenu}
         onDelete={props.fileContextMenu.handleDeleteFromContextMenu}
         onClose={props.fileContextMenu.closeContextMenu}
@@ -136,7 +144,10 @@ function SidebarExplorerDialogs(props: SidebarExplorerDialogsProps) {
         mode={props.fileActionMode}
         targetPath={props.fileActionTargetPath}
         renameValue={props.renameValue}
+        tagsValue={props.tagsValue}
+        loadingTags={props.loadingTags}
         onRenameValueChange={props.onRenameValueChange}
+        onTagsValueChange={props.onTagsValueChange}
         onConfirm={props.confirmFileActionDialog}
         onCancel={props.closeFileActionDialog}
       />
@@ -147,6 +158,7 @@ function SidebarExplorerDialogs(props: SidebarExplorerDialogsProps) {
 export function SidebarExplorerBody(props: SidebarExplorerBodyProps) {
   const fileContextMenu = useSidebarFileContextMenu({
     onSelectFile: props.onSelectFile,
+    onOpenEditTags: props.openEditTagsDialog,
     onOpenRename: props.openRenameDialog,
     onOpenDelete: props.openDeleteDialog,
   })
@@ -186,7 +198,10 @@ export function SidebarExplorerBody(props: SidebarExplorerBodyProps) {
         fileActionMode={props.fileActionMode}
         fileActionTargetPath={props.fileActionTargetPath}
         renameValue={props.renameValue}
+        tagsValue={props.tagsValue}
+        loadingTags={props.loadingTags}
         onRenameValueChange={props.onRenameValueChange}
+        onTagsValueChange={props.onTagsValueChange}
         confirmFileActionDialog={props.confirmFileActionDialog}
         closeFileActionDialog={props.closeFileActionDialog}
         fileContextMenu={fileContextMenu}

@@ -43,6 +43,7 @@ export interface SidebarFileActions {
   onCreateCategory: (input: SidebarCreateInput) => void
   onRenameFile: (path: string, newName: string) => void
   onDeleteFile: (path: string) => void
+  onEditFileTags: (path: string, tags: string[]) => void
 }
 
 export type SidebarPanelCommonProps = SidebarSelectionProps &
