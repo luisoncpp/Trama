@@ -134,3 +134,118 @@ describe('Paste Markdown workspace command', () => {
     expect(text).toBe('')
   })
 })
+
+describe('Copy as Markdown workspace command', () => {
+  let container: HTMLDivElement
+  const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
+  const noop = () => {}
+
+  function getQuillInstance(root: ParentNode): Quill {
+    const quillContainer = root.querySelector('.ql-container')
+    if (!quillContainer) throw new Error('No se encontro instancia de Quill en el DOM de prueba')
+    const found = Quill.find(quillContainer, true)
+    if (!found || !(found instanceof Quill)) throw new Error('No se encontro instancia de Quill en el DOM de prueba')
+    return found
+  }
+
+  beforeEach(() => {
+    if (typeof Range !== 'undefined' && !Range.prototype.getBoundingClientRect) {
+      ;(Range.prototype as unknown as { getBoundingClientRect: () => DOMRect }).getBoundingClientRect =
+        () => new DOMRect(0, 0, 0, 0)
+    }
+    container = document.createElement('div')
+    document.body.appendChild(container)
+  })
+
+  afterEach(() => {
+    document.body.removeChild(container)
+  })
+
+  it('copia el contenido como markdown cuando el editor tiene foco', async () => {
+    act(() => {
+      render(
+        h(RichMarkdownEditor, {
+          documentId: 'copy-md-doc',
+          value: '# Titulo\n\n**negrita**',
+          disabled: false,
+          onChange: noop,
+          saveDisabled: false,
+          saveLabel: 'Guardar',
+          onSaveNow: noop,
+          syncState: 'clean',
+          syncStateLabel: 'Sin cambios',
+        }),
+        container,
+      )
+    })
+
+    await sleep(80)
+
+    const editor = getQuillInstance(container)
+
+    let writtenText = ''
+    ;(navigator as any)._origClipboard = (navigator as any).clipboard
+    ;(navigator as any).clipboard = { writeText: async (text: string) => { writtenText = text } }
+
+    act(() => { editor.focus() })
+    await sleep(10)
+
+    act(() => {
+      window.dispatchEvent(new CustomEvent(WORKSPACE_CONTEXT_MENU_EVENT, { detail: { type: 'copy-as-markdown' } }))
+    })
+
+    await sleep(60)
+
+    try {
+      if ((navigator as any)._origClipboard) {
+        ;(navigator as any).clipboard = (navigator as any)._origClipboard
+      }
+    } catch { /* ignore */ }
+
+    expect(writtenText).toContain('Titulo')
+    expect(writtenText).toContain('negrita')
+  })
+
+  it('no copia si el editor no tiene foco', async () => {
+    act(() => {
+      render(
+        h(RichMarkdownEditor, {
+          documentId: 'copy-md-doc-2',
+          value: '# Sin Foco',
+          disabled: false,
+          onChange: noop,
+          saveDisabled: false,
+          saveLabel: 'Guardar',
+          onSaveNow: noop,
+          syncState: 'clean',
+          syncStateLabel: 'Sin cambios',
+        }),
+        container,
+      )
+    })
+
+    await sleep(80)
+
+    const editor = getQuillInstance(container)
+
+    let writtenText = ''
+    ;(navigator as any)._origClipboard = (navigator as any).clipboard
+    ;(navigator as any).clipboard = { writeText: async (text: string) => { writtenText = text } }
+
+    act(() => { editor.blur() })
+
+    act(() => {
+      window.dispatchEvent(new CustomEvent(WORKSPACE_CONTEXT_MENU_EVENT, { detail: { type: 'copy-as-markdown' } }))
+    })
+
+    await sleep(60)
+
+    try {
+      if ((navigator as any)._origClipboard) {
+        ;(navigator as any).clipboard = (navigator as any)._origClipboard
+      }
+    } catch { /* ignore */ }
+
+    expect(writtenText).toBe('')
+  })
+})

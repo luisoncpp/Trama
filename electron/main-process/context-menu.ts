@@ -66,8 +66,12 @@ function buildContextMenuTemplate(
     template.push({ label: 'Cut', role: 'cut' })
     template.push({ label: 'Copy', role: 'copy' })
     template.push({
+      label: 'Copy as Markdown',
+      click: () => dispatchWorkspaceCommand(win, { type: 'copy-as-markdown' }),
+    })
+    template.push({
       label: 'Paste Markdown',
-      click: () => dispatchWorkspaceCommand(win, { type: 'paste-markdown' as any }),
+      click: () => dispatchWorkspaceCommand(win, { type: 'paste-markdown' }),
     })
     template.push({ label: 'Paste', role: 'paste' })
     template.push({ type: 'separator' })

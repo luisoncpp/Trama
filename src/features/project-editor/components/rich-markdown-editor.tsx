@@ -33,7 +33,9 @@ function useRichEditorRefs(value: string, onChange: (value: string) => void) {
   const onChangeRef = useRef(onChange)
   const lastEditorValueRef = useRef(normalizeMarkdown(value))
   const isApplyingExternalValueRef = useRef(false)
-  const turndownRef = useRef(new TurndownService())
+  const turndownRef = useRef(
+    new TurndownService({ headingStyle: 'atx', bulletListMarker: '-' }),
+  )
   return { shellRef, hostRef, editorRef, onChangeRef, lastEditorValueRef, isApplyingExternalValueRef, turndownRef }
 }
 

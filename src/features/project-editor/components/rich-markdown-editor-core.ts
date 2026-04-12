@@ -76,27 +76,27 @@ function registerEditorTextChangeHandler({
   })
 }
 
-function registerWorkspaceCommandListener(editor: Quill): (event: Event) => void {
+function registerWorkspaceCommandListener(
+  editor: Quill,
+  turndownRef: { current: TurndownService },
+): (event: Event) => void {
   const handler = async (event: Event) => {
     const customEvent = event as CustomEvent<WorkspaceContextCommand | undefined>
     const command = customEvent.detail
-    if (!command || command.type !== 'paste-markdown') {
-      return
-    }
+    if (!command) return
+    if (command.type !== 'paste-markdown' && command.type !== 'copy-as-markdown') return
+    if (!editor.hasFocus()) return
 
-    // Only act when the editor has focus
     try {
-      if (!editor.hasFocus()) {
-        return
+      if (command.type === 'paste-markdown') {
+        const clipboardText = await navigator.clipboard.readText()
+        if (!clipboardText) return
+        const index = editor.getSelection()?.index ?? editor.getLength() - 1
+        editor.clipboard.dangerouslyPasteHTML(index, marked.parse(clipboardText) as string, 'user')
+      } else {
+        const markdown = normalizeMarkdown(turndownRef.current.turndown(editor.root.innerHTML))
+        await navigator.clipboard.writeText(markdown)
       }
-
-      const clipboardText = await navigator.clipboard.readText()
-      if (!clipboardText) {
-        return
-      }
-
-      const index = editor.getSelection()?.index ?? editor.getLength() - 1
-      editor.clipboard.dangerouslyPasteHTML(index, marked.parse(clipboardText) as string, 'user')
     } catch {
       // ignore clipboard errors
     }
@@ -133,7 +133,7 @@ function useInitializeEditor({
       lastEditorValueRef,
       onChangeRef,
     })
-    const workspaceHandler = registerWorkspaceCommandListener(editor)
+    const workspaceHandler = registerWorkspaceCommandListener(editor, turndownRef)
     registerTypographyHandler(editor)
 
     return () => {
