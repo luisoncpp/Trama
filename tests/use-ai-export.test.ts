@@ -37,6 +37,7 @@ describe('useAiExport', () => {
   const writeClipboardMock = vi.fn<(text: string) => Promise<void>>()
 
   beforeEach(() => {
+    vi.useFakeTimers()
     container = document.createElement('div')
     document.body.appendChild(container)
     latestState = null
@@ -52,6 +53,7 @@ describe('useAiExport', () => {
 
   afterEach(() => {
     document.body.removeChild(container)
+    vi.useRealTimers()
     vi.clearAllMocks()
   })
 
@@ -95,6 +97,13 @@ describe('useAiExport', () => {
     expect(latestState?.open).toBe(false)
     expect(latestState?.selectedPaths).toEqual([])
     expect(latestState?.lastError).toBeNull()
+    expect(latestState?.copyToastMessage).toBe('Copied 1 file to clipboard.')
+
+    await act(async () => {
+      vi.advanceTimersByTime(3000)
+    })
+
+    expect(latestState?.copyToastMessage).toBeNull()
   })
 
   it('stores error when IPC export fails', async () => {

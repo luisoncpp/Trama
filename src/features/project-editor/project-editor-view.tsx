@@ -136,6 +136,19 @@ function ProjectEditorDialogs({
         exporting={aiExport.exporting}
         lastError={aiExport.lastError}
       />
+      {aiExport.copyToastMessage && (
+        <div class="ai-export-toast" role="status" aria-live="polite">
+          <span>{aiExport.copyToastMessage}</span>
+          <button
+            type="button"
+            class="ai-export-toast__dismiss"
+            onClick={aiExport.dismissCopyToast}
+            aria-label="Dismiss export copied notification"
+          >
+            Dismiss
+          </button>
+        </div>
+      )}
     </>
   )
 }

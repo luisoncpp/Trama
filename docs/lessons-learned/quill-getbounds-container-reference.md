@@ -46,6 +46,14 @@ const rect = editor.container.getBoundingClientRect()
 
 Any code that converts Quill `getBounds()` coordinates to viewport or parent-relative coordinates must use `quill.container.getBoundingClientRect()` as the reference, not `quill.root.getBoundingClientRect()`.
 
+## Official documentation
+
+From https://quilljs.com/docs/api#getBounds (v2.0.3, the version used in this project):
+
+> **getBounds** — Retrieves the pixel position **(relative to the editor container)** and dimensions of a selection at a given location.
+
+This is unambiguous and intentional API design. The container is the element passed to `new Quill(container, options)`.
+
 ## Symptoms that indicate this bug
 
 - Overlay/highlight positioned correctly at narrow width but drifts right as editor widens.

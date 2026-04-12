@@ -48,12 +48,12 @@ Implemented now:
 - `npm run dev` automatically builds the Electron main process before starting the dev server (`build:electron && dev:desktop`).
 - AI import (clipboard) implemented end-to-end: parser, preview, import dialog, renderer hook, IPC handlers, and main-process file creation flow.
 - AI export implemented end-to-end: sidebar export trigger, multi-file export dialog, include/exclude frontmatter option, secure path validation in backend service, IPC handler coverage, and clipboard copy flow.
+- AI export UX polish: export copy flow now shows a success toast notification after clipboard write.
 
 Not implemented yet (planned in later phases):
 - Folder rename/delete and move workflows.
 - Drag-and-drop reorder/move workflows.
 - Wiki links, templates, corkboard DnD.
-- AI export UX additional polish (toast/inline success feedback beyond console logging).
 
 ## Reliability status
 

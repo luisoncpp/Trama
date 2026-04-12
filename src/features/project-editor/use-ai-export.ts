@@ -1,4 +1,6 @@
-import { useState, useCallback } from 'preact/hooks'
+import { useState, useCallback, useEffect } from 'preact/hooks'
+
+const COPY_TOAST_DURATION_MS = 3000
 
 function useAiExportState() {
   const [open, setOpen] = useState(false)
@@ -6,14 +8,28 @@ function useAiExportState() {
   const [includeFrontmatter, setIncludeFrontmatter] = useState(true)
   const [exporting, setExporting] = useState(false)
   const [lastError, setLastError] = useState<string | null>(null)
-  return { open, setOpen, selectedPaths, setSelectedPaths, includeFrontmatter, setIncludeFrontmatter, exporting, setExporting, lastError, setLastError }
+  const [copyToastMessage, setCopyToastMessage] = useState<string | null>(null)
+  return {
+    open,
+    setOpen,
+    selectedPaths,
+    setSelectedPaths,
+    includeFrontmatter,
+    setIncludeFrontmatter,
+    exporting,
+    setExporting,
+    lastError,
+    setLastError,
+    copyToastMessage,
+    setCopyToastMessage,
+  }
 }
 
 function useAiExportHandlers(
   state: ReturnType<typeof useAiExportState>,
   projectRoot: string | null,
 ) {
-  const { selectedPaths, includeFrontmatter, setExporting, setLastError, setSelectedPaths, setOpen } = state
+  const { selectedPaths, includeFrontmatter, setExporting, setLastError, setSelectedPaths, setOpen, setCopyToastMessage } = state
 
   const handleExport = useCallback(/* handleExport */ async (): Promise<boolean> => {
     if (!projectRoot || !window.tramaApi || selectedPaths.length === 0) return false
@@ -41,6 +57,7 @@ function useAiExportHandlers(
       const { formattedContent, fileCount } = response.data
       await navigator.clipboard.writeText(formattedContent)
       console.log(`AI Export: ${fileCount} files copied`)
+      setCopyToastMessage(`Copied ${fileCount} file${fileCount === 1 ? '' : 's'} to clipboard.`)
       setSelectedPaths([])
       setOpen(false)
       return true
@@ -52,14 +69,37 @@ function useAiExportHandlers(
     } finally {
       setExporting(false)
     }
-  }, [projectRoot, selectedPaths, includeFrontmatter, setExporting, setLastError, setSelectedPaths, setOpen] /*Inputs for handleExport*/)
+  }, [projectRoot, selectedPaths, includeFrontmatter, setExporting, setLastError, setSelectedPaths, setOpen, setCopyToastMessage] /*Inputs for handleExport*/)
 
   return { handleExport }
+}
+
+function useAiExportCopyToast(state: ReturnType<typeof useAiExportState>) {
+  const { copyToastMessage, setCopyToastMessage } = state
+
+  useEffect(/* clearCopyToastAfterDelay */ () => {
+    if (!copyToastMessage) {
+      return
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      setCopyToastMessage(null)
+    }, COPY_TOAST_DURATION_MS)
+
+    return () => window.clearTimeout(timeoutId)
+  }, [copyToastMessage, setCopyToastMessage] /*Inputs for clearCopyToastAfterDelay*/)
+
+  const dismissCopyToast = useCallback(/* dismissCopyToast */ () => {
+    setCopyToastMessage(null)
+  }, [setCopyToastMessage] /*Inputs for dismissCopyToast*/)
+
+  return { copyToastMessage, dismissCopyToast }
 }
 
 export function useAiExport(projectRoot: string | null) {
   const state = useAiExportState()
   const { handleExport } = useAiExportHandlers(state, projectRoot)
+  const { copyToastMessage, dismissCopyToast } = useAiExportCopyToast(state)
 
   return {
     open: state.open,
@@ -71,5 +111,7 @@ export function useAiExport(projectRoot: string | null) {
     exporting: state.exporting,
     lastError: state.lastError,
     handleExport,
+    copyToastMessage,
+    dismissCopyToast,
   }
 }

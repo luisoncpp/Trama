@@ -85,6 +85,14 @@ For WS1 execution details, use `docs/wiki-tag-links-implementation-plan.md` toge
 7. Add/update tests.
 8. When adding workspace context-menu commands, update `src/shared/workspace-context-menu.ts`, add the native menu entry in `electron/main-process/context-menu.ts`, and handle the command in the renderer (`use-project-editor-context-menu-effect.ts` and any editor listeners such as `rich-markdown-editor-core.ts`). Add focused tests for the command.
 
+## Working with Quill
+
+Before writing any code that interacts with Quill's API (coordinates, bounds, selection, events, DOM structure), consult the official docs first:
+
+- API reference: https://quilljs.com/docs/api
+- Key gotcha: `quill.getBounds()` returns coordinates **relative to `quill.container`**, not `quill.root`. See `docs/lessons-learned/quill-getbounds-container-reference.md`.
+- Quill owns its DOM (`quill.root` / `.ql-editor`). Never inject or mutate nodes inside it; overlays must be siblings outside `.ql-editor`.
+
 ## Lint and structure constraints (important)
 
 - `max-lines: 200` and `max-lines-per-function: 50` are enforced.
