@@ -2,6 +2,9 @@
 
 Purpose: plan and implement AI import/export without scanning many files manually.
 
+Dedicated export execution plan:
+- `docs/done/ai-export-implementation-plan.md`
+
 Status snapshot (April 2026):
 - AI import: implemented end-to-end.
 - AI export: implemented end-to-end (backend hardening + renderer UX + regression tests).

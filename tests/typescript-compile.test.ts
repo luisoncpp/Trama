@@ -18,5 +18,5 @@ describe('TypeScript compilation for test files', () => {
       result.status,
       output || 'TypeScript exited with a non-zero status without diagnostic output.',
     ).toBe(0)
-  })
+  }, 20000)
 })

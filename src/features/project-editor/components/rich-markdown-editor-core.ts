@@ -3,7 +3,14 @@ import Quill from 'quill'
 import TurndownService from 'turndown'
 import { marked } from 'marked'
 import { registerTypographyHandler } from './rich-markdown-editor-typography'
-import { WORKSPACE_CONTEXT_MENU_EVENT, type WorkspaceContextCommand } from '../../../shared/workspace-context-menu'
+import { WORKSPACE_CONTEXT_MENU_EVENT } from '../../../shared/workspace-context-menu'
+import { renderDirectiveArtifactsToMarkdown } from '../../../shared/markdown-layout-directives'
+import { normalizeBlankLinesToSpacerDirectives } from '../../../shared/markdown-layout-directives-spacing'
+import { registerLayoutDirectiveBlots } from './rich-markdown-editor-layout-blots'
+import { registerLayoutDirectiveClipboardMatchers } from './rich-markdown-editor-layout-clipboard'
+import { registerLayoutDirectiveKeyboardBindings } from './rich-markdown-editor-layout-keyboard'
+import { registerWorkspaceCommandListener } from './rich-markdown-editor-commands'
+import { syncCenteredLayoutArtifacts } from './rich-markdown-editor-layout-centering'
 
 type QuillChangeSource = 'api' | 'user' | 'silent'
 
@@ -24,12 +31,12 @@ export function normalizeMarkdown(input: string): string {
 }
 
 function createQuillEditor(host: HTMLDivElement): Quill {
+  registerLayoutDirectiveBlots()
   host.innerHTML = ''
   const toolbar = document.createElement('div')
   const editorHost = document.createElement('div')
   host.append(toolbar, editorHost)
-
-  return new Quill(editorHost, {
+  const editor = new Quill(editorHost, {
     theme: 'snow',
     modules: {
       toolbar: [
@@ -45,11 +52,21 @@ function createQuillEditor(host: HTMLDivElement): Quill {
       },
     },
   })
+  registerLayoutDirectiveClipboardMatchers(editor)
+  registerLayoutDirectiveKeyboardBindings(editor)
+  return editor
 }
 
 function applyMarkdownToEditor(editor: Quill, markdown: string, source: QuillChangeSource = 'api'): void {
+  const { markdownWithArtifacts } = renderDirectiveArtifactsToMarkdown(markdown)
   editor.setContents([], source)
-  editor.clipboard.dangerouslyPasteHTML(marked.parse(markdown) as string, source)
+  editor.clipboard.dangerouslyPasteHTML(marked.parse(markdownWithArtifacts) as string, source)
+  syncCenteredLayoutArtifacts(editor)
+}
+
+function serializeEditorMarkdown(turndownRef: { current: TurndownService }, html: string): string {
+  const markdown = normalizeMarkdown(turndownRef.current.turndown(html))
+  return normalizeBlankLinesToSpacerDirectives(markdown)
 }
 
 function registerEditorTextChangeHandler({
@@ -66,44 +83,12 @@ function registerEditorTextChangeHandler({
   onChangeRef: { current: (value: string) => void }
 }): void {
   editor.on('text-change', () => {
-    if (isApplyingExternalValueRef.current) {
-      return
-    }
-
-    const markdown = normalizeMarkdown(turndownRef.current.turndown(editor.root.innerHTML))
+    if (isApplyingExternalValueRef.current) return
+    syncCenteredLayoutArtifacts(editor)
+    const markdown = serializeEditorMarkdown(turndownRef, editor.root.innerHTML)
     lastEditorValueRef.current = markdown
     onChangeRef.current(markdown)
   })
-}
-
-function registerWorkspaceCommandListener(
-  editor: Quill,
-  turndownRef: { current: TurndownService },
-): (event: Event) => void {
-  const handler = async (event: Event) => {
-    const customEvent = event as CustomEvent<WorkspaceContextCommand | undefined>
-    const command = customEvent.detail
-    if (!command) return
-    if (command.type !== 'paste-markdown' && command.type !== 'copy-as-markdown') return
-    if (!editor.hasFocus()) return
-
-    try {
-      if (command.type === 'paste-markdown') {
-        const clipboardText = await navigator.clipboard.readText()
-        if (!clipboardText) return
-        const index = editor.getSelection()?.index ?? editor.getLength() - 1
-        editor.clipboard.dangerouslyPasteHTML(index, marked.parse(clipboardText) as string, 'user')
-      } else {
-        const markdown = normalizeMarkdown(turndownRef.current.turndown(editor.root.innerHTML))
-        await navigator.clipboard.writeText(markdown)
-      }
-    } catch {
-      // ignore clipboard errors
-    }
-  }
-
-  window.addEventListener(WORKSPACE_CONTEXT_MENU_EVENT, handler as EventListener)
-  return handler
 }
 
 function useInitializeEditor({
@@ -118,9 +103,7 @@ function useInitializeEditor({
 }: Omit<UseRichEditorLifecycleParams, 'disabled'>): void {
   useEffect(() => {
     const host = hostRef.current
-    if (!host) {
-      return
-    }
+    if (!host) return
 
     const editor = createQuillEditor(host)
     editorRef.current = editor
@@ -153,14 +136,10 @@ function useSyncExternalValue({
 }): void {
   useEffect(() => {
     const editor = editorRef.current
-    if (!editor) {
-      return
-    }
+    if (!editor) return
 
     const nextNormalized = normalizeMarkdown(value)
-    if (lastEditorValueRef.current === nextNormalized) {
-      return
-    }
+    if (lastEditorValueRef.current === nextNormalized) return
 
     isApplyingExternalValueRef.current = true
     const selection = editor.getSelection()
@@ -183,10 +162,7 @@ function useToggleDisabled({
 }: Pick<UseRichEditorLifecycleParams, 'documentId' | 'disabled' | 'editorRef'>): void {
   useEffect(() => {
     const editor = editorRef.current
-    if (!editor) {
-      return
-    }
-
+    if (!editor) return
     editor.enable(!disabled)
   }, [disabled, documentId, editorRef])
 }

@@ -9,6 +9,7 @@ import { buildTagOverlayMatches, useTagOverlay, findMatchAtPosition } from './ri
 import { useCtrlKeyState } from './rich-markdown-editor-ctrl-key'
 import { TagHighlights } from './rich-markdown-editor-tag-highlights'
 import type { FocusScope } from '../project-editor-types'
+import { serializeDirectiveArtifactNode } from '../../../shared/markdown-layout-directives'
 
 interface RichMarkdownEditorProps {
   documentId: string | null
@@ -26,6 +27,20 @@ interface RichMarkdownEditorProps {
   onTagClick?: (filePath: string) => void
 }
 
+function createTurndownService(): TurndownService {
+  const service = new TurndownService({ headingStyle: 'atx', bulletListMarker: '-' })
+
+  service.addRule('trama-layout-directives', {
+    filter: (node) => Boolean((node as Element).getAttribute?.('data-trama-directive')),
+    replacement: (_content, node) => {
+      const directiveComment = serializeDirectiveArtifactNode(node as Element)
+      return directiveComment ? `\n${directiveComment}\n` : ''
+    },
+  })
+
+  return service
+}
+
 function useRichEditorRefs(value: string, onChange: (value: string) => void) {
   const shellRef = useRef<HTMLDivElement | null>(null)
   const hostRef = useRef<HTMLDivElement | null>(null)
@@ -33,9 +48,7 @@ function useRichEditorRefs(value: string, onChange: (value: string) => void) {
   const onChangeRef = useRef(onChange)
   const lastEditorValueRef = useRef(normalizeMarkdown(value))
   const isApplyingExternalValueRef = useRef(false)
-  const turndownRef = useRef(
-    new TurndownService({ headingStyle: 'atx', bulletListMarker: '-' }),
-  )
+  const turndownRef = useRef(createTurndownService())
   return { shellRef, hostRef, editorRef, onChangeRef, lastEditorValueRef, isApplyingExternalValueRef, turndownRef }
 }
 
@@ -74,7 +87,7 @@ export function RichMarkdownEditor(props: RichMarkdownEditorProps) {
   const handleEditorMouseDown = useTagClickHandler(editorRef, safeTagIndex, onTagClick)
 
   useRichEditorLifecycle({ documentId, value, disabled, hostRef, editorRef, onChangeRef, isApplyingExternalValueRef, lastEditorValueRef, turndownRef })
-  useSyncToolbarControls({ documentId, hostRef, saveDisabled, saveLabel, onSaveNow, syncState, syncStateLabel })
+  useSyncToolbarControls({ documentId, hostRef, editorRef, saveDisabled, saveLabel, onSaveNow, syncState, syncStateLabel })
   useFocusModeScopeEffect(editorRef, hostRef, focusModeEnabled, focusScope)
 
   const findBar = useRichEditorFind({ documentId, hostRef, editorRef })

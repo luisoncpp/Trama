@@ -1,6 +1,6 @@
 # START HERE - Documentation Entry Point
 
-> **Last updated:** 2026-04-11. If this file drifts from reality, update it before doing anything else.
+> **Last updated:** 2026-04-12. If this file drifts from reality, update it before doing anything else.
 
 This file is the required first stop for new conversations.
 
@@ -20,6 +20,7 @@ Open these only when relevant:
 - IPC extension workflow: `docs/ipc-architecture.md`
 - Phase planning details: `docs/phase-4-detailed-plan.md`
 - Wiki Tag Links implementation plan: `docs/wiki-tag-links-implementation-plan.md`
+- Markdown layout directives (center/spacer/pagebreak + EPUB/MOBI): `docs/markdown-layout-directives-spec.md`
 
 ## Fast routing by task
 

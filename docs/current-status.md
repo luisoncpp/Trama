@@ -40,7 +40,7 @@ Implemented now:
 - Theme system foundation landed: persisted `light | dark | system` preference, root `data-theme` application, live `matchMedia` sync for `system`, settings-panel theme switcher, and first-pass semantic tokens across sidebar, editor, split panes, and conflict UI.
 - Theme visual polish completed: all 5 light-mode colors audited and updated for WCAG AA contrast compliance (4.5:1 for text, 3:1 for UI components).
 - Theme visual polish completed: all 5 light-mode colors audited and updated for WCAG AA contrast compliance (4.5:1 for text, 3:1 for UI components).
-- Fullscreen/Focus Mode (WS3) complete: native fullscreen via IPC with BrowserWindow event sync, Scrivener-style focus mode with line/sentence/paragraph scope dimming, and keyboard shortcuts (Ctrl/Cmd+Shift+F = fullscreen, Ctrl/Cmd+Shift+M = focus mode). Focus state persisted in `trama.workspace.layout.v1`. Focus mode always starts disabled at launch.
+- Fullscreen/Focus Mode (WS3) complete: native fullscreen via IPC with BrowserWindow event sync, focus mode with line/sentence/paragraph scope dimming, and keyboard shortcuts (Ctrl/Cmd+Shift+F = fullscreen, Ctrl/Cmd+Shift+M = focus mode). Focus state persisted in `trama.workspace.layout.v1`. Focus mode always starts disabled at launch.
 - Workspace toolbar removed; all workspace controls (split, fullscreen, focus) moved to native right-click context menu via event bridge (`src/shared/workspace-context-menu.ts`).
 - Focus Scope selector (line/sentence/paragraph) moved to sidebar Settings tab.
 - Sidebar auto-collapses when focus mode activates and is locked closed while focus is active.
@@ -50,6 +50,7 @@ Implemented now:
 - AI export implemented end-to-end: sidebar export trigger, multi-file export dialog, include/exclude frontmatter option, secure path validation in backend service, IPC handler coverage, and clipboard copy flow.
 - AI export UX polish: export copy flow now shows a success toast notification after clipboard write.
 - Wiki tag link stability hardening: tag index now refreshes immediately after document save flows (including frontmatter tag edits), so Ctrl/Cmd+Click navigation works without restarting the app.
+- Markdown layout directives hardening complete: Quill now uses registered layout directive blots plus clipboard matchers for `center/spacer/pagebreak/unknown` artifacts, applies centered styling to blocks between center boundaries, renders pagebreak as a large viewport-relative separator, enforces explicit ArrowLeft/ArrowRight atomic traversal over pagebreak embeds, and includes copy-as-markdown plus richer round-trip ordering regression coverage.
 
 Not implemented yet (planned in later phases):
 - Folder rename/delete and move workflows.

@@ -36,6 +36,45 @@ function getCopy(mode: SidebarFileActionMode) {
   }
 }
 
+function SidebarFileActionsDialogField({
+  mode,
+  renameValue,
+  tagsValue,
+  loadingTags,
+  onRenameValueChange,
+  onTagsValueChange,
+}: Pick<
+  SidebarFileActionsDialogProps,
+  'mode' | 'renameValue' | 'tagsValue' | 'loadingTags' | 'onRenameValueChange' | 'onTagsValueChange'
+>) {
+  if (mode === 'rename') {
+    return (
+      <label class="sidebar-create-dialog__field">
+        <span>New file name</span>
+        <input type="text" value={renameValue} placeholder="Scene-002.md" onInput={(event) => onRenameValueChange(event.currentTarget.value)} />
+      </label>
+    )
+  }
+
+  if (mode === 'edit-tags') {
+    return (
+      <label class="sidebar-create-dialog__field">
+        <span>Tags (comma or newline separated)</span>
+        <textarea
+          value={tagsValue}
+          placeholder={'magic, north\nselene valeria'}
+          rows={4}
+          onInput={(event) => onTagsValueChange(event.currentTarget.value)}
+          disabled={loadingTags}
+        />
+        <span>{loadingTags ? 'Loading tags...' : 'Duplicates are removed automatically.'}</span>
+      </label>
+    )
+  }
+
+  return <p class="sidebar-create-dialog__hint">This action cannot be undone.</p>
+}
+
 export function SidebarFileActionsDialog({
   mode,
   targetPath,
@@ -58,31 +97,14 @@ export function SidebarFileActionsDialog({
       <div class="sidebar-create-dialog" role="dialog" aria-modal="true" aria-label={copy.title} onClick={(event) => event.stopPropagation()}>
         <p class="sidebar-create-dialog__title">{copy.title}</p>
         <p class="sidebar-create-dialog__hint">Target: {targetPath}</p>
-        {mode === 'rename' ? (
-          <label class="sidebar-create-dialog__field">
-            <span>New file name</span>
-            <input
-              type="text"
-              value={renameValue}
-              placeholder="Scene-002.md"
-              onInput={(event) => onRenameValueChange(event.currentTarget.value)}
-            />
-          </label>
-        ) : mode === 'edit-tags' ? (
-          <label class="sidebar-create-dialog__field">
-            <span>Tags (comma or newline separated)</span>
-            <textarea
-              value={tagsValue}
-              placeholder={'magic, north\nselene valeria'}
-              rows={4}
-              onInput={(event) => onTagsValueChange(event.currentTarget.value)}
-              disabled={loadingTags}
-            />
-            <span>{loadingTags ? 'Loading tags...' : 'Duplicates are removed automatically.'}</span>
-          </label>
-        ) : (
-          <p class="sidebar-create-dialog__hint">This action cannot be undone.</p>
-        )}
+        <SidebarFileActionsDialogField
+          mode={mode}
+          renameValue={renameValue}
+          tagsValue={tagsValue}
+          loadingTags={loadingTags}
+          onRenameValueChange={onRenameValueChange}
+          onTagsValueChange={onTagsValueChange}
+        />
         <div class="sidebar-create-dialog__actions">
           <button type="button" class="editor-button editor-button--secondary editor-button--inline" onClick={onCancel}>
             Cancel

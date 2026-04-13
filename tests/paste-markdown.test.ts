@@ -248,4 +248,183 @@ describe('Copy as Markdown workspace command', () => {
 
     expect(writtenText).toBe('')
   })
+
+  it('preserva directivas de layout al copiar como markdown', async () => {
+    const source = [
+      '# Capitulo',
+      '<!-- trama:center:start -->',
+      'Texto centrado',
+      '<!-- trama:center:end -->',
+      '<!-- trama:spacer lines=2 -->',
+      '<!-- trama:pagebreak -->',
+      '<!-- trama:custom mode=soft -->',
+    ].join('\n')
+
+    act(() => {
+      render(
+        h(RichMarkdownEditor, {
+          documentId: 'copy-md-directives',
+          value: source,
+          disabled: false,
+          onChange: noop,
+          saveDisabled: false,
+          saveLabel: 'Guardar',
+          onSaveNow: noop,
+          syncState: 'clean',
+          syncStateLabel: 'Sin cambios',
+        }),
+        container,
+      )
+    })
+
+    await sleep(80)
+
+    const editor = getQuillInstance(container)
+
+    let writtenText = ''
+    ;(navigator as any)._origClipboard = (navigator as any).clipboard
+    ;(navigator as any).clipboard = { writeText: async (text: string) => { writtenText = text } }
+
+    act(() => { editor.focus() })
+    await sleep(10)
+
+    act(() => {
+      window.dispatchEvent(new CustomEvent(WORKSPACE_CONTEXT_MENU_EVENT, { detail: { type: 'copy-as-markdown' } }))
+    })
+
+    await sleep(60)
+
+    try {
+      if ((navigator as any)._origClipboard) {
+        ;(navigator as any).clipboard = (navigator as any)._origClipboard
+      }
+    } catch { /* ignore */ }
+
+    expect(writtenText).toContain('<!-- trama:center:start -->')
+    expect(writtenText).toContain('<!-- trama:center:end -->')
+    expect(writtenText).toContain('<!-- trama:spacer lines=2 -->')
+    expect(writtenText).toContain('<!-- trama:pagebreak -->')
+    expect(writtenText).toContain('<!-- trama:custom mode=soft -->')
+  })
+
+  it('copia solo la seleccion cuando existe', async () => {
+    act(() => {
+      render(
+        h(RichMarkdownEditor, {
+          documentId: 'copy-md-selection',
+          value: 'alpha beta gamma',
+          disabled: false,
+          onChange: noop,
+          saveDisabled: false,
+          saveLabel: 'Guardar',
+          onSaveNow: noop,
+          syncState: 'clean',
+          syncStateLabel: 'Sin cambios',
+        }),
+        container,
+      )
+    })
+
+    await sleep(80)
+
+    const editor = getQuillInstance(container)
+
+    let writtenText = ''
+    ;(navigator as any)._origClipboard = (navigator as any).clipboard
+    ;(navigator as any).clipboard = { writeText: async (text: string) => { writtenText = text } }
+
+    act(() => {
+      editor.focus()
+      editor.setSelection(6, 4, 'silent')
+    })
+
+    await sleep(10)
+
+    act(() => {
+      window.dispatchEvent(new CustomEvent(WORKSPACE_CONTEXT_MENU_EVENT, { detail: { type: 'copy-as-markdown' } }))
+    })
+
+    await sleep(60)
+
+    try {
+      if ((navigator as any)._origClipboard) {
+        ;(navigator as any).clipboard = (navigator as any)._origClipboard
+      }
+    } catch { /* ignore */ }
+
+    expect(writtenText.trim()).toBe('beta')
+  })
+
+  it('preserva directiva incluida cuando la seleccion cruza un pagebreak', async () => {
+    const source = [
+      'Antes del salto',
+      '<!-- trama:pagebreak -->',
+      'Despues del salto',
+    ].join('\n')
+
+    act(() => {
+      render(
+        h(RichMarkdownEditor, {
+          documentId: 'copy-md-selection-directive',
+          value: source,
+          disabled: false,
+          onChange: noop,
+          saveDisabled: false,
+          saveLabel: 'Guardar',
+          onSaveNow: noop,
+          syncState: 'clean',
+          syncStateLabel: 'Sin cambios',
+        }),
+        container,
+      )
+    })
+
+    await sleep(80)
+
+    const editor = getQuillInstance(container)
+    const ops = editor.getContents().ops ?? []
+    let runningIndex = 0
+    let pagebreakIndex = -1
+
+    for (const op of ops) {
+      const isDirectiveEmbed = typeof op.insert === 'object' && op.insert !== null && 'trama-directive' in op.insert
+      if (isDirectiveEmbed) {
+        const value = (op.insert as Record<string, unknown>)['trama-directive'] as { directive?: string }
+        if (value?.directive === 'pagebreak') {
+          pagebreakIndex = runningIndex
+          break
+        }
+      }
+
+      runningIndex += typeof op.insert === 'string' ? op.insert.length : 1
+    }
+
+    expect(pagebreakIndex).toBeGreaterThanOrEqual(0)
+
+    let writtenText = ''
+    ;(navigator as any)._origClipboard = (navigator as any).clipboard
+    ;(navigator as any).clipboard = { writeText: async (text: string) => { writtenText = text } }
+
+    act(() => {
+      editor.focus()
+      editor.setSelection(pagebreakIndex - 1, 3, 'silent')
+    })
+
+    await sleep(10)
+
+    act(() => {
+      window.dispatchEvent(new CustomEvent(WORKSPACE_CONTEXT_MENU_EVENT, { detail: { type: 'copy-as-markdown' } }))
+    })
+
+    await sleep(60)
+
+    try {
+      if ((navigator as any)._origClipboard) {
+        ;(navigator as any).clipboard = (navigator as any)._origClipboard
+      }
+    } catch { /* ignore */ }
+
+    expect(writtenText).toContain('<!-- trama:pagebreak -->')
+  })
+
 })

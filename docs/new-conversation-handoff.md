@@ -8,6 +8,7 @@ Before code exploration, open these docs in order:
 3. `docs/lessons-learned/README.md`
 
 If the task is about AI import/export, also open:
+- `docs/markdown-layout-directives-spec.md`
 
 If task is about Wiki Tag Links (WS1), also open:
 - `docs/wiki-tag-links-spec.md`
@@ -39,7 +40,7 @@ Theme groundwork is now live:
 WS3 Fullscreen/Focus Mode is now live:
 - Native fullscreen toggle via `Ctrl/Cmd+Shift+F`.
 - Renderer state mirrors native events (enter-full-screen / leave-full-screen).
-- Scrivener-style focus mode: `line | sentence | paragraph` scope dimming around caret.
+- Focus mode: `line | sentence | paragraph` scope dimming around caret.
 - Focus mode toggle via `Ctrl/Cmd+Shift+M`; state persists in `trama.workspace.layout.v1`. Always starts disabled.
 - Focus Scope selector is in the sidebar Settings tab (not in menu/toolbar).
 - Sidebar auto-collapses when focus activates and cannot be reopened until focus is off.

@@ -1548,6 +1548,29 @@ select {
   margin-right: 0;
 }
 
+.rich-editor .ql-toolbar.ql-snow .ql-formats button.ql-center-layout,
+.rich-editor .ql-toolbar.ql-snow .ql-formats button.ql-pagebreak-layout {
+  width: 28px;
+  height: 24px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.rich-toolbar-icon {
+  width: 18px;
+  height: 18px;
+  color: var(--quill-icon);
+}
+
+.rich-editor .ql-toolbar.ql-snow .ql-formats button.ql-center-layout:hover .rich-toolbar-icon,
+.rich-editor .ql-toolbar.ql-snow .ql-formats button.ql-center-layout:focus .rich-toolbar-icon,
+.rich-editor .ql-toolbar.ql-snow .ql-formats button.ql-pagebreak-layout:hover .rich-toolbar-icon,
+.rich-editor .ql-toolbar.ql-snow .ql-formats button.ql-pagebreak-layout:focus .rich-toolbar-icon {
+  color: var(--quill-active);
+}
+
 .rich-toolbar-controls {
   margin-left: auto;
   display: inline-flex;
@@ -1736,6 +1759,50 @@ select {
 
 .rich-editor .ql-editor a {
   color: var(--editor-link);
+}
+
+.rich-editor .ql-editor .trama-layout-directive {
+  display: block;
+  width: 100%;
+  pointer-events: none;
+}
+
+.rich-editor .ql-editor .trama-pagebreak {
+  height: clamp(12rem, 45vh, 26rem);
+  margin: 1rem 0;
+  border-top: 2px dashed color-mix(in oklab, var(--border-strong) 75%, var(--canvas));
+  border-bottom: 2px dashed color-mix(in oklab, var(--border-strong) 75%, var(--canvas));
+  background: linear-gradient(180deg, transparent 25%, color-mix(in oklab, var(--border) 25%, transparent) 50%, transparent 75%);
+}
+
+.rich-editor .ql-editor .trama-centered-content {
+  text-align: center;
+}
+
+.rich-editor .ql-editor .trama-spacer {
+  min-height: 1lh;
+}
+
+.rich-editor .ql-editor .trama-spacer[data-trama-lines="2"] { min-height: 2lh; }
+.rich-editor .ql-editor .trama-spacer[data-trama-lines="3"] { min-height: 3lh; }
+.rich-editor .ql-editor .trama-spacer[data-trama-lines="4"] { min-height: 4lh; }
+.rich-editor .ql-editor .trama-spacer[data-trama-lines="5"] { min-height: 5lh; }
+.rich-editor .ql-editor .trama-spacer[data-trama-lines="6"] { min-height: 6lh; }
+.rich-editor .ql-editor .trama-spacer[data-trama-lines="7"] { min-height: 7lh; }
+.rich-editor .ql-editor .trama-spacer[data-trama-lines="8"] { min-height: 8lh; }
+.rich-editor .ql-editor .trama-spacer[data-trama-lines="9"] { min-height: 9lh; }
+.rich-editor .ql-editor .trama-spacer[data-trama-lines="10"] { min-height: 10lh; }
+.rich-editor .ql-editor .trama-spacer[data-trama-lines="11"] { min-height: 11lh; }
+.rich-editor .ql-editor .trama-spacer[data-trama-lines="12"] { min-height: 12lh; }
+
+.rich-editor .ql-editor .trama-center-boundary {
+  height: 0.55rem;
+  border-top: 1px solid color-mix(in oklab, var(--border-strong) 40%, transparent);
+}
+
+.rich-editor .ql-editor .trama-directive-unknown {
+  height: 0.55rem;
+  border-top: 1px dotted color-mix(in oklab, var(--status-warning-fg) 45%, transparent);
 }
 
 .rich-editor .ql-editor blockquote {

@@ -39,6 +39,28 @@ describe('RichMarkdownEditor', () => {
     return found
   }
 
+  function findDirectiveIndex(editor: Quill, directiveName: string, role?: 'start' | 'end'): number {
+    const ops = editor.getContents().ops ?? []
+    let runningIndex = 0
+
+    for (const op of ops) {
+      const isDirectiveEmbed = typeof op.insert === 'object' && op.insert !== null && 'trama-directive' in op.insert
+      if (isDirectiveEmbed) {
+        const value = (op.insert as Record<string, unknown>)['trama-directive'] as {
+          directive?: string
+          role?: 'start' | 'end'
+        }
+        if (value?.directive === directiveName && (role === undefined || value.role === role)) {
+          return runningIndex
+        }
+      }
+
+      runningIndex += typeof op.insert === 'string' ? op.insert.length : 1
+    }
+
+    return -1
+  }
+
   beforeEach(() => {
     if (typeof Range !== 'undefined' && !Range.prototype.getBoundingClientRect) {
       ;(Range.prototype as unknown as { getBoundingClientRect: () => DOMRect }).getBoundingClientRect =
@@ -485,5 +507,426 @@ describe('RichMarkdownEditor', () => {
 
     await sleep(20)
     expect(document.activeElement).toBe(findInput)
+  })
+
+  it('trata pagebreak como embed atomico de longitud 1 y lo elimina en un solo paso', async () => {
+    let lastMarkdown = ''
+    const source = [
+      '# Capitulo',
+      '<!-- trama:spacer lines=2 -->',
+      '<!-- trama:pagebreak -->',
+      'Texto final',
+    ].join('\n')
+
+    act(() => {
+      render(
+        h(RichMarkdownEditor, buildEditorProps({
+          documentId: 'layout-atomic-doc',
+          value: source,
+          onChange: (markdown) => {
+            lastMarkdown = markdown
+          },
+        })),
+        container,
+      )
+    })
+
+    await sleep(80)
+
+    const editor = getQuillInstance(container)
+    const beforeLength = editor.getLength()
+    const pagebreakIndex = findDirectiveIndex(editor, 'pagebreak')
+
+    expect(pagebreakIndex).toBeGreaterThanOrEqual(0)
+
+    act(() => {
+      editor.setSelection(pagebreakIndex, 0, 'silent')
+      editor.deleteText(pagebreakIndex, 1, 'user')
+    })
+
+    await sleep(40)
+
+    const afterLength = editor.getLength()
+    expect(afterLength).toBe(beforeLength - 1)
+    expect(lastMarkdown).not.toContain('<!-- trama:pagebreak -->')
+    expect(lastMarkdown).toContain('<!-- trama:spacer lines=2 -->')
+  })
+
+  it('avanza con ArrowRight en un solo paso cuando el cursor esta sobre pagebreak', async () => {
+    const source = ['Inicio', '<!-- trama:pagebreak -->', 'Fin'].join('\n')
+
+    act(() => {
+      render(
+        h(RichMarkdownEditor, buildEditorProps({
+          documentId: 'layout-arrow-right-doc',
+          value: source,
+        })),
+        container,
+      )
+    })
+
+    await sleep(80)
+
+    const editor = getQuillInstance(container)
+    const pagebreakIndex = findDirectiveIndex(editor, 'pagebreak')
+    expect(pagebreakIndex).toBeGreaterThanOrEqual(0)
+
+    act(() => {
+      editor.focus()
+      editor.setSelection(pagebreakIndex, 0, 'silent')
+      editor.root.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }))
+    })
+
+    await sleep(30)
+
+    const selection = editor.getSelection()
+    expect(selection?.index).toBe(pagebreakIndex + 1)
+    expect(selection?.length).toBe(0)
+  })
+
+  it('retrocede con ArrowLeft en un solo paso cuando el cursor esta despues de pagebreak', async () => {
+    const source = ['Inicio', '<!-- trama:pagebreak -->', 'Fin'].join('\n')
+
+    act(() => {
+      render(
+        h(RichMarkdownEditor, buildEditorProps({
+          documentId: 'layout-arrow-left-doc',
+          value: source,
+        })),
+        container,
+      )
+    })
+
+    await sleep(80)
+
+    const editor = getQuillInstance(container)
+    const pagebreakIndex = findDirectiveIndex(editor, 'pagebreak')
+    expect(pagebreakIndex).toBeGreaterThanOrEqual(0)
+
+    act(() => {
+      editor.focus()
+      editor.setSelection(pagebreakIndex + 1, 0, 'silent')
+      editor.root.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft', bubbles: true }))
+    })
+
+    await sleep(30)
+
+    const selection = editor.getSelection()
+    expect(selection?.index).toBe(pagebreakIndex)
+    expect(selection?.length).toBe(0)
+  })
+
+  it('preserva directivas en round-trip source-editor-source tras edicion de usuario', async () => {
+    let lastMarkdown = ''
+    const source = [
+      '# Titulo',
+      '<!-- trama:center:start -->',
+      'Texto centrado',
+      '<!-- trama:center:end -->',
+      '<!-- trama:spacer lines=2 -->',
+      '<!-- trama:pagebreak -->',
+      '<!-- trama:custom mode=soft -->',
+    ].join('\n')
+
+    act(() => {
+      render(
+        h(RichMarkdownEditor, buildEditorProps({
+          documentId: 'layout-roundtrip-doc',
+          value: source,
+          onChange: (markdown) => {
+            lastMarkdown = markdown
+          },
+        })),
+        container,
+      )
+    })
+
+    await sleep(80)
+
+    const editor = getQuillInstance(container)
+
+    act(() => {
+      editor.insertText(editor.getLength() - 1, '\nTexto agregado', 'user')
+    })
+
+    await sleep(40)
+
+    expect(lastMarkdown).toContain('Texto agregado')
+    expect(lastMarkdown).toContain('<!-- trama:center:start -->')
+    expect(lastMarkdown).toContain('<!-- trama:center:end -->')
+    expect(lastMarkdown).toContain('<!-- trama:spacer lines=2 -->')
+    expect(lastMarkdown).toContain('<!-- trama:pagebreak -->')
+    expect(lastMarkdown).toContain('<!-- trama:custom mode=soft -->')
+  })
+
+  it('mantiene orden de directivas tras inserciones y borrados de varios parrafos', async () => {
+    let lastMarkdown = ''
+    const source = [
+      '# Capitulo',
+      'Bloque inicial',
+      'Parrafo despues',
+      '<!-- trama:spacer lines=3 -->',
+      '<!-- trama:pagebreak -->',
+      '<!-- trama:custom mode=soft -->',
+      'Cierre',
+    ].join('\n')
+
+    act(() => {
+      render(
+        h(RichMarkdownEditor, buildEditorProps({
+          documentId: 'layout-ordering-doc',
+          value: source,
+          onChange: (markdown) => {
+            lastMarkdown = markdown
+          },
+        })),
+        container,
+      )
+    })
+
+    await sleep(80)
+    const editor = getQuillInstance(container)
+
+    const spacerIndex = findDirectiveIndex(editor, 'spacer')
+    const pagebreakIndex = findDirectiveIndex(editor, 'pagebreak')
+    const unknownIndex = findDirectiveIndex(editor, 'unknown')
+
+    expect(spacerIndex).toBeGreaterThanOrEqual(0)
+    expect(pagebreakIndex).toBeGreaterThan(spacerIndex)
+    expect(unknownIndex).toBeGreaterThan(pagebreakIndex)
+
+    const initialBlockIndex = editor.getText().indexOf('Bloque inicial')
+    expect(initialBlockIndex).toBeGreaterThanOrEqual(0)
+
+    act(() => {
+      editor.insertText(initialBlockIndex, 'Nuevo bloque A\n\nNuevo bloque B\n', 'user')
+    })
+
+    await sleep(20)
+
+    const paragraphIndex = editor.getText().indexOf('Parrafo despues')
+    expect(paragraphIndex).toBeGreaterThanOrEqual(0)
+
+    act(() => {
+      editor.deleteText(paragraphIndex, 'Parrafo despues'.length, 'user')
+    })
+
+    await sleep(20)
+
+    act(() => {
+      const updatedSpacerIndex = findDirectiveIndex(editor, 'spacer')
+      editor.insertText(updatedSpacerIndex, '\nAntes del spacer agregado\n', 'user')
+    })
+
+    await sleep(30)
+
+    expect(lastMarkdown).toContain('Nuevo bloque A')
+    expect(lastMarkdown).toContain('Nuevo bloque B')
+    expect(lastMarkdown).toContain('Antes del spacer agregado')
+    expect(lastMarkdown).not.toContain('Parrafo despues')
+
+    const spacerPos = lastMarkdown.indexOf('<!-- trama:spacer lines=3 -->')
+    const pagebreakPos = lastMarkdown.indexOf('<!-- trama:pagebreak -->')
+    const unknownPos = lastMarkdown.indexOf('<!-- trama:custom mode=soft -->')
+
+    expect(spacerPos).toBeGreaterThanOrEqual(0)
+    expect(pagebreakPos).toBeGreaterThan(spacerPos)
+    expect(unknownPos).toBeGreaterThan(pagebreakPos)
+  })
+
+  it('aplica centrado a bloques entre center:start y center:end', async () => {
+    const source = [
+      '# Titulo',
+      '<!-- trama:center:start -->',
+      'Texto centrado',
+      '<!-- trama:center:end -->',
+      'Texto normal',
+    ].join('\n')
+
+    act(() => {
+      render(
+        h(RichMarkdownEditor, buildEditorProps({
+          documentId: 'layout-centering-doc',
+          value: source,
+        })),
+        container,
+      )
+    })
+
+    await sleep(80)
+
+    const centeredParagraph = container.querySelector('.ql-editor p.trama-centered-content')
+    expect(centeredParagraph?.textContent).toContain('Texto centrado')
+  })
+
+  it('inserta directivas center desde boton de toolbar', async () => {
+    let lastMarkdown = ''
+
+    act(() => {
+      render(
+        h(RichMarkdownEditor, buildEditorProps({
+          documentId: 'layout-toolbar-center-doc',
+          value: 'Texto para centrar',
+          onChange: (markdown) => {
+            lastMarkdown = markdown
+          },
+        })),
+        container,
+      )
+    })
+
+    await sleep(80)
+    const editor = getQuillInstance(container)
+    const centerButton = container.querySelector('button.ql-center-layout') as HTMLButtonElement
+
+    act(() => {
+      editor.focus()
+      editor.setSelection(0, 'Texto para centrar'.length, 'silent')
+      centerButton.click()
+    })
+
+    await sleep(40)
+
+    expect(lastMarkdown).toContain('<!-- trama:center:start -->')
+    expect(lastMarkdown).toContain('<!-- trama:center:end -->')
+  })
+
+  it('inserta directiva pagebreak desde toolbar', async () => {
+    let lastMarkdown = ''
+
+    act(() => {
+      render(
+        h(RichMarkdownEditor, buildEditorProps({
+          documentId: 'layout-toolbar-spacer-break-doc',
+          value: 'Inicio\n\nFin',
+          onChange: (markdown) => {
+            lastMarkdown = markdown
+          },
+        })),
+        container,
+      )
+    })
+
+    await sleep(80)
+
+    const editor = getQuillInstance(container)
+    const pagebreakButton = container.querySelector('button.ql-pagebreak-layout') as HTMLButtonElement
+
+    act(() => {
+      editor.focus()
+      pagebreakButton.click()
+    })
+
+    await sleep(40)
+
+    expect(lastMarkdown).toContain('<!-- trama:pagebreak -->')
+  })
+
+  it('permite centrar e insertar pagebreak aunque saveDisabled sea true', async () => {
+    let lastMarkdown = ''
+
+    act(() => {
+      render(
+        h(RichMarkdownEditor, buildEditorProps({
+          documentId: 'layout-toolbar-enabled-clean-doc',
+          value: 'Texto base',
+          saveDisabled: true,
+          onChange: (markdown) => {
+            lastMarkdown = markdown
+          },
+        })),
+        container,
+      )
+    })
+
+    await sleep(80)
+
+    const editor = getQuillInstance(container)
+    const centerButton = container.querySelector('button.ql-center-layout') as HTMLButtonElement
+    const pagebreakButton = container.querySelector('button.ql-pagebreak-layout') as HTMLButtonElement
+
+    expect(centerButton.disabled).toBe(false)
+    expect(pagebreakButton.disabled).toBe(false)
+
+    act(() => {
+      editor.focus()
+      editor.setSelection(0, 'Texto'.length, 'silent')
+      centerButton.click()
+      pagebreakButton.click()
+    })
+
+    await sleep(50)
+
+    expect(lastMarkdown).toContain('<!-- trama:center:start -->')
+    expect(lastMarkdown).toContain('<!-- trama:center:end -->')
+    expect(lastMarkdown).toContain('<!-- trama:pagebreak -->')
+  })
+
+  it('inserta pagebreak exactamente en el indice del cursor', async () => {
+    let lastMarkdown = ''
+
+    act(() => {
+      render(
+        h(RichMarkdownEditor, buildEditorProps({
+          documentId: 'layout-pagebreak-inline-doc',
+          value: 'afdaas',
+          onChange: (markdown) => {
+            lastMarkdown = markdown
+          },
+        })),
+        container,
+      )
+    })
+
+    await sleep(80)
+
+    const editor = getQuillInstance(container)
+    const pagebreakButton = container.querySelector('button.ql-pagebreak-layout') as HTMLButtonElement
+
+    act(() => {
+      editor.focus()
+      editor.setSelection(4, 0, 'silent')
+      pagebreakButton.click()
+    })
+
+    await sleep(40)
+
+    const prefixPos = lastMarkdown.indexOf('afda')
+    const pagebreakPos = lastMarkdown.indexOf('<!-- trama:pagebreak -->')
+    const suffixPos = lastMarkdown.lastIndexOf('as')
+
+    expect(prefixPos).toBeGreaterThanOrEqual(0)
+    expect(pagebreakPos).toBeGreaterThan(prefixPos)
+    expect(suffixPos).toBeGreaterThan(pagebreakPos)
+    expect(lastMarkdown).not.toContain('<!-- trama:pagebreak -->\nafdaas')
+  })
+
+  it('serializa saltos de linea repetidos como directiva spacer', async () => {
+    let lastMarkdown = ''
+
+    act(() => {
+      render(
+        h(RichMarkdownEditor, buildEditorProps({
+          documentId: 'layout-newlines-to-spacer-doc',
+          value: 'Linea A\n\nLinea B',
+          onChange: (markdown) => {
+            lastMarkdown = markdown
+          },
+        })),
+        container,
+      )
+    })
+
+    await sleep(80)
+
+    const editor = getQuillInstance(container)
+    act(() => {
+      const index = editor.getText().indexOf('Linea B')
+      editor.insertText(index, '\n\n', 'user')
+    })
+
+    await sleep(40)
+
+    expect(lastMarkdown).toMatch(/<!-- trama:spacer lines=\d+ -->/)
   })
 })

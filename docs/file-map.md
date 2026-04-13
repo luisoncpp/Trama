@@ -160,6 +160,18 @@ Mandatory doc navigation for new chats:
 - `src/features/project-editor/components/rich-markdown-editor-core.ts`
   - Core editor lifecycle and sync logic (initialize Quill, apply markdown, sync external values, enable/disable, register typography handlers).
   - Also listens for workspace `paste-markdown` commands and handles reading/parsing clipboard Markdown and inserting HTML into Quill.
+- `src/features/project-editor/components/rich-markdown-editor-layout-blots.ts`
+  - Registers Quill `BlockEmbed`-based layout directive blots (`center`, `spacer`, `pagebreak`, unknown) so directive objects survive Quill canonicalization.
+- `src/features/project-editor/components/rich-markdown-editor-layout-clipboard.ts`
+  - Adds clipboard matcher logic that maps directive artifact nodes into embed Delta ops consumed by layout directive blots.
+- `src/features/project-editor/components/rich-markdown-editor-layout-keyboard.ts`
+  - Registers explicit ArrowLeft/ArrowRight keyboard bindings so pagebreak embeds are traversed atomically in one cursor step.
+- `src/features/project-editor/components/rich-markdown-editor-layout-actions.ts`
+  - Toolbar-triggered insertion helpers for center boundaries, spacer directives, and pagebreak directives.
+- `src/features/project-editor/components/rich-markdown-editor-layout-centering.ts`
+  - Synchronizes centered styling for editor blocks located between `center:start` and `center:end` boundary artifacts.
+- `src/features/project-editor/components/rich-markdown-editor-commands.ts`
+  - Handles workspace context-menu commands (`paste-markdown`, `copy-as-markdown`) and clipboard serialization/paste flow for the rich editor.
 - `src/features/project-editor/components/rich-markdown-editor-find.tsx`
   - In-document find hook: Ctrl/Cmd+F activation, query/match state, and integration between floating UI and editor selection.
 - `src/features/project-editor/components/rich-markdown-editor-find-overlay.tsx`
@@ -233,6 +245,12 @@ Mandatory doc navigation for new chats:
 - `src/shared/workspace-context-menu.ts`
   - Event bridge contract between Electron context menu and the renderer: `WORKSPACE_CONTEXT_MENU_EVENT` constant and `WorkspaceContextCommand` union type.
   - The `WorkspaceContextCommand` includes the `{ type: 'paste-markdown' }` case used by the native menu and editor listeners.
+- `src/shared/markdown-layout-directives.ts`
+  - Shared parser/serializer helpers for invisible markdown layout directives (`center`, `spacer`, `pagebreak`) and editor artifact mapping.
+- `src/shared/markdown-layout-directives-artifact-node.ts`
+  - Artifact-node serializer for converting directive blot/artifact DOM nodes back into canonical markdown comments.
+- `src/shared/markdown-layout-directives-spacing.ts`
+  - Markdown post-serialization normalization that converts repeated blank-line runs into canonical `trama:spacer` directives.
 - `src/types/trama-api.d.ts`
   - Global declaration for `window.tramaApi`.
 
@@ -268,6 +286,8 @@ Core and regression suites:
   - IPC envelope validation for export handler success/error payload paths.
 - `tests/use-ai-export.test.ts`
   - Renderer export hook coverage for IPC call shape, clipboard copy, and error state handling.
+- `tests/markdown-layout-directives.test.ts`
+  - Unit coverage for directive extraction, warning behavior, artifact rendering, and canonical serialization helpers.
 
 ## Build outputs
 

@@ -48,7 +48,7 @@ Any code that converts Quill `getBounds()` coordinates to viewport or parent-rel
 
 ## Official documentation
 
-From https://quilljs.com/docs/api#getBounds (v2.0.3, the version used in this project):
+From https://quilljs.com/docs/api#PgetBounds (v2.0.3, the version used in this project):
 
 > **getBounds** — Retrieves the pixel position **(relative to the editor container)** and dimensions of a selection at a given location.
 

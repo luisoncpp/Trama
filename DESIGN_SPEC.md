@@ -255,7 +255,7 @@ All IPC APIs are exposed via contextBridge (`window.api`) and use runtime schema
   * **Operational definition (Focus Mode):**
     * Focus Mode is renderer-local UI state (not a native window mode).
     * Entering Focus Mode minimizes non-essential chrome: collapses/hides sidebar panel content, de-emphasizes secondary controls, and keeps editor surface primary.
-    * Focus Mode includes a text emphasis scope around the caret, inspired by Scrivener-style behavior:
+    * Focus Mode includes a text emphasis scope around the caret:
       * `line`: emphasize current line, dim surrounding text.
       * `sentence`: emphasize current sentence, dim surrounding text.
       * `paragraph`: emphasize current paragraph, dim surrounding text.

@@ -162,19 +162,12 @@ export function SidebarExplorerBody(props: SidebarExplorerBodyProps) {
     onOpenRename: props.openRenameDialog,
     onOpenDelete: props.openDeleteDialog,
   })
-  const showOnlyStateHint = !props.apiAvailable || props.loadingProject
-
   return (
     <>
       <p class="project-menu__path">{props.scopePathLabel || PROJECT_EDITOR_STRINGS.noFolderSelected}</p>
-      <SidebarFilter
-        value={props.filterQuery}
-        disabled={showOnlyStateHint}
-        inputRef={props.filterInputRef}
-        onChange={props.onFilterQueryChange}
-      />
+      <SidebarFilter value={props.filterQuery} disabled={!props.apiAvailable || props.loadingProject} inputRef={props.filterInputRef} onChange={props.onFilterQueryChange} />
       <SidebarTreeArea
-        showOnlyStateHint={showOnlyStateHint}
+        showOnlyStateHint={!props.apiAvailable || props.loadingProject}
         loadingProject={props.loadingProject}
         apiAvailable={props.apiAvailable}
         visibleFiles={props.visibleFiles}

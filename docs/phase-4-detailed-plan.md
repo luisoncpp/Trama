@@ -9,7 +9,7 @@ Related: `docs/current-status.md`, `docs/dev-workflow.md`, `docs/wiki-tag-links-
 Phase 3 is complete and stable. The project has:
 - Full split-pane workspace with persistence.
 - Theme system (light/dark/system) with WCAG AA compliance.
-- Fullscreen and Scrivener-style focus mode with scope dimming.
+- Fullscreen and focus mode with scope dimming.
 - Rich markdown editor with typography auto-replace, find overlay, and paste-markdown.
 - Sidebar with hierarchical tree, filter, create actions, and file context menus.
 - Conflict-safe external change handling (reload/keep/compare/save-as-copy).

@@ -11,6 +11,9 @@ Start in `START-HERE.md` before reading anything else.
 - `lessons-learned/README.md`
 - feature maps (including AI import/export)
 
+Format/export specification:
+- `markdown-layout-directives-spec.md` (invisible layout directives for center, spacer, and pagebreak with EPUB/MOBI mapping)
+
 Implementation plans:
 - `wiki-tag-links-implementation-plan.md` (WS1 execution guide)
 
