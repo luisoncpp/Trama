@@ -92,6 +92,17 @@ describe('sidebar panels', () => {
 
     act(() => {
       render(
+        h(SidebarPanel, buildPanelProps({ sidebarActiveSection: 'transfer' })),
+        container,
+      )
+    })
+
+    expect(container.textContent).toContain('Import / Export')
+    expect(container.textContent).toContain('Import AI Content')
+    expect(container.textContent).toContain('Export Files')
+
+    act(() => {
+      render(
         h(SidebarPanel, buildPanelProps({ sidebarActiveSection: 'settings' })),
         container,
       )
@@ -148,8 +159,6 @@ describe('sidebar panels', () => {
           onDeleteFile: () => undefined,
           onEditFileTags: () => undefined,
           onPickFolder,
-          onImport: () => undefined,
-          onExport: () => undefined,
           onLoadFileTags: () => Promise.resolve([]),
         }),
         container,
@@ -192,8 +201,6 @@ describe('sidebar panels', () => {
           onDeleteFile: () => undefined,
           onEditFileTags: () => undefined,
           onPickFolder: () => undefined,
-          onImport: () => undefined,
-          onExport: () => undefined,
           onLoadFileTags: () => Promise.resolve([]),
         }),
         container,
@@ -232,8 +239,6 @@ describe('sidebar panels', () => {
           onDeleteFile: () => undefined,
           onEditFileTags: () => undefined,
           onPickFolder: () => undefined,
-          onImport: () => undefined,
-          onExport: () => undefined,
           onLoadFileTags: () => Promise.resolve([]),
         }),
         container,

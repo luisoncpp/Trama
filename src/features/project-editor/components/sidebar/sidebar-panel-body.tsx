@@ -1,7 +1,8 @@
 import type { SidebarSection } from '../../project-editor-types'
-import { SidebarExplorerContent } from './sidebar-explorer-content'
+import { SidebarExplorerContent } from './sidebar-explorer-content.tsx'
 import { SIDEBAR_SECTION_CONFIG, type ContentSidebarSection } from './sidebar-section-roots'
 import { SidebarSettingsContent } from './sidebar-settings-content.tsx'
+import { SidebarTransferContent } from './sidebar-transfer-content.tsx'
 import { joinProjectPath } from './sidebar-panel-logic'
 import type {
   SidebarFileActions,
@@ -57,8 +58,6 @@ function renderSidebarExplorerContent({
   onDeleteFile,
   onEditFileTags,
   onSelectFile,
-  onImport,
-  onExport,
 }: SidebarPanelBodyProps) {
   if (!sectionConfig) {
     return null
@@ -89,8 +88,6 @@ function renderSidebarExplorerContent({
       onEditFileTags={(path, tags) => onEditFileTags(`${sectionConfig.root}${path}`, tags)}
       onLoadFileTags={loadFileTags}
       onSelectFile={(filePath) => onSelectFile(`${sectionConfig.root}${filePath}`)}
-      onImport={onImport}
-      onExport={onExport}
     />
   )
 }
@@ -117,6 +114,16 @@ function renderSidebarSettingsContent({
   )
 }
 
+function renderSidebarTransferContent({ contentProps, onImport, onExport }: SidebarPanelBodyProps) {
+  return (
+    <SidebarTransferContent
+      disabled={contentProps.loadingProject || !contentProps.apiAvailable}
+      onImport={onImport}
+      onExport={onExport}
+    />
+  )
+}
+
 export function SidebarPanelBody(props: SidebarPanelBodyProps) {
   if (props.effectiveCollapsed) {
     return null
@@ -128,6 +135,10 @@ export function SidebarPanelBody(props: SidebarPanelBodyProps) {
 
   if (props.sidebarActiveSection === 'settings') {
     return renderSidebarSettingsContent(props)
+  }
+
+  if (props.sidebarActiveSection === 'transfer') {
+    return renderSidebarTransferContent(props)
   }
 
   return null

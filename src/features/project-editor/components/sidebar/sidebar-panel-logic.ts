@@ -44,8 +44,9 @@ export function useSidebarContentSection(
     lore: '',
   })
 
-  const isContentSection = sidebarActiveSection !== 'settings'
-  const contentSection = isContentSection ? (sidebarActiveSection as ContentSidebarSection) : null
+  const contentSection = Object.hasOwn(SIDEBAR_SECTION_CONFIG, sidebarActiveSection)
+    ? (sidebarActiveSection as ContentSidebarSection)
+    : null
   const sectionConfig = contentSection ? SIDEBAR_SECTION_CONFIG[contentSection] : null
 
   return {

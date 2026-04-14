@@ -45,8 +45,12 @@ function isInvalidCreateInput(input: SidebarCreateInput): boolean {
   return normalizedName.length === 0 || normalizedName.includes('/')
 }
 
+function isContentSection(value: UseProjectEditorStateResult['values']['sidebarActiveSection']): value is keyof typeof SIDEBAR_SECTION_CONFIG {
+  return Object.hasOwn(SIDEBAR_SECTION_CONFIG, value)
+}
+
 function getSectionRoot(activeSection: UseProjectEditorStateResult['values']['sidebarActiveSection']): string | null {
-  if (activeSection === 'settings') {
+  if (!isContentSection(activeSection)) {
     return null
   }
 

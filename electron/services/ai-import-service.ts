@@ -3,7 +3,7 @@ import { existsSync, readFileSync } from 'node:fs'
 import { writeFile, mkdir } from 'node:fs/promises'
 import { parseMarkdownWithFrontmatter } from './frontmatter.js'
 import { parseClipboardContent as parseClipboardContentCore } from '../../src/shared/ai-import-parser.js'
-import type { AiImportFile, AiImportPreview, AiImportResponse } from '../../src/shared/ipc.js'
+import type { AiImportFile, AiImportMode, AiImportPreview, AiImportResponse } from '../../src/shared/ipc.js'
 
 export interface ParsedFile {
   path: string
@@ -12,6 +12,23 @@ export interface ParsedFile {
 
 export function parseClipboardContent(clipboardContent: string): ParsedFile[] {
   return parseClipboardContentCore(clipboardContent) as ParsedFile[]
+}
+
+function buildImportedContent(existingContent: string, incomingContent: string, importMode: AiImportMode): string {
+  if (importMode === 'replace') {
+    return incomingContent
+  }
+
+  if (!existingContent) {
+    return incomingContent
+  }
+
+  if (!incomingContent) {
+    return existingContent
+  }
+
+  const separator = existingContent.endsWith('\n') || incomingContent.startsWith('\n') ? '' : '\n\n'
+  return `${existingContent}${separator}${incomingContent}`
 }
 
 export async function previewImport(
@@ -53,27 +70,40 @@ export async function previewImport(
 export async function executeImport(
   parsedFiles: ParsedFile[],
   projectRoot: string,
+  importMode: AiImportMode,
 ): Promise<AiImportResponse> {
   const created: string[] = []
+  const appended: string[] = []
+  const replaced: string[] = []
   const skipped: string[] = []
   const errors: Array<{ path: string; error: string }> = []
 
   for (const file of parsedFiles) {
     try {
       const fullPath = path.resolve(projectRoot, file.path)
-
-      if (existsSync(fullPath)) {
-        skipped.push(file.path)
-        continue
-      }
+      const fileExists = existsSync(fullPath)
 
       const dir = path.dirname(fullPath)
       if (!existsSync(dir)) {
         await mkdir(dir, { recursive: true })
       }
 
-      await writeFile(fullPath, file.content, 'utf-8')
-      created.push(file.path)
+      if (!fileExists) {
+        await writeFile(fullPath, file.content, 'utf-8')
+        created.push(file.path)
+        continue
+      }
+
+      const existingContent = readFileSync(fullPath, 'utf-8')
+      const nextContent = buildImportedContent(existingContent, file.content, importMode)
+      await writeFile(fullPath, nextContent, 'utf-8')
+
+      if (importMode === 'append') {
+        appended.push(file.path)
+        continue
+      }
+
+      replaced.push(file.path)
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Unknown error'
       errors.push({ path: file.path, error: message })
@@ -83,6 +113,8 @@ export async function executeImport(
   return {
     success: errors.length === 0,
     created,
+    appended,
+    replaced,
     skipped,
     errors,
   }

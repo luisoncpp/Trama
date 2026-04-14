@@ -339,6 +339,17 @@ select {
   color: var(--text-muted);
 }
 
+.project-menu__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.project-menu__actions .editor-button {
+  width: 100%;
+  justify-content: center;
+}
+
 .project-menu__field input[type='range'] {
   width: 100%;
 }
@@ -560,6 +571,28 @@ select {
   opacity: 0.6;
 }
 
+.ai-import-dialog__mode {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 0.76rem;
+  color: var(--text-muted);
+}
+
+.ai-import-dialog__mode-select {
+  border: 1px solid var(--border-strong);
+  border-radius: 9px;
+  background: var(--surface-input-bg);
+  color: var(--text-main);
+  padding: 9px 10px;
+  font-size: 0.78rem;
+}
+
+.ai-import-dialog__mode-select option {
+  background-color: Field;
+  color: FieldText;
+}
+
 .ai-import-dialog__actions {
   display: flex;
   gap: 8px;
@@ -581,6 +614,12 @@ select {
   margin: 0;
   font-size: 0.78rem;
   color: var(--text-muted);
+}
+
+.ai-import-dialog__mode-note {
+  margin: 0;
+  font-size: 0.74rem;
+  color: var(--text-dim);
 }
 
 .ai-import-dialog__file-list {

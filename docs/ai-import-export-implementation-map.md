@@ -6,7 +6,7 @@ Dedicated export execution plan:
 - `docs/done/ai-export-implementation-plan.md`
 
 Status snapshot (April 2026):
-- AI import: implemented end-to-end.
+- AI import: implemented end-to-end, with `replace` and `append` modes for existing files.
 - AI export: implemented end-to-end (backend hardening + renderer UX + regression tests).
 
 ## Canonical format
@@ -49,19 +49,19 @@ Parser source of truth:
 ### Renderer UI
 
 - `src/features/project-editor/use-ai-import.ts`
-  - Import hook (preview + execute).
+  - Import hook (preview + execute, including import mode).
 - `src/features/project-editor/use-ai-export.ts`
   - Export hook (dialog state + export IPC + clipboard copy).
 - `src/features/project-editor/components/ai-import-dialog.tsx`
-  - Import modal UI.
+  - Import modal UI and `append`/`replace` selection.
 - `src/features/project-editor/components/ai-import-preview-section.tsx`
   - Import preview list.
 - `src/features/project-editor/components/ai-export-dialog.tsx`
   - Export modal controller.
 - `src/features/project-editor/components/ai-export-dialog-body.tsx`
   - Export modal body (multi-select + include frontmatter + actions).
-- `src/features/project-editor/components/sidebar/sidebar-explorer-content.tsx`
-  - Import/Export buttons in sidebar header.
+- `src/features/project-editor/components/sidebar/sidebar-transfer-content.tsx`
+  - Dedicated sidebar section for import/export actions.
 - `src/features/project-editor/project-editor-view.tsx`
   - Wires import/export hooks and dialogs into app.
 
@@ -121,6 +121,16 @@ Added:
 6. Harden export service path validation. ✅
 7. Add service/IPC/renderer regression tests. ✅
 8. Update docs (`current-status`, `file-map`, this map). ✅
+
+## Import existing-file modes
+
+Implemented:
+1. `replace`
+  - Imported content replaces the full content of existing files.
+2. `append`
+  - Imported content is appended to the end of existing files.
+3. Preview and execution share the same `importMode` contract.
+4. Regression coverage added for service, IPC handler, and renderer hook.
 
 ## Quick open list for export work
 

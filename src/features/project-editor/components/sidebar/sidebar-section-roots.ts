@@ -1,6 +1,6 @@
 import type { SidebarSection } from '../../project-editor-types'
 
-export type ContentSidebarSection = Exclude<SidebarSection, 'settings'>
+export type ContentSidebarSection = Exclude<SidebarSection, 'settings' | 'transfer'>
 
 export interface SidebarSectionConfig {
   title: string

@@ -43,6 +43,19 @@ export function LoreIcon(): JSX.Element {
   )
 }
 
+export function TransferIcon(): JSX.Element {
+  return (
+    <IconWrapper>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+        <path d="M7 7h11" />
+        <path d="m15 4 3 3-3 3" />
+        <path d="M17 17H6" />
+        <path d="m9 14-3 3 3 3" />
+      </svg>
+    </IconWrapper>
+  )
+}
+
 export function SettingsIcon(): JSX.Element {
   return (
     <IconWrapper>

@@ -49,7 +49,7 @@ export async function handleAiImport(
 
   try {
     const parsedFiles = parseClipboardContent(payload.data.clipboardContent)
-    const result = await executeImportService(parsedFiles, payload.data.projectRoot)
+    const result = await executeImportService(parsedFiles, payload.data.projectRoot, payload.data.importMode)
     return { ok: true, data: result }
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unable to execute AI import'

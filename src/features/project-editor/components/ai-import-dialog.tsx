@@ -1,13 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from 'preact/hooks'
 import { createPortal } from 'preact/compat'
-import type { AiImportPreview } from '../../../shared/ipc'
+import type { AiImportMode, AiImportPreview } from '../../../shared/ipc'
 import { AiImportPreviewSection } from './ai-import-preview-section'
 
 interface AiImportDialogProps {
   open: boolean
   onClose: () => void
-  onPreview: (clipboardContent: string) => Promise<AiImportPreview | null>
-  onExecute: (clipboardContent: string) => Promise<boolean>
+  onPreview: (clipboardContent: string, importMode: AiImportMode) => Promise<AiImportPreview | null>
+  onExecute: (clipboardContent: string, importMode: AiImportMode) => Promise<boolean>
   projectRoot: string | null
 }
 
@@ -22,12 +22,15 @@ interface AiImportFormContentProps {
 
 function useAiImportDialogState() {
   const [clipboardContent, setClipboardContent] = useState('')
+  const [importMode, setImportMode] = useState<AiImportMode>('replace')
   const [preview, setPreview] = useState<AiImportPreview | null>(null)
   const [loading, setLoading] = useState(false)
   const [importing, setImporting] = useState(false)
   return {
     clipboardContent,
     setClipboardContent,
+    importMode,
+    setImportMode,
     preview,
     setPreview,
     loading,
@@ -40,30 +43,30 @@ function useAiImportDialogState() {
 function useAiImportDialogActions(
   state: ReturnType<typeof useAiImportDialogState>,
   projectRoot: string | null,
-  onPreview: (clipboardContent: string) => Promise<AiImportPreview | null>,
-  onExecute: (clipboardContent: string) => Promise<boolean>,
+  onPreview: (clipboardContent: string, importMode: AiImportMode) => Promise<AiImportPreview | null>,
+  onExecute: (clipboardContent: string, importMode: AiImportMode) => Promise<boolean>,
   onClose: () => void,
 ) {
-  const { clipboardContent, setLoading, setPreview, setImporting } = state
+  const { clipboardContent, importMode, setLoading, setPreview, setImporting } = state
 
   const handlePreview = useCallback(/* handlePreview */ async () => {
     if (!clipboardContent.trim() || !projectRoot) return
     setLoading(true)
     try {
-      const result = await onPreview(clipboardContent)
+      const result = await onPreview(clipboardContent, importMode)
       setPreview(result)
     } catch (error) {
       console.error('Preview failed:', error)
     } finally {
       setLoading(false)
     }
-  }, [clipboardContent, onPreview, projectRoot, setLoading, setPreview] /*Inputs for handlePreview*/)
+  }, [clipboardContent, importMode, onPreview, projectRoot, setLoading, setPreview] /*Inputs for handlePreview*/)
 
   const handleExecute = useCallback(/* handleExecute */ async () => {
     if (!clipboardContent.trim() || !projectRoot) return
     setImporting(true)
     try {
-      const success = await onExecute(clipboardContent)
+      const success = await onExecute(clipboardContent, importMode)
       if (success) {
         onClose()
       }
@@ -72,9 +75,31 @@ function useAiImportDialogActions(
     } finally {
       setImporting(false)
     }
-  }, [clipboardContent, onClose, onExecute, projectRoot, setImporting] /*Inputs for handleExecute*/)
+  }, [clipboardContent, importMode, onClose, onExecute, projectRoot, setImporting] /*Inputs for handleExecute*/)
 
   return { handlePreview, handleExecute }
+}
+
+function ImportModeField({
+  importMode,
+  onImportModeChange,
+}: {
+  importMode: AiImportMode
+  onImportModeChange: (value: AiImportMode) => void
+}) {
+  return (
+    <label class="ai-import-dialog__mode">
+      <span>When an imported file already exists</span>
+      <select
+        class="ai-import-dialog__mode-select"
+        value={importMode}
+        onChange={(event) => onImportModeChange((event.currentTarget as HTMLSelectElement).value as AiImportMode)}
+      >
+        <option value="replace">Replace its content</option>
+        <option value="append">Append imported content at the end</option>
+      </select>
+    </label>
+  )
 }
 
 function useAiImportDialogLifecycle(open: boolean, closeDialog: () => void, textareaRef: { current: HTMLTextAreaElement | null }) {
@@ -123,6 +148,7 @@ function AiImportFormContent({
         placeholder={`=== FILE: book/Chapter-01/Scene-001.md ===\n---\ntitle: My Scene\n---\n\nYour content here...`}
         rows={12}
       />
+      <ImportModeField importMode={state.importMode} onImportModeChange={state.setImportMode} />
       <div class="ai-import-dialog__actions">
         <button type="button" class="editor-button editor-button--secondary editor-button--inline" onClick={onClose} disabled={state.loading || state.importing}>
           Cancel
@@ -138,7 +164,7 @@ function AiImportFormContent({
       </div>
 
       {state.preview && (
-        <AiImportPreviewSection preview={state.preview} importing={state.importing} onExecute={onExecute} />
+        <AiImportPreviewSection preview={state.preview} importMode={state.importMode} importing={state.importing} onExecute={onExecute} />
       )}
     </>
   )
@@ -152,10 +178,11 @@ export function AiImportDialog({ open, onClose, onPreview, onExecute, projectRoo
 
   const resetDialogState = useCallback(/* resetDialogState */ () => {
     setClipboardContent('')
+    state.setImportMode('replace')
     setPreview(null)
     setLoading(false)
     setImporting(false)
-  }, [setClipboardContent, setImporting, setLoading, setPreview] /*Inputs for resetDialogState*/)
+  }, [setClipboardContent, setImporting, setLoading, setPreview, state] /*Inputs for resetDialogState*/)
 
   const closeDialog = useCallback(/* closeDialog */ () => {
     if (!canClose) {

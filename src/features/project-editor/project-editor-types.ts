@@ -1,6 +1,6 @@
 import type { DocumentMeta } from '../../shared/ipc'
 
-export type SidebarSection = 'explorer' | 'outline' | 'lore' | 'settings'
+export type SidebarSection = 'explorer' | 'outline' | 'lore' | 'transfer' | 'settings'
 export type WorkspaceLayoutMode = 'single' | 'split'
 export type WorkspacePane = 'primary' | 'secondary'
 export type FocusScope = 'line' | 'sentence' | 'paragraph'
