@@ -60,6 +60,7 @@ Implemented now:
 - Book export PDF hardening: renderer now embeds Unicode-capable system serif fonts when available (via `@pdf-lib/fontkit`), preserves inline bold markdown in body text, accepts both canonical and HTML-variant layout directives (`pagebreak/center/spacer`), avoids trailing blank pages between chapters, and embeds images from both local files and data URLs (PNG/JPG).
 - Book export DOCX hardening: no longer adds chapter title headings at section start; replaces page-break markers with 2 blank lines between sections (unless section ends with explicit pagebreak); now embeds images via `ImageRun` (local files and data URLs).
 - Book export image handling refactor: extracted common image utilities into `book-export-image-utils.ts` (`resolveImagePath`, `loadImageBytes`, `parseDataUrl`, `bytesToDataUrl`) and added EPUB preprocessing that materializes data-url images to temporary files and rewrites markdown image sources to `file://` paths for `epub-gen` compatibility (including Windows drive-letter path handling).
+- Book export regression expansion: `tests/book-export-renderers.test.ts` now covers image flows across HTML (local -> data URL conversion), PDF (data URL + local), DOCX (embedded `word/media` artifacts), and EPUB (data URL + local path materialization).
 
 Not implemented yet (planned in later phases):
 - Folder rename/delete and move workflows.
@@ -87,6 +88,7 @@ Additional regression checks in suite include:
 - In-document Find behavior (`tests/rich-markdown-editor.test.ts`).
 - Sidebar panel interactions including right-click rename/delete (`tests/sidebar-panels.test.ts`).
 - Tag index hot-refresh regression coverage for save -> getTagIndex/tagResolve flows (`tests/tag-index-ipc-regression.test.ts`).
+- Book export renderer regressions for directives, Unicode, and multi-format image embedding paths (`tests/book-export-renderers.test.ts`).
 
 ## Known technical tradeoffs
 
