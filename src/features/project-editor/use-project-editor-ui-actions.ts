@@ -130,7 +130,7 @@ function usePrimaryProjectEditorActions(
   const setSidebarPanelWidth = useSetSidebarPanelWidthAction(setters)
   const toggleWorkspaceLayoutMode = useToggleWorkspaceLayoutModeAction(values, setters)
   const setWorkspaceLayoutRatio = useSetWorkspaceLayoutRatioAction(setters)
-  const setWorkspaceActivePane = useSetWorkspaceActivePaneAction({ values, setters, loadDocument })
+  const setWorkspaceActivePane = useSetWorkspaceActivePaneAction({ values, setters, loadDocument, saveDocumentNow })
   const updateEditorValue = useUpdateEditorValueAction(values, setters)
   const saveNow = useSaveNowAction({ values, saveDocumentNow })
   const setFullscreenEnabled = useSetFullscreenEnabledAction(setters)

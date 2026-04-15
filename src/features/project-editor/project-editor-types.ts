@@ -68,7 +68,7 @@ export interface ProjectEditorActions {
   setSidebarPanelWidth: (width: number) => void
   toggleWorkspaceLayoutMode: () => void
   setWorkspaceLayoutRatio: (ratio: number) => void
-  setWorkspaceActivePane: (pane: WorkspacePane) => void
+  setWorkspaceActivePane: (pane: WorkspacePane) => Promise<void>
   setFullscreenEnabled: (enabled: boolean) => Promise<void>
   toggleFocusMode: () => void
   setFocusScope: (scope: FocusScope) => void

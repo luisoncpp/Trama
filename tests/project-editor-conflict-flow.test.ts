@@ -362,8 +362,8 @@ describe('project editor conflict flow', () => {
     expect(model?.state.isDirty).toBe(false)
   })
 
-  it('blocks pane switch in split mode when active document is dirty', async () => {
-    setupTramaApiMock({
+  it('auto-saves dirty pane and switches when setWorkspaceActivePane is called on a different pane', async () => {
+    const { saveDocumentMock } = setupTramaApiMock({
       openProject: async () => ({
         ok: true,
         data: {
@@ -411,8 +411,7 @@ describe('project editor conflict flow', () => {
     expect(model?.state.workspaceLayout.secondaryPath).toBe('docs/b.md')
 
     await act(async () => {
-      model?.actions.setWorkspaceActivePane('secondary')
-      await Promise.resolve()
+      await model?.actions.setWorkspaceActivePane('secondary')
     })
 
     expect(model?.state.workspaceLayout.activePane).toBe('secondary')
@@ -420,17 +419,20 @@ describe('project editor conflict flow', () => {
     expect(model?.state.editorValue).toBe('# B')
 
     act(() => {
-      model?.actions.updateEditorValue('# B\n\nlocal dirty')
+      model?.actions.updateEditorValue('# B\n\nlocal dirty', 'secondary')
     })
+
+    expect(model?.state.secondaryPane.isDirty).toBe(true)
 
     await act(async () => {
-      model?.actions.setWorkspaceActivePane('primary')
-      await Promise.resolve()
+      await model?.actions.setWorkspaceActivePane('primary')
     })
 
-    expect(model?.state.workspaceLayout.activePane).toBe('secondary')
-    expect(model?.state.selectedPath).toBe('docs/b.md')
-    expect(model?.state.statusMessage).toBe('Save or wait for autosave before switching files.')
+    // auto-saved dirty secondary pane before switching
+    expect(saveDocumentMock).toHaveBeenCalledWith(expect.objectContaining({ path: 'docs/b.md', content: '# B\n\nlocal dirty' }))
+    // switched to primary
+    expect(model?.state.workspaceLayout.activePane).toBe('primary')
+    expect(model?.state.selectedPath).toBe('docs/a.md')
   })
 
   it('marks only the targeted pane dirty when split editor change targets secondary pane', async () => {

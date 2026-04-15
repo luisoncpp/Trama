@@ -88,13 +88,18 @@ function buildValues(params: BuildValuesParams): ProjectEditorStateValues {
   const activePaneState: PaneDocumentState = params.workspaceLayout.activePane === 'secondary'
     ? params.secondaryPane
     : params.primaryPane
+  
+  const activePaneLayoutPath = params.workspaceLayout.activePane === 'secondary'
+    ? params.workspaceLayout.secondaryPath
+    : params.workspaceLayout.primaryPath
+  
   return {
     apiAvailable: params.apiAvailable,
     rootPath: params.rootPath,
     snapshot: params.snapshot,
     primaryPane: params.primaryPane,
     secondaryPane: params.secondaryPane,
-    selectedPath: activePaneState.path,
+    selectedPath: activePaneLayoutPath,
     editorValue: activePaneState.content,
     editorMeta: activePaneState.meta,
     isDirty: activePaneState.isDirty,

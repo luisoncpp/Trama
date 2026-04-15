@@ -1,4 +1,5 @@
 import { useCallback } from 'preact/hooks'
+import type { DocumentMeta } from '../../shared/ipc'
 import { canSelectFile } from './project-editor-logic'
 import { PROJECT_EDITOR_STRINGS } from './project-editor-strings'
 import type { ProjectEditorActions, WorkspaceLayoutState, WorkspacePane } from './project-editor-types'
@@ -14,6 +15,10 @@ interface UseWorkspaceLayoutActionParams {
   values: UseProjectEditorStateResult['values']
   setters: UseProjectEditorStateResult['setters']
   loadDocument: (path: string, pane: WorkspacePane) => Promise<void>
+}
+
+interface UseSetWorkspaceActivePaneActionParams extends UseWorkspaceLayoutActionParams {
+  saveDocumentNow: (path: string, content: string, meta: DocumentMeta) => Promise<void>
 }
 
 export function useAssignFileToActivePaneAction(
@@ -82,14 +87,16 @@ export function useSetWorkspaceActivePaneAction({
   values,
   setters,
   loadDocument,
-}: UseWorkspaceLayoutActionParams): ProjectEditorActions['setWorkspaceActivePane'] {
+  saveDocumentNow,
+}: UseSetWorkspaceActivePaneActionParams): ProjectEditorActions['setWorkspaceActivePane'] {
   return useCallback(
-    (pane: WorkspacePane) => {
-      const nextPath = pane === 'secondary' ? values.workspaceLayout.secondaryPath : values.workspaceLayout.primaryPath
-      if (!canSelectFile(values.isDirty, values.selectedPath, nextPath ?? '')) {
-        setters.setStatusMessage(PROJECT_EDITOR_STRINGS.statusNeedSaveBeforeSwitch)
-        return
+    async (pane: WorkspacePane) => {
+      const activePaneState = values.workspaceLayout.activePane === 'secondary' ? values.secondaryPane : values.primaryPane
+      if (activePaneState.isDirty && activePaneState.path) {
+        await saveDocumentNow(activePaneState.path, activePaneState.content, activePaneState.meta)
       }
+
+      const nextPath = pane === 'secondary' ? values.workspaceLayout.secondaryPath : values.workspaceLayout.primaryPath
 
       setters.setWorkspaceLayout((previous) => ({
         ...previous,
@@ -107,7 +114,7 @@ export function useSetWorkspaceActivePaneAction({
         void loadDocument(nextPath, pane)
       }
     },
-    [loadDocument, setters, values.isDirty, values.selectedPath, values.workspaceLayout.primaryPath, values.workspaceLayout.secondaryPath],
+    [loadDocument, saveDocumentNow, setters, values.primaryPane, values.secondaryPane, values.workspaceLayout.activePane, values.workspaceLayout.primaryPath, values.workspaceLayout.secondaryPath],
   )
 }
 

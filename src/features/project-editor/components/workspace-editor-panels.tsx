@@ -40,7 +40,7 @@ function PaneEditor({ model, pane, tagIndex, onTagClick }: PaneEditorProps) {
   }
   const onActivate = () => {
     if (!isActive) {
-      actions.setWorkspaceActivePane(pane)
+      void actions.setWorkspaceActivePane(pane)
     }
   }
 
