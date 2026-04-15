@@ -40,3 +40,4 @@ Create a new file in this directory named after the topic (e.g., `auth-token-ref
 | `vite-reload-on-export-artifacts.md` | Dev server reloaded the full app after HTML book export because generated files under `exports/` were watched by Vite; fixed by ignoring `**/exports/**` in `vite.config.ts` watch settings. | 2026-04-14 |
 | `split-pane-pane-targeted-editor-change.md` | Split editors must route onChange updates to an explicit pane; relying on global active pane can mark the wrong pane dirty due to event timing. | 2026-04-14 |
 | `split-pane-pane-targeted-save.md` | Split-pane manual save buttons must target the pane that emitted the action; using global active-pane state can save the wrong document. | 2026-04-14 |
+| `select-file-auto-save.md` | File selection must auto-save and proceed, not block with error; skipping reload when selecting the same file preserves just-saved content. | 2026-04-14 |

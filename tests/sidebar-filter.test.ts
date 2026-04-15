@@ -22,7 +22,7 @@ describe('sidebar filter UX', () => {
           visibleFiles: ['Act-01/Chapter-01/Scene-001.md'],
           selectedPath: null,
           loadingDocument: false,
-          onSelectFile: () => undefined,
+          onSelectFile: async () => undefined,
           filterQuery: 'missing-file',
         }),
         container,
@@ -40,7 +40,7 @@ describe('sidebar filter UX', () => {
       ],
       selectedPath: null,
       loadingDocument: false,
-      onSelectFile: () => undefined,
+      onSelectFile: async () => undefined,
       filterQuery: '',
     }
 
@@ -81,7 +81,7 @@ describe('sidebar filter UX', () => {
       ],
       selectedPath: null,
       loadingDocument: false,
-      onSelectFile: () => undefined,
+      onSelectFile: async () => undefined,
       filterQuery: '',
     }
 

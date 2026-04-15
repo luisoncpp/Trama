@@ -22,7 +22,7 @@ interface SidebarTreeAreaProps {
   selectedPath: string | null
   loadingDocument: boolean
   filterQuery: string
-  onSelectFile: (path: string) => void
+  onSelectFile: (path: string) => Promise<void>
   onFileContextMenu: (path: string, event: MouseEvent) => void
 }
 
@@ -54,7 +54,7 @@ interface SidebarExplorerBodyProps {
   visibleFiles: string[]
   selectedPath: string | null
   loadingDocument: boolean
-  onSelectFile: (filePath: string) => void
+  onSelectFile: (filePath: string) => Promise<void>
   loadingProject: boolean
   apiAvailable: boolean
   scopePathLabel: string

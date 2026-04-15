@@ -6,7 +6,7 @@ export interface SidebarSelectionProps {
   visibleFiles: string[]
   selectedPath: string | null
   loadingDocument: boolean
-  onSelectFile: (filePath: string) => void
+  onSelectFile: (filePath: string) => Promise<void>
 }
 
 export interface SidebarPanelLayoutProps {

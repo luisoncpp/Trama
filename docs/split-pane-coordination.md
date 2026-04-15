@@ -83,6 +83,16 @@ Important:
   - loads file when path changed
 - Source: `src/features/project-editor/use-project-editor-layout-actions.ts`
 
+### 3b) Selecting a file from sidebar (selectFile)
+
+`selectFile(filePath)` transitions between documents. Behavior (newer pattern, replaces old blocking guard):
+- auto-saves current document if `isDirty`, regardless of target file
+- only reloads from disk if navigating to a *different* file
+- skips reload if selecting the same file (content is just-saved, no reload needed)
+- Source: `src/features/project-editor/use-project-editor-ui-actions.ts`
+
+This removes user friction by persisting before navigation rather than blocking with "please save first" errors.
+
 ### 4) Open project / restore layout
 
 - `reconcileWorkspaceLayout(...)` normalizes ratio/mode/paths and preferred path handling

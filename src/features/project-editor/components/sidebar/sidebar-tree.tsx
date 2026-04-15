@@ -9,7 +9,7 @@ interface SidebarTreeProps {
   visibleFiles: string[]
   selectedPath: string | null
   loadingDocument: boolean
-  onSelectFile: (filePath: string) => void
+  onSelectFile: (filePath: string) => Promise<void>
   filterQuery: string
   onFileContextMenu?: (filePath: string, event: MouseEvent) => void
 }
@@ -18,7 +18,7 @@ interface SidebarTreeRowsProps {
   rows: ReturnType<typeof getVisibleSidebarRows>
   selectedPath: string | null
   loadingDocument: boolean
-  onSelectFile: (filePath: string) => void
+  onSelectFile: (filePath: string) => Promise<void>
   onToggleFolder: (path: string, expanded: boolean) => void
   containerRef: { current: HTMLDivElement | null }
   onFileContextMenu?: (filePath: string, event: MouseEvent) => void
@@ -29,7 +29,7 @@ interface SidebarTreeRowButtonProps {
   index: number
   selectedPath: string | null
   loadingDocument: boolean
-  onSelectFile: (filePath: string) => void
+  onSelectFile: (filePath: string) => Promise<void>
   onToggleFolder: (path: string, expanded: boolean) => void
   onRowKeyDown: (event: KeyboardEvent, index: number) => void
   onFileContextMenu?: (filePath: string, event: MouseEvent) => void
@@ -63,7 +63,7 @@ function useRowKeyDownHandler(params: {
   rows: ReturnType<typeof getVisibleSidebarRows>
   focusRow: (index: number) => void
   onToggleFolder: (path: string, expanded: boolean) => void
-  onSelectFile: (filePath: string) => void
+  onSelectFile: (filePath: string) => Promise<void>
 }) {
   return (event: KeyboardEvent, index: number) => {
     const row = params.rows[index]
@@ -96,7 +96,7 @@ function useRowKeyDownHandler(params: {
       params.onToggleFolder(row.path, !row.isExpanded)
     } else if (event.key === 'Enter' && row.type === 'file') {
       event.preventDefault()
-      params.onSelectFile(row.path)
+      void params.onSelectFile(row.path)
     }
   }
 }
@@ -129,7 +129,7 @@ function SidebarTreeRowButton({
       disabled={loadingDocument}
       class={`sidebar-tree__row ${row.type === 'folder' ? 'is-folder' : 'is-file'} ${selectedPath === row.path ? 'is-active' : ''}`}
       style={{ paddingLeft: `${12 + row.depth * 16}px` }}
-      onClick={() => (row.type === 'folder' ? onToggleFolder(row.path, !row.isExpanded) : onSelectFile(row.path))}
+      onClick={() => (row.type === 'folder' ? onToggleFolder(row.path, !row.isExpanded) : void onSelectFile(row.path))}
       onContextMenu={handleContextMenu}
       onKeyDown={(event) => onRowKeyDown(event, index)}
     >

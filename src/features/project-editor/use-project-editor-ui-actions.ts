@@ -1,6 +1,5 @@
 import { useCallback } from 'preact/hooks'
 import type { DocumentMeta } from '../../shared/ipc'
-import { canSelectFile } from './project-editor-logic'
 import { PROJECT_EDITOR_STRINGS } from './project-editor-strings'
 import type { ProjectEditorActions } from './project-editor-types'
 import {
@@ -53,26 +52,27 @@ function usePickProjectFolderAction({
 }
 function useSelectFileAction({
   values,
-  setters,
   loadDocument,
   assignFileToActivePane,
+  saveDocumentNow,
 }: {
   values: UseProjectEditorStateResult['values']
-  setters: UseProjectEditorStateResult['setters']
   loadDocument: (path: string, pane: WorkspacePane) => Promise<void>
   assignFileToActivePane: (filePath: string) => void
+  saveDocumentNow: (path: string, content: string, meta: DocumentMeta) => Promise<void>
 }): ProjectEditorActions['selectFile'] {
   return useCallback(
-    (filePath: string) => {
-      if (!canSelectFile(values.isDirty, values.selectedPath, filePath)) {
-        setters.setStatusMessage(PROJECT_EDITOR_STRINGS.statusNeedSaveBeforeSwitch)
-        return
+    async (filePath: string): Promise<void> => {
+      if (values.isDirty && values.selectedPath) {
+        await saveDocumentNow(values.selectedPath, values.editorValue, values.editorMeta)
       }
 
       assignFileToActivePane(filePath)
-      void loadDocument(filePath, values.workspaceLayout.activePane)
+      if (filePath !== values.selectedPath) {
+        void loadDocument(filePath, values.workspaceLayout.activePane)
+      }
     },
-    [assignFileToActivePane, loadDocument, setters, values.isDirty, values.selectedPath],
+    [assignFileToActivePane, loadDocument, saveDocumentNow, values.editorMeta, values.editorValue, values.isDirty, values.selectedPath],
   )
 }
 function useUpdateEditorValueAction(
@@ -122,7 +122,7 @@ function usePrimaryProjectEditorActions(
   const assignFileToActivePane = useAssignFileToActivePaneAction(values, setters)
   const openFileInPane = useOpenFileInPaneAction({ values, setters, loadDocument })
   const pickProjectFolder = usePickProjectFolderAction({ openProject, setters })
-  const selectFile = useSelectFileAction({ values, setters, loadDocument, assignFileToActivePane })
+  const selectFile = useSelectFileAction({ values, loadDocument, assignFileToActivePane, saveDocumentNow })
   const { createArticle, createCategory } = useProjectEditorCreateActions({ values, setters, openProject })
   const { renameFile, deleteFile, editFileTags } = useProjectEditorFileActions({ values, setters, openProject })
   const setSidebarSection = useSetSidebarSectionAction(setters)

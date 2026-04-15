@@ -1,7 +1,7 @@
 import { useState } from 'preact/hooks'
 
 interface UseSidebarFileContextMenuParams {
-  onSelectFile: (path: string) => void
+  onSelectFile: (path: string) => Promise<void>
   onOpenEditTags: (path: string) => void
   onOpenRename: (path: string) => void
   onOpenDelete: (path: string) => void
@@ -15,7 +15,7 @@ export function useSidebarFileContextMenu({ onSelectFile, onOpenEditTags, onOpen
   }
 
   const handleFileContextMenu = (path: string, event: MouseEvent) => {
-    onSelectFile(path)
+    void onSelectFile(path)
     setState({ path, x: event.clientX, y: event.clientY })
   }
 

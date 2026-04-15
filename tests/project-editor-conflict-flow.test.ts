@@ -576,4 +576,111 @@ describe('project editor conflict flow', () => {
     expect(model?.state.externalConflictPath).toBeNull()
   })
 
+  it('selectFile auto-saves dirty content and navigates to a different file', async () => {
+    const { saveDocumentMock } = setupTramaApiMock({
+      openProject: async () => ({
+        ok: true as const,
+        data: {
+          rootPath: 'C:/tmp/project',
+          tree: [],
+          markdownFiles: ['docs/a.md', 'docs/b.md'],
+          index: { version: '1.0.0', corkboardOrder: {}, cache: {} },
+        },
+      }),
+    })
+
+    let model: ProjectEditorModel | undefined
+
+    function Harness() {
+      model = useProjectEditor()
+      return null
+    }
+
+    const container = document.createElement('div')
+    act(() => {
+      render(h(Harness, {}), container)
+    })
+
+    await act(async () => {
+      await model?.actions.pickProjectFolder()
+    })
+
+    const initialPath = model?.state.selectedPath
+    expect(initialPath).toBeTruthy()
+    const otherPath = initialPath === 'docs/a.md' ? 'docs/b.md' : 'docs/a.md'
+
+    act(() => {
+      model?.actions.updateEditorValue('# unsaved changes')
+    })
+
+    expect(model?.state.isDirty).toBe(true)
+    expect(saveDocumentMock).toHaveBeenCalledTimes(0)
+
+    await act(async () => {
+      await model?.actions.selectFile(otherPath)
+    })
+
+    expect(saveDocumentMock).toHaveBeenCalledTimes(1)
+    expect(saveDocumentMock.mock.calls[0]?.[0]).toMatchObject({
+      path: initialPath,
+      content: '# unsaved changes',
+    })
+    expect(model?.state.isDirty).toBe(false)
+    expect(model?.state.selectedPath).toBe(otherPath)
+  })
+
+  it('selectFile on the same file auto-saves but does not reload from disk', async () => {
+    const { saveDocumentMock, readDocumentMock } = setupTramaApiMock({
+      openProject: async () => ({
+        ok: true as const,
+        data: {
+          rootPath: 'C:/tmp/project',
+          tree: [],
+          markdownFiles: ['docs/a.md', 'docs/b.md'],
+          index: { version: '1.0.0', corkboardOrder: {}, cache: {} },
+        },
+      }),
+    })
+
+    let model: ProjectEditorModel | undefined
+
+    function Harness() {
+      model = useProjectEditor()
+      return null
+    }
+
+    const container = document.createElement('div')
+    act(() => {
+      render(h(Harness, {}), container)
+    })
+
+    await act(async () => {
+      await model?.actions.pickProjectFolder()
+    })
+
+    const initialPath = model?.state.selectedPath
+    expect(initialPath).toBeTruthy()
+    const readCountAfterOpen = readDocumentMock.mock.calls.length
+
+    act(() => {
+      model?.actions.updateEditorValue('# local edits')
+    })
+
+    expect(model?.state.isDirty).toBe(true)
+    expect(model?.state.editorValue).toBe('# local edits')
+
+    await act(async () => {
+      await model?.actions.selectFile(initialPath!)
+    })
+
+    expect(saveDocumentMock).toHaveBeenCalledTimes(1)
+    expect(saveDocumentMock.mock.calls[0]?.[0]).toMatchObject({
+      path: initialPath,
+      content: '# local edits',
+    })
+    expect(model?.state.editorValue).toBe('# local edits')
+    expect(model?.state.isDirty).toBe(false)
+    expect(readDocumentMock.mock.calls.length).toBe(readCountAfterOpen)
+  })
+
 })

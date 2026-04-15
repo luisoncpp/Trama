@@ -56,7 +56,7 @@ export interface ProjectEditorState {
 
 export interface ProjectEditorActions {
   pickProjectFolder: () => Promise<void>
-  selectFile: (filePath: string) => void
+  selectFile: (filePath: string) => Promise<void>
   openFileInPane: (filePath: string, pane: WorkspacePane) => void
   createArticle: (input: SidebarCreateInput) => Promise<void>
   createCategory: (input: SidebarCreateInput) => Promise<void>
