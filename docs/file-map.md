@@ -57,6 +57,8 @@ Mandatory doc navigation for new chats:
   - Get index handler.
 - `electron/ipc/handlers/ai-handlers.ts`
   - AI import/export handlers: preview import, execute import, and backend export formatting endpoint.
+- `electron/ipc/handlers/book-export-handler.ts`
+  - Book export handler: validates request payload and delegates multi-format book export to service with consistent error envelopes.
 
 ### Services
 
@@ -74,6 +76,27 @@ Mandatory doc navigation for new chats:
   - Parses AI clipboard blocks, builds preview metadata, and executes multi-file import writes.
 - `electron/services/ai-export-service.ts`
   - Formats selected files into `=== ARCHIVO: ... ===` blocks, validates relative paths against project root, and supports frontmatter include/exclude mode.
+- `electron/services/book-export-service.ts`
+  - Book export orchestrator: scans `book/`, builds ordered chapter models, sanitizes per format, dispatches renderer (`md/html/docx/epub/pdf`), and writes output artifact.
+- `electron/services/book-export-order.ts`
+  - Book export ordering logic: derives base order from tree and applies per-folder `corkboardOrder` from index with stable fallback.
+- `electron/services/book-export-sanitize.ts`
+  - Book export sanitize pipeline: strips frontmatter for all formats, strips HTML comments only for markdown output, and normalizes line endings/trailing whitespace.
+- `electron/services/book-export-directives.ts`
+  - Shared directive parsing helpers for `trama:center`, `trama:spacer`, and `trama:pagebreak`, including canonical comment tokens and HTML artifact variants.
+- `electron/services/book-export-pdf-fonts.ts`
+  - PDF font loading strategy: registers `@pdf-lib/fontkit`, resolves Unicode-capable system serif fonts, and falls back to standard fonts.
+- `electron/services/book-export-pdf-inline.ts`
+  - PDF inline text helpers: markdown inline tokenization (`**bold**`/`__bold__`), line wrapping, and width measurement for mixed regular/bold runs.
+- `electron/services/book-export-renderers.ts`
+  - Markdown/HTML renderers plus common chapter metadata model and HTML chapter rendering/template helpers.
+- `electron/services/book-export-docx-renderer.ts`
+  - DOCX renderer using `docx`, mapping directive semantics (center/spacer/pagebreak) to Word-native structure.
+- `electron/services/book-export-epub-renderer.ts`
+  - EPUB renderer using `epub-gen`, compiling chapter HTML sections into a `.epub` package.
+- `electron/services/book-export-pdf-renderer.ts`
+  - PDF renderer using `pdf-lib` with pagination, directive-aware spacing/page breaks, wrapped inline formatting, and chapter boundary page management.
+  - Uses Unicode-capable system serif fonts when available (fallback to standard fonts).
 
 ## Renderer layer
 
@@ -83,6 +106,8 @@ Mandatory doc navigation for new chats:
   - Main feature hook (state + effects + action integration).
 - `src/features/project-editor/project-editor-view.tsx`
   - Screen-level composition (sidebar + editor + status).
+- `src/features/project-editor/project-editor-dialogs.tsx`
+  - Centralized overlay/dialog composition for AI import/export and markdown book export modals plus toast notifications.
 - `src/features/project-editor/use-project-editor-ui-actions.ts`
   - Composes UI actions.
 - `src/features/project-editor/use-project-editor-focus-actions.ts`
@@ -109,6 +134,8 @@ Mandatory doc navigation for new chats:
   - Renderer hook for AI import dialog state and calls to preview/execute import IPC actions.
 - `src/features/project-editor/use-ai-export.ts`
   - Renderer hook for AI export dialog state, IPC export call, and clipboard copy flow.
+- `src/features/project-editor/use-book-export.ts`
+  - Renderer hook for book export dialog state: selected format, optional metadata (title/author), default output path handling, IPC export call, and success toast flow.
 
 ### Project editor hooks (detailed)
 
@@ -148,13 +175,17 @@ Mandatory doc navigation for new chats:
 - `src/features/project-editor/components/editor-panel.tsx`
   - Editor panel shell, sync labels, save affordance.
 - `src/features/project-editor/components/ai-import-dialog.tsx`
-  - Modal dialog for AI import text input, preview trigger, and import confirmation.
+  - Modal dialog for AI import text input, mode selector (`replace` / `append`), preview trigger, and import confirmation.
 - `src/features/project-editor/components/ai-import-preview-section.tsx`
   - Preview summary/list for parsed import files (new vs existing).
 - `src/features/project-editor/components/ai-export-dialog.tsx`
   - Export dialog controller (portal, close behavior, keyboard handling) wired to export hook actions.
 - `src/features/project-editor/components/ai-export-dialog-body.tsx`
   - Export dialog UI body with multi-select file list, include-frontmatter option, and export/cancel actions.
+- `src/features/project-editor/components/book-export-dialog.tsx`
+  - Markdown book export modal controller (portal, close behavior, keyboard handling).
+- `src/features/project-editor/components/book-export-dialog-body.tsx`
+  - Book export dialog body with project root display, optional metadata inputs, output path input, and export/cancel actions.
 - `src/features/project-editor/components/rich-markdown-editor.tsx`
   - Quill-based rich Markdown editor component (lifecycle, toolbar integration, focus-mode hookup).
 - `src/features/project-editor/components/rich-markdown-editor-core.ts`
@@ -237,6 +268,8 @@ Mandatory doc navigation for new chats:
   - Create buttons (`+Article`, `+Category`).
 - `src/features/project-editor/components/sidebar/sidebar-settings-content.tsx`
   - Sidebar settings panel (width slider).
+- `src/features/project-editor/components/sidebar/sidebar-transfer-content.tsx`
+  - Transfer section composition: separate `Project interchange` (AI import/export) and `Book export` blocks with format selector + export trigger.
 
 ## Shared contracts
 
@@ -284,10 +317,24 @@ Core and regression suites:
   - Export formatter service coverage (multi-file output, frontmatter toggle, path hardening, missing file behavior).
 - `tests/ai-export-ipc-handler.test.ts`
   - IPC envelope validation for export handler success/error payload paths.
+- `tests/book-export-ipc-handler.test.ts`
+  - Book export IPC coverage: payload validation, markdown export success, phase C format exports (`html/docx/epub/pdf`), and failure envelope behavior.
+- `tests/book-export-order.test.ts`
+  - Book export order coverage: base tree ordering, index override, and non-book path filtering.
+- `tests/book-export-sanitize.test.ts`
+  - Book export sanitize coverage: frontmatter/tag removal, markdown-only comment stripping, and whitespace normalization.
+- `tests/book-export-renderers.test.ts`
+  - Renderer coverage for markdown/html/docx/epub/pdf outputs, including directive conversion and binary artifact generation.
 - `tests/use-ai-export.test.ts`
   - Renderer export hook coverage for IPC call shape, clipboard copy, and error state handling.
 - `tests/markdown-layout-directives.test.ts`
   - Unit coverage for directive extraction, warning behavior, artifact rendering, and canonical serialization helpers.
+- `tests/ai-import-service.test.ts`
+  - Import service coverage: replace mode overwrites existing file content, append mode appends with separator, preview correctly classifies new vs existing files.
+- `tests/ai-import-ipc-handler.test.ts`
+  - IPC handler coverage: rejects invalid `importMode` with `VALIDATION_ERROR`, append mode produces expected written content via IPC.
+- `tests/use-ai-import.test.ts`
+  - Renderer import hook coverage: `importMode` forwarded to preview IPC call, `importMode` forwarded to execute IPC call, log message format matches created/appended/replaced/skipped/errors counts.
 
 ## Build outputs
 

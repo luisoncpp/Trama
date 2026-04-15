@@ -311,6 +311,10 @@ select {
   gap: 10px;
 }
 
+.project-menu--book-export {
+  margin-top: 8px;
+}
+
 .project-menu__path {
   margin: 0;
   font-family: 'Cascadia Code', Consolas, 'Courier New', monospace;
@@ -348,6 +352,31 @@ select {
 .project-menu__actions .editor-button {
   width: 100%;
   justify-content: center;
+}
+
+.book-export-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.book-export-controls__select {
+  border: 1px solid var(--border-strong);
+  border-radius: 9px;
+  background: var(--surface-input-bg);
+  color: var(--text-main);
+  padding: 9px 10px;
+  font-size: 0.78rem;
+}
+
+.book-export-controls__select:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.book-export-controls__select:focus {
+  outline: none;
+  border-color: var(--accent);
 }
 
 .project-menu__field input[type='range'] {
@@ -591,6 +620,25 @@ select {
 .ai-import-dialog__mode-select option {
   background-color: Field;
   color: FieldText;
+}
+
+.book-export-dialog__input {
+  border: 1px solid var(--border-strong);
+  border-radius: 9px;
+  background: var(--surface-input-bg);
+  color: var(--text-main);
+  padding: 9px 10px;
+  font-size: 0.78rem;
+}
+
+.book-export-dialog__input:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.book-export-dialog__input:focus {
+  outline: none;
+  border-color: var(--accent);
 }
 
 .ai-import-dialog__actions {

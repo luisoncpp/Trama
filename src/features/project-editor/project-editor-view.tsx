@@ -3,11 +3,12 @@ import { ConflictBanner } from './components/conflict-banner'
 import { ConflictComparePanel } from './components/conflict-compare-panel'
 import { WorkspaceLayoutPanel } from './components/workspace-editor-panels.tsx'
 import { SidebarPanel } from './components/sidebar/sidebar-panel.tsx'
-import { AiImportDialog } from './components/ai-import-dialog'
-import { AiExportDialog } from './components/ai-export-dialog'
+import { ProjectEditorDialogs } from './project-editor-dialogs'
 import { useAiImport } from './use-ai-import'
 import { useAiExport } from './use-ai-export'
+import { useBookExport } from './use-book-export'
 import type { ResolvedTheme, ThemePreference } from '../../theme/theme-types'
+import type { BookExportFormat } from '../../shared/ipc'
 
 interface ProjectEditorViewProps {
   model: ProjectEditorModel
@@ -66,8 +67,13 @@ function SidebarSection({
   resolvedTheme,
   onThemePreferenceChange,
   onImportClick,
+  onBookExportClick,
   onExportClick,
-}: Pick<ProjectEditorViewProps, 'model' | 'themePreference' | 'resolvedTheme' | 'onThemePreferenceChange'> & { onImportClick: () => void; onExportClick: () => void }) {
+}: Pick<ProjectEditorViewProps, 'model' | 'themePreference' | 'resolvedTheme' | 'onThemePreferenceChange'> & {
+  onImportClick: () => void
+  onBookExportClick: (format: BookExportFormat) => void
+  onExportClick: () => void
+}) {
   const { state, actions } = model
 
   return (
@@ -92,6 +98,7 @@ function SidebarSection({
       rootPath={state.rootPath}
       onPickFolder={() => void actions.pickProjectFolder()}
       onImport={onImportClick}
+      onExportBook={onBookExportClick}
       onExport={onExportClick}
       themePreference={themePreference}
       resolvedTheme={resolvedTheme}
@@ -100,57 +107,6 @@ function SidebarSection({
       focusScope={state.workspaceLayout.focusScope}
       onFocusScopeChange={actions.setFocusScope}
     />
-  )
-}
-
-function ProjectEditorDialogs({
-  rootPath,
-  visibleFiles,
-  aiImport,
-  aiExport,
-}: {
-  rootPath: string
-  visibleFiles: string[]
-  aiImport: ReturnType<typeof useAiImport>
-  aiExport: ReturnType<typeof useAiExport>
-}) {
-  const exportableFiles = visibleFiles.filter((path) => !path.endsWith('/'))
-
-  return (
-    <>
-      <AiImportDialog
-        open={aiImport.open}
-        onClose={() => aiImport.setOpen(false)}
-        onPreview={aiImport.handlePreview}
-        onExecute={aiImport.handleExecute}
-        projectRoot={rootPath}
-      />
-      <AiExportDialog
-        open={aiExport.open}
-        onClose={() => aiExport.setOpen(false)}
-        onExport={aiExport.handleExport}
-        selectedPaths={aiExport.selectedPaths}
-        onSelectedPathsChange={aiExport.setSelectedPaths}
-        includeFrontmatter={aiExport.includeFrontmatter}
-        onIncludeFrontmatterChange={aiExport.setIncludeFrontmatter}
-        visibleFiles={exportableFiles}
-        exporting={aiExport.exporting}
-        lastError={aiExport.lastError}
-      />
-      {aiExport.copyToastMessage && (
-        <div class="ai-export-toast" role="status" aria-live="polite">
-          <span>{aiExport.copyToastMessage}</span>
-          <button
-            type="button"
-            class="ai-export-toast__dismiss"
-            onClick={aiExport.dismissCopyToast}
-            aria-label="Dismiss export copied notification"
-          >
-            Dismiss
-          </button>
-        </div>
-      )}
-    </>
   )
 }
 
@@ -163,6 +119,7 @@ export function ProjectEditorView({
   const { state } = model
   const aiImport = useAiImport(state.rootPath)
   const aiExport = useAiExport(state.rootPath)
+  const bookExport = useBookExport(state.rootPath)
 
   return (
     <main class={buildShellClassName(model)}>
@@ -177,12 +134,17 @@ export function ProjectEditorView({
             resolvedTheme={resolvedTheme}
             onThemePreferenceChange={onThemePreferenceChange}
             onImportClick={() => aiImport.setOpen(true)}
+            onBookExportClick={(format) => {
+              bookExport.setFormat(format)
+              bookExport.setOutputPath('')
+              bookExport.setOpen(true)
+            }}
             onExportClick={() => aiExport.setOpen(true)}
           />
           <ProjectEditorMainPane model={model} />
         </section>
       </div>
-      <ProjectEditorDialogs rootPath={state.rootPath} visibleFiles={state.visibleFiles} aiImport={aiImport} aiExport={aiExport} />
+      <ProjectEditorDialogs rootPath={state.rootPath} visibleFiles={state.visibleFiles} aiImport={aiImport} bookExport={bookExport} aiExport={aiExport} />
     </main>
   )
 }

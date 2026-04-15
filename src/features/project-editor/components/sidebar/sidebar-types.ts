@@ -1,5 +1,6 @@
 import type { FocusScope, SidebarCreateInput, SidebarSection } from '../../project-editor-types'
 import type { ResolvedTheme, ThemePreference } from '../../../../theme/theme-types'
+import type { BookExportFormat } from '../../../../shared/ipc'
 
 export interface SidebarSelectionProps {
   visibleFiles: string[]
@@ -23,6 +24,7 @@ export interface SidebarProjectContextProps {
   rootPath: string
   onPickFolder: () => void
   onImport: () => void
+  onExportBook: (format: BookExportFormat) => void
   onExport: () => void
 }
 

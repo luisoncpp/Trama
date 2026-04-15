@@ -34,3 +34,6 @@ Create a new file in this directory named after the topic (e.g., `auth-token-ref
 | `quill-getbounds-container-reference.md` | `quill.getBounds()` is relative to `quill.container`, not `quill.root`; using root doubles the centering margin and drifts overlays/hit-tests right as editor widens | 2026-04-11 |
 | `tag-index-stale-after-save.md` | Tag navigation relied on stale in-memory `TagIndexService` after saves; fix by rebuilding tag index during document reconciliation and cover with IPC regression tests | 2026-04-12 |
 | `quill-custom-data-attribute-loss.md` | Quill import/sanitization drops unknown custom `data-*` directive markers; use dedicated blots for durable semantic round-trip objects | 2026-04-12 |
+| `pdf-lib-winansi-encoding.md` | PDF export Unicode failures were resolved by embedding system Unicode fonts via `@pdf-lib/fontkit`, plus regression tests for Unicode and pagebreak variants | 2026-04-13 |
+| `pdf-image-data-urls.md` | PDF image embedding failed on base64 data URLs because `path.resolve()` corrupted the scheme; fixed by detecting `data:image/` prefix before path normalization | 2026-04-14 |
+| `epub-gen-image-limitations.md` | EPUB image embedding fixed by materializing data URLs to temp files and rewriting sources to `file://` paths; includes Windows `file://C:/...` path handling to avoid duplicated drive-prefix errors. | 2026-04-14 |

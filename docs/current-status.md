@@ -51,6 +51,15 @@ Implemented now:
 - AI export UX polish: export copy flow now shows a success toast notification after clipboard write.
 - Wiki tag link stability hardening: tag index now refreshes immediately after document save flows (including frontmatter tag edits), so Ctrl/Cmd+Click navigation works without restarting the app.
 - Markdown layout directives hardening complete: Quill now uses registered layout directive blots plus clipboard matchers for `center/spacer/pagebreak/unknown` artifacts, applies centered styling to blocks between center boundaries, renders pagebreak as a large viewport-relative separator, enforces explicit ArrowLeft/ArrowRight atomic traversal over pagebreak embeds, and includes copy-as-markdown plus richer round-trip ordering regression coverage.
+- AI import/export sidebar refactor: import and export actions moved from the explorer header into a dedicated "Transfer" sidebar rail section (`SidebarSection = 'explorer' | 'outline' | 'lore' | 'transfer' | 'settings'`).
+- AI import collision modes: import dialog now supports `replace` (overwrite existing file) and `append` (append imported content at end of existing file) modes selectable before executing the import. Preview and execution share the same `importMode` contract in the IPC schema.
+- Book export Phase C multi-format backend: export service now renders `markdown`, `html`, `docx`, `epub`, and `pdf` outputs to disk through dedicated renderer modules, while preserving directive semantics for non-markdown formats.
+- Book export pipeline hardening: book compilation now uses ordered chapter models (`book/` only, index-aware ordering), common sanitize stage, and format-specific render dispatch.
+- Book export Transfer UX refinement: `Project interchange` remains AI import/export only, and `Book export` is now a separate box with format selector + export action, keeping it visually decoupled from AI transfer.
+- Book export dialog metadata support: export modal now accepts optional `title` and `author` fields, propagated to format renderers that support document metadata.
+- Book export PDF hardening: renderer now embeds Unicode-capable system serif fonts when available (via `@pdf-lib/fontkit`), preserves inline bold markdown in body text, accepts both canonical and HTML-variant layout directives (`pagebreak/center/spacer`), avoids trailing blank pages between chapters, and embeds images from both local files and data URLs (PNG/JPG).
+- Book export DOCX hardening: no longer adds chapter title headings at section start; replaces page-break markers with 2 blank lines between sections (unless section ends with explicit pagebreak); now embeds images via `ImageRun` (local files and data URLs).
+- Book export image handling refactor: extracted common image utilities into `book-export-image-utils.ts` (`resolveImagePath`, `loadImageBytes`, `parseDataUrl`, `bytesToDataUrl`) and added EPUB preprocessing that materializes data-url images to temporary files and rewrites markdown image sources to `file://` paths for `epub-gen` compatibility (including Windows drive-letter path handling).
 
 Not implemented yet (planned in later phases):
 - Folder rename/delete and move workflows.
@@ -62,7 +71,7 @@ Not implemented yet (planned in later phases):
 Current verification baseline:
 - `npm run build` passes.
 - `npm run lint` passes.
-- `npm run test` passes (26 suites, 129 tests).
+- `npm run test` passes (31 suites, 160 tests).
 - `npm run test:smoke` passes.
 
 **Running tests**: In sandboxed agent environments, `npm test` may fail due to environment restrictions. Use the PowerShell script instead, which runs in a full PowerShell context and passes consistently:
@@ -84,6 +93,7 @@ Additional regression checks in suite include:
 - `sandbox: false` remains enabled for preload stability in this setup.
 - Index refresh still does full reconciliation in several write flows (safe, but can be optimized later).
 - External change handling favors safety over convenience (prevents accidental overwrite when local doc is dirty).
+- PDF export prefers Unicode system serif fonts and falls back to `pdf-lib` standard fonts only when those system fonts are unavailable.
 
 ## ✅ Phase 3 Sign-off
 

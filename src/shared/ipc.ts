@@ -18,6 +18,7 @@ export const IPC_CHANNELS = {
   aiImport: 'trama:ai:import',
   aiImportPreview: 'trama:ai:import:preview',
   aiExport: 'trama:ai:export',
+  bookExport: 'trama:book:export',
   tagGetIndex: 'trama:tag:getIndex',
   tagResolve: 'trama:tag:resolve',
 } as const
@@ -54,6 +55,20 @@ export const aiImportPreviewSchema = z.object({ files: z.array(aiImportFileSchem
 export const aiImportResponseSchema = z.object({ success: z.boolean(), created: z.array(z.string()), appended: z.array(z.string()), replaced: z.array(z.string()), skipped: z.array(z.string()), errors: z.array(z.object({ path: z.string(), error: z.string() })) })
 export const aiExportRequestSchema = z.object({ filePaths: z.array(z.string().trim().min(1)), projectRoot: z.string().trim().min(1), includeFrontmatter: z.boolean().default(true) })
 export const aiExportResponseSchema = z.object({ success: z.boolean(), formattedContent: z.string(), fileCount: z.number().int().nonnegative() })
+export const bookExportFormatSchema = z.enum(['markdown', 'html', 'docx', 'epub', 'pdf'])
+export const bookExportRequestSchema = z.object({
+  projectRoot: z.string().trim().min(1),
+  format: bookExportFormatSchema,
+  outputPath: z.string().trim().min(1),
+  title: z.string().trim().min(1).optional(),
+  author: z.string().trim().min(1).optional(),
+})
+export const bookExportResponseSchema = z.object({
+  success: z.boolean(),
+  outputPath: z.string(),
+  format: bookExportFormatSchema,
+  exportedFiles: z.number().int().nonnegative(),
+})
 export const ipcErrorSchema = z.object({ code: z.string(), message: z.string(), details: z.unknown().optional() })
 
 export type PingRequest = z.infer<typeof pingRequestSchema>
@@ -88,5 +103,8 @@ export type AiImportPreview = z.infer<typeof aiImportPreviewSchema>
 export type AiImportResponse = z.infer<typeof aiImportResponseSchema>
 export type AiExportRequest = z.infer<typeof aiExportRequestSchema>
 export type AiExportResponse = z.infer<typeof aiExportResponseSchema>
+export type BookExportFormat = z.infer<typeof bookExportFormatSchema>
+export type BookExportRequest = z.infer<typeof bookExportRequestSchema>
+export type BookExportResponse = z.infer<typeof bookExportResponseSchema>
 export type IpcError = z.infer<typeof ipcErrorSchema>
 export type IpcEnvelope<T> = { ok: true; data: T } | { ok: false; error: IpcError }

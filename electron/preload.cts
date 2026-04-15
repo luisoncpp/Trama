@@ -4,6 +4,8 @@ import {
   IPC_CHANNELS,
   type AiExportRequest,
   type AiExportResponse,
+  type BookExportRequest,
+  type BookExportResponse,
   type AiImportPreview,
   type AiImportRequest,
   type AiImportResponse,
@@ -104,6 +106,9 @@ const tramaApi = {
   },
   aiExport(payload: AiExportRequest): Promise<IpcEnvelope<AiExportResponse>> {
     return ipcRenderer.invoke(IPC_CHANNELS.aiExport, payload)
+  },
+  bookExport(payload: BookExportRequest): Promise<IpcEnvelope<BookExportResponse>> {
+    return ipcRenderer.invoke(IPC_CHANNELS.bookExport, payload)
   },
   getTagIndex(): Promise<IpcEnvelope<TagGetIndexResponse>> {
     return ipcRenderer.invoke(IPC_CHANNELS.tagGetIndex)

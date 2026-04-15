@@ -14,6 +14,7 @@ import {
   setFullscreenRequestSchema,
   type AiImportRequest,
   type AiExportRequest,
+  type BookExportRequest,
 } from '../src/shared/ipc.js'
 import {
   buildPingResponse,
@@ -31,6 +32,7 @@ import {
   handleAiImportPreview,
   handleAiImport,
   handleAiExport,
+  handleBookExport,
   handleTagGetIndex,
   handleTagResolve,
 } from './ipc/handlers/index.js'
@@ -140,6 +142,10 @@ function registerAiHandlers(ipcMain: IpcMain): void {
 
   ipcMain.handle(IPC_CHANNELS.aiExport, (_event, payload: AiExportRequest) => {
     return handleAiExport(_event, payload)
+  })
+
+  ipcMain.handle(IPC_CHANNELS.bookExport, (_event, payload: BookExportRequest) => {
+    return handleBookExport(_event, payload)
   })
 }
 

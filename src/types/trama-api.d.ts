@@ -4,6 +4,8 @@ import type {
   AiImportPreview,
   AiImportRequest,
   AiImportResponse,
+  BookExportRequest,
+  BookExportResponse,
   CreateDocumentRequest,
   CreateDocumentResponse,
   CreateFolderRequest,
@@ -51,6 +53,7 @@ declare global {
       aiImportPreview(payload: AiImportRequest): Promise<IpcEnvelope<AiImportPreview>>
       aiImport(payload: AiImportRequest): Promise<IpcEnvelope<AiImportResponse>>
       aiExport(payload: AiExportRequest): Promise<IpcEnvelope<AiExportResponse>>
+      bookExport(payload: BookExportRequest): Promise<IpcEnvelope<BookExportResponse>>
       getTagIndex(): Promise<IpcEnvelope<TagGetIndexResponse>>
       resolveTag(payload: TagResolveRequest): Promise<IpcEnvelope<TagResolveResponse>>
     }

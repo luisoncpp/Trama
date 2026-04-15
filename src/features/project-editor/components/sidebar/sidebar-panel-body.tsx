@@ -5,8 +5,8 @@ import { SidebarSettingsContent } from './sidebar-settings-content.tsx'
 import { SidebarTransferContent } from './sidebar-transfer-content.tsx'
 import { joinProjectPath } from './sidebar-panel-logic'
 import type {
-  SidebarFileActions,
   SidebarProjectContextProps,
+  SidebarFileActions,
   SidebarSelectionProps,
   SidebarThemeProps,
   SidebarWorkspacePrefsProps,
@@ -35,6 +35,7 @@ export interface SidebarPanelBodyProps {
   onDeleteFile: SidebarFileActions['onDeleteFile']
   onEditFileTags: SidebarFileActions['onEditFileTags']
   onImport: () => void
+  onExportBook: SidebarProjectContextProps['onExportBook']
   onExport: () => void
   contentProps: Omit<
     SidebarProjectContextProps & SidebarSelectionProps,
@@ -114,11 +115,12 @@ function renderSidebarSettingsContent({
   )
 }
 
-function renderSidebarTransferContent({ contentProps, onImport, onExport }: SidebarPanelBodyProps) {
+function renderSidebarTransferContent({ contentProps, onImport, onExportBook, onExport }: SidebarPanelBodyProps) {
   return (
     <SidebarTransferContent
       disabled={contentProps.loadingProject || !contentProps.apiAvailable}
       onImport={onImport}
+      onExportBook={onExportBook}
       onExport={onExport}
     />
   )

@@ -34,6 +34,7 @@ function buildPanelProps(
     rootPath: 'C:/Proyectos/test_trama',
     onPickFolder: () => undefined,
     onImport: () => undefined,
+    onExportBook: (_format) => undefined,
     onExport: () => undefined,
     themePreference: 'dark',
     resolvedTheme: 'dark',
@@ -99,7 +100,13 @@ describe('sidebar panels', () => {
 
     expect(container.textContent).toContain('Import / Export')
     expect(container.textContent).toContain('Import AI Content')
+    expect(container.textContent).toContain('Export Book')
     expect(container.textContent).toContain('Export Files')
+    expect(container.textContent).toContain('Markdown (.md)')
+    expect(container.textContent).toContain('HTML (.html)')
+    expect(container.textContent).toContain('DOCX (.docx)')
+    expect(container.textContent).toContain('EPUB (.epub)')
+    expect(container.textContent).toContain('PDF (.pdf)')
 
     act(() => {
       render(
