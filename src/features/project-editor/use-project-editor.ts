@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'preact/hooks'
 import type { ProjectEditorModel } from './project-editor-types'
 import { useProjectEditorActions } from './use-project-editor-actions'
 import { useProjectEditorAutosaveEffect } from './use-project-editor-autosave-effect'
@@ -12,7 +13,23 @@ function useProjectEditorEffects(
   setters: ReturnType<typeof useProjectEditorState>['setters'],
   actions: ReturnType<typeof useProjectEditorActions>['actions'],
   core: ReturnType<typeof useProjectEditorActions>['core'],
+  autoPickProjectFolderOnStart: boolean,
 ): void {
+  const hasRequestedProjectFolderRef = useRef(false)
+
+  useEffect(/* autoPickProjectFolderOnStart */ () => {
+    if (!autoPickProjectFolderOnStart || hasRequestedProjectFolderRef.current) {
+      return
+    }
+
+    if (!values.apiAvailable || values.rootPath) {
+      return
+    }
+
+    hasRequestedProjectFolderRef.current = true
+    void actions.pickProjectFolder()
+  }, [actions.pickProjectFolder, autoPickProjectFolderOnStart, values.apiAvailable, values.rootPath] /*Inputs for autoPickProjectFolderOnStart*/)
+
   useProjectEditorAutosaveEffect({
     selectedPath: values.selectedPath,
     isDirty: values.isDirty,
@@ -87,10 +104,11 @@ function buildProjectEditorModelState(values: ReturnType<typeof useProjectEditor
 }
 
 export function useProjectEditor(): ProjectEditorModel {
+  const autoPickProjectFolderOnStart = import.meta.env.MODE !== 'test'
   const state = useProjectEditorState()
   const { values, setters } = state
   const { actions, core } = useProjectEditorActions(state)
-  useProjectEditorEffects(values, setters, actions, core)
+  useProjectEditorEffects(values, setters, actions, core, autoPickProjectFolderOnStart)
 
   return {
     state: buildProjectEditorModelState(values),

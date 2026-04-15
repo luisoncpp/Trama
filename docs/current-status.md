@@ -12,6 +12,8 @@ Implemented now:
 - Typed IPC with Zod validation and envelope responses.
 - Renderer-to-main debug logging channel (`trama:debug:log`) for diagnostics.
 - Native folder picker and project open flow.
+- App startup now auto-opens project-folder picker so users immediately choose a project root at launch.
+- Folder picker project-structure guard: selected project root now validates required `book/`, `lore/`, and `outline/` folders, offers one-click creation when missing, and reopens folder selection when user declines creation.
 - Recursive markdown scan with ignored system/build folders.
 - Markdown read/save through main-process repository layer.
 - YAML frontmatter parse/serialize using `yaml` package.

@@ -52,6 +52,7 @@ Mandatory doc navigation for new chats:
   - Open project + scan + reconcile + watcher start.
 - `electron/ipc/handlers/project-handlers/project-folder-dialog-handler.ts`
   - Native folder picker endpoint.
+  - Enforces required project folders (`book`, `lore`, `outline`) by prompting to create missing folders or reselect another directory.
 - `electron/ipc/handlers/project-handlers/document-handlers.ts`
   - Read/save/create/rename/delete document + create folder handlers.
 - `electron/ipc/handlers/project-handlers/index-handler.ts`
@@ -301,6 +302,7 @@ Core and regression suites:
 - `tests/workspace-layout-persistence.test.ts`
 - `tests/project-editor-conflict-flow.test.ts`
 - `tests/project-editor-logic.test.ts`
+- `tests/project-folder-dialog-handler.test.ts`
 - `tests/rich-markdown-editor.test.ts`
 - `tests/paste-markdown.test.ts`
 - `tests/focus-mode-scope.test.ts`
