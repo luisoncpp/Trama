@@ -240,6 +240,77 @@ describe('project editor conflict flow', () => {
     expect(model?.state.externalConflictPath).toBeNull()
   })
 
+  it('saves the targeted secondary pane document when split panes have separate dirty content', async () => {
+    const { saveDocumentMock } = setupTramaApiMock({
+      openProject: async () => ({
+        ok: true as const,
+        data: {
+          rootPath: 'C:/tmp/project',
+          tree: [],
+          markdownFiles: ['docs/a.md', 'docs/b.md'],
+          index: { version: '1.0.0', corkboardOrder: {}, cache: {} },
+        },
+      }),
+      readDocument: vi.fn(async (payload: { path: string }) => ({
+        ok: true as const,
+        data: {
+          path: payload.path,
+          content: payload.path === 'docs/b.md' ? '# B' : '# A',
+          meta: {},
+        },
+      })),
+    })
+
+    let model: ProjectEditorModel | undefined
+
+    function Harness() {
+      model = useProjectEditor()
+      return null
+    }
+
+    const container = document.createElement('div')
+    act(() => {
+      render(h(Harness, {}), container)
+    })
+
+    await act(async () => {
+      await model?.actions.pickProjectFolder()
+    })
+
+    await act(async () => {
+      model?.actions.toggleWorkspaceLayoutMode()
+      model?.actions.openFileInPane('docs/b.md', 'secondary')
+      await Promise.resolve()
+    })
+
+    expect(model?.state.workspaceLayout.activePane).toBe('secondary')
+    expect(model?.state.secondaryPane.path).toBe('docs/b.md')
+    expect(model?.state.secondaryPane.content).toBe('# B')
+
+    act(() => {
+      model?.actions.updateEditorValue('# A\n\nprimary dirty', 'primary')
+      model?.actions.updateEditorValue('# B\n\nsecondary dirty', 'secondary')
+      model?.actions.setWorkspaceActivePane('primary')
+    })
+
+    expect(model?.state.workspaceLayout.activePane).toBe('primary')
+    expect(model?.state.primaryPane.isDirty).toBe(true)
+    expect(model?.state.secondaryPane.isDirty).toBe(true)
+
+    await act(async () => {
+      model?.actions.saveNow('secondary')
+      await Promise.resolve()
+    })
+
+    expect(saveDocumentMock).toHaveBeenCalledTimes(1)
+    expect(saveDocumentMock.mock.calls[0]?.[0]).toMatchObject({
+      path: 'docs/b.md',
+      content: '# B\n\nsecondary dirty',
+    })
+    expect(model?.state.primaryPane.isDirty).toBe(true)
+    expect(model?.state.secondaryPane.isDirty).toBe(false)
+  })
+
   it('reload action discards local dirty content and restores disk version', async () => {
     const { emitExternalEvent, readDocumentMock } = setupTramaApiMock()
 
@@ -360,6 +431,71 @@ describe('project editor conflict flow', () => {
     expect(model?.state.workspaceLayout.activePane).toBe('secondary')
     expect(model?.state.selectedPath).toBe('docs/b.md')
     expect(model?.state.statusMessage).toBe('Save or wait for autosave before switching files.')
+  })
+
+  it('marks only the targeted pane dirty when split editor change targets secondary pane', async () => {
+    setupTramaApiMock({
+      openProject: async () => ({
+        ok: true,
+        data: {
+          rootPath: 'C:/tmp/project',
+          tree: [],
+          markdownFiles: ['docs/a.md', 'docs/b.md'],
+          index: { version: '1.0.0', corkboardOrder: {}, cache: {} },
+        },
+      }),
+      readDocument: async (payload: { path: string }) => ({
+        ok: true,
+        data: {
+          path: payload.path,
+          content: payload.path === 'docs/b.md' ? '# B' : '# A',
+          meta: {},
+        },
+      }),
+    })
+
+    let model: ProjectEditorModel | undefined
+
+    function Harness() {
+      model = useProjectEditor()
+      return null
+    }
+
+    const container = document.createElement('div')
+    act(() => {
+      render(h(Harness, {}), container)
+    })
+
+    await act(async () => {
+      await model?.actions.pickProjectFolder()
+    })
+
+    await act(async () => {
+      model?.actions.toggleWorkspaceLayoutMode()
+      await Promise.resolve()
+    })
+
+    await act(async () => {
+      model?.actions.setWorkspaceActivePane('secondary')
+      await Promise.resolve()
+    })
+
+    await act(async () => {
+      model?.actions.setWorkspaceActivePane('primary')
+      await Promise.resolve()
+    })
+
+    expect(model?.state.workspaceLayout.activePane).toBe('primary')
+    expect(model?.state.primaryPane.isDirty).toBe(false)
+    expect(model?.state.secondaryPane.isDirty).toBe(false)
+
+    act(() => {
+      model?.actions.updateEditorValue('# B\n\nlocal dirty from secondary callback', 'secondary')
+    })
+
+    expect(model?.state.primaryPane.isDirty).toBe(false)
+    expect(model?.state.secondaryPane.isDirty).toBe(true)
+    expect(model?.state.workspaceLayout.activePane).toBe('primary')
   })
 
   it('keeps copied conflict document in active secondary pane after reopening project', async () => {

@@ -80,8 +80,9 @@ function useUpdateEditorValueAction(
   setters: UseProjectEditorStateResult['setters'],
 ): ProjectEditorActions['updateEditorValue'] {
   return useCallback(
-    (nextValue: string) => {
-      if (values.workspaceLayout.activePane === 'secondary') {
+    (nextValue: string, pane?: WorkspacePane) => {
+      const targetPane = pane ?? values.workspaceLayout.activePane
+      if (targetPane === 'secondary') {
         setters.setSecondaryPane((prev) => ({ ...prev, content: nextValue, isDirty: true }))
       } else {
         setters.setPrimaryPane((prev) => ({ ...prev, content: nextValue, isDirty: true }))
@@ -97,13 +98,16 @@ function useSaveNowAction({
   values: UseProjectEditorStateResult['values']
   saveDocumentNow: (path: string, content: string, meta: DocumentMeta) => Promise<void>
 }): ProjectEditorActions['saveNow'] {
-  return useCallback(() => {
-    if (!values.selectedPath || values.saving || !values.isDirty) {
+  return useCallback((pane?: WorkspacePane) => {
+    const targetPane = pane ?? values.workspaceLayout.activePane
+    const paneState = targetPane === 'secondary' ? values.secondaryPane : values.primaryPane
+
+    if (!paneState.path || values.saving || !paneState.isDirty) {
       return
     }
 
-    void saveDocumentNow(values.selectedPath, values.editorValue, values.editorMeta)
-  }, [saveDocumentNow, values.editorMeta, values.editorValue, values.isDirty, values.saving, values.selectedPath])
+    void saveDocumentNow(paneState.path, paneState.content, paneState.meta)
+  }, [saveDocumentNow, values.primaryPane, values.saving, values.secondaryPane, values.workspaceLayout.activePane])
 }
 function buildProjectEditorActions(input: ProjectEditorActions): ProjectEditorActions {
   return input

@@ -32,6 +32,12 @@ function PaneEditor({ model, pane, tagIndex, onTagClick }: PaneEditorProps) {
   const { state, actions } = model
   const paneState = pane === 'secondary' ? state.secondaryPane : state.primaryPane
   const isActive = state.workspaceLayout.activePane === pane
+  const onPaneEditorChange = (nextValue: string) => {
+    actions.updateEditorValue(nextValue, pane)
+  }
+  const onPaneSaveNow = () => {
+    actions.saveNow(pane)
+  }
   const onActivate = () => {
     if (!isActive) {
       actions.setWorkspaceActivePane(pane)
@@ -57,8 +63,8 @@ function PaneEditor({ model, pane, tagIndex, onTagClick }: PaneEditorProps) {
           isDirty={paneState.isDirty}
           loadingDocument={state.loadingDocument && isActive}
           editorValue={paneState.content}
-          onSaveNow={actions.saveNow}
-          onEditorChange={actions.updateEditorValue}
+          onSaveNow={onPaneSaveNow}
+          onEditorChange={onPaneEditorChange}
           focusModeEnabled={state.workspaceLayout.focusModeEnabled}
           focusScope={state.workspaceLayout.focusScope}
           onInteract={onActivate}

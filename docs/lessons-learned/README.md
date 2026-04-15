@@ -38,3 +38,5 @@ Create a new file in this directory named after the topic (e.g., `auth-token-ref
 | `pdf-image-data-urls.md` | PDF image embedding failed on base64 data URLs because `path.resolve()` corrupted the scheme; fixed by detecting `data:image/` prefix before path normalization | 2026-04-14 |
 | `epub-gen-image-limitations.md` | EPUB image embedding fixed by materializing data URLs to temp files and rewriting sources to `file://` paths; includes Windows `file://C:/...` path handling to avoid duplicated drive-prefix errors. | 2026-04-14 |
 | `vite-reload-on-export-artifacts.md` | Dev server reloaded the full app after HTML book export because generated files under `exports/` were watched by Vite; fixed by ignoring `**/exports/**` in `vite.config.ts` watch settings. | 2026-04-14 |
+| `split-pane-pane-targeted-editor-change.md` | Split editors must route onChange updates to an explicit pane; relying on global active pane can mark the wrong pane dirty due to event timing. | 2026-04-14 |
+| `split-pane-pane-targeted-save.md` | Split-pane manual save buttons must target the pane that emitted the action; using global active-pane state can save the wrong document. | 2026-04-14 |

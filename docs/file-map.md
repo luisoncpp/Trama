@@ -6,6 +6,7 @@ Mandatory doc navigation for new chats:
 1. Start with `docs/START-HERE.md`.
 2. Read `docs/lessons-learned/README.md` before implementation changes.
 3. If task is WS1 Wiki Tag Links, read `docs/wiki-tag-links-spec.md` and `docs/wiki-tag-links-implementation-plan.md`.
+4. If task touches split workspace behavior, read `docs/split-pane-coordination.md`.
 
 ## Root-level project files
 
@@ -110,6 +111,7 @@ Mandatory doc navigation for new chats:
   - Centralized overlay/dialog composition for AI import/export and markdown book export modals plus toast notifications.
 - `src/features/project-editor/use-project-editor-ui-actions.ts`
   - Composes UI actions.
+  - `updateEditorValue(value, pane?)` supports pane-targeted updates; split-pane call sites should pass explicit pane.
 - `src/features/project-editor/use-project-editor-focus-actions.ts`
   - Fullscreen/focus-mode action hooks. When enabling focus, auto-collapses the sidebar.
 - `src/features/project-editor/use-project-editor-file-actions.ts`
@@ -141,6 +143,7 @@ Mandatory doc navigation for new chats:
 
 - `src/features/project-editor/use-project-editor-state.ts`
   - Core local state for the editor feature (panes, loading/saving flags, conflict state, status messages).
+  - Derives active editor state (`selectedPath` / `editorValue` / `isDirty`) from `workspaceLayout.activePane`.
 - `src/features/project-editor/use-project-editor-actions.ts`
   - Composes UI actions and core operations (load/save/open/clear) and wires them into the state.
 - `src/features/project-editor/use-project-editor-autosave-effect.ts`
@@ -172,6 +175,7 @@ Mandatory doc navigation for new chats:
 
 - `src/features/project-editor/components/workspace-editor-panels.tsx`
   - Single/split editor rendering and pane interactions.
+  - Split-pane dirty routing source of truth: each pane editor must route onChange to its own pane (`updateEditorValue(..., pane)`).
 - `src/features/project-editor/components/editor-panel.tsx`
   - Editor panel shell, sync labels, save affordance.
 - `src/features/project-editor/components/ai-import-dialog.tsx`

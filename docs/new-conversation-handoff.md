@@ -14,6 +14,9 @@ If task is about Wiki Tag Links (WS1), also open:
 - `docs/wiki-tag-links-spec.md`
 - `docs/wiki-tag-links-implementation-plan.md`
 
+If task touches split workspace behavior (active pane, dirty state, file-open routing), also open:
+- `docs/split-pane-coordination.md`
+
 ## Goal
 
 Bootstrap a fresh chat in minutes and avoid spending tokens rediscovering architecture.
@@ -89,6 +92,14 @@ UX hardening (WS4) is now live:
   - `src/features/project-editor/use-project-editor-file-actions.ts`
   - `src/features/project-editor/use-project-editor-create-actions.ts`
 
+- Debug split-pane dirty/unsaved mismatch:
+  - `docs/split-pane-coordination.md`
+  - `docs/troubleshooting.md` (Split pane dirty section)
+  - `src/features/project-editor/components/workspace-editor-panels.tsx`
+  - `src/features/project-editor/use-project-editor-ui-actions.ts`
+  - `src/features/project-editor/use-project-editor-state.ts`
+  - `tests/project-editor-conflict-flow.test.ts`
+
 ## High-value invariants (do not break)
 
 - IPC channel names and schemas live only in `src/shared/ipc.ts`.
@@ -101,6 +112,7 @@ UX hardening (WS4) is now live:
 ## Regression hotspots
 
 - Rich editor cursor jumping: watch re-init dependencies in editor core.
+- Split-pane dirty badge in wrong pane: verify pane-targeted update path (`updateEditorValue(value, pane)`), and check split-pane wiring before editing state logic.
 - Focus mode sentence/line rendering: prefer CSS Highlights API + fallback overlay; do not inject nodes into `.ql-editor`.
 - Sidebar collapse-all restoring unexpectedly: expanded-folder state logic.
 - Sidebar create/rename/delete wiring: path scoping between section-relative and project-relative paths.

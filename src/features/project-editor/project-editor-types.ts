@@ -72,8 +72,8 @@ export interface ProjectEditorActions {
   setFullscreenEnabled: (enabled: boolean) => Promise<void>
   toggleFocusMode: () => void
   setFocusScope: (scope: FocusScope) => void
-  updateEditorValue: (value: string) => void
-  saveNow: () => void
+  updateEditorValue: (value: string, pane?: WorkspacePane) => void
+  saveNow: (pane?: WorkspacePane) => void
   resolveConflictReload: () => void
   resolveConflictKeep: () => void
   resolveConflictSaveAsCopy: () => void

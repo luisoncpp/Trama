@@ -191,3 +191,32 @@ When things break after refactors, run:
 1. Run `npm run test -- tests/rich-markdown-editor.test.ts` and verify find tests pass.
 2. In app: focus editor, press Ctrl/Cmd+F, type query, confirm focus remains in input.
 3. Press Enter/Shift+Enter and confirm highlight moves with counter updates.
+
+## 12) Split-pane dirty flag appears in wrong pane
+
+### Symptom
+
+- In split mode, editing in secondary marks primary as dirty (or dirty badge/status appears in the wrong pane).
+
+### Root cause seen
+
+- Change callbacks in split editors were routed through global active-pane state, not the pane that emitted the onChange event.
+- In split mode, event ordering and pane activation can diverge briefly, so `activePane` is not always a safe source of truth for edit routing.
+
+### Current fix
+
+- `updateEditorValue` supports explicit pane target: `(value, pane?)`.
+- Split-pane UI calls `updateEditorValue(nextValue, pane)` from each pane editor.
+- Default fallback remains `pane ?? activePane` for single-pane compatibility.
+
+### Quick checks (fast path)
+
+1. Open `docs/split-pane-coordination.md` to confirm source-of-truth and action-flow assumptions before editing.
+2. Open `src/features/project-editor/components/workspace-editor-panels.tsx` and verify split-pane editors call `updateEditorValue(..., pane)`.
+3. Open `src/features/project-editor/use-project-editor-ui-actions.ts` and verify pane-targeted update behavior exists and fallback is only for legacy/single-pane paths.
+4. Run focused regression: `npm run test -- tests/project-editor-conflict-flow.test.ts`.
+5. If needed, run compile guard: `npm run test -- tests/typescript-compile.test.ts`.
+
+### Guardrail
+
+- For split-editor callbacks, prefer pane-targeted actions over globally inferred pane state.

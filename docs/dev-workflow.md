@@ -46,6 +46,8 @@ For WS1 execution details, use `docs/wiki-tag-links-implementation-plan.md` toge
   - `npm run test -- tests/use-project-editor.test.ts`
   - `npm run test -- tests/ipc-contract.test.ts`
   - `npm run test -- tests/rich-markdown-editor.test.ts`
+  - `npm run test -- tests/project-editor-conflict-flow.test.ts`
+  - `npm run test -- tests/typescript-compile.test.ts`
 
 ## Typical development loop
 
@@ -73,6 +75,13 @@ For WS1 execution details, use `docs/wiki-tag-links-implementation-plan.md` toge
 - Type query and verify active match highlight appears in the document.
 - Press Enter / Shift+Enter and verify next/previous navigation updates counter and highlight.
 - Verify typing keeps focus in find input (no focus steal to editor).
+
+## Split-pane dirty/unsaved manual checks
+
+- In split mode, open one file in primary and another in secondary.
+- Type in secondary and verify only secondary dirty indicator/status changes.
+- Switch active pane and verify dirty state remains attached to the edited pane.
+- Run `npm run test -- tests/project-editor-conflict-flow.test.ts` after touching split-pane editor/state wiring.
 
 ## IPC change checklist
 

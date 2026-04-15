@@ -1,6 +1,6 @@
 # START HERE - Documentation Entry Point
 
-> **Last updated:** 2026-04-12. If this file drifts from reality, update it before doing anything else.
+> **Last updated:** 2026-04-14. If this file drifts from reality, update it before doing anything else.
 
 This file is the required first stop for new conversations.
 
@@ -18,6 +18,7 @@ Goal: avoid repeated codebase-wide searches and reduce drift between implementat
 Open these only when relevant:
 
 - IPC extension workflow: `docs/ipc-architecture.md`
+- Split pane coordination model: `docs/split-pane-coordination.md`
 - Phase planning details: `docs/phase-4-detailed-plan.md`
 - Wiki Tag Links implementation plan: `docs/wiki-tag-links-implementation-plan.md`
 - Markdown layout directives (center/spacer/pagebreak + EPUB/MOBI): `docs/markdown-layout-directives-spec.md`
@@ -32,6 +33,8 @@ Open these only when relevant:
 | Change editor behavior | `src/features/project-editor/components/rich-markdown-editor*.ts*` |
 | Change filesystem/repo layer | `electron/services/document-repository.ts` → `electron/ipc/handlers/project-handlers/document-handlers.ts` |
 | Add a test | `tests/` + `docs/dev-workflow.md` (checklist) |
+| Understand split pane coordination | `docs/split-pane-coordination.md` → `src/features/project-editor/use-project-editor-state.ts` → `src/features/project-editor/use-project-editor-layout-actions.ts` |
+| Debug split-pane unsaved/dirty mismatch | `docs/troubleshooting.md` (Split pane dirty section) → `src/features/project-editor/components/workspace-editor-panels.tsx` → `src/features/project-editor/use-project-editor-ui-actions.ts` → `src/features/project-editor/use-project-editor-state.ts` → `tests/project-editor-conflict-flow.test.ts` |
 | Implement Wiki Tag Links (WS1) | `docs/wiki-tag-links-spec.md` → `docs/wiki-tag-links-implementation-plan.md` → `docs/phase-4-detailed-plan.md` |
 | Understand feature status | `docs/current-status.md` → `docs/phase-4-detailed-plan.md` |
 | Understand project structure | `docs/file-map.md` |
@@ -52,6 +55,13 @@ Open these only when relevant:
 
 - Change editor behavior:
   - `src/features/project-editor/components/rich-markdown-editor*.ts*`
+
+- Debug split-pane dirty/unsaved mismatch:
+  - `docs/troubleshooting.md` (section "Split-pane dirty flag appears in wrong pane")
+  - `src/features/project-editor/components/workspace-editor-panels.tsx`
+  - `src/features/project-editor/use-project-editor-ui-actions.ts`
+  - `src/features/project-editor/use-project-editor-state.ts`
+  - `tests/project-editor-conflict-flow.test.ts`
 
 ## Anti-forget checks (required)
 

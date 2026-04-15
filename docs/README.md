@@ -14,6 +14,9 @@ Start in `START-HERE.md` before reading anything else.
 Format/export specification:
 - `markdown-layout-directives-spec.md` (invisible layout directives for center, spacer, and pagebreak with EPUB/MOBI mapping)
 
+Coordination architecture:
+- `split-pane-coordination.md` (source-of-truth and action-flow model for dual-pane editor behavior)
+
 Implementation plans:
 - `wiki-tag-links-implementation-plan.md` (WS1 execution guide)
 
@@ -55,6 +58,8 @@ Implemented foundation:
 - File-system operations: `electron/services/document-repository.ts` + `electron/ipc/handlers/project-handlers/document-handlers.ts`.
 - Sidebar behavior/UI: `src/features/project-editor/components/sidebar/*`.
 - Project-editor orchestration/actions: `src/features/project-editor/use-project-editor*.ts`.
+- Understand split-pane coordination model: `docs/split-pane-coordination.md`.
+- Split-pane dirty/unsaved mismatch: `docs/troubleshooting.md` (split pane dirty section) -> `src/features/project-editor/components/workspace-editor-panels.tsx` -> `src/features/project-editor/use-project-editor-ui-actions.ts` -> `tests/project-editor-conflict-flow.test.ts`.
 - Wiki Tag Links feature work: `docs/wiki-tag-links-spec.md` + `docs/wiki-tag-links-implementation-plan.md`.
 - Regressions after refactor: check `tests/sidebar-panels.test.ts`, `tests/use-project-editor.test.ts`, `tests/ipc-contract.test.ts` first.
 

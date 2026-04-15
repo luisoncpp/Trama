@@ -37,6 +37,7 @@ Implemented now:
 - Split reopen flow hardened through dedicated open-project module (`use-project-editor-open-project.ts`) to satisfy lint limits and reduce hook complexity.
 - Split conflict regression restored: save-as-copy from secondary pane remains in secondary after project reopen.
 - Split workspace usability pass completed: both panes stay visible, pane activation is click-in-editor, resize uses a center drag divider, headers show document names, split toggle is available through `Ctrl/Cmd + .` and the editor context menu, and split mode removes extra side gutters.
+- Split-pane dirty routing hardened: editor onChange events are pane-targeted so edits in secondary no longer mark primary as unsaved.
 - Theme system foundation landed: persisted `light | dark | system` preference, root `data-theme` application, live `matchMedia` sync for `system`, settings-panel theme switcher, and first-pass semantic tokens across sidebar, editor, split panes, and conflict UI.
 - Theme visual polish completed: all 5 light-mode colors audited and updated for WCAG AA contrast compliance (4.5:1 for text, 3:1 for UI components).
 - Theme visual polish completed: all 5 light-mode colors audited and updated for WCAG AA contrast compliance (4.5:1 for text, 3:1 for UI components).
