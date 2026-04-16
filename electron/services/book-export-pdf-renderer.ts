@@ -12,7 +12,7 @@ export interface PdfLayoutState {
 
 export interface PdfWriter {
   addPage: () => void
-  drawHeading: (text: string) => void
+  drawHeading: (text: string, centered: boolean) => void
   drawParagraphLine: (text: string, centered: boolean) => void
   addSpacer: (lines: number) => void
   drawImage: (absolutePath: string) => Promise<void>
@@ -134,6 +134,7 @@ function drawRuns(
 
 function drawHeading(
   text: string,
+  centered: boolean,
   pdf: PDFDocument,
   state: PdfLayoutState,
   context: PdfPageContext,
@@ -141,8 +142,10 @@ function drawHeading(
 ) {
   ensureLineCapacity(pdf, state, context)
   const safeHeading = safeTextForFont(text.trim(), writerFonts.bold)
+  const lineWidth = writerFonts.bold.widthOfTextAtSize(safeHeading, HEADING_FONT_SIZE)
+  const x = centered ? Math.max(MARGIN, (PAGE_WIDTH - lineWidth) / 2) : MARGIN
   context.page.drawText(safeHeading, {
-    x: MARGIN,
+    x,
     y: state.cursorY,
     size: HEADING_FONT_SIZE,
     font: writerFonts.bold,
@@ -183,7 +186,7 @@ async function createPdfWriter(pdf: PDFDocument, state: PdfLayoutState): Promise
 
   return {
     addPage: () => addPage(pdf, state, context),
-    drawHeading: (text: string) => drawHeading(text, pdf, state, context, writerFonts),
+    drawHeading: (text: string, centered: boolean) => drawHeading(text, centered, pdf, state, context, writerFonts),
     drawParagraphLine: (text: string, centered: boolean) => {
       drawWrappedParagraph(
         text,

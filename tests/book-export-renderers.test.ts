@@ -124,6 +124,25 @@ describe('book export renderers', () => {
     expect(htmlDirectiveDoc.getPageCount()).toBe(2)
   })
 
+  it('renders centered pdf headings inside center directives', async () => {
+    const pdfBytes = await renderPdfBook([
+      {
+        path: 'book/chapter-centered-heading.md',
+        title: 'Centered Heading',
+        content: [
+          '<!-- trama:center:start -->',
+          '# Heading Centered',
+          'Centered paragraph',
+          '<!-- trama:center:end -->',
+        ].join('\n'),
+      },
+    ])
+
+    const doc = await PDFDocument.load(pdfBytes)
+    expect(doc.getPageCount()).toBe(1)
+    expect(pdfBytes.byteLength).toBeGreaterThan(0)
+  })
+
   it('renders pdf with embedded images (data url and local files)', async () => {
     const fixture = await createProjectWithImageFixture()
     const pdfWithImages = await renderPdfBook([

@@ -48,3 +48,4 @@ Create a new file in this directory named after the topic (e.g., `auth-token-ref
 | `spellcheck-optimistic-toggle-sync.md` | Spellcheck toggle UI can bounce if renderer waits for immediate native reread; use optimistic updates and return normalized state from main process. | 2026-04-15 |
 | `rich-editor-effect-deps-remount.md` | Including runtime flags like `spellcheckEnabled` in Quill init-effect deps can recreate the editor and leave stale DOM references; keep init deps stable and sync dynamic flags in dedicated effects. | 2026-04-15 |
 | `folder-rename-split-layout-remap.md` | Folder rename must remap split-pane layout paths and sidebar expanded-folder paths to avoid context loss after refresh. | 2026-04-15 |
+| `pdf-centered-heading-regression.md` | PDF heading styling fix regressed `trama:center`; heading and paragraph render paths must both receive layout alignment state. | 2026-04-16 |

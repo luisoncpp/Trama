@@ -42,8 +42,14 @@ export async function renderPdfChapter(
       continue
     }
 
-    writer.drawParagraphLine(sourceLine, state.centered)
-    lastWasPagebreak = false
+    const headingMatch = sourceLine.match(/^(#{1,6})\s+(.+)$/)
+    if (headingMatch) {
+      writer.drawHeading(headingMatch[2], state.centered)
+      lastWasPagebreak = false
+    } else {
+      writer.drawParagraphLine(sourceLine, state.centered)
+      lastWasPagebreak = false
+    }
   }
 
   return lastWasPagebreak
