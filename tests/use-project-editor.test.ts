@@ -310,6 +310,58 @@ describe('useProjectEditor', () => {
     expect(model?.state.workspaceLayout.mode).toBe('single')
   })
 
+  it('saves active document with Ctrl+S shortcut', async () => {
+    window.localStorage.removeItem('trama.sidebar.ui.v1')
+    window.localStorage.removeItem(WORKSPACE_LAYOUT_STORAGE_KEY)
+    const saveDocumentCalls: Array<{ path: string; content: string }> = []
+    setupTramaApiMock({
+      selectProjectFolder: async () => ({ ok: true, data: { rootPath: 'C:/tmp/project' } }),
+      openProject: async () => ({
+        ok: true,
+        data: {
+          rootPath: 'C:/tmp/project',
+          tree: [],
+          markdownFiles: ['docs/a.md'],
+          index: { version: '1.0.0', corkboardOrder: {}, cache: {} },
+        },
+      }),
+      readDocument: async () => ({ ok: true, data: { path: 'docs/a.md', content: '# A', meta: {} } }),
+      saveDocument: async (payload: { path: string; content: string }) => {
+        saveDocumentCalls.push({ path: payload.path, content: payload.content })
+        return { ok: true, data: { path: payload.path, version: new Date().toISOString() } }
+      },
+    })
+
+    let model: ProjectEditorModel | undefined
+
+    function Harness() {
+      model = useProjectEditor()
+      return null
+    }
+
+    const container = document.createElement('div')
+    act(() => {
+      render(h(Harness, {}), container)
+    })
+
+    await act(async () => {
+      await model?.actions.pickProjectFolder()
+    })
+
+    await act(async () => {
+      model?.actions.updateEditorValue('# A changed')
+      await Promise.resolve()
+    })
+
+    await act(async () => {
+      window.dispatchEvent(new KeyboardEvent('keydown', { code: 'KeyS', ctrlKey: true, bubbles: true }))
+      await Promise.resolve()
+    })
+
+    expect(saveDocumentCalls.length).toBe(1)
+    expect(saveDocumentCalls[0]).toEqual({ path: 'docs/a.md', content: '# A changed' })
+  })
+
   it('applies workspace commands from context menu bridge event', async () => {
     window.localStorage.removeItem('trama.sidebar.ui.v1')
     window.localStorage.removeItem(WORKSPACE_LAYOUT_STORAGE_KEY)

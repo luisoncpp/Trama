@@ -5,6 +5,7 @@ interface UseProjectEditorShortcutsEffectParams {
   onToggleFullscreen: () => void
   onToggleFocusMode: () => void
   onSwitchActivePane: () => void
+  onSaveNow: () => void
 }
 
 function isFormFieldTarget(target: EventTarget | null): boolean {
@@ -21,6 +22,7 @@ export function useProjectEditorShortcutsEffect({
   onToggleFullscreen,
   onToggleFocusMode,
   onSwitchActivePane,
+  onSaveNow,
 }: UseProjectEditorShortcutsEffectParams): void {
   useEffect(() => {
     const onWindowKeyDown = (event: KeyboardEvent) => {
@@ -47,11 +49,16 @@ export function useProjectEditorShortcutsEffect({
         event.preventDefault()
         onSwitchActivePane()
       }
+
+      if ((event.ctrlKey || event.metaKey) && !event.altKey && !event.shiftKey && event.code === 'KeyS') {
+        event.preventDefault()
+        onSaveNow()
+      }
     }
 
     window.addEventListener('keydown', onWindowKeyDown)
     return () => {
       window.removeEventListener('keydown', onWindowKeyDown)
     }
-  }, [onSwitchActivePane, onToggleFocusMode, onToggleFullscreen, onToggleSplitLayout])
+  }, [onSaveNow, onSwitchActivePane, onToggleFocusMode, onToggleFullscreen, onToggleSplitLayout])
 }

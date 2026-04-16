@@ -1,6 +1,6 @@
 # START HERE - Documentation Entry Point
 
-> **Last updated:** 2026-04-14. If this file drifts from reality, update it before doing anything else.
+> **Last updated:** 2026-04-15. If this file drifts from reality, update it before doing anything else.
 
 This file is the required first stop for new conversations.
 

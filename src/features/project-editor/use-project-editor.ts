@@ -67,6 +67,9 @@ function useProjectEditorEffects(
       const nextPane = values.workspaceLayout.activePane === 'primary' ? 'secondary' : 'primary'
       actions.setWorkspaceActivePane(nextPane)
     },
+    onSaveNow: () => {
+      actions.saveNow()
+    },
   })
 
   useProjectEditorContextMenuEffect({
