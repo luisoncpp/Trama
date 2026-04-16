@@ -1,16 +1,14 @@
 import { useEffect } from 'preact/hooks'
-import Quill from 'quill'
-import TurndownService from 'turndown'
-import { marked } from 'marked'
+import type Quill from 'quill'
+import type TurndownService from 'turndown'
 import { registerTypographyHandler } from './rich-markdown-editor-typography'
 import { WORKSPACE_CONTEXT_MENU_EVENT } from '../../../shared/workspace-context-menu'
-import { renderDirectiveArtifactsToMarkdown } from '../../../shared/markdown-layout-directives'
 import { normalizeBlankLinesToSpacerDirectives } from '../../../shared/markdown-layout-directives-spacing'
-import { registerLayoutDirectiveBlots } from './rich-markdown-editor-layout-blots'
-import { registerLayoutDirectiveClipboardMatchers } from './rich-markdown-editor-layout-clipboard'
-import { registerLayoutDirectiveKeyboardBindings } from './rich-markdown-editor-layout-keyboard'
 import { registerWorkspaceCommandListener } from './rich-markdown-editor-commands'
 import { syncCenteredLayoutArtifacts } from './rich-markdown-editor-layout-centering'
+import { createQuillEditor, normalizeMarkdown, applyMarkdownToEditor, syncEditorSpellcheck } from './rich-markdown-editor-quill'
+
+export { normalizeMarkdown }
 
 type QuillChangeSource = 'api' | 'user' | 'silent'
 
@@ -25,49 +23,6 @@ interface UseRichEditorLifecycleParams {
   lastEditorValueRef: { current: string }
   isApplyingExternalValueRef: { current: boolean }
   turndownRef: { current: TurndownService }
-}
-
-export function normalizeMarkdown(input: string): string {
-  return input.replace(/\r\n/g, '\n').trimEnd()
-}
-
-function createQuillEditor(host: HTMLDivElement): Quill {
-  registerLayoutDirectiveBlots()
-  host.innerHTML = ''
-  const toolbar = document.createElement('div')
-  const editorHost = document.createElement('div')
-  host.append(toolbar, editorHost)
-  const editor = new Quill(editorHost, {
-    theme: 'snow',
-    modules: {
-      toolbar: [
-        [{ header: [1, 2, 3, false] }],
-        ['bold', 'italic', 'strike'],
-        [{ list: 'ordered' }, { list: 'bullet' }],
-        ['blockquote', 'code-block'],
-        ['link', 'image'],
-        ['clean'],
-      ],
-      history: {
-        userOnly: true,
-      },
-    },
-  })
-  registerLayoutDirectiveClipboardMatchers(editor)
-  registerLayoutDirectiveKeyboardBindings(editor)
-  return editor
-}
-
-function syncEditorSpellcheck(editor: Quill, spellcheckEnabled: boolean): void {
-  editor.root.spellcheck = spellcheckEnabled
-  editor.root.setAttribute('spellcheck', spellcheckEnabled ? 'true' : 'false')
-}
-
-function applyMarkdownToEditor(editor: Quill, markdown: string, source: QuillChangeSource = 'api'): void {
-  const { markdownWithArtifacts } = renderDirectiveArtifactsToMarkdown(markdown)
-  editor.setContents([], source)
-  editor.clipboard.dangerouslyPasteHTML(marked.parse(markdownWithArtifacts) as string, source)
-  syncCenteredLayoutArtifacts(editor)
 }
 
 function serializeEditorMarkdown(turndownRef: { current: TurndownService }, html: string): string {
@@ -180,16 +135,26 @@ function useSyncSpellcheckEnabled({
   spellcheckEnabled,
   editorRef,
 }: Pick<UseRichEditorLifecycleParams, 'documentId' | 'spellcheckEnabled' | 'editorRef'>): void {
-  useEffect(/* syncEditorSpellcheckEnabled */ () => {
+  useEffect(() => {
     const editor = editorRef.current
     if (!editor) return
     syncEditorSpellcheck(editor, spellcheckEnabled)
-  }, [documentId, editorRef, spellcheckEnabled] /*Inputs for syncEditorSpellcheckEnabled*/)
+  }, [documentId, editorRef, spellcheckEnabled])
 }
 
 export function useRichEditorLifecycle(params: UseRichEditorLifecycleParams): void {
-  const { documentId, value, disabled, spellcheckEnabled, hostRef, editorRef, onChangeRef, lastEditorValueRef, isApplyingExternalValueRef, turndownRef } =
-    params
+  const {
+    documentId,
+    value,
+    disabled,
+    spellcheckEnabled,
+    hostRef,
+    editorRef,
+    onChangeRef,
+    lastEditorValueRef,
+    isApplyingExternalValueRef,
+    turndownRef,
+  } = params
 
   useInitializeEditor({
     documentId,

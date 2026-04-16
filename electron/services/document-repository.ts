@@ -29,24 +29,13 @@ const RESERVED_WINDOWS_NAMES = new Set(['CON', 'PRN', 'AUX', 'NUL', 'COM1', 'COM
 
 function validateRelativePath(relativePath: string): string {
   const normalized = normalizeRelative(relativePath).trim().replace(/^\/+/, '').replace(/\/+$/, '')
-  if (!normalized) {
-    throw new Error('Path cannot be empty')
-  }
+  if (!normalized) throw new Error('Path cannot be empty')
 
-  const segments = normalized.split('/').filter(Boolean)
-  for (const segment of segments) {
-    if (segment === '.' || segment === '..') {
-      throw new Error('Path traversal is not allowed')
-    }
-
-    if (INVALID_NAME_CHARS.test(segment)) {
-      throw new Error(`Invalid characters in path segment: ${segment}`)
-    }
-
+  for (const segment of normalized.split('/').filter(Boolean)) {
+    if (segment === '.' || segment === '..') throw new Error('Path traversal is not allowed')
+    if (INVALID_NAME_CHARS.test(segment)) throw new Error(`Invalid characters in path segment: ${segment}`)
     const baseName = segment.split('.')[0]?.toUpperCase() ?? ''
-    if (RESERVED_WINDOWS_NAMES.has(baseName)) {
-      throw new Error(`Reserved name is not allowed: ${segment}`)
-    }
+    if (RESERVED_WINDOWS_NAMES.has(baseName)) throw new Error(`Reserved name is not allowed: ${segment}`)
   }
 
   return normalized
@@ -57,199 +46,110 @@ async function ensurePathDoesNotExist(fullPath: string): Promise<void> {
     await stat(fullPath)
     throw new Error('Path already exists')
   } catch (error) {
-    if ((error as NodeJS.ErrnoException).code !== 'ENOENT') {
-      throw error
-    }
+    if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error
   }
 }
 
 function validateNameSegment(name: string): string {
   const normalized = name.trim()
-  if (!normalized) {
-    throw new Error('Name cannot be empty')
-  }
-
-  if (normalized.includes('/') || normalized.includes('\\')) {
-    throw new Error('Name cannot contain path separators')
-  }
-
-  if (normalized === '.' || normalized === '..') {
-    throw new Error('Invalid name segment')
-  }
-
-  if (INVALID_NAME_CHARS.test(normalized)) {
-    throw new Error(`Invalid characters in name: ${normalized}`)
-  }
-
+  if (!normalized) throw new Error('Name cannot be empty')
+  if (normalized.includes('/') || normalized.includes('\\')) throw new Error('Name cannot contain path separators')
+  if (normalized === '.' || normalized === '..') throw new Error('Invalid name segment')
+  if (INVALID_NAME_CHARS.test(normalized)) throw new Error(`Invalid characters in name: ${normalized}`)
   const baseName = normalized.split('.')[0]?.toUpperCase() ?? ''
-  if (RESERVED_WINDOWS_NAMES.has(baseName)) {
-    throw new Error(`Reserved name is not allowed: ${normalized}`)
-  }
-
+  if (RESERVED_WINDOWS_NAMES.has(baseName)) throw new Error(`Reserved name is not allowed: ${normalized}`)
   return normalized
+}
+
+function extractNextRelativePath(relativePath: string, newName: string, isDocument = false): string {
+  const normalizedPath = normalizeRelative(relativePath)
+  const normalizedName = validateNameSegment(newName)
+  const directory = path.posix.dirname(normalizedPath)
+  const targetName = isDocument
+    ? (normalizedName.toLowerCase().endsWith('.md') ? normalizedName : `${normalizedName}.md`)
+    : normalizedName
+  return directory === '.' ? targetName : `${directory}/${targetName}`
+}
+
+async function renamePath(projectRoot: string, sourceRelativePath: string, targetRelativePath: string): Promise<void> {
+  const sourceFullPath = resolveProjectPath(projectRoot, sourceRelativePath)
+  const targetFullPath = resolveProjectPath(projectRoot, targetRelativePath)
+  await ensurePathDoesNotExist(targetFullPath)
+  await rename(sourceFullPath, targetFullPath)
+}
+
+function buildRenameResult(originalPath: string, newPath: string) {
+  return { path: normalizeRelative(originalPath), renamedTo: normalizeRelative(newPath), updatedAt: new Date().toISOString() }
 }
 
 export class DocumentRepository {
   async readDocument(projectRoot: string, relativePath: string): Promise<DocumentRecord> {
-    if (!relativePath.endsWith('.md')) {
-      throw new Error('Only markdown files are supported')
-    }
-
+    if (!relativePath.endsWith('.md')) throw new Error('Only markdown files are supported')
     const fullPath = resolveProjectPath(projectRoot, relativePath)
     const markdown = await readFile(fullPath, 'utf8')
     const parsed = parseMarkdownWithFrontmatter(markdown)
-
-    return {
-      path: normalizeRelative(relativePath),
-      content: parsed.content,
-      meta: parsed.meta,
-    }
+    return { path: normalizeRelative(relativePath), content: parsed.content, meta: parsed.meta }
   }
 
-  async saveDocument(
-    projectRoot: string,
-    relativePath: string,
-    content: string,
-    meta: Record<string, unknown>,
-  ): Promise<{ path: string; version: string }> {
-    if (!relativePath.endsWith('.md')) {
-      throw new Error('Only markdown files are supported')
-    }
-
+  async saveDocument(projectRoot: string, relativePath: string, content: string, meta: Record<string, unknown>): Promise<{ path: string; version: string }> {
+    if (!relativePath.endsWith('.md')) throw new Error('Only markdown files are supported')
     const fullPath = resolveProjectPath(projectRoot, relativePath)
-    const serialized = serializeMarkdownWithFrontmatter(meta, content)
-    await writeFile(fullPath, serialized, 'utf8')
-
-    return {
-      path: normalizeRelative(relativePath),
-      version: new Date().toISOString(),
-    }
+    await writeFile(fullPath, serializeMarkdownWithFrontmatter(meta, content), 'utf8')
+    return { path: normalizeRelative(relativePath), version: new Date().toISOString() }
   }
 
-  async createDocument(
-    projectRoot: string,
-    relativePath: string,
-    initialContent = '',
-  ): Promise<{ path: string; createdAt: string }> {
+  async createDocument(projectRoot: string, relativePath: string, initialContent = ''): Promise<{ path: string; createdAt: string }> {
     const normalizedPath = validateRelativePath(relativePath)
-    if (!normalizedPath.endsWith('.md')) {
-      throw new Error('Only markdown files are supported')
-    }
-
+    if (!normalizedPath.endsWith('.md')) throw new Error('Only markdown files are supported')
     const fullPath = resolveProjectPath(projectRoot, normalizedPath)
     await ensurePathDoesNotExist(fullPath)
     await mkdir(path.dirname(fullPath), { recursive: true })
-
-    const content = serializeMarkdownWithFrontmatter({}, initialContent)
-    await writeFile(fullPath, content, { encoding: 'utf8', flag: 'wx' })
-
-    return {
-      path: normalizeRelative(normalizedPath),
-      createdAt: new Date().toISOString(),
-    }
+    await writeFile(fullPath, serializeMarkdownWithFrontmatter({}, initialContent), { encoding: 'utf8', flag: 'wx' })
+    return { path: normalizeRelative(normalizedPath), createdAt: new Date().toISOString() }
   }
 
   async createFolder(projectRoot: string, relativePath: string): Promise<{ path: string; createdAt: string }> {
     const normalizedPath = validateRelativePath(relativePath)
     const fullPath = resolveProjectPath(projectRoot, normalizedPath)
-
     await ensurePathDoesNotExist(fullPath)
     await mkdir(fullPath, { recursive: true })
-
-    return {
-      path: normalizeRelative(normalizedPath),
-      createdAt: new Date().toISOString(),
-    }
+    return { path: normalizeRelative(normalizedPath), createdAt: new Date().toISOString() }
   }
 
-  async renameFolder(
-    projectRoot: string,
-    relativePath: string,
-    newName: string,
-  ): Promise<{ path: string; renamedTo: string; updatedAt: string }> {
+  async renameFolder(projectRoot: string, relativePath: string, newName: string): Promise<{ path: string; renamedTo: string; updatedAt: string }> {
     const normalizedPath = validateRelativePath(relativePath)
-    const normalizedName = validateNameSegment(newName)
-    const directory = path.posix.dirname(normalizedPath)
-    const nextRelativePath = directory === '.' ? normalizedName : `${directory}/${normalizedName}`
-    if (normalizeRelative(nextRelativePath) === normalizeRelative(normalizedPath)) {
-      throw new Error('New name must be different from current name')
-    }
-
+    const nextRelativePath = extractNextRelativePath(normalizedPath, newName)
+    if (normalizeRelative(nextRelativePath) === normalizeRelative(normalizedPath)) throw new Error('New name must be different from current name')
     const sourceFullPath = resolveProjectPath(projectRoot, normalizedPath)
     const sourceInfo = await stat(sourceFullPath)
-    if (!sourceInfo.isDirectory()) {
-      throw new Error('Only folders can be renamed')
-    }
-
-    const targetFullPath = resolveProjectPath(projectRoot, nextRelativePath)
-    await ensurePathDoesNotExist(targetFullPath)
-    await rename(sourceFullPath, targetFullPath)
-
-    return {
-      path: normalizeRelative(normalizedPath),
-      renamedTo: normalizeRelative(nextRelativePath),
-      updatedAt: new Date().toISOString(),
-    }
+    if (!sourceInfo.isDirectory()) throw new Error('Only folders can be renamed')
+    await renamePath(projectRoot, normalizedPath, nextRelativePath)
+    return buildRenameResult(normalizedPath, nextRelativePath)
   }
 
   async deleteFolder(projectRoot: string, relativePath: string): Promise<{ path: string; deletedAt: string }> {
     const normalizedPath = validateRelativePath(relativePath)
     const fullPath = resolveProjectPath(projectRoot, normalizedPath)
     const sourceInfo = await stat(fullPath)
-    if (!sourceInfo.isDirectory()) {
-      throw new Error('Only folders can be deleted')
-    }
-
+    if (!sourceInfo.isDirectory()) throw new Error('Only folders can be deleted')
     await rm(fullPath, { recursive: true })
-
-    return {
-      path: normalizeRelative(normalizedPath),
-      deletedAt: new Date().toISOString(),
-    }
+    return { path: normalizeRelative(normalizedPath), deletedAt: new Date().toISOString() }
   }
 
-  async renameDocument(
-    projectRoot: string,
-    relativePath: string,
-    newName: string,
-  ): Promise<{ path: string; renamedTo: string; updatedAt: string }> {
+  async renameDocument(projectRoot: string, relativePath: string, newName: string): Promise<{ path: string; renamedTo: string; updatedAt: string }> {
     const normalizedPath = validateRelativePath(relativePath)
-    if (!normalizedPath.endsWith('.md')) {
-      throw new Error('Only markdown files are supported')
-    }
-
-    const normalizedName = validateNameSegment(newName)
-    const targetName = normalizedName.toLowerCase().endsWith('.md') ? normalizedName : `${normalizedName}.md`
-    const directory = path.posix.dirname(normalizedPath)
-    const nextRelativePath = directory === '.' ? targetName : `${directory}/${targetName}`
-    if (normalizeRelative(nextRelativePath) === normalizeRelative(normalizedPath)) {
-      throw new Error('New name must be different from current name')
-    }
-
-    const sourceFullPath = resolveProjectPath(projectRoot, normalizedPath)
-    const targetFullPath = resolveProjectPath(projectRoot, nextRelativePath)
-    await ensurePathDoesNotExist(targetFullPath)
-    await rename(sourceFullPath, targetFullPath)
-
-    return {
-      path: normalizeRelative(normalizedPath),
-      renamedTo: normalizeRelative(nextRelativePath),
-      updatedAt: new Date().toISOString(),
-    }
+    if (!normalizedPath.endsWith('.md')) throw new Error('Only markdown files are supported')
+    const nextRelativePath = extractNextRelativePath(normalizedPath, newName, true)
+    if (normalizeRelative(nextRelativePath) === normalizeRelative(normalizedPath)) throw new Error('New name must be different from current name')
+    await renamePath(projectRoot, normalizedPath, nextRelativePath)
+    return buildRenameResult(normalizedPath, nextRelativePath)
   }
 
   async deleteDocument(projectRoot: string, relativePath: string): Promise<{ path: string; deletedAt: string }> {
     const normalizedPath = validateRelativePath(relativePath)
-    if (!normalizedPath.endsWith('.md')) {
-      throw new Error('Only markdown files are supported')
-    }
-
+    if (!normalizedPath.endsWith('.md')) throw new Error('Only markdown files are supported')
     const fullPath = resolveProjectPath(projectRoot, normalizedPath)
     await rm(fullPath)
-
-    return {
-      path: normalizeRelative(normalizedPath),
-      deletedAt: new Date().toISOString(),
-    }
+    return { path: normalizeRelative(normalizedPath), deletedAt: new Date().toISOString() }
   }
 }

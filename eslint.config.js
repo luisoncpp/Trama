@@ -24,6 +24,7 @@ export default [
       },
     },
     rules: {
+      "max-len": ["error", { "code": 120, "ignoreStrings": true, "ignoreTemplateLiterals": true, "ignoreComments": true }],
       "max-lines": [
         "error",
         {

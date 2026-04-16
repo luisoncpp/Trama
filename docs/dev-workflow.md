@@ -111,6 +111,7 @@ Before writing any code that interacts with Quill's API (coordinates, bounds, se
 - `max-lines: 200` and `max-lines-per-function: 50` are enforced.
 - Split UI into helper components/hooks before limits are hit.
 - Keep `electron/ipc.ts` thin; move logic into handlers/services.
+- lint limits are meant to encourage to break down long files and long functions, and avoid code repetition, NOT to compact white spaces/indentation.
 
 ## Dev script behavior to remember
 

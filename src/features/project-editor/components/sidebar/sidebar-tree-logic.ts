@@ -200,3 +200,15 @@ export function getVisibleSidebarRows(
 
   return rows
 }
+
+export function findParentRowIndex(rows: SidebarTreeRow[], index: number): number {
+  const currentDepth = rows[index]?.depth ?? 0
+
+  for (let i = index - 1; i >= 0; i -= 1) {
+    if (rows[i].depth < currentDepth) {
+      return i
+    }
+  }
+
+  return -1
+}

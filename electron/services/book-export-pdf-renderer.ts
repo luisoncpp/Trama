@@ -1,17 +1,16 @@
-import path from 'node:path'
-import { PDFDocument, rgb, type PDFPage } from 'pdf-lib'
-import { parseDirectiveLine } from './book-export-directives.js'
+import { PDFDocument, rgb } from 'pdf-lib'
 import { loadPdfFonts } from './book-export-pdf-fonts.js'
 import { inlineTokens, measureTokenLine, type PdfTextToken, wrapTokens } from './book-export-pdf-inline.js'
-import { loadImageBytes, resolveImagePath } from './book-export-image-utils.js'
+import { loadImageBytes } from './book-export-image-utils.js'
 import type { BookExportChapter } from './book-export-renderers.js'
+import { renderPdfChapter } from './book-export-pdf-chapters.js'
 
-interface PdfLayoutState {
+export interface PdfLayoutState {
   cursorY: number
   centered: boolean
 }
 
-interface PdfWriter {
+export interface PdfWriter {
   addPage: () => void
   drawHeading: (text: string) => void
   drawParagraphLine: (text: string, centered: boolean) => void
@@ -27,7 +26,7 @@ const HEADING_FONT_SIZE = 17
 const LINE_HEIGHT = 18
 
 interface PdfPageContext {
-  page: PDFPage
+  page: ReturnType<PDFDocument['addPage']>
 }
 
 function normalizeForFont(text: string): string {
@@ -152,8 +151,6 @@ function drawHeading(
   state.cursorY -= LINE_HEIGHT + 4
 }
 
-const IMAGE_LINE_PATTERN = /^!\[([^\]]*)\]\(([^)]+)\)$/
-
 async function drawPdfImage(
   imagePath: string,
   pdf: PDFDocument,
@@ -178,7 +175,8 @@ async function drawPdfImage(
   }
 }
 
-async function createPdfWriter(pdf: PDFDocument, state: PdfLayoutState): Promise<PdfWriter> {  const writerFonts = await loadPdfFonts(pdf)
+async function createPdfWriter(pdf: PDFDocument, state: PdfLayoutState): Promise<PdfWriter> {
+  const writerFonts = await loadPdfFonts(pdf)
   const context: PdfPageContext = {
     page: pdf.addPage([PAGE_WIDTH, PAGE_HEIGHT]),
   }
@@ -200,50 +198,6 @@ async function createPdfWriter(pdf: PDFDocument, state: PdfLayoutState): Promise
     },
     drawImage: async (absolutePath: string) => drawPdfImage(absolutePath, pdf, state, context),
   }
-}
-
-async function renderPdfChapter(
-  chapter: BookExportChapter,
-  writer: PdfWriter,
-  state: PdfLayoutState,
-  projectRoot: string,
-): Promise<boolean> {
-  const chapterDir = path.dirname(chapter.path)
-  let lastWasPagebreak = false
-
-  for (const sourceLine of chapter.content.split('\n')) {
-    const directive = parseDirectiveLine(sourceLine)
-    if (directive) {
-      if (directive.kind === 'centerStart') {
-        state.centered = true
-        lastWasPagebreak = false
-      } else if (directive.kind === 'centerEnd') {
-        state.centered = false
-        lastWasPagebreak = false
-      } else if (directive.kind === 'pagebreak') {
-        writer.addPage()
-        lastWasPagebreak = true
-      } else if (directive.kind === 'spacer') {
-        writer.addSpacer(directive.lines)
-        lastWasPagebreak = false
-      }
-      continue
-    }
-
-    const imageMatch = sourceLine.trim().match(IMAGE_LINE_PATTERN)
-    if (imageMatch) {
-      const imagePath = imageMatch[2]
-      const resolvedPath = await resolveImagePath(imagePath, projectRoot, chapterDir)
-      await writer.drawImage(resolvedPath)
-      lastWasPagebreak = false
-      continue
-    }
-
-    writer.drawParagraphLine(sourceLine, state.centered)
-    lastWasPagebreak = false
-  }
-
-  return lastWasPagebreak
 }
 
 export async function renderPdfBook(chapters: BookExportChapter[], projectRoot = ''): Promise<Uint8Array> {

@@ -1,31 +1,9 @@
-import { useMemo, useState } from 'preact/hooks'
+import { useMemo } from 'preact/hooks'
 import type { DocumentMeta, ProjectSnapshot } from '../../shared/ipc'
-import { PROJECT_EDITOR_STRINGS } from './project-editor-strings'
 import type { PaneDocumentState, SidebarSection, WorkspaceLayoutState } from './project-editor-types'
 import { useSidebarUiState } from './use-sidebar-ui-state'
 import { useWorkspaceLayoutState } from './use-workspace-layout-state'
-
-function collectSidebarPaths(items: ProjectSnapshot['tree'], result: string[]): void {
-  for (const item of items) {
-    if (item.type === 'folder') {
-      result.push(`${item.path}/`)
-      collectSidebarPaths(item.children ?? [], result)
-      continue
-    }
-
-    result.push(item.path)
-  }
-}
-
-function getVisibleSidebarPaths(snapshot: ProjectSnapshot | null): string[] {
-  if (!snapshot) {
-    return []
-  }
-
-  const paths: string[] = []
-  collectSidebarPaths(snapshot.tree, paths)
-  return paths
-}
+import { useProjectEditorCoreState } from './use-project-editor-core-state'
 
 export interface ProjectEditorStateValues {
   apiAvailable: boolean
@@ -84,25 +62,42 @@ type BuildSettersParams = Omit<ProjectEditorStateSetters, 'setSidebarActiveSecti
   sidebarUiState: SidebarUiStateResult
 }
 
+function getVisibleSidebarPaths(snapshot: ProjectSnapshot | null): string[] {
+  if (!snapshot) return []
+
+  const paths: string[] = []
+  const collect = (items: ProjectSnapshot['tree']) => {
+    for (const item of items) {
+      if (item.type === 'folder') {
+        paths.push(`${item.path}/`)
+        collect(item.children ?? [])
+        continue
+      }
+      paths.push(item.path)
+    }
+  }
+  collect(snapshot.tree)
+  return paths
+}
+
 function buildValues(params: BuildValuesParams): ProjectEditorStateValues {
-  const activePaneState: PaneDocumentState = params.workspaceLayout.activePane === 'secondary'
+  const activePane = params.workspaceLayout.activePane === 'secondary'
     ? params.secondaryPane
     : params.primaryPane
-  
-  const activePaneLayoutPath = params.workspaceLayout.activePane === 'secondary'
+  const activePanePath = params.workspaceLayout.activePane === 'secondary'
     ? params.workspaceLayout.secondaryPath
     : params.workspaceLayout.primaryPath
-  
+
   return {
     apiAvailable: params.apiAvailable,
     rootPath: params.rootPath,
     snapshot: params.snapshot,
     primaryPane: params.primaryPane,
     secondaryPane: params.secondaryPane,
-    selectedPath: activePaneLayoutPath,
-    editorValue: activePaneState.content,
-    editorMeta: activePaneState.meta,
-    isDirty: activePaneState.isDirty,
+    selectedPath: activePanePath,
+    editorValue: activePane.content,
+    editorMeta: activePane.meta,
+    isDirty: activePane.isDirty,
     loadingProject: params.loadingProject,
     loadingDocument: params.loadingDocument,
     saving: params.saving,
@@ -135,45 +130,6 @@ function buildSetters(params: BuildSettersParams): ProjectEditorStateSetters {
     setSidebarPanelCollapsed: params.sidebarUiState.setters.setPanelCollapsed,
     setSidebarPanelWidth: params.sidebarUiState.setters.setPanelWidth,
     setWorkspaceLayout: params.setWorkspaceLayout,
-  }
-}
-
-function useProjectEditorCoreState() {
-  const [rootPath, setRootPath] = useState('')
-  const [snapshot, setSnapshot] = useState<ProjectSnapshot | null>(null)
-  const [primaryPane, setPrimaryPane] = useState<PaneDocumentState>({ path: null, content: '', meta: {}, isDirty: false })
-  const [secondaryPane, setSecondaryPane] = useState<PaneDocumentState>({ path: null, content: '', meta: {}, isDirty: false })
-  const [loadingProject, setLoadingProject] = useState(false)
-  const [loadingDocument, setLoadingDocument] = useState(false)
-  const [saving, setSaving] = useState(false)
-  const [isFullscreen, setIsFullscreen] = useState(false)
-  const [externalConflictPath, setExternalConflictPath] = useState<string | null>(null)
-  const [conflictComparisonContent, setConflictComparisonContent] = useState<string | null>(null)
-  const [statusMessage, setStatusMessage] = useState<string>(PROJECT_EDITOR_STRINGS.initialStatus)
-
-  return {
-    rootPath,
-    setRootPath,
-    snapshot,
-    setSnapshot,
-    primaryPane,
-    setPrimaryPane,
-    secondaryPane,
-    setSecondaryPane,
-    loadingProject,
-    setLoadingProject,
-    loadingDocument,
-    setLoadingDocument,
-    saving,
-    setSaving,
-    isFullscreen,
-    setIsFullscreen,
-    externalConflictPath,
-    setExternalConflictPath,
-    conflictComparisonContent,
-    setConflictComparisonContent,
-    statusMessage,
-    setStatusMessage,
   }
 }
 
