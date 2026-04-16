@@ -95,6 +95,8 @@ function buildSidebarSectionProps(
     onCreateArticle: (input: Parameters<typeof actions.createArticle>[0]) => void actions.createArticle(input),
     onCreateCategory: (input: Parameters<typeof actions.createCategory>[0]) => void actions.createCategory(input),
     onRenameFile: (path: string, newName: string) => void actions.renameFile({ path, newName }),
+    onRenameFolder: (path: string, newName: string) => void actions.renameFolder({ path, newName }),
+    onDeleteFolder: (path: string) => void actions.deleteFolder(path),
     onDeleteFile: (path: string) => void actions.deleteFile(path),
     onEditFileTags: (path: string, tags: string[]) => void actions.editFileTags(path, tags),
     apiAvailable: state.apiAvailable,

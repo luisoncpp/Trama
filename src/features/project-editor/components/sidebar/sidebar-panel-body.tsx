@@ -39,6 +39,8 @@ export interface SidebarPanelBodyProps {
   onCreateArticle: SidebarFileActions['onCreateArticle']
   onCreateCategory: SidebarFileActions['onCreateCategory']
   onRenameFile: SidebarFileActions['onRenameFile']
+  onRenameFolder: SidebarFileActions['onRenameFolder']
+  onDeleteFolder: SidebarFileActions['onDeleteFolder']
   onDeleteFile: SidebarFileActions['onDeleteFile']
   onEditFileTags: SidebarFileActions['onEditFileTags']
   onImport: () => void
@@ -63,6 +65,8 @@ function renderSidebarExplorerContent({
   onCreateArticle,
   onCreateCategory,
   onRenameFile,
+  onRenameFolder,
+  onDeleteFolder,
   onDeleteFile,
   onEditFileTags,
   onSelectFile,
@@ -92,6 +96,8 @@ function renderSidebarExplorerContent({
       onCreateArticle={onCreateArticle}
       onCreateCategory={onCreateCategory}
       onRenameFile={(path, newName) => onRenameFile(`${sectionConfig.root}${path}`, newName)}
+      onRenameFolder={(path, newName) => onRenameFolder(`${sectionConfig.root}${path}`, newName)}
+      onDeleteFolder={(path) => onDeleteFolder(`${sectionConfig.root}${path}`)}
       onDeleteFile={(path) => onDeleteFile(`${sectionConfig.root}${path}`)}
       onEditFileTags={(path, tags) => onEditFileTags(`${sectionConfig.root}${path}`, tags)}
       onLoadFileTags={loadFileTags}

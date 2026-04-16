@@ -9,6 +9,8 @@ export const IPC_CHANNELS = {
   saveDocument: 'trama:document:save',
   createDocument: 'trama:document:create',
   createFolder: 'trama:folder:create',
+  renameFolder: 'trama:folder:rename',
+  deleteFolder: 'trama:folder:delete',
   renameDocument: 'trama:document:rename',
   deleteDocument: 'trama:document:delete',
   getIndex: 'trama:index:get',
@@ -42,6 +44,10 @@ export const createDocumentRequestSchema = z.object({ path: z.string().trim().mi
 export const createDocumentResponseSchema = z.object({ path: z.string(), createdAt: z.string() })
 export const createFolderRequestSchema = z.object({ path: z.string().trim().min(1) })
 export const createFolderResponseSchema = z.object({ path: z.string(), createdAt: z.string() })
+export const renameFolderRequestSchema = z.object({ path: z.string().trim().min(1), newName: z.string().trim().min(1) })
+export const renameFolderResponseSchema = z.object({ path: z.string(), renamedTo: z.string(), updatedAt: z.string() })
+export const deleteFolderRequestSchema = z.object({ path: z.string().trim().min(1) })
+export const deleteFolderResponseSchema = z.object({ path: z.string(), deletedAt: z.string() })
 export const renameDocumentRequestSchema = z.object({ path: z.string().trim().min(1), newName: z.string().trim().min(1) })
 export const renameDocumentResponseSchema = z.object({ path: z.string(), renamedTo: z.string(), updatedAt: z.string() })
 export const deleteDocumentRequestSchema = z.object({ path: z.string().trim().min(1) })
@@ -100,6 +106,10 @@ export type CreateDocumentRequest = z.infer<typeof createDocumentRequestSchema>
 export type CreateDocumentResponse = z.infer<typeof createDocumentResponseSchema>
 export type CreateFolderRequest = z.infer<typeof createFolderRequestSchema>
 export type CreateFolderResponse = z.infer<typeof createFolderResponseSchema>
+export type RenameFolderRequest = z.infer<typeof renameFolderRequestSchema>
+export type RenameFolderResponse = z.infer<typeof renameFolderResponseSchema>
+export type DeleteFolderRequest = z.infer<typeof deleteFolderRequestSchema>
+export type DeleteFolderResponse = z.infer<typeof deleteFolderResponseSchema>
 export type RenameDocumentRequest = z.infer<typeof renameDocumentRequestSchema>
 export type RenameDocumentResponse = z.infer<typeof renameDocumentResponseSchema>
 export type DeleteDocumentRequest = z.infer<typeof deleteDocumentRequestSchema>

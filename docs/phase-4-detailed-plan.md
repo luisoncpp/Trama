@@ -79,7 +79,7 @@ Known constraints:
 
 **Objective**: Implement tag-based implicit wiki link system as specified in `docs/wiki-tag-links-spec.md`.
 
-**Status**: Not started.
+**Status**: In progress (rename/delete V1 complete; move/reparent and DnD deferred).
 
 ### Deliverables
 
@@ -159,6 +159,8 @@ Known constraints:
 
 **Objective**: Complete file-tree operations for folders, extending the existing file rename/delete/create infrastructure.
 
+Detailed first implementation slice: `docs/folder-rename-implementation-plan.md`. Use that document as the source of truth for folder rename file targets and sequencing when it differs from the broad WS2 notes below.
+
 **Status**: Not started.
 
 ### Deliverables
@@ -179,6 +181,12 @@ Known constraints:
    - Sidebar drag-and-drop to move folders.
    - IPC endpoint: `trama:folder:move` with `{ sourcePath: string, targetParentPath: string }`.
    - Updates all contained file paths in `.trama.index.json`.
+
+### Implementation note (2026-04-15)
+
+- Folder rename and folder delete are implemented and covered by dedicated repository/IPC tests.
+- Move/reparent plumbing was started and then intentionally rolled back in this branch to avoid mixing concerns while closing delete-folder stabilization.
+- Next WS2 slice should reintroduce `moveFolder` end-to-end in a dedicated PR with focused regression coverage for DnD and split-layout remap.
 
 ### Files to Create
 

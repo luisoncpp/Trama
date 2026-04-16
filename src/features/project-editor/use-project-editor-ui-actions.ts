@@ -19,6 +19,7 @@ import {
 import { useSetSidebarPanelWidthAction, useSetSidebarSectionAction, useToggleSidebarPanelCollapsedAction } from './use-project-editor-sidebar-actions'
 import { useProjectEditorCreateActions } from './use-project-editor-create-actions'
 import { useProjectEditorFileActions } from './use-project-editor-file-actions'
+import { useProjectEditorFolderActions } from './use-project-editor-folder-actions'
 import {
   useSetFocusScopeAction,
   useSetFullscreenEnabledAction,
@@ -125,6 +126,7 @@ function usePrimaryProjectEditorActions(
   const selectFile = useSelectFileAction({ values, loadDocument, assignFileToActivePane, saveDocumentNow })
   const { createArticle, createCategory } = useProjectEditorCreateActions({ values, setters, openProject })
   const { renameFile, deleteFile, editFileTags } = useProjectEditorFileActions({ values, setters, openProject })
+  const { renameFolder, deleteFolder } = useProjectEditorFolderActions({ values, setters, openProject })
   const setSidebarSection = useSetSidebarSectionAction(setters)
   const toggleSidebarPanelCollapsed = useToggleSidebarPanelCollapsedAction(values, setters)
   const setSidebarPanelWidth = useSetSidebarPanelWidthAction(setters)
@@ -143,8 +145,10 @@ function usePrimaryProjectEditorActions(
     openFileInPane,
     createArticle,
     createCategory,
+    renameFolder,
     renameFile,
     deleteFile,
+    deleteFolder,
     editFileTags,
     setSidebarSection,
     toggleSidebarPanelCollapsed,

@@ -10,6 +10,8 @@ import type {
   CreateDocumentResponse,
   CreateFolderRequest,
   CreateFolderResponse,
+  DeleteFolderRequest,
+  DeleteFolderResponse,
   DeleteDocumentRequest,
   DeleteDocumentResponse,
   DebugLogRequest,
@@ -25,6 +27,8 @@ import type {
   ReadDocumentResponse,
   RenameDocumentRequest,
   RenameDocumentResponse,
+  RenameFolderRequest,
+  RenameFolderResponse,
   SaveDocumentRequest,
   SaveDocumentResponse,
   SetSpellcheckSettingsRequest,
@@ -46,6 +50,8 @@ declare global {
       saveDocument(payload: SaveDocumentRequest): Promise<IpcEnvelope<SaveDocumentResponse>>
       createDocument(payload: CreateDocumentRequest): Promise<IpcEnvelope<CreateDocumentResponse>>
       createFolder(payload: CreateFolderRequest): Promise<IpcEnvelope<CreateFolderResponse>>
+      renameFolder(payload: RenameFolderRequest): Promise<IpcEnvelope<RenameFolderResponse>>
+      deleteFolder(payload: DeleteFolderRequest): Promise<IpcEnvelope<DeleteFolderResponse>>
       renameDocument(payload: RenameDocumentRequest): Promise<IpcEnvelope<RenameDocumentResponse>>
       deleteDocument(payload: DeleteDocumentRequest): Promise<IpcEnvelope<DeleteDocumentResponse>>
       getIndex(): Promise<IpcEnvelope<ProjectIndex>>

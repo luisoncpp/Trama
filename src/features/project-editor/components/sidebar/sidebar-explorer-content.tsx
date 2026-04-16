@@ -3,6 +3,7 @@ import { SidebarExplorerBody } from './sidebar-explorer-body.tsx'
 import type { SidebarExplorerCommonProps } from './sidebar-types'
 import { useSidebarCreateDialog } from './use-sidebar-create-dialog'
 import { useSidebarFileActionsDialog } from './use-sidebar-file-actions-dialog'
+import { useSidebarFolderActionsDialog } from './use-sidebar-folder-actions-dialog'
 
 function SelectProjectFolderIcon() {
   return (
@@ -35,6 +36,8 @@ interface SidebarExplorerContentProps {
   onCreateArticle: SidebarExplorerCommonProps['onCreateArticle']
   onCreateCategory: SidebarExplorerCommonProps['onCreateCategory']
   onRenameFile: SidebarExplorerCommonProps['onRenameFile']
+  onRenameFolder: SidebarExplorerCommonProps['onRenameFolder']
+  onDeleteFolder: SidebarExplorerCommonProps['onDeleteFolder']
   onDeleteFile: SidebarExplorerCommonProps['onDeleteFile']
   onEditFileTags: SidebarExplorerCommonProps['onEditFileTags']
   onLoadFileTags: (path: string) => Promise<string[]>
@@ -54,8 +57,12 @@ function useSidebarExplorerDialogs(props: SidebarExplorerContentProps) {
     onEditFileTags: props.onEditFileTags,
     onLoadFileTags: props.onLoadFileTags,
   })
+  const folderDialog = useSidebarFolderActionsDialog({
+    onRenameFolder: props.onRenameFolder,
+    onDeleteFolder: props.onDeleteFolder,
+  })
 
-  return { createDialog, fileDialog }
+  return { createDialog, fileDialog, folderDialog }
 }
 
 function SidebarHeader({ title, apiAvailable, loadingProject, onPickFolder }: SidebarHeaderProps) {
@@ -81,7 +88,7 @@ function SidebarHeader({ title, apiAvailable, loadingProject, onPickFolder }: Si
 }
 
 export function SidebarExplorerContent(props: SidebarExplorerContentProps) {
-  const { createDialog, fileDialog } = useSidebarExplorerDialogs(props)
+  const { createDialog, fileDialog, folderDialog } = useSidebarExplorerDialogs(props)
   const filterInputElementRef = useRef<HTMLInputElement | null>(null)
   const setFilterInputRef = (element: HTMLInputElement | null) => {
     filterInputElementRef.current = element
@@ -113,12 +120,20 @@ export function SidebarExplorerContent(props: SidebarExplorerContentProps) {
           openRenameDialog={fileDialog.openRename}
           openDeleteDialog={fileDialog.openDelete}
           openEditTagsDialog={fileDialog.openEditTags}
+          openRenameFolderDialog={folderDialog.openRename}
+          openDeleteFolderDialog={folderDialog.openDelete}
           closeFileActionDialog={fileDialog.closeDialog}
           confirmFileActionDialog={fileDialog.confirm}
           onRenameValueChange={fileDialog.setRenameValue}
           tagsValue={fileDialog.tagsValue}
           loadingTags={fileDialog.loadingTags}
           onTagsValueChange={fileDialog.setTagsValue}
+          folderActionMode={folderDialog.mode}
+          folderRenameValue={folderDialog.renameValue}
+          folderActionTargetPath={folderDialog.targetPath}
+          onFolderRenameValueChange={folderDialog.setRenameValue}
+          confirmFolderActionDialog={folderDialog.confirm}
+          closeFolderActionDialog={folderDialog.closeDialog}
           onDirectoryChange={createDialog.setCreateDirectory}
           onNameChange={createDialog.setCreateName}
           filterInputRef={setFilterInputRef}

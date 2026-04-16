@@ -2,11 +2,13 @@ export { buildPingResponse } from './ping-handler.js'
 export {
   handleCreateDocument,
   handleCreateFolder,
+  handleDeleteFolder,
   handleDeleteDocument,
   handleGetIndex,
   handleOpenProject,
   handleReadDocument,
   handleRenameDocument,
+  handleRenameFolder,
   handleSaveDocument,
   handleSelectProjectFolder,
 } from './project-handlers/index.js'

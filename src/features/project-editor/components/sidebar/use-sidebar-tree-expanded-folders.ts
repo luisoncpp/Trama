@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'preact/hooks'
 import { buildSidebarTree, getAncestorFolderPaths } from './sidebar-tree-logic'
+import { consumeSidebarFolderPathRemapped, remapExpandedFoldersForPathRemap } from './sidebar-folder-rename-events'
 
 function unique(values: string[]): string[] {
   return Array.from(new Set(values))
@@ -62,16 +63,21 @@ function useSeedExpandedFolders(
     const rootFolders = getRootFolderPaths(tree)
     const treeKey = getFolderTreeKey(folderPaths)
     const treeChanged = previousTreeKeyRef.current !== treeKey
+    const pendingPathRemap = consumeSidebarFolderPathRemapped()
 
-    setExpandedFolders((prev) =>
-      getSeededExpandedFolders({
-        previousExpanded: prev,
+    setExpandedFolders((prev) => {
+      const previousExpanded = pendingPathRemap
+        ? remapExpandedFoldersForPathRemap(prev, folderPaths, pendingPathRemap.oldPath, pendingPathRemap.newPath)
+        : prev
+
+      return getSeededExpandedFolders({
+        previousExpanded,
         folderPaths,
         rootFolders,
         didInitialize: didInitializeRef.current,
         treeChanged,
-      }),
-    )
+      })
+    })
 
     didInitializeRef.current = true
     previousTreeKeyRef.current = treeKey

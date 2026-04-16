@@ -25,30 +25,7 @@ function resolveProjectPath(projectRoot: string, relativePath: string): string {
 }
 
 const INVALID_NAME_CHARS = /[<>:"|?*\x00-\x1F]/
-const RESERVED_WINDOWS_NAMES = new Set([
-  'CON',
-  'PRN',
-  'AUX',
-  'NUL',
-  'COM1',
-  'COM2',
-  'COM3',
-  'COM4',
-  'COM5',
-  'COM6',
-  'COM7',
-  'COM8',
-  'COM9',
-  'LPT1',
-  'LPT2',
-  'LPT3',
-  'LPT4',
-  'LPT5',
-  'LPT6',
-  'LPT7',
-  'LPT8',
-  'LPT9',
-])
+const RESERVED_WINDOWS_NAMES = new Set(['CON', 'PRN', 'AUX', 'NUL', 'COM1', 'COM2', 'COM3', 'COM4', 'COM5', 'COM6', 'COM7', 'COM8', 'COM9', 'LPT1', 'LPT2', 'LPT3', 'LPT4', 'LPT5', 'LPT6', 'LPT7', 'LPT8', 'LPT9'])
 
 function validateRelativePath(relativePath: string): string {
   const normalized = normalizeRelative(relativePath).trim().replace(/^\/+/, '').replace(/\/+$/, '')
@@ -182,6 +159,52 @@ export class DocumentRepository {
     return {
       path: normalizeRelative(normalizedPath),
       createdAt: new Date().toISOString(),
+    }
+  }
+
+  async renameFolder(
+    projectRoot: string,
+    relativePath: string,
+    newName: string,
+  ): Promise<{ path: string; renamedTo: string; updatedAt: string }> {
+    const normalizedPath = validateRelativePath(relativePath)
+    const normalizedName = validateNameSegment(newName)
+    const directory = path.posix.dirname(normalizedPath)
+    const nextRelativePath = directory === '.' ? normalizedName : `${directory}/${normalizedName}`
+    if (normalizeRelative(nextRelativePath) === normalizeRelative(normalizedPath)) {
+      throw new Error('New name must be different from current name')
+    }
+
+    const sourceFullPath = resolveProjectPath(projectRoot, normalizedPath)
+    const sourceInfo = await stat(sourceFullPath)
+    if (!sourceInfo.isDirectory()) {
+      throw new Error('Only folders can be renamed')
+    }
+
+    const targetFullPath = resolveProjectPath(projectRoot, nextRelativePath)
+    await ensurePathDoesNotExist(targetFullPath)
+    await rename(sourceFullPath, targetFullPath)
+
+    return {
+      path: normalizeRelative(normalizedPath),
+      renamedTo: normalizeRelative(nextRelativePath),
+      updatedAt: new Date().toISOString(),
+    }
+  }
+
+  async deleteFolder(projectRoot: string, relativePath: string): Promise<{ path: string; deletedAt: string }> {
+    const normalizedPath = validateRelativePath(relativePath)
+    const fullPath = resolveProjectPath(projectRoot, normalizedPath)
+    const sourceInfo = await stat(fullPath)
+    if (!sourceInfo.isDirectory()) {
+      throw new Error('Only folders can be deleted')
+    }
+
+    await rm(fullPath, { recursive: true })
+
+    return {
+      path: normalizeRelative(normalizedPath),
+      deletedAt: new Date().toISOString(),
     }
   }
 

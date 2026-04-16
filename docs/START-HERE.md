@@ -19,6 +19,7 @@ Open these only when relevant:
 
 - IPC extension workflow: `docs/ipc-architecture.md`
 - Split pane coordination model: `docs/split-pane-coordination.md`
+- Folder rename implementation slice: `docs/folder-rename-implementation-plan.md`
 - Phase planning details: `docs/phase-4-detailed-plan.md`
 - Wiki Tag Links implementation plan: `docs/wiki-tag-links-implementation-plan.md`
 - Markdown layout directives (center/spacer/pagebreak + EPUB/MOBI): `docs/markdown-layout-directives-spec.md`
@@ -36,6 +37,7 @@ Open these only when relevant:
 | Understand split pane coordination | `docs/split-pane-coordination.md` → `src/features/project-editor/use-project-editor-state.ts` → `src/features/project-editor/use-project-editor-layout-actions.ts` |
 | Debug split-pane unsaved/dirty mismatch | `docs/troubleshooting.md` (Split pane dirty section) → `src/features/project-editor/components/workspace-editor-panels.tsx` → `src/features/project-editor/use-project-editor-ui-actions.ts` → `src/features/project-editor/use-project-editor-state.ts` → `tests/project-editor-conflict-flow.test.ts` |
 | Implement Wiki Tag Links (WS1) | `docs/wiki-tag-links-spec.md` → `docs/wiki-tag-links-implementation-plan.md` → `docs/phase-4-detailed-plan.md` |
+| Implement folder rename (WS2 slice) | `docs/folder-rename-implementation-plan.md` → `src/features/project-editor/components/sidebar/sidebar-tree.tsx` → `src/features/project-editor/components/sidebar/sidebar-panel-body.tsx` → `electron/services/document-repository.ts` |
 | Understand feature status | `docs/current-status.md` → `docs/phase-4-detailed-plan.md` |
 | Understand project structure | `docs/file-map.md` |
 | Debug a runtime issue | `docs/troubleshooting.md` → `docs/lessons-learned/README.md` |

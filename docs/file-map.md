@@ -57,6 +57,8 @@ Mandatory doc navigation for new chats:
   - Enforces required project folders (`book`, `lore`, `outline`) by prompting to create missing folders or reselect another directory.
 - `electron/ipc/handlers/project-handlers/document-handlers.ts`
   - Read/save/create/rename/delete document + create folder handlers.
+- `electron/ipc/handlers/project-handlers/folder-handlers.ts`
+  - Folder rename handler with subtree internal-write tagging and index/tag reconcile.
 - `electron/ipc/handlers/project-handlers/index-handler.ts`
   - Get index handler.
 - `electron/ipc/handlers/ai-handlers.ts`
@@ -69,7 +71,7 @@ Mandatory doc navigation for new chats:
 - `electron/services/project-scanner.ts`
   - Recursive markdown scan + tree data (including empty folders).
 - `electron/services/document-repository.ts`
-  - Read/save/create/rename/delete markdown files.
+  - Read/save/create/rename/delete markdown files + folder rename/create.
 - `electron/services/frontmatter.ts`
   - YAML frontmatter parse/serialize.
 - `electron/services/index-service.ts`
@@ -121,6 +123,10 @@ Mandatory doc navigation for new chats:
   - Fullscreen/focus-mode action hooks. When enabling focus, auto-collapses the sidebar.
 - `src/features/project-editor/use-project-editor-file-actions.ts`
   - Rename/delete file actions.
+- `src/features/project-editor/use-project-editor-folder-actions.ts`
+  - Folder rename action with dirty-subtree guard and split-layout remap before project reopen.
+- `src/features/project-editor/project-editor-folder-logic.ts`
+  - Pure helpers for folder-prefix path remap (`isPathInsideFolder`, `remapFolderPrefix`, layout remap).
 - `src/features/project-editor/use-project-editor-create-actions.ts`
   - Create article/category actions.
 - `src/features/project-editor/use-project-editor-sidebar-actions.ts`
@@ -254,7 +260,9 @@ Mandatory doc navigation for new chats:
 - `src/features/project-editor/components/sidebar/sidebar-tree-logic.ts`
   - Pure tree build/flatten helpers.
 - `src/features/project-editor/components/sidebar/use-sidebar-tree-expanded-folders.ts`
-  - Expanded folder state management.
+  - Expanded folder state management, including rename remap consumption via sidebar folder-rename events.
+- `src/features/project-editor/components/sidebar/sidebar-folder-rename-events.ts`
+  - One-shot folder rename event bridge used to remap expanded folder state after refresh.
 - `src/features/project-editor/components/sidebar/sidebar-filter.tsx`
   - Filter input UI.
 - `src/features/project-editor/components/sidebar/use-sidebar-filter-shortcut.ts`
@@ -269,10 +277,18 @@ Mandatory doc navigation for new chats:
   - Right-click file action menu.
 - `src/features/project-editor/components/sidebar/use-sidebar-file-context-menu.ts`
   - Context menu state/handlers.
+- `src/features/project-editor/components/sidebar/sidebar-folder-context-menu.tsx`
+  - Right-click folder action menu (rename in V1).
+- `src/features/project-editor/components/sidebar/use-sidebar-folder-context-menu.ts`
+  - Folder context-menu state/handlers.
 - `src/features/project-editor/components/sidebar/sidebar-file-actions-dialog.tsx`
   - Rename/delete confirmation/input dialog.
 - `src/features/project-editor/components/sidebar/use-sidebar-file-actions-dialog.ts`
   - Rename/delete dialog state.
+- `src/features/project-editor/components/sidebar/sidebar-folder-actions-dialog.tsx`
+  - Folder rename input dialog.
+- `src/features/project-editor/components/sidebar/use-sidebar-folder-actions-dialog.ts`
+  - Folder rename dialog state.
 - `src/features/project-editor/components/sidebar/sidebar-footer-actions.tsx`
   - Create buttons (`+Article`, `+Category`).
 - `src/features/project-editor/components/sidebar/sidebar-settings-content.tsx`
@@ -338,6 +354,12 @@ Core and regression suites:
   - Renderer coverage for markdown/html/docx/epub/pdf outputs, including directive conversion and binary artifact generation.
 - `tests/use-ai-export.test.ts`
   - Renderer export hook coverage for IPC call shape, clipboard copy, and error state handling.
+- `tests/folder-rename-repository.test.ts`
+  - Repository-level folder rename coverage (success + validation/collision failures).
+- `tests/folder-rename-ipc-handler.test.ts`
+  - IPC folder rename envelope coverage and on-disk subtree move assertions.
+- `tests/project-editor-folder-logic.test.ts`
+  - Pure path-remap coverage for folder rename in split-layout state.
 - `tests/markdown-layout-directives.test.ts`
   - Unit coverage for directive extraction, warning behavior, artifact rendering, and canonical serialization helpers.
 - `tests/ai-import-service.test.ts`

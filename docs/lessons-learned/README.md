@@ -46,3 +46,5 @@ Create a new file in this directory named after the topic (e.g., `auth-token-ref
 | `project-folder-required-structure.md` | Validate `book/lore/outline` at folder-pick time, offer create-or-reselect flow, and loop picker when user rejects auto-create. | 2026-04-14 |
 | `electron-spellcheck-settings.md` | Electron spellcheck language changes are runtime session APIs on Windows/Linux; macOS only supports enable/disable from app side. | 2026-04-15 |
 | `spellcheck-optimistic-toggle-sync.md` | Spellcheck toggle UI can bounce if renderer waits for immediate native reread; use optimistic updates and return normalized state from main process. | 2026-04-15 |
+| `rich-editor-effect-deps-remount.md` | Including runtime flags like `spellcheckEnabled` in Quill init-effect deps can recreate the editor and leave stale DOM references; keep init deps stable and sync dynamic flags in dedicated effects. | 2026-04-15 |
+| `folder-rename-split-layout-remap.md` | Folder rename must remap split-pane layout paths and sidebar expanded-folder paths to avoid context loss after refresh. | 2026-04-15 |

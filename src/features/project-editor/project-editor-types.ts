@@ -61,6 +61,8 @@ export interface ProjectEditorActions {
   createArticle: (input: SidebarCreateInput) => Promise<void>
   createCategory: (input: SidebarCreateInput) => Promise<void>
   renameFile: (input: SidebarRenameInput) => Promise<void>
+  renameFolder: (input: SidebarRenameInput) => Promise<void>
+  deleteFolder: (path: string) => Promise<void>
   deleteFile: (path: string) => Promise<void>
   editFileTags: (path: string, tags: string[]) => Promise<void>
   setSidebarSection: (section: SidebarSection) => void

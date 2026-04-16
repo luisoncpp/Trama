@@ -181,6 +181,8 @@ export function SidebarSettingsContent({
               Resolved now: {resolvedTheme === 'dark' ? 'Dark' : 'Light'}
             </span>
           </label>
+        </div>
+        <div class="project-menu">
           <SpellcheckControls
             spellcheckEnabled={spellcheckEnabled}
             spellcheckLanguage={spellcheckLanguage}
@@ -189,7 +191,11 @@ export function SidebarSettingsContent({
             onSpellcheckEnabledChange={onSpellcheckEnabledChange}
             onSpellcheckLanguageChange={onSpellcheckLanguageChange}
           />
+        </div>
+        <div class="project-menu">
           <FocusScopeSelect focusScope={focusScope} onFocusScopeChange={onFocusScopeChange} />
+        </div>
+        <div class="project-menu">
           <PanelWidthControl panelWidth={panelWidth} onPanelWidthChange={onPanelWidthChange} />
         </div>
       </aside>

@@ -1,4 +1,4 @@
-# Current Status (Phase 3 Complete + Phase 4 WS5 Partial)
+# Current Status (Phase 3 Complete + Phase 4 WS2/WS5 Partial)
 
 > **New conversation?** Open `docs/START-HERE.md` first — it routes you to the 3-4 files you actually need.
 
@@ -32,6 +32,9 @@ Implemented now:
 - Sidebar hardening: loading/API-unavailable states, responsive auto-collapse, and collapse-all persistence fixes.
 - Sidebar file actions (`Rename`, `Delete`) via right-click file context menu.
 - Main-process file operations expanded to create/rename/delete markdown files plus folder create.
+- Folder rename V1 implemented end-to-end: IPC contract (`trama:folder:rename`), repository rename operation, sidebar folder context-menu rename flow, dirty-subtree guard, split-pane open-path remap, and expanded-folder-state remap after refresh.
+- Folder delete V1 implemented end-to-end: IPC contract (`trama:folder:delete`), recursive repository delete operation, sidebar folder context-menu delete flow, dirty-subtree guard, split-pane path pruning for deleted subtree, and internal-write watcher tagging for removed markdown files.
+- WS2 scope freeze applied after V1 closure: folder move/reparent and drag-and-drop wiring were intentionally rolled back to keep the branch focused on stable rename/delete behavior before continuing with move workflows.
 - Workspace split-layout foundation: single/split mode toggle, ratio control, active pane switching, pane document assignment, and local persistence (`trama.workspace.layout.v1`).
 - Layout reconciliation hardening: preferred-document restores now respect active pane intent during project reopen flows.
 - Per-pane editor state model: independent `primaryPane`/`secondaryPane` document content, metadata, and dirty flags.
@@ -49,6 +52,7 @@ Implemented now:
 - Focus Scope selector (line/sentence/paragraph) moved to sidebar Settings tab.
 - Sidebar auto-collapses when focus mode activates and is locked closed while focus is active.
 - Typography auto-replacement in the rich editor: typing `--` inserts `—`, `<<` inserts `«`, `>>` inserts `»`. Each replacement is a discrete Ctrl+Z undo entry.
+- Rich editor spellcheck sync hardened: toggling `spellcheckEnabled` no longer recreates Quill; spellcheck now updates through the dedicated sync effect only, preserving editor instance continuity.
 - `npm run dev` automatically builds the Electron main process before starting the dev server (`build:electron && dev:desktop`).
 - AI import (clipboard) implemented end-to-end: parser, preview, import dialog, renderer hook, IPC handlers, and main-process file creation flow.
 - AI export implemented end-to-end: sidebar export trigger, multi-file export dialog, include/exclude frontmatter option, secure path validation in backend service, IPC handler coverage, and clipboard copy flow.
@@ -67,9 +71,12 @@ Implemented now:
 - Book export regression expansion: `tests/book-export-renderers.test.ts` now covers image flows across HTML (local -> data URL conversion), PDF (data URL + local), DOCX (embedded `word/media` artifacts), and EPUB (data URL + local path materialization).
 
 Not implemented yet (planned in later phases):
-- Folder rename/delete and move workflows.
+- Folder move / reparent workflows.
 - Drag-and-drop reorder/move workflows.
 - Wiki links, templates, corkboard DnD.
+
+WS2 next step:
+- Reintroduce folder move/reparent in a dedicated slice after merge, with focused tests for sidebar DnD and path remap behavior.
 
 ## Reliability status
 
@@ -131,7 +138,7 @@ See `docs/phase-4-detailed-plan.md` for the complete plan with 5 workstreams:
 | Workstream | Description | Key Deliverables | Status |
 |---|---|---|---|
 | **WS1** | Wiki Tag Links | TagIndexService, implicit tag matching, Ctrl+click navigation | ✅ Complete |
-| **WS2** | Folder Operations | Rename, delete, move with conflict safety | Pending |
+| **WS2** | Folder Operations | Rename, delete, move with conflict safety | In progress (rename + delete V1 complete) |
 | **WS3** | Templates | Create from schema, placeholder system, default templates | Pending |
 | **WS4** | Corkboard | Drag-and-drop card view, persistence | Pending |
 | **WS5** | AI Import/Export | Import/export implemented end-to-end, including export hardening and regression tests | ✅ Complete |

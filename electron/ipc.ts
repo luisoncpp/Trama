@@ -2,6 +2,7 @@ import type { BrowserWindow, IpcMain } from 'electron'
 import {
   type CreateDocumentRequest,
   type CreateFolderRequest,
+  type DeleteFolderRequest,
   type DeleteDocumentRequest,
   debugLogRequestSchema,
   IPC_CHANNELS,
@@ -10,6 +11,7 @@ import {
   type PingRequest,
   type ReadDocumentRequest,
   type RenameDocumentRequest,
+  type RenameFolderRequest,
   type SaveDocumentRequest,
   setFullscreenRequestSchema,
   type AiImportRequest,
@@ -21,11 +23,13 @@ import {
   configureMainWindowResolver,
   handleCreateDocument,
   handleCreateFolder,
+  handleDeleteFolder,
   handleDeleteDocument,
   handleGetIndex,
   handleOpenProject,
   handleReadDocument,
   handleRenameDocument,
+  handleRenameFolder,
   handleSaveDocument,
   handleSelectProjectFolder,
   shutdownIpcServices,
@@ -117,6 +121,14 @@ function registerCoreHandlers(ipcMain: IpcMain): void {
 
   ipcMain.handle(IPC_CHANNELS.createFolder, (_event, payload: CreateFolderRequest) => {
     return handleCreateFolder(payload)
+  })
+
+  ipcMain.handle(IPC_CHANNELS.renameFolder, (_event, payload: RenameFolderRequest) => {
+    return handleRenameFolder(payload)
+  })
+
+  ipcMain.handle(IPC_CHANNELS.deleteFolder, (_event, payload: DeleteFolderRequest) => {
+    return handleDeleteFolder(payload)
   })
 
   ipcMain.handle(IPC_CHANNELS.renameDocument, (_event, payload: RenameDocumentRequest) => {

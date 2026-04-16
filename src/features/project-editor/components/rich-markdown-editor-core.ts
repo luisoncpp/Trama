@@ -131,7 +131,7 @@ function useInitializeEditor({
       window.removeEventListener(WORKSPACE_CONTEXT_MENU_EVENT, workspaceHandler as EventListener)
       editorRef.current = null
     }
-  }, [documentId, editorRef, hostRef, isApplyingExternalValueRef, lastEditorValueRef, onChangeRef, spellcheckEnabled, turndownRef])
+  }, [documentId, editorRef, hostRef, isApplyingExternalValueRef, lastEditorValueRef, onChangeRef, turndownRef])
 }
 
 function useSyncExternalValue({
@@ -139,7 +139,7 @@ function useSyncExternalValue({
   editorRef,
   lastEditorValueRef,
   isApplyingExternalValueRef,
-}: Omit<UseRichEditorLifecycleParams, 'documentId' | 'disabled' | 'hostRef' | 'onChangeRef' | 'turndownRef'> & {
+}: Omit<UseRichEditorLifecycleParams, 'documentId' | 'disabled' | 'spellcheckEnabled' | 'hostRef' | 'onChangeRef' | 'turndownRef'> & {
   value: string
 }): void {
   useEffect(() => {

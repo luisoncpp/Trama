@@ -4,10 +4,13 @@ import type { SidebarCreateMode } from './sidebar-create-dialog.tsx'
 import { SidebarCreateDialog } from './sidebar-create-dialog.tsx'
 import { SidebarFileContextMenu } from './sidebar-file-context-menu.tsx'
 import { SidebarFileActionsDialog, type SidebarFileActionMode } from './sidebar-file-actions-dialog.tsx'
+import { SidebarFolderActionsDialog, type SidebarFolderActionMode } from './sidebar-folder-actions-dialog.tsx'
+import { SidebarFolderContextMenu } from './sidebar-folder-context-menu.tsx'
 import { SidebarFooterActions } from './sidebar-footer-actions.tsx'
 import { SidebarFilter } from './sidebar-filter.tsx'
 import { SidebarTree } from './sidebar-tree.tsx'
 import { useSidebarFileContextMenu } from './use-sidebar-file-context-menu'
+import { useSidebarFolderContextMenu } from './use-sidebar-folder-context-menu'
 
 interface SidebarStateHintProps {
   loadingProject: boolean
@@ -24,6 +27,7 @@ interface SidebarTreeAreaProps {
   filterQuery: string
   onSelectFile: (path: string) => Promise<void>
   onFileContextMenu: (path: string, event: MouseEvent) => void
+  onFolderContextMenu: (path: string, event: MouseEvent) => void
 }
 
 interface SidebarExplorerDialogsProps {
@@ -47,6 +51,13 @@ interface SidebarExplorerDialogsProps {
   confirmFileActionDialog: () => void
   closeFileActionDialog: () => void
   fileContextMenu: ReturnType<typeof useSidebarFileContextMenu>
+  folderContextMenu: ReturnType<typeof useSidebarFolderContextMenu>
+  folderActionMode: SidebarFolderActionMode | null
+  folderActionTargetPath: string | null
+  folderRenameValue: string
+  onFolderRenameValueChange: (value: string) => void
+  confirmFolderActionDialog: () => void
+  closeFolderActionDialog: () => void
 }
 
 interface SidebarExplorerBodyProps {
@@ -73,10 +84,18 @@ interface SidebarExplorerBodyProps {
   openRenameDialog: (path: string) => void
   openDeleteDialog: (path: string) => void
   openEditTagsDialog: (path: string) => void
+  openRenameFolderDialog: (path: string) => void
+  openDeleteFolderDialog: (path: string) => void
   closeFileActionDialog: () => void
   confirmFileActionDialog: () => void
   onRenameValueChange: (value: string) => void
   onTagsValueChange: (value: string) => void
+  folderActionMode: SidebarFolderActionMode | null
+  folderRenameValue: string
+  folderActionTargetPath: string | null
+  onFolderRenameValueChange: (value: string) => void
+  confirmFolderActionDialog: () => void
+  closeFolderActionDialog: () => void
   onDirectoryChange: (value: string) => void
   onNameChange: (value: string) => void
   filterInputRef: (element: HTMLInputElement | null) => void
@@ -107,6 +126,7 @@ function SidebarTreeArea(props: SidebarTreeAreaProps) {
       onSelectFile={props.onSelectFile}
       filterQuery={props.filterQuery}
       onFileContextMenu={props.onFileContextMenu}
+      onFolderContextMenu={props.onFolderContextMenu}
     />
   )
 }
@@ -140,6 +160,17 @@ function SidebarExplorerDialogs(props: SidebarExplorerDialogsProps) {
         onSubmit={props.submitCreateDialog}
         onCancel={props.closeCreateDialog}
       />
+      <SidebarFolderContextMenu
+        isOpen={Boolean(props.folderContextMenu.contextMenuState)}
+        position={
+          props.folderContextMenu.contextMenuState
+            ? { x: props.folderContextMenu.contextMenuState.x, y: props.folderContextMenu.contextMenuState.y }
+            : null
+        }
+        onRename={props.folderContextMenu.handleRenameFromContextMenu}
+        onDelete={props.folderContextMenu.handleDeleteFromContextMenu}
+        onClose={props.folderContextMenu.closeContextMenu}
+      />
       <SidebarFileActionsDialog
         mode={props.fileActionMode}
         targetPath={props.fileActionTargetPath}
@@ -151,6 +182,14 @@ function SidebarExplorerDialogs(props: SidebarExplorerDialogsProps) {
         onConfirm={props.confirmFileActionDialog}
         onCancel={props.closeFileActionDialog}
       />
+      <SidebarFolderActionsDialog
+        mode={props.folderActionMode}
+        targetPath={props.folderActionTargetPath}
+        renameValue={props.folderRenameValue}
+        onRenameValueChange={props.onFolderRenameValueChange}
+        onConfirm={props.confirmFolderActionDialog}
+        onCancel={props.closeFolderActionDialog}
+      />
     </>
   )
 }
@@ -161,6 +200,10 @@ export function SidebarExplorerBody(props: SidebarExplorerBodyProps) {
     onOpenEditTags: props.openEditTagsDialog,
     onOpenRename: props.openRenameDialog,
     onOpenDelete: props.openDeleteDialog,
+  })
+  const folderContextMenu = useSidebarFolderContextMenu({
+    onOpenRename: props.openRenameFolderDialog,
+    onOpenDelete: props.openDeleteFolderDialog,
   })
   return (
     <>
@@ -176,6 +219,7 @@ export function SidebarExplorerBody(props: SidebarExplorerBodyProps) {
         filterQuery={props.filterQuery}
         onSelectFile={props.onSelectFile}
         onFileContextMenu={fileContextMenu.handleFileContextMenu}
+        onFolderContextMenu={folderContextMenu.handleFolderContextMenu}
       />
       <SidebarExplorerDialogs
         loadingProject={props.loadingProject}
@@ -198,6 +242,13 @@ export function SidebarExplorerBody(props: SidebarExplorerBodyProps) {
         confirmFileActionDialog={props.confirmFileActionDialog}
         closeFileActionDialog={props.closeFileActionDialog}
         fileContextMenu={fileContextMenu}
+        folderContextMenu={folderContextMenu}
+        folderActionMode={props.folderActionMode}
+        folderActionTargetPath={props.folderActionTargetPath}
+        folderRenameValue={props.folderRenameValue}
+        onFolderRenameValueChange={props.onFolderRenameValueChange}
+        confirmFolderActionDialog={props.confirmFolderActionDialog}
+        closeFolderActionDialog={props.closeFolderActionDialog}
       />
     </>
   )

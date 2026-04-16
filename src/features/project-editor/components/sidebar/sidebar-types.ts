@@ -53,6 +53,8 @@ export interface SidebarFileActions {
   onCreateArticle: (input: SidebarCreateInput) => void
   onCreateCategory: (input: SidebarCreateInput) => void
   onRenameFile: (path: string, newName: string) => void
+  onRenameFolder: (path: string, newName: string) => void
+  onDeleteFolder: (path: string) => void
   onDeleteFile: (path: string) => void
   onEditFileTags: (path: string, tags: string[]) => void
 }
