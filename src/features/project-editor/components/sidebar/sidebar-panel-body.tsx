@@ -8,6 +8,7 @@ import type {
   SidebarProjectContextProps,
   SidebarFileActions,
   SidebarSelectionProps,
+  SidebarSpellcheckProps,
   SidebarThemeProps,
   SidebarWorkspacePrefsProps,
 } from './sidebar-types'
@@ -27,6 +28,12 @@ export interface SidebarPanelBodyProps {
   themePreference: SidebarThemeProps['themePreference']
   resolvedTheme: SidebarThemeProps['resolvedTheme']
   onThemePreferenceChange: SidebarThemeProps['onThemePreferenceChange']
+  spellcheckEnabled: SidebarSpellcheckProps['spellcheckEnabled']
+  spellcheckLanguage: SidebarSpellcheckProps['spellcheckLanguage']
+  spellcheckLanguageOptions: SidebarSpellcheckProps['spellcheckLanguageOptions']
+  spellcheckLanguageSelectionSupported: SidebarSpellcheckProps['spellcheckLanguageSelectionSupported']
+  onSpellcheckEnabledChange: SidebarSpellcheckProps['onSpellcheckEnabledChange']
+  onSpellcheckLanguageChange: SidebarSpellcheckProps['onSpellcheckLanguageChange']
   focusScope: SidebarWorkspacePrefsProps['focusScope']
   onFocusScopeChange: SidebarWorkspacePrefsProps['onFocusScopeChange']
   onCreateArticle: SidebarFileActions['onCreateArticle']
@@ -99,6 +106,12 @@ function renderSidebarSettingsContent({
   themePreference,
   resolvedTheme,
   onThemePreferenceChange,
+  spellcheckEnabled,
+  spellcheckLanguage,
+  spellcheckLanguageOptions,
+  spellcheckLanguageSelectionSupported,
+  onSpellcheckEnabledChange,
+  onSpellcheckLanguageChange,
   focusScope,
   onFocusScopeChange,
 }: SidebarPanelBodyProps) {
@@ -109,6 +122,12 @@ function renderSidebarSettingsContent({
       themePreference={themePreference}
       resolvedTheme={resolvedTheme}
       onThemePreferenceChange={onThemePreferenceChange}
+      spellcheckEnabled={spellcheckEnabled}
+      spellcheckLanguage={spellcheckLanguage}
+      spellcheckLanguageOptions={spellcheckLanguageOptions}
+      spellcheckLanguageSelectionSupported={spellcheckLanguageSelectionSupported}
+      onSpellcheckEnabledChange={onSpellcheckEnabledChange}
+      onSpellcheckLanguageChange={onSpellcheckLanguageChange}
       focusScope={focusScope}
       onFocusScopeChange={onFocusScopeChange}
     />

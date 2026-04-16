@@ -36,6 +36,7 @@ import {
   handleTagGetIndex,
   handleTagResolve,
 } from './ipc/handlers/index.js'
+import { registerSpellcheckHandler } from './ipc/spellcheck.js'
 
 export { buildPingResponse, shutdownIpcServices }
 
@@ -158,6 +159,7 @@ export function registerIpcHandlers(ipcMain: IpcMain, getMainWindow: () => Brows
   configureMainWindowResolver(getMainWindow)
   registerCoreHandlers(ipcMain)
   registerFullscreenHandler(ipcMain, getMainWindow)
+  registerSpellcheckHandler(ipcMain, getMainWindow)
   registerAiHandlers(ipcMain)
   registerTagHandlers(ipcMain)
 }

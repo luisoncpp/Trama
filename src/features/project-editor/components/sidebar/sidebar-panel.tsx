@@ -33,6 +33,12 @@ function buildSidebarPanelContentProps(props: SidebarPanelProps) {
     themePreference: props.themePreference,
     resolvedTheme: props.resolvedTheme,
     onThemePreferenceChange: props.onThemePreferenceChange,
+    spellcheckEnabled: props.spellcheckEnabled,
+    spellcheckLanguage: props.spellcheckLanguage,
+    spellcheckLanguageOptions: props.spellcheckLanguageOptions,
+    spellcheckLanguageSelectionSupported: props.spellcheckLanguageSelectionSupported,
+    onSpellcheckEnabledChange: props.onSpellcheckEnabledChange,
+    onSpellcheckLanguageChange: props.onSpellcheckLanguageChange,
     focusScope: props.focusScope,
     onFocusScopeChange: props.onFocusScopeChange,
   }
@@ -45,9 +51,8 @@ function useSidebarPanelRenderState(props: SidebarPanelProps) {
   return { effectiveCollapsed, sectionState }
 }
 
-export function SidebarPanel(props: SidebarPanelProps) {
-  const { effectiveCollapsed, sectionState } = useSidebarPanelRenderState(props)
-  const bodyProps = buildSidebarPanelBodyProps({
+function buildSidebarBodyProps(props: SidebarPanelProps, effectiveCollapsed: boolean, sectionState: ReturnType<typeof useSidebarContentSection>) {
+  return buildSidebarPanelBodyProps({
     effectiveCollapsed,
     sidebarActiveSection: props.sidebarActiveSection,
     sectionConfig: sectionState.sectionConfig,
@@ -70,10 +75,21 @@ export function SidebarPanel(props: SidebarPanelProps) {
     themePreference: props.themePreference,
     resolvedTheme: props.resolvedTheme,
     onThemePreferenceChange: props.onThemePreferenceChange,
+    spellcheckEnabled: props.spellcheckEnabled,
+    spellcheckLanguage: props.spellcheckLanguage,
+    spellcheckLanguageOptions: props.spellcheckLanguageOptions,
+    spellcheckLanguageSelectionSupported: props.spellcheckLanguageSelectionSupported,
+    onSpellcheckEnabledChange: props.onSpellcheckEnabledChange,
+    onSpellcheckLanguageChange: props.onSpellcheckLanguageChange,
     focusScope: props.focusScope,
     onFocusScopeChange: props.onFocusScopeChange,
     contentProps: buildSidebarPanelContentProps(props),
   })
+}
+
+export function SidebarPanel(props: SidebarPanelProps) {
+  const { effectiveCollapsed, sectionState } = useSidebarPanelRenderState(props)
+  const bodyProps = buildSidebarBodyProps(props, effectiveCollapsed, sectionState)
 
   return (
     <aside

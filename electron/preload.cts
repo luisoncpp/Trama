@@ -30,9 +30,11 @@ import {
   type RenameDocumentResponse,
   type SaveDocumentRequest,
   type SaveDocumentResponse,
+  type SetSpellcheckSettingsRequest,
   type SetFullscreenRequest,
   type SetFullscreenResponse,
   type SelectProjectFolderResponse,
+  type SpellcheckSettingsResponse,
 } from '../src/shared/ipc'
 import { type TagGetIndexResponse, type TagResolveRequest, type TagResolveResponse, tagGetIndexResponseSchema, tagResolveRequestSchema } from '../src/shared/ipc-tag'
 
@@ -77,6 +79,12 @@ const tramaApi = {
   },
   setFullscreen(payload: SetFullscreenRequest): Promise<IpcEnvelope<SetFullscreenResponse>> {
     return ipcRenderer.invoke(IPC_CHANNELS.setFullscreen, payload)
+  },
+  getSpellcheckSettings(): Promise<IpcEnvelope<SpellcheckSettingsResponse>> {
+    return ipcRenderer.invoke(IPC_CHANNELS.getSpellcheckSettings)
+  },
+  setSpellcheckSettings(payload: SetSpellcheckSettingsRequest): Promise<IpcEnvelope<SpellcheckSettingsResponse>> {
+    return ipcRenderer.invoke(IPC_CHANNELS.setSpellcheckSettings, payload)
   },
   onExternalFileEvent(callback: (event: ExternalFileEvent) => void): () => void {
     const listener = (_event: unknown, payload: ExternalFileEvent) => {

@@ -92,6 +92,45 @@ describe('RichMarkdownEditor', () => {
     expect(hostDiv).toBeDefined()
   })
 
+  it('sincroniza el atributo spellcheck del editor con la prop', async () => {
+    function TestHarness() {
+      const [spellcheckEnabled, setSpellcheckEnabled] = useState(true)
+
+      return h(Fragment, null, [
+        h(RichMarkdownEditor, buildEditorProps({
+          documentId: 'spellcheck-doc',
+          value: 'palabra inventadaa',
+          spellcheckEnabled,
+        })),
+        h('button', {
+          id: 'toggle-spellcheck',
+          onClick: () => setSpellcheckEnabled((value) => !value),
+          textContent: 'Toggle Spellcheck',
+        }),
+      ])
+    }
+
+    act(() => {
+      render(h(TestHarness, {}), container)
+    })
+
+    await sleep(80)
+
+    const editorRoot = container.querySelector('.ql-editor') as HTMLElement
+    expect(editorRoot.getAttribute('spellcheck')).toBe('true')
+    expect(editorRoot.spellcheck).toBe(true)
+
+    const button = container.querySelector('#toggle-spellcheck') as HTMLButtonElement
+    act(() => {
+      button.click()
+    })
+
+    await sleep(80)
+
+    expect(editorRoot.getAttribute('spellcheck')).toBe('false')
+    expect(editorRoot.spellcheck).toBe(false)
+  })
+
   it('responde a cambios en el prop documentId recreando editor', async () => {
     let recreationCount = 0
 

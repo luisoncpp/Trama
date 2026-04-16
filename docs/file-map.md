@@ -36,6 +36,8 @@ Mandatory doc navigation for new chats:
   - Startup smoke hooks.
 - `electron/ipc.ts`
   - Thin IPC registration/orchestration.
+- `electron/ipc/spellcheck.ts`
+  - Spellcheck IPC handlers: reads and applies Electron session spellchecker settings for renderer settings UI, including normalized responses used by optimistic renderer updates.
 - `electron/ipc-runtime.ts`
   - Active project/index runtime state + watcher lifecycle.
 - `electron/ipc-errors.ts`
@@ -104,6 +106,8 @@ Mandatory doc navigation for new chats:
 
 - `src/app.tsx`
   - Top-level app composition.
+- `src/spellcheck/use-spellcheck-settings.ts`
+  - Renderer hook for spellcheck preferences: boot-time sync against Electron session, local persistence, enable/disable, language updates, and optimistic UI updates with rollback on IPC failure.
 - `src/features/project-editor/use-project-editor.ts`
   - Main feature hook (state + effects + action integration).
 - `src/features/project-editor/project-editor-view.tsx`
@@ -272,7 +276,7 @@ Mandatory doc navigation for new chats:
 - `src/features/project-editor/components/sidebar/sidebar-footer-actions.tsx`
   - Create buttons (`+Article`, `+Category`).
 - `src/features/project-editor/components/sidebar/sidebar-settings-content.tsx`
-  - Sidebar settings panel (width slider).
+  - Sidebar settings panel (width slider, theme/focus controls, and spellcheck settings UI).
 - `src/features/project-editor/components/sidebar/sidebar-transfer-content.tsx`
   - Transfer section composition: separate `Project interchange` (AI import/export) and `Book export` blocks with format selector + export trigger.
 
@@ -309,6 +313,7 @@ Core and regression suites:
 - `tests/sidebar-tree.test.ts`
 - `tests/sidebar-filter.test.ts`
 - `tests/sidebar-panels.test.ts`
+- `tests/spellcheck-settings.test.ts`
 - `tests/sidebar-scroll-regression.test.ts`
 - `tests/workspace-keyboard-shortcuts.test.ts`
 - `tests/frontmatter-parser.test.ts`

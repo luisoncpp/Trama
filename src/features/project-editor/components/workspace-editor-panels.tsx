@@ -5,6 +5,7 @@ import { useTagIndex } from '../use-tag-index'
 
 interface LayoutControlsProps {
   model: ProjectEditorModel
+  spellcheckEnabled: boolean
 }
 
 function clampRatio(value: number): number {
@@ -23,12 +24,13 @@ function toPaneTitle(path: string | null): string {
 
 interface PaneEditorProps {
   model: ProjectEditorModel
+  spellcheckEnabled: boolean
   pane: 'primary' | 'secondary'
   tagIndex: Record<string, string> | null
   onTagClick: (filePath: string) => void
 }
 
-function PaneEditor({ model, pane, tagIndex, onTagClick }: PaneEditorProps) {
+function PaneEditor({ model, spellcheckEnabled, pane, tagIndex, onTagClick }: PaneEditorProps) {
   const { state, actions } = model
   const paneState = pane === 'secondary' ? state.secondaryPane : state.primaryPane
   const isActive = state.workspaceLayout.activePane === pane
@@ -63,6 +65,7 @@ function PaneEditor({ model, pane, tagIndex, onTagClick }: PaneEditorProps) {
           isDirty={paneState.isDirty}
           loadingDocument={state.loadingDocument && isActive}
           editorValue={paneState.content}
+          spellcheckEnabled={spellcheckEnabled}
           onSaveNow={onPaneSaveNow}
           onEditorChange={onPaneEditorChange}
           focusModeEnabled={state.workspaceLayout.focusModeEnabled}
@@ -78,11 +81,12 @@ function PaneEditor({ model, pane, tagIndex, onTagClick }: PaneEditorProps) {
 
 interface ActiveEditorPanelProps {
   model: ProjectEditorModel
+  spellcheckEnabled: boolean
   tagIndex: Record<string, string> | null
   onTagClick: (filePath: string) => void
 }
 
-function ActiveEditorPanel({ model, tagIndex, onTagClick }: ActiveEditorPanelProps) {
+function ActiveEditorPanel({ model, spellcheckEnabled, tagIndex, onTagClick }: ActiveEditorPanelProps) {
   const { state, actions } = model
 
   return (
@@ -92,6 +96,7 @@ function ActiveEditorPanel({ model, tagIndex, onTagClick }: ActiveEditorPanelPro
       isDirty={state.isDirty}
       loadingDocument={state.loadingDocument}
       editorValue={state.editorValue}
+      spellcheckEnabled={spellcheckEnabled}
       onSaveNow={actions.saveNow}
       onEditorChange={actions.updateEditorValue}
       focusModeEnabled={state.workspaceLayout.focusModeEnabled}
@@ -104,11 +109,12 @@ function ActiveEditorPanel({ model, tagIndex, onTagClick }: ActiveEditorPanelPro
 
 interface WorkspaceSplitEditorPanelsProps {
   model: ProjectEditorModel
+  spellcheckEnabled: boolean
   tagIndex: Record<string, string> | null
   onTagClick: (filePath: string) => void
 }
 
-function WorkspaceSplitEditorPanels({ model, tagIndex, onTagClick }: WorkspaceSplitEditorPanelsProps) {
+function WorkspaceSplitEditorPanels({ model, spellcheckEnabled, tagIndex, onTagClick }: WorkspaceSplitEditorPanelsProps) {
   const { state, actions } = model
   const splitRef = useRef<HTMLDivElement | null>(null)
 
@@ -141,7 +147,7 @@ function WorkspaceSplitEditorPanels({ model, tagIndex, onTagClick }: WorkspaceSp
 
   return (
     <div class="workspace-split" ref={splitRef} style={{ '--split-ratio': `${Math.round(state.workspaceLayout.ratio * 100)}%` }}>
-      <PaneEditor model={model} pane="primary" tagIndex={tagIndex} onTagClick={onTagClick} />
+      <PaneEditor model={model} spellcheckEnabled={spellcheckEnabled} pane="primary" tagIndex={tagIndex} onTagClick={onTagClick} />
       <div
         class="workspace-split-divider"
         role="separator"
@@ -152,22 +158,22 @@ function WorkspaceSplitEditorPanels({ model, tagIndex, onTagClick }: WorkspaceSp
           startResizeDrag(event.clientX)
         }}
       />
-      <PaneEditor model={model} pane="secondary" tagIndex={tagIndex} onTagClick={onTagClick} />
+      <PaneEditor model={model} spellcheckEnabled={spellcheckEnabled} pane="secondary" tagIndex={tagIndex} onTagClick={onTagClick} />
     </div>
   )
 }
 
-export function WorkspaceEditorPanels({ model }: LayoutControlsProps) {
+export function WorkspaceEditorPanels({ model, spellcheckEnabled }: LayoutControlsProps) {
   const { tagIndex } = useTagIndex(model.state.rootPath)
   const handleTagClick = (filePath: string) => {
     model.actions.openFileInPane(filePath, 'secondary')
   }
 
   return model.state.workspaceLayout.mode === 'split'
-    ? <WorkspaceSplitEditorPanels model={model} tagIndex={tagIndex} onTagClick={handleTagClick} />
-    : <ActiveEditorPanel model={model} tagIndex={tagIndex} onTagClick={handleTagClick} />
+    ? <WorkspaceSplitEditorPanels model={model} spellcheckEnabled={spellcheckEnabled} tagIndex={tagIndex} onTagClick={handleTagClick} />
+    : <ActiveEditorPanel model={model} spellcheckEnabled={spellcheckEnabled} tagIndex={tagIndex} onTagClick={handleTagClick} />
 }
 
-export function WorkspaceLayoutPanel({ model }: LayoutControlsProps) {
-  return <WorkspaceEditorPanels model={model} />
+export function WorkspaceLayoutPanel({ model, spellcheckEnabled }: LayoutControlsProps) {
+  return <WorkspaceEditorPanels model={model} spellcheckEnabled={spellcheckEnabled} />
 }

@@ -39,6 +39,12 @@ function buildPanelProps(
     themePreference: 'dark',
     resolvedTheme: 'dark',
     onThemePreferenceChange: () => undefined,
+    spellcheckEnabled: true,
+    spellcheckLanguage: 'en-US',
+    spellcheckLanguageOptions: ['en-US', 'es-ES'],
+    spellcheckLanguageSelectionSupported: true,
+    onSpellcheckEnabledChange: () => undefined,
+    onSpellcheckLanguageChange: () => undefined,
     focusModeEnabled: false,
     focusScope: 'paragraph',
     onFocusScopeChange: () => undefined,
@@ -516,6 +522,12 @@ describe('sidebar panels', () => {
           themePreference: 'dark',
           resolvedTheme: 'dark',
           onThemePreferenceChange: () => undefined,
+          spellcheckEnabled: true,
+          spellcheckLanguage: 'en-US',
+          spellcheckLanguageOptions: ['en-US', 'es-ES'],
+          spellcheckLanguageSelectionSupported: true,
+          onSpellcheckEnabledChange: () => undefined,
+          onSpellcheckLanguageChange: () => undefined,
           focusScope: 'paragraph',
           onFocusScopeChange: () => undefined,
         }),
@@ -545,6 +557,12 @@ describe('sidebar panels', () => {
           themePreference: 'dark',
           resolvedTheme: 'dark',
           onThemePreferenceChange,
+          spellcheckEnabled: true,
+          spellcheckLanguage: 'en-US',
+          spellcheckLanguageOptions: ['en-US', 'es-ES'],
+          spellcheckLanguageSelectionSupported: true,
+          onSpellcheckEnabledChange: () => undefined,
+          onSpellcheckLanguageChange: () => undefined,
           focusScope: 'paragraph',
           onFocusScopeChange: () => undefined,
         }),
@@ -576,6 +594,12 @@ describe('sidebar panels', () => {
           themePreference: 'dark',
           resolvedTheme: 'dark',
           onThemePreferenceChange: () => undefined,
+          spellcheckEnabled: true,
+          spellcheckLanguage: 'en-US',
+          spellcheckLanguageOptions: ['en-US', 'es-ES'],
+          spellcheckLanguageSelectionSupported: true,
+          onSpellcheckEnabledChange: () => undefined,
+          onSpellcheckLanguageChange: () => undefined,
           focusScope: 'paragraph',
           onFocusScopeChange,
         }),
@@ -583,7 +607,8 @@ describe('sidebar panels', () => {
       )
     })
 
-    const select = container.querySelector('select') as HTMLSelectElement
+    const selects = container.querySelectorAll('select')
+    const select = selects[1] as HTMLSelectElement
     expect(select).toBeTruthy()
 
     act(() => {
@@ -592,6 +617,77 @@ describe('sidebar panels', () => {
     })
 
     expect(onFocusScopeChange).toHaveBeenCalledWith('sentence')
+  })
+
+  it('updates spellcheck enabled state from settings checkbox', () => {
+    const onSpellcheckEnabledChange = vi.fn()
+
+    act(() => {
+      render(
+        h(SidebarSettingsContent, {
+          panelWidth: 320,
+          onPanelWidthChange: () => undefined,
+          themePreference: 'dark',
+          resolvedTheme: 'dark',
+          onThemePreferenceChange: () => undefined,
+          spellcheckEnabled: true,
+          spellcheckLanguage: 'en-US',
+          spellcheckLanguageOptions: ['en-US', 'es-ES'],
+          spellcheckLanguageSelectionSupported: true,
+          onSpellcheckEnabledChange,
+          onSpellcheckLanguageChange: () => undefined,
+          focusScope: 'paragraph',
+          onFocusScopeChange: () => undefined,
+        }),
+        container,
+      )
+    })
+
+    const checkbox = container.querySelector('input[type="checkbox"]') as HTMLInputElement
+    expect(checkbox).toBeTruthy()
+
+    act(() => {
+      checkbox.checked = false
+      checkbox.dispatchEvent(new Event('change', { bubbles: true }))
+    })
+
+    expect(onSpellcheckEnabledChange).toHaveBeenCalledWith(false)
+  })
+
+  it('updates spellcheck language from settings select', () => {
+    const onSpellcheckLanguageChange = vi.fn()
+
+    act(() => {
+      render(
+        h(SidebarSettingsContent, {
+          panelWidth: 320,
+          onPanelWidthChange: () => undefined,
+          themePreference: 'dark',
+          resolvedTheme: 'dark',
+          onThemePreferenceChange: () => undefined,
+          spellcheckEnabled: true,
+          spellcheckLanguage: 'en-US',
+          spellcheckLanguageOptions: ['en-US', 'es-ES'],
+          spellcheckLanguageSelectionSupported: true,
+          onSpellcheckEnabledChange: () => undefined,
+          onSpellcheckLanguageChange,
+          focusScope: 'paragraph',
+          onFocusScopeChange: () => undefined,
+        }),
+        container,
+      )
+    })
+
+    const selects = container.querySelectorAll('select')
+    const spellcheckSelect = selects[0] as HTMLSelectElement
+    expect(spellcheckSelect).toBeTruthy()
+
+    act(() => {
+      spellcheckSelect.value = 'es-ES'
+      spellcheckSelect.dispatchEvent(new Event('change', { bubbles: true }))
+    })
+
+    expect(onSpellcheckLanguageChange).toHaveBeenCalledWith('es-ES')
   })
 
   it('auto-collapses sidebar on narrow viewport', () => {

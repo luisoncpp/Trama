@@ -15,10 +15,17 @@ interface ProjectEditorViewProps {
   themePreference: ThemePreference
   resolvedTheme: ResolvedTheme
   onThemePreferenceChange: (preference: ThemePreference) => void
+  spellcheckEnabled: boolean
+  spellcheckLanguage: string | null
+  spellcheckLanguageOptions: string[]
+  spellcheckLanguageSelectionSupported: boolean
+  onSpellcheckEnabledChange: (enabled: boolean) => void
+  onSpellcheckLanguageChange: (language: string) => void
 }
 
 interface ProjectEditorMainPaneProps {
   model: ProjectEditorModel
+  spellcheckEnabled: boolean
 }
 
 function buildShellClassName(model: ProjectEditorModel): string {
@@ -32,7 +39,7 @@ function buildShellClassName(model: ProjectEditorModel): string {
   ].filter(Boolean).join(' ')
 }
 
-function ProjectEditorMainPane({ model }: ProjectEditorMainPaneProps) {
+function ProjectEditorMainPane({ model, spellcheckEnabled }: ProjectEditorMainPaneProps) {
   const { state, actions } = model
 
   return (
@@ -56,9 +63,60 @@ function ProjectEditorMainPane({ model }: ProjectEditorMainPaneProps) {
         />
       )}
 
-      <WorkspaceLayoutPanel model={model} />
+      <WorkspaceLayoutPanel model={model} spellcheckEnabled={spellcheckEnabled} />
     </div>
   )
+}
+
+function buildSidebarSectionProps(
+  model: ProjectEditorModel,
+  props: Omit<
+    ProjectEditorViewProps,
+    'model'
+  > & {
+    onImportClick: () => void
+    onBookExportClick: (format: BookExportFormat) => void
+    onExportClick: () => void
+  },
+) {
+  const { state, actions } = model
+
+  return {
+    visibleFiles: state.visibleFiles,
+    selectedPath: state.selectedPath,
+    loadingDocument: state.loadingDocument,
+    onSelectFile: actions.selectFile,
+    sidebarActiveSection: state.sidebarActiveSection,
+    sidebarPanelCollapsed: state.sidebarPanelCollapsed,
+    sidebarPanelWidth: state.sidebarPanelWidth,
+    onSelectSidebarSection: actions.setSidebarSection,
+    onToggleSidebarPanelCollapsed: actions.toggleSidebarPanelCollapsed,
+    onSidebarPanelWidthChange: actions.setSidebarPanelWidth,
+    onCreateArticle: (input: Parameters<typeof actions.createArticle>[0]) => void actions.createArticle(input),
+    onCreateCategory: (input: Parameters<typeof actions.createCategory>[0]) => void actions.createCategory(input),
+    onRenameFile: (path: string, newName: string) => void actions.renameFile({ path, newName }),
+    onDeleteFile: (path: string) => void actions.deleteFile(path),
+    onEditFileTags: (path: string, tags: string[]) => void actions.editFileTags(path, tags),
+    apiAvailable: state.apiAvailable,
+    loadingProject: state.loadingProject,
+    rootPath: state.rootPath,
+    onPickFolder: () => void actions.pickProjectFolder(),
+    onImport: props.onImportClick,
+    onExportBook: props.onBookExportClick,
+    onExport: props.onExportClick,
+    themePreference: props.themePreference,
+    resolvedTheme: props.resolvedTheme,
+    onThemePreferenceChange: props.onThemePreferenceChange,
+    spellcheckEnabled: props.spellcheckEnabled,
+    spellcheckLanguage: props.spellcheckLanguage,
+    spellcheckLanguageOptions: props.spellcheckLanguageOptions,
+    spellcheckLanguageSelectionSupported: props.spellcheckLanguageSelectionSupported,
+    onSpellcheckEnabledChange: props.onSpellcheckEnabledChange,
+    onSpellcheckLanguageChange: props.onSpellcheckLanguageChange,
+    focusModeEnabled: state.workspaceLayout.focusModeEnabled,
+    focusScope: state.workspaceLayout.focusScope,
+    onFocusScopeChange: actions.setFocusScope,
+  }
 }
 
 function SidebarSection({
@@ -66,48 +124,21 @@ function SidebarSection({
   themePreference,
   resolvedTheme,
   onThemePreferenceChange,
+  spellcheckEnabled,
+  spellcheckLanguage,
+  spellcheckLanguageOptions,
+  spellcheckLanguageSelectionSupported,
+  onSpellcheckEnabledChange,
+  onSpellcheckLanguageChange,
   onImportClick,
   onBookExportClick,
   onExportClick,
-}: Pick<ProjectEditorViewProps, 'model' | 'themePreference' | 'resolvedTheme' | 'onThemePreferenceChange'> & {
+}: Pick<ProjectEditorViewProps, 'model' | 'themePreference' | 'resolvedTheme' | 'onThemePreferenceChange' | 'spellcheckEnabled' | 'spellcheckLanguage' | 'spellcheckLanguageOptions' | 'spellcheckLanguageSelectionSupported' | 'onSpellcheckEnabledChange' | 'onSpellcheckLanguageChange'> & {
   onImportClick: () => void
   onBookExportClick: (format: BookExportFormat) => void
   onExportClick: () => void
 }) {
-  const { state, actions } = model
-
-  return (
-    <SidebarPanel
-      visibleFiles={state.visibleFiles}
-      selectedPath={state.selectedPath}
-      loadingDocument={state.loadingDocument}
-      onSelectFile={actions.selectFile}
-      sidebarActiveSection={state.sidebarActiveSection}
-      sidebarPanelCollapsed={state.sidebarPanelCollapsed}
-      sidebarPanelWidth={state.sidebarPanelWidth}
-      onSelectSidebarSection={actions.setSidebarSection}
-      onToggleSidebarPanelCollapsed={actions.toggleSidebarPanelCollapsed}
-      onSidebarPanelWidthChange={actions.setSidebarPanelWidth}
-      onCreateArticle={(input) => void actions.createArticle(input)}
-      onCreateCategory={(input) => void actions.createCategory(input)}
-      onRenameFile={(path, newName) => void actions.renameFile({ path, newName })}
-      onDeleteFile={(path) => void actions.deleteFile(path)}
-      onEditFileTags={(path, tags) => void actions.editFileTags(path, tags)}
-      apiAvailable={state.apiAvailable}
-      loadingProject={state.loadingProject}
-      rootPath={state.rootPath}
-      onPickFolder={() => void actions.pickProjectFolder()}
-      onImport={onImportClick}
-      onExportBook={onBookExportClick}
-      onExport={onExportClick}
-      themePreference={themePreference}
-      resolvedTheme={resolvedTheme}
-      onThemePreferenceChange={onThemePreferenceChange}
-      focusModeEnabled={state.workspaceLayout.focusModeEnabled}
-      focusScope={state.workspaceLayout.focusScope}
-      onFocusScopeChange={actions.setFocusScope}
-    />
-  )
+  return <SidebarPanel {...buildSidebarSectionProps(model, { themePreference, resolvedTheme, onThemePreferenceChange, spellcheckEnabled, spellcheckLanguage, spellcheckLanguageOptions, spellcheckLanguageSelectionSupported, onSpellcheckEnabledChange, onSpellcheckLanguageChange, onImportClick, onBookExportClick, onExportClick })} />
 }
 
 export function ProjectEditorView({
@@ -115,6 +146,12 @@ export function ProjectEditorView({
   themePreference,
   resolvedTheme,
   onThemePreferenceChange,
+  spellcheckEnabled,
+  spellcheckLanguage,
+  spellcheckLanguageOptions,
+  spellcheckLanguageSelectionSupported,
+  onSpellcheckEnabledChange,
+  onSpellcheckLanguageChange,
 }: ProjectEditorViewProps) {
   const { state } = model
   const aiImport = useAiImport(state.rootPath)
@@ -133,6 +170,12 @@ export function ProjectEditorView({
             themePreference={themePreference}
             resolvedTheme={resolvedTheme}
             onThemePreferenceChange={onThemePreferenceChange}
+            spellcheckEnabled={spellcheckEnabled}
+            spellcheckLanguage={spellcheckLanguage}
+            spellcheckLanguageOptions={spellcheckLanguageOptions}
+            spellcheckLanguageSelectionSupported={spellcheckLanguageSelectionSupported}
+            onSpellcheckEnabledChange={onSpellcheckEnabledChange}
+            onSpellcheckLanguageChange={onSpellcheckLanguageChange}
             onImportClick={() => aiImport.setOpen(true)}
             onBookExportClick={(format) => {
               bookExport.setFormat(format)
@@ -141,7 +184,7 @@ export function ProjectEditorView({
             }}
             onExportClick={() => aiExport.setOpen(true)}
           />
-          <ProjectEditorMainPane model={model} />
+          <ProjectEditorMainPane model={model} spellcheckEnabled={spellcheckEnabled} />
         </section>
       </div>
       <ProjectEditorDialogs rootPath={state.rootPath} visibleFiles={state.visibleFiles} aiImport={aiImport} bookExport={bookExport} aiExport={aiExport} />

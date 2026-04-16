@@ -18,6 +18,7 @@ interface UseRichEditorLifecycleParams {
   documentId: string | null
   value: string
   disabled: boolean
+  spellcheckEnabled: boolean
   hostRef: { current: HTMLDivElement | null }
   editorRef: { current: Quill | null }
   onChangeRef: { current: (value: string) => void }
@@ -57,6 +58,11 @@ function createQuillEditor(host: HTMLDivElement): Quill {
   return editor
 }
 
+function syncEditorSpellcheck(editor: Quill, spellcheckEnabled: boolean): void {
+  editor.root.spellcheck = spellcheckEnabled
+  editor.root.setAttribute('spellcheck', spellcheckEnabled ? 'true' : 'false')
+}
+
 function applyMarkdownToEditor(editor: Quill, markdown: string, source: QuillChangeSource = 'api'): void {
   const { markdownWithArtifacts } = renderDirectiveArtifactsToMarkdown(markdown)
   editor.setContents([], source)
@@ -94,6 +100,7 @@ function registerEditorTextChangeHandler({
 function useInitializeEditor({
   documentId,
   value,
+  spellcheckEnabled,
   hostRef,
   editorRef,
   isApplyingExternalValueRef,
@@ -107,6 +114,7 @@ function useInitializeEditor({
 
     const editor = createQuillEditor(host)
     editorRef.current = editor
+    syncEditorSpellcheck(editor, spellcheckEnabled)
     applyMarkdownToEditor(editor, value, 'silent')
     lastEditorValueRef.current = normalizeMarkdown(value)
     registerEditorTextChangeHandler({
@@ -123,7 +131,7 @@ function useInitializeEditor({
       window.removeEventListener(WORKSPACE_CONTEXT_MENU_EVENT, workspaceHandler as EventListener)
       editorRef.current = null
     }
-  }, [documentId, hostRef, editorRef, isApplyingExternalValueRef, lastEditorValueRef, onChangeRef, turndownRef])
+  }, [documentId, editorRef, hostRef, isApplyingExternalValueRef, lastEditorValueRef, onChangeRef, spellcheckEnabled, turndownRef])
 }
 
 function useSyncExternalValue({
@@ -167,13 +175,26 @@ function useToggleDisabled({
   }, [disabled, documentId, editorRef])
 }
 
+function useSyncSpellcheckEnabled({
+  documentId,
+  spellcheckEnabled,
+  editorRef,
+}: Pick<UseRichEditorLifecycleParams, 'documentId' | 'spellcheckEnabled' | 'editorRef'>): void {
+  useEffect(/* syncEditorSpellcheckEnabled */ () => {
+    const editor = editorRef.current
+    if (!editor) return
+    syncEditorSpellcheck(editor, spellcheckEnabled)
+  }, [documentId, editorRef, spellcheckEnabled] /*Inputs for syncEditorSpellcheckEnabled*/)
+}
+
 export function useRichEditorLifecycle(params: UseRichEditorLifecycleParams): void {
-  const { documentId, value, disabled, hostRef, editorRef, onChangeRef, lastEditorValueRef, isApplyingExternalValueRef, turndownRef } =
+  const { documentId, value, disabled, spellcheckEnabled, hostRef, editorRef, onChangeRef, lastEditorValueRef, isApplyingExternalValueRef, turndownRef } =
     params
 
   useInitializeEditor({
     documentId,
     value,
+    spellcheckEnabled,
     hostRef,
     editorRef,
     isApplyingExternalValueRef,
@@ -192,6 +213,12 @@ export function useRichEditorLifecycle(params: UseRichEditorLifecycleParams): vo
   useToggleDisabled({
     documentId,
     disabled,
+    editorRef,
+  })
+
+  useSyncSpellcheckEnabled({
+    documentId,
+    spellcheckEnabled,
     editorRef,
   })
 }

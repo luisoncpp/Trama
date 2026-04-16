@@ -15,6 +15,7 @@ interface RichMarkdownEditorProps {
   documentId: string | null
   value: string
   disabled: boolean
+  spellcheckEnabled?: boolean
   onChange: (value: string) => void
   saveDisabled: boolean
   saveLabel: string
@@ -79,14 +80,14 @@ function useTagClickHandler(
 }
 
 export function RichMarkdownEditor(props: RichMarkdownEditorProps) {
-  const { documentId, value, disabled, onChange, saveDisabled, saveLabel, onSaveNow, syncState, syncStateLabel, focusModeEnabled = false, focusScope = 'paragraph', tagIndex, onTagClick } = props
+  const { documentId, value, disabled, spellcheckEnabled = true, onChange, saveDisabled, saveLabel, onSaveNow, syncState, syncStateLabel, focusModeEnabled = false, focusScope = 'paragraph', tagIndex, onTagClick } = props
   const { shellRef, hostRef, editorRef, onChangeRef, lastEditorValueRef, isApplyingExternalValueRef, turndownRef } = useRichEditorRefs(value, onChange)
   const ctrlPressed = useCtrlKeyState()
   const safeTagIndex = tagIndex ?? null
   const tagMatches = useTagOverlay({ editorRef, tagIndex: safeTagIndex, ctrlPressed })
   const handleEditorMouseDown = useTagClickHandler(editorRef, safeTagIndex, onTagClick)
 
-  useRichEditorLifecycle({ documentId, value, disabled, hostRef, editorRef, onChangeRef, isApplyingExternalValueRef, lastEditorValueRef, turndownRef })
+  useRichEditorLifecycle({ documentId, value, disabled, spellcheckEnabled, hostRef, editorRef, onChangeRef, isApplyingExternalValueRef, lastEditorValueRef, turndownRef })
   useSyncToolbarControls({ documentId, hostRef, editorRef, saveDisabled, saveLabel, onSaveNow, syncState, syncStateLabel })
   useFocusModeScopeEffect(editorRef, hostRef, focusModeEnabled, focusScope)
 

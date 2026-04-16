@@ -6,7 +6,7 @@ import { useProjectEditor } from '../src/features/project-editor/use-project-edi
 import type { ProjectEditorModel } from '../src/features/project-editor/project-editor-types'
 
 type TramaApiMock = {
-  openProject: () => Promise<{
+  openProject: (payload: { rootPath: string }) => Promise<{
     ok: true
     data: {
       rootPath: string
@@ -17,7 +17,7 @@ type TramaApiMock = {
   }>
   selectProjectFolder: () => Promise<{ ok: true; data: { rootPath: string | null } }>
   readDocument: (payload: { path: string }) => Promise<{ ok: true; data: { path: string; content: string; meta: Record<string, unknown> } }>
-  saveDocument: () => Promise<{ ok: true; data: { path: string; version: string } }>
+  saveDocument: (payload: { path: string; content: string; meta: Record<string, unknown> }) => Promise<{ ok: true; data: { path: string; version: string } }>
   createDocument: (payload: { path: string; initialContent?: string }) => Promise<{
     ok: true
     data: { path: string; createdAt: string }
@@ -45,7 +45,7 @@ type TramaApiMock = {
 
 function setupTramaApiMock(overrides?: Partial<TramaApiMock>) {
   const baseApi: TramaApiMock = {
-    openProject: async () => ({
+    openProject: async (_payload) => ({
       ok: true,
       data: {
         rootPath: 'C:/tmp/project',
@@ -56,7 +56,7 @@ function setupTramaApiMock(overrides?: Partial<TramaApiMock>) {
     }),
     selectProjectFolder: async () => ({ ok: true, data: { rootPath: null } }),
     readDocument: async () => ({ ok: true, data: { path: 'docs/a.md', content: '# A', meta: {} } }),
-    saveDocument: async () => ({ ok: true, data: { path: 'docs/a.md', version: new Date().toISOString() } }),
+    saveDocument: async (payload) => ({ ok: true, data: { path: payload.path, version: new Date().toISOString() } }),
     createDocument: async (payload) => ({
       ok: true,
       data: {

@@ -8,7 +8,7 @@ import type { ProjectEditorModel } from '../src/features/project-editor/project-
 
 type TramaApiMock = {
   ping: () => Promise<{ ok: true; data: { echo: string; timestamp: string } }>
-  openProject: () => Promise<{
+  openProject: (payload: { rootPath: string }) => Promise<{
     ok: true
     data: {
       rootPath: string
@@ -18,8 +18,8 @@ type TramaApiMock = {
     }
   }>
   selectProjectFolder: () => Promise<{ ok: true; data: { rootPath: string | null } }>
-  readDocument: () => Promise<{ ok: true; data: { path: string; content: string; meta: Record<string, unknown> } }>
-  saveDocument: () => Promise<{ ok: true; data: { path: string; version: string } }>
+  readDocument: (payload: { path: string }) => Promise<{ ok: true; data: { path: string; content: string; meta: Record<string, unknown> } }>
+  saveDocument: (payload: { path: string; content: string; meta: Record<string, unknown> }) => Promise<{ ok: true; data: { path: string; version: string } }>
   createDocument: (payload: { path: string; initialContent?: string }) => Promise<{
     ok: true
     data: { path: string; createdAt: string }
@@ -48,7 +48,7 @@ type TramaApiMock = {
 function setupTramaApiMock(overrides?: Partial<TramaApiMock>) {
   const baseApi: TramaApiMock = {
     ping: async () => ({ ok: true, data: { echo: 'ok', timestamp: new Date().toISOString() } }),
-    openProject: async () => ({
+    openProject: async (_payload) => ({
       ok: true,
       data: {
         rootPath: 'C:/tmp/project',
@@ -58,8 +58,8 @@ function setupTramaApiMock(overrides?: Partial<TramaApiMock>) {
       },
     }),
     selectProjectFolder: async () => ({ ok: true, data: { rootPath: null } }),
-    readDocument: async () => ({ ok: true, data: { path: 'docs/a.md', content: '# A', meta: {} } }),
-    saveDocument: async () => ({ ok: true, data: { path: 'docs/a.md', version: new Date().toISOString() } }),
+    readDocument: async (payload) => ({ ok: true, data: { path: payload.path, content: '# A', meta: {} } }),
+    saveDocument: async (payload) => ({ ok: true, data: { path: payload.path, version: new Date().toISOString() } }),
     createDocument: async (payload) => ({
       ok: true,
       data: {
@@ -222,7 +222,7 @@ describe('useProjectEditor', () => {
     const createDocumentCalls: string[] = []
     setupTramaApiMock({
       selectProjectFolder: async () => ({ ok: true, data: { rootPath: 'C:/tmp/project' } }),
-      openProject: async () => ({
+      openProject: async (_payload) => ({
         ok: true,
         data: {
           rootPath: 'C:/tmp/project',
@@ -265,7 +265,7 @@ describe('useProjectEditor', () => {
     window.localStorage.removeItem(WORKSPACE_LAYOUT_STORAGE_KEY)
     setupTramaApiMock({
       selectProjectFolder: async () => ({ ok: true, data: { rootPath: 'C:/tmp/project' } }),
-      openProject: async () => ({
+      openProject: async (_payload) => ({
         ok: true,
         data: {
           rootPath: 'C:/tmp/project',
@@ -274,7 +274,7 @@ describe('useProjectEditor', () => {
           index: { version: '1.0.0', corkboardOrder: {}, cache: {} },
         },
       }),
-      readDocument: async () => ({ ok: true, data: { path: 'docs/a.md', content: '# A', meta: {} } }),
+      readDocument: async (payload) => ({ ok: true, data: { path: payload.path, content: '# A', meta: {} } }),
     })
 
     let model: ProjectEditorModel | undefined
@@ -316,7 +316,7 @@ describe('useProjectEditor', () => {
     const saveDocumentCalls: Array<{ path: string; content: string }> = []
     setupTramaApiMock({
       selectProjectFolder: async () => ({ ok: true, data: { rootPath: 'C:/tmp/project' } }),
-      openProject: async () => ({
+      openProject: async (_payload) => ({
         ok: true,
         data: {
           rootPath: 'C:/tmp/project',
@@ -325,7 +325,7 @@ describe('useProjectEditor', () => {
           index: { version: '1.0.0', corkboardOrder: {}, cache: {} },
         },
       }),
-      readDocument: async () => ({ ok: true, data: { path: 'docs/a.md', content: '# A', meta: {} } }),
+      readDocument: async (payload) => ({ ok: true, data: { path: payload.path, content: '# A', meta: {} } }),
       saveDocument: async (payload: { path: string; content: string }) => {
         saveDocumentCalls.push({ path: payload.path, content: payload.content })
         return { ok: true, data: { path: payload.path, version: new Date().toISOString() } }
@@ -367,7 +367,7 @@ describe('useProjectEditor', () => {
     window.localStorage.removeItem(WORKSPACE_LAYOUT_STORAGE_KEY)
     setupTramaApiMock({
       selectProjectFolder: async () => ({ ok: true, data: { rootPath: 'C:/tmp/project' } }),
-      openProject: async () => ({
+      openProject: async (_payload) => ({
         ok: true,
         data: {
           rootPath: 'C:/tmp/project',
@@ -376,7 +376,7 @@ describe('useProjectEditor', () => {
           index: { version: '1.0.0', corkboardOrder: {}, cache: {} },
         },
       }),
-      readDocument: async () => ({ ok: true, data: { path: 'docs/a.md', content: '# A', meta: {} } }),
+      readDocument: async (payload) => ({ ok: true, data: { path: payload.path, content: '# A', meta: {} } }),
     })
 
     let model: ProjectEditorModel | undefined

@@ -15,6 +15,8 @@ export const IPC_CHANNELS = {
   externalFileEvent: 'trama:project:external-file-event',
   setFullscreen: 'trama:window:set-fullscreen',
   fullscreenChanged: 'trama:window:fullscreen-changed',
+  getSpellcheckSettings: 'trama:window:get-spellcheck-settings',
+  setSpellcheckSettings: 'trama:window:set-spellcheck-settings',
   aiImport: 'trama:ai:import',
   aiImportPreview: 'trama:ai:import:preview',
   aiExport: 'trama:ai:export',
@@ -48,6 +50,16 @@ export const externalFileEventSchema = z.object({ path: z.string(), event: z.enu
 export const setFullscreenRequestSchema = z.object({ enabled: z.boolean() })
 export const setFullscreenResponseSchema = z.object({ enabled: z.boolean() })
 export const fullscreenChangedEventSchema = z.object({ enabled: z.boolean(), timestamp: z.string() })
+export const spellcheckSettingsResponseSchema = z.object({
+  enabled: z.boolean(),
+  selectedLanguage: z.string().nullable(),
+  availableLanguages: z.array(z.string()),
+  supportsLanguageSelection: z.boolean(),
+})
+export const setSpellcheckSettingsRequestSchema = z.object({
+  enabled: z.boolean(),
+  language: z.string().trim().min(1).nullable().optional(),
+})
 export const aiImportModeSchema = z.enum(['append', 'replace'])
 export const aiImportRequestSchema = z.object({ clipboardContent: z.string().trim().min(1), projectRoot: z.string().trim().min(1), importMode: aiImportModeSchema.default('replace') })
 export const aiImportFileSchema = z.object({ path: z.string(), content: z.string(), frontmatter: documentMetaSchema.optional(), exists: z.boolean() })
@@ -96,6 +108,8 @@ export type ExternalFileEvent = z.infer<typeof externalFileEventSchema>
 export type SetFullscreenRequest = z.infer<typeof setFullscreenRequestSchema>
 export type SetFullscreenResponse = z.infer<typeof setFullscreenResponseSchema>
 export type FullscreenChangedEvent = z.infer<typeof fullscreenChangedEventSchema>
+export type SpellcheckSettingsResponse = z.infer<typeof spellcheckSettingsResponseSchema>
+export type SetSpellcheckSettingsRequest = z.infer<typeof setSpellcheckSettingsRequestSchema>
 export type AiImportMode = z.infer<typeof aiImportModeSchema>
 export type AiImportRequest = z.infer<typeof aiImportRequestSchema>
 export type AiImportFile = z.infer<typeof aiImportFileSchema>

@@ -9,6 +9,7 @@ interface EditorPanelProps {
   isDirty: boolean
   loadingDocument: boolean
   editorValue: string
+  spellcheckEnabled: boolean
   onSaveNow: () => void
   onEditorChange: (value: string) => void
   focusModeEnabled: boolean
@@ -31,6 +32,7 @@ export function EditorPanel({
   isDirty,
   loadingDocument,
   editorValue,
+  spellcheckEnabled,
   onSaveNow,
   onEditorChange,
   focusModeEnabled,
@@ -56,6 +58,7 @@ export function EditorPanel({
           documentId={selectedPath}
           value={editorValue}
           disabled={!selectedPath || loadingDocument}
+          spellcheckEnabled={spellcheckEnabled}
           onChange={onEditorChange}
           saveDisabled={saveDisabled}
           saveLabel={saveLabel}

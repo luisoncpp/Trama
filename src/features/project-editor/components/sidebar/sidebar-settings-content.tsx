@@ -7,20 +7,19 @@ interface SidebarSettingsContentProps {
   themePreference: ThemePreference
   resolvedTheme: ResolvedTheme
   onThemePreferenceChange: (preference: ThemePreference) => void
+  spellcheckEnabled: boolean
+  spellcheckLanguage: string | null
+  spellcheckLanguageOptions: string[]
+  spellcheckLanguageSelectionSupported: boolean
+  onSpellcheckEnabledChange: (enabled: boolean) => void
+  onSpellcheckLanguageChange: (language: string) => void
   focusScope: FocusScope
   onFocusScopeChange: (scope: FocusScope) => void
 }
 
-const THEME_OPTIONS: Array<{ value: ThemePreference; label: string }> = [
-  { value: 'light', label: 'Light' },
-  { value: 'dark', label: 'Dark' },
-  { value: 'system', label: 'System' },
-]
+const THEME_OPTIONS: Array<{ value: ThemePreference; label: string }> = [{ value: 'light', label: 'Light' }, { value: 'dark', label: 'Dark' }, { value: 'system', label: 'System' }]
 
-function ThemePreferenceButtons({
-  themePreference,
-  onThemePreferenceChange,
-}: Pick<SidebarSettingsContentProps, 'themePreference' | 'onThemePreferenceChange'>) {
+function ThemePreferenceButtons({ themePreference, onThemePreferenceChange }: Pick<SidebarSettingsContentProps, 'themePreference' | 'onThemePreferenceChange'>) {
   return (
     <div class="theme-preference-group" role="radiogroup" aria-label="Theme preference">
       {THEME_OPTIONS.map((option) => (
@@ -61,6 +60,72 @@ function FocusScopeSelect({
   )
 }
 
+function SpellcheckLanguageSelect({ spellcheckEnabled, spellcheckLanguage, spellcheckLanguageOptions, onSpellcheckLanguageChange }: Pick<SidebarSettingsContentProps, 'spellcheckEnabled' | 'spellcheckLanguage' | 'spellcheckLanguageOptions' | 'onSpellcheckLanguageChange'>) {
+  return (
+    <>
+      <select
+        value={spellcheckLanguage ?? ''}
+        disabled={!spellcheckEnabled || spellcheckLanguageOptions.length === 0}
+        onChange={(event) =>
+          onSpellcheckLanguageChange((event.currentTarget as HTMLSelectElement).value)
+        }
+      >
+        {spellcheckLanguageOptions.map((languageCode) => (
+          <option key={languageCode} value={languageCode}>
+            {languageCode}
+          </option>
+        ))}
+      </select>
+      <span class="project-menu__field-note">Language used by the native spellchecker.</span>
+    </>
+  )
+}
+
+function SpellcheckControls({
+  spellcheckEnabled,
+  spellcheckLanguage,
+  spellcheckLanguageOptions,
+  spellcheckLanguageSelectionSupported,
+  onSpellcheckEnabledChange,
+  onSpellcheckLanguageChange,
+}: Pick<
+  SidebarSettingsContentProps,
+  | 'spellcheckEnabled'
+  | 'spellcheckLanguage'
+  | 'spellcheckLanguageOptions'
+  | 'spellcheckLanguageSelectionSupported'
+  | 'onSpellcheckEnabledChange'
+  | 'onSpellcheckLanguageChange'
+>) {
+  return (
+    <div class="project-menu__field">
+      <span>Spellcheck</span>
+      <label class="project-menu__checkbox">
+        <input
+          type="checkbox"
+          checked={spellcheckEnabled}
+          onChange={(event) =>
+            onSpellcheckEnabledChange((event.currentTarget as HTMLInputElement).checked)
+          }
+        />
+        <span>Enable spellcheck suggestions</span>
+      </label>
+      {spellcheckLanguageSelectionSupported ? (
+        <SpellcheckLanguageSelect
+          spellcheckEnabled={spellcheckEnabled}
+          spellcheckLanguage={spellcheckLanguage}
+          spellcheckLanguageOptions={spellcheckLanguageOptions}
+          onSpellcheckLanguageChange={onSpellcheckLanguageChange}
+        />
+      ) : (
+        <span class="project-menu__field-note">
+          Language selection is managed by the operating system on this platform.
+        </span>
+      )}
+    </div>
+  )
+}
+
 function PanelWidthControl({
   panelWidth,
   onPanelWidthChange,
@@ -88,6 +153,12 @@ export function SidebarSettingsContent({
   themePreference,
   resolvedTheme,
   onThemePreferenceChange,
+  spellcheckEnabled,
+  spellcheckLanguage,
+  spellcheckLanguageOptions,
+  spellcheckLanguageSelectionSupported,
+  onSpellcheckEnabledChange,
+  onSpellcheckLanguageChange,
   focusScope,
   onFocusScopeChange,
 }: SidebarSettingsContentProps) {
@@ -110,6 +181,14 @@ export function SidebarSettingsContent({
               Resolved now: {resolvedTheme === 'dark' ? 'Dark' : 'Light'}
             </span>
           </label>
+          <SpellcheckControls
+            spellcheckEnabled={spellcheckEnabled}
+            spellcheckLanguage={spellcheckLanguage}
+            spellcheckLanguageOptions={spellcheckLanguageOptions}
+            spellcheckLanguageSelectionSupported={spellcheckLanguageSelectionSupported}
+            onSpellcheckEnabledChange={onSpellcheckEnabledChange}
+            onSpellcheckLanguageChange={onSpellcheckLanguageChange}
+          />
           <FocusScopeSelect focusScope={focusScope} onFocusScopeChange={onFocusScopeChange} />
           <PanelWidthControl panelWidth={panelWidth} onPanelWidthChange={onPanelWidthChange} />
         </div>

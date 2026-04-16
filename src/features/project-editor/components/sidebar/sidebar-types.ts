@@ -34,6 +34,15 @@ export interface SidebarThemeProps {
   onThemePreferenceChange: (preference: ThemePreference) => void
 }
 
+export interface SidebarSpellcheckProps {
+  spellcheckEnabled: boolean
+  spellcheckLanguage: string | null
+  spellcheckLanguageOptions: string[]
+  spellcheckLanguageSelectionSupported: boolean
+  onSpellcheckEnabledChange: (enabled: boolean) => void
+  onSpellcheckLanguageChange: (language: string) => void
+}
+
 export interface SidebarWorkspacePrefsProps {
   focusModeEnabled: boolean
   focusScope: FocusScope
@@ -53,6 +62,7 @@ export type SidebarPanelCommonProps = SidebarSelectionProps &
   SidebarFileActions &
   SidebarProjectContextProps &
   SidebarThemeProps &
+  SidebarSpellcheckProps &
   SidebarWorkspacePrefsProps
 
 export type SidebarExplorerCommonProps = SidebarSelectionProps & SidebarProjectContextProps & SidebarFileActions

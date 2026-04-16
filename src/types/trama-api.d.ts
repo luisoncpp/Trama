@@ -27,9 +27,11 @@ import type {
   RenameDocumentResponse,
   SaveDocumentRequest,
   SaveDocumentResponse,
+  SetSpellcheckSettingsRequest,
   SetFullscreenRequest,
   SetFullscreenResponse,
   SelectProjectFolderResponse,
+  SpellcheckSettingsResponse,
 } from '../shared/ipc'
 import type { TagGetIndexResponse, TagResolveRequest, TagResolveResponse } from '../shared/ipc-tag'
 
@@ -48,6 +50,8 @@ declare global {
       deleteDocument(payload: DeleteDocumentRequest): Promise<IpcEnvelope<DeleteDocumentResponse>>
       getIndex(): Promise<IpcEnvelope<ProjectIndex>>
       setFullscreen(payload: SetFullscreenRequest): Promise<IpcEnvelope<SetFullscreenResponse>>
+      getSpellcheckSettings(): Promise<IpcEnvelope<SpellcheckSettingsResponse>>
+      setSpellcheckSettings(payload: SetSpellcheckSettingsRequest): Promise<IpcEnvelope<SpellcheckSettingsResponse>>
       onExternalFileEvent(callback: (event: ExternalFileEvent) => void): () => void
       onFullscreenChanged(callback: (event: FullscreenChangedEvent) => void): () => void
       aiImportPreview(payload: AiImportRequest): Promise<IpcEnvelope<AiImportPreview>>
