@@ -113,6 +113,28 @@ function useSaveNowAction({
 function buildProjectEditorActions(input: ProjectEditorActions): ProjectEditorActions {
   return input
 }
+function useReorderFilesAction({
+  setters,
+}: {
+  setters: UseProjectEditorStateResult['setters']
+}): ProjectEditorActions['reorderFiles'] {
+  return useCallback(
+    async (folderPath: string, orderedIds: string[]): Promise<void> => {
+      try {
+        const response = await window.tramaApi.reorderFiles({ folderPath, orderedIds })
+        if (!response.ok) {
+          setters.setStatusMessage(`Could not reorder files: ${response.error.message}`)
+          return
+        }
+        setters.setStatusMessage(`File order updated for folder: ${folderPath || '(root)'}`)
+      } catch (error) {
+        setters.setStatusMessage(`Error reordering files: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      }
+    },
+    [setters],
+  )
+}
+
 function usePrimaryProjectEditorActions(
   values: UseProjectEditorStateResult['values'],
   setters: UseProjectEditorStateResult['setters'],
@@ -127,6 +149,7 @@ function usePrimaryProjectEditorActions(
   const { createArticle, createCategory } = useProjectEditorCreateActions({ values, setters, openProject })
   const { renameFile, deleteFile, editFileTags } = useProjectEditorFileActions({ values, setters, openProject })
   const { renameFolder, deleteFolder } = useProjectEditorFolderActions({ values, setters, openProject })
+  const reorderFiles = useReorderFilesAction({ setters })
   const setSidebarSection = useSetSidebarSectionAction(setters)
   const toggleSidebarPanelCollapsed = useToggleSidebarPanelCollapsedAction(values, setters)
   const setSidebarPanelWidth = useSetSidebarPanelWidthAction(setters)
@@ -150,6 +173,7 @@ function usePrimaryProjectEditorActions(
     deleteFile,
     deleteFolder,
     editFileTags,
+    reorderFiles,
     setSidebarSection,
     toggleSidebarPanelCollapsed,
     setSidebarPanelWidth,

@@ -42,6 +42,7 @@ interface SidebarExplorerContentProps {
   onEditFileTags: SidebarExplorerCommonProps['onEditFileTags']
   onLoadFileTags: (path: string) => Promise<string[]>
   onPickFolder: SidebarExplorerCommonProps['onPickFolder']
+  onReorderFiles?: (folderPath: string, orderedIds: string[]) => Promise<void>
 }
 
 function useSidebarExplorerDialogs(props: SidebarExplorerContentProps) {
@@ -137,6 +138,7 @@ export function SidebarExplorerContent(props: SidebarExplorerContentProps) {
           onDirectoryChange={createDialog.setCreateDirectory}
           onNameChange={createDialog.setCreateName}
           filterInputRef={setFilterInputRef}
+          onReorderFiles={props.onReorderFiles}
         />
       </aside>
     </div>

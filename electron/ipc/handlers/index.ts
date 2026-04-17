@@ -11,6 +11,7 @@ export {
   handleRenameFolder,
   handleSaveDocument,
   handleSelectProjectFolder,
+  handleReorderFiles,
 } from './project-handlers/index.js'
 export {
   handleAiImportPreview,

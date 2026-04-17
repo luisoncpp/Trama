@@ -25,6 +25,7 @@ export const IPC_CHANNELS = {
   bookExport: 'trama:book:export',
   tagGetIndex: 'trama:tag:getIndex',
   tagResolve: 'trama:tag:resolve',
+  reorderFiles: 'trama:index:reorder',
 } as const
 
 export const pingRequestSchema = z.object({ message: z.string().trim().min(1).max(120) })
@@ -87,6 +88,14 @@ export const bookExportResponseSchema = z.object({
   format: bookExportFormatSchema,
   exportedFiles: z.number().int().nonnegative(),
 })
+export const reorderFilesRequestSchema = z.object({
+  folderPath: z.string(),
+  orderedIds: z.array(z.string()),
+})
+export const reorderFilesResponseSchema = z.object({
+  folderPath: z.string(),
+  orderedIds: z.array(z.string()),
+})
 export const ipcErrorSchema = z.object({ code: z.string(), message: z.string(), details: z.unknown().optional() })
 
 export type PingRequest = z.infer<typeof pingRequestSchema>
@@ -130,5 +139,7 @@ export type AiExportResponse = z.infer<typeof aiExportResponseSchema>
 export type BookExportFormat = z.infer<typeof bookExportFormatSchema>
 export type BookExportRequest = z.infer<typeof bookExportRequestSchema>
 export type BookExportResponse = z.infer<typeof bookExportResponseSchema>
+export type ReorderFilesRequest = z.infer<typeof reorderFilesRequestSchema>
+export type ReorderFilesResponse = z.infer<typeof reorderFilesResponseSchema>
 export type IpcError = z.infer<typeof ipcErrorSchema>
 export type IpcEnvelope<T> = { ok: true; data: T } | { ok: false; error: IpcError }

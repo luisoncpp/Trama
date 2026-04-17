@@ -4,7 +4,9 @@ import { useSidebarContentSection } from './sidebar-panel-logic'
 import type { SidebarPanelCommonProps } from './sidebar-types'
 import { useSidebarResponsiveCollapse } from './use-sidebar-responsive-collapse'
 
-type SidebarPanelProps = SidebarPanelCommonProps
+type SidebarPanelProps = SidebarPanelCommonProps & {
+  onReorderFiles?: (folderPath: string, orderedIds: string[]) => Promise<void>
+}
 
 function buildSidebarPanelContentProps(props: SidebarPanelProps) {
   return {
@@ -43,6 +45,7 @@ function buildSidebarPanelContentProps(props: SidebarPanelProps) {
     onSpellcheckLanguageChange: props.onSpellcheckLanguageChange,
     focusScope: props.focusScope,
     onFocusScopeChange: props.onFocusScopeChange,
+    onReorderFiles: props.onReorderFiles,
   }
 }
 

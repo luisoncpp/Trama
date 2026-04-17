@@ -12,6 +12,9 @@ interface SidebarTreeRowButtonProps {
   containerRef: { current: HTMLDivElement | null }
   onFileContextMenu?: (filePath: string, event: MouseEvent) => void
   onFolderContextMenu?: (folderPath: string, event: MouseEvent) => void
+  onDragStart?: (filePath: string, event: DragEvent) => void
+  onDragOver?: (filePath: string, event: DragEvent) => void
+  onDrop?: (filePath: string, event: DragEvent) => void
 }
 
 function focusRowInContainer(containerRef: { current: HTMLDivElement | null }, rows: SidebarTreeRow[], index: number) {
@@ -70,6 +73,9 @@ export function SidebarTreeRowButton({
   containerRef,
   onFileContextMenu,
   onFolderContextMenu,
+  onDragStart,
+  onDragOver,
+  onDrop,
 }: SidebarTreeRowButtonProps) {
   const handleContextMenu = (event: MouseEvent) => {
     event.preventDefault()
@@ -82,6 +88,21 @@ export function SidebarTreeRowButton({
 
   const onKeyDown = (event: KeyboardEvent) =>
     handleTreeRowKeyDown(event, index, [row], onToggleFolder, onSelectFile, containerRef)
+
+  const handleDragStart = (event: DragEvent) => {
+    if (row.type !== 'file') return
+    onDragStart?.(row.path, event)
+  }
+
+  const handleDragOver = (event: DragEvent) => {
+    event.preventDefault()
+    onDragOver?.(row.path, event)
+  }
+
+  const handleDrop = (event: DragEvent) => {
+    event.preventDefault()
+    onDrop?.(row.path, event)
+  }
 
   return (
     <button
@@ -96,6 +117,10 @@ export function SidebarTreeRowButton({
       onClick={() => (row.type === 'folder' ? onToggleFolder(row.path, !row.isExpanded) : void onSelectFile(row.path))}
       onContextMenu={handleContextMenu}
       onKeyDown={onKeyDown}
+      draggable={row.type === 'file'}
+      onDragStart={handleDragStart}
+      onDragOver={handleDragOver}
+      onDrop={handleDrop}
     >
       {row.type === 'folder' ? <TreeChevron expanded={row.isExpanded} /> : <span class="sidebar-tree__chevron is-file" />}
       <TreeNodeIcon type={row.type} />

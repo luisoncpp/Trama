@@ -92,4 +92,10 @@ export class IndexService {
     await this.saveIndex(next)
     return next
   }
+
+  async updateFolderOrder(folderPath: string, orderedIds: string[]): Promise<void> {
+    const index = await this.loadIndex()
+    index.corkboardOrder[folderPath] = orderedIds
+    await this.saveIndex(index)
+  }
 }

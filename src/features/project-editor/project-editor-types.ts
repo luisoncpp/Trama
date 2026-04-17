@@ -65,6 +65,7 @@ export interface ProjectEditorActions {
   deleteFolder: (path: string) => Promise<void>
   deleteFile: (path: string) => Promise<void>
   editFileTags: (path: string, tags: string[]) => Promise<void>
+  reorderFiles: (folderPath: string, orderedIds: string[]) => Promise<void>
   setSidebarSection: (section: SidebarSection) => void
   toggleSidebarPanelCollapsed: () => void
   setSidebarPanelWidth: (width: number) => void

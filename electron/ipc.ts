@@ -39,6 +39,7 @@ import {
   handleBookExport,
   handleTagGetIndex,
   handleTagResolve,
+  handleReorderFiles,
 } from './ipc/handlers/index.js'
 import { registerSpellcheckHandler } from './ipc/spellcheck.js'
 
@@ -141,6 +142,10 @@ function registerCoreHandlers(ipcMain: IpcMain): void {
 
   ipcMain.handle(IPC_CHANNELS.getIndex, () => {
     return handleGetIndex()
+  })
+
+  ipcMain.handle(IPC_CHANNELS.reorderFiles, (_event, payload: unknown) => {
+    return handleReorderFiles(payload)
   })
 }
 
