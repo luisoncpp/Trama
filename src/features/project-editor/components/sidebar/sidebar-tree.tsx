@@ -16,6 +16,7 @@ export interface SidebarTreeProps {
   onFileContextMenu?: (filePath: string, event: MouseEvent) => void
   onFolderContextMenu?: (folderPath: string, event: MouseEvent) => void
   onReorderFiles?: (folderPath: string, orderedIds: string[]) => Promise<void>
+  onMoveFile?: (sourcePath: string, targetFolder: string) => Promise<void>
 }
 
 export interface SidebarTreeRowsProps {
@@ -28,6 +29,7 @@ export interface SidebarTreeRowsProps {
   onFileContextMenu?: (filePath: string, event: MouseEvent) => void
   onFolderContextMenu?: (folderPath: string, event: MouseEvent) => void
   onReorderFiles?: (folderPath: string, orderedIds: string[]) => Promise<void>
+  onMoveFile?: (sourcePath: string, targetFolder: string) => Promise<void>
   dragState: {
     draggingPath: string | null
     dropPosition: DropIndicatorPosition | null
@@ -80,6 +82,7 @@ export function SidebarTreeRows({
   onFileContextMenu,
   onFolderContextMenu,
   onReorderFiles,
+  onMoveFile,
   dragState,
 }: SidebarTreeRowsProps) {
   const { draggingPath, dropPosition, setDraggingPath, setDropPosition } = dragState
@@ -100,6 +103,13 @@ export function SidebarTreeRows({
 
     const sourceRow = rows.find((r) => r.path === draggingPath)
     if (!sourceRow || sourceRow.type !== 'file') return
+
+    if (dropPosition.type === 'onFolder' && dropPosition.folderPath !== undefined) {
+      await onMoveFile?.(draggingPath, dropPosition.folderPath)
+      setDraggingPath(null)
+      setDropPosition(null)
+      return
+    }
 
     const folderPath = sourceRow.path.includes('/')
       ? sourceRow.path.split('/').slice(0, -1).join('/')
@@ -159,6 +169,7 @@ export function SidebarTree({
   onFileContextMenu,
   onFolderContextMenu,
   onReorderFiles,
+  onMoveFile,
 }: SidebarTreeProps) {
   const tree = useMemo(() => buildSidebarTree(visibleFiles), [visibleFiles])
   const filterResult = useMemo(() => filterSidebarTree(tree, filterQuery), [filterQuery, tree])
@@ -183,15 +194,15 @@ export function SidebarTree({
   const [dropPosition, setDropPosition] = useState<DropIndicatorPosition | null>(null)
 
   if (visibleFiles.length === 0 && !hasFilterQuery) {
-    return <p class="file-tree__empty">{PROJECT_EDITOR_STRINGS.noMarkdownFiles}</p>
+    return <p class='file-tree__empty'>{PROJECT_EDITOR_STRINGS.noMarkdownFiles}</p>
   }
 
   if (rows.length === 0 && hasFilterQuery) {
-    return <p class="file-tree__empty">No files match "{filterResult.query}".</p>
+    return <p class='file-tree__empty'>No files match &quot;{filterResult.query}&quot;.</p>
   }
 
   return (
-    <div class="file-tree sidebar-tree" ref={containerRef} role="tree" aria-label="Project files">
+    <div class='file-tree sidebar-tree' ref={containerRef} role='tree' aria-label='Project files'>
       <SidebarTreeRows
         rows={rows}
         selectedPath={selectedPath}
@@ -202,6 +213,7 @@ export function SidebarTree({
         onFileContextMenu={onFileContextMenu}
         onFolderContextMenu={onFolderContextMenu}
         onReorderFiles={onReorderFiles}
+        onMoveFile={onMoveFile}
         dragState={{ draggingPath, dropPosition, setDraggingPath, setDropPosition }}
       />
     </div>

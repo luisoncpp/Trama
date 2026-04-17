@@ -26,6 +26,7 @@ export const IPC_CHANNELS = {
   tagGetIndex: 'trama:tag:getIndex',
   tagResolve: 'trama:tag:resolve',
   reorderFiles: 'trama:index:reorder',
+  moveFile: 'trama:file:move',
 } as const
 
 export const pingRequestSchema = z.object({ message: z.string().trim().min(1).max(120) })
@@ -112,6 +113,15 @@ export const reorderFilesResponseSchema = z.object({
   folderPath: z.string(),
   orderedIds: z.array(z.string()),
 })
+export const moveFileRequestSchema = z.object({
+  sourcePath: z.string().trim().min(1),
+  targetFolder: z.string(),
+})
+export const moveFileResponseSchema = z.object({
+  path: z.string(),
+  renamedTo: z.string(),
+  updatedAt: z.string(),
+})
 export const ipcErrorSchema = z.object({ code: z.string(), message: z.string(), details: z.unknown().optional() })
 
 export type PingRequest = z.infer<typeof pingRequestSchema>
@@ -157,5 +167,7 @@ export type BookExportRequest = z.infer<typeof bookExportRequestSchema>
 export type BookExportResponse = z.infer<typeof bookExportResponseSchema>
 export type ReorderFilesRequest = z.infer<typeof reorderFilesRequestSchema>
 export type ReorderFilesResponse = z.infer<typeof reorderFilesResponseSchema>
+export type MoveFileRequest = z.infer<typeof moveFileRequestSchema>
+export type MoveFileResponse = z.infer<typeof moveFileResponseSchema>
 export type IpcError = z.infer<typeof ipcErrorSchema>
 export type IpcEnvelope<T> = { ok: true; data: T } | { ok: false; error: IpcError }

@@ -135,6 +135,47 @@ function useReorderFilesAction({
   )
 }
 
+function useMoveFileAction({
+  values,
+  setters,
+  openProject,
+}: {
+  values: UseProjectEditorStateResult['values']
+  setters: UseProjectEditorStateResult['setters']
+  openProject: (projectRoot: string, preferredFilePath?: string) => Promise<void>
+}): ProjectEditorActions['moveFile'] {
+  return useCallback(
+    async (sourcePath: string, targetFolder: string): Promise<void> => {
+      if (!values.rootPath) {
+        setters.setStatusMessage('No project is open')
+        return
+      }
+
+      const isSourceDirty =
+        (values.primaryPane.path === sourcePath && values.primaryPane.isDirty) ||
+        (values.secondaryPane.path === sourcePath && values.secondaryPane.isDirty)
+      if (isSourceDirty) {
+        setters.setStatusMessage('Save the file before moving it.')
+        return
+      }
+
+      try {
+        const response = await window.tramaApi.moveFile({ sourcePath, targetFolder })
+        if (!response.ok) {
+          setters.setStatusMessage(`Could not move file: ${response.error.message}`)
+          return
+        }
+
+        setters.setStatusMessage(`Moved file to: ${response.data.renamedTo}`)
+        await openProject(values.rootPath, response.data.renamedTo)
+      } catch (error) {
+        setters.setStatusMessage(`Error moving file: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      }
+    },
+    [openProject, setters, values.primaryPane.isDirty, values.primaryPane.path, values.rootPath, values.secondaryPane.isDirty, values.secondaryPane.path],
+  )
+}
+
 function usePrimaryProjectEditorActions(
   values: UseProjectEditorStateResult['values'],
   setters: UseProjectEditorStateResult['setters'],
@@ -161,6 +202,7 @@ function usePrimaryProjectEditorActions(
   const toggleFocusMode = useToggleFocusModeAction(values, setters)
   const setFocusScope = useSetFocusScopeAction(setters)
   const reorderFiles = useReorderFilesAction({ setters })
+  const moveFile = useMoveFileAction({ values, setters, openProject })
 
   return {
     pickProjectFolder,
@@ -174,6 +216,7 @@ function usePrimaryProjectEditorActions(
     deleteFolder,
     editFileTags,
     reorderFiles,
+    moveFile,
     setSidebarSection,
     toggleSidebarPanelCollapsed,
     setSidebarPanelWidth,

@@ -1,7 +1,7 @@
 # Drag & Drop File Reorder Implementation Plan
 
-Date: 2026-04-16
-Status: Slice 1 complete (reorder-only, no disk change)
+Date: 2026-04-17
+Status: Slice 1 and Slice 2 complete
 Related: `docs/START-HERE.md`, `docs/folder-rename-implementation-plan.md`, `docs/phase-4-detailed-plan.md`
 
 ## Goal
@@ -91,7 +91,7 @@ moveFileRequestSchema = z.object({
 })
 moveFileResponseSchema = z.object({
   path: z.string(),
-  movedTo: z.string(),
+  renamedTo: z.string(),  // Note: property is renamedTo, not movedTo
   updatedAt: z.string(),
 })
 ```
@@ -116,14 +116,14 @@ The existing `renameDocument` can handle moves since it derives new path from di
 
 Add helper or extend:
 ```typescript
-async moveDocument(projectRoot: string, sourceRelativePath: string, targetFolder: string): Promise<{ path: string; movedTo: string; updatedAt: string }>
+async moveDocument(projectRoot: string, sourceRelativePath: string, targetFolder: string): Promise<{ path: string; renamedTo: string; updatedAt: string }>
 ```
 
 Implementation:
 - Validate source exists and is .md
 - Derive target path: `targetFolder/sourceName.md`
 - Use `renamePath()` to move on disk
-- Return { path, movedTo, updatedAt }
+- Return { path, renamedTo, updatedAt }
 
 ### 4. IPC Handler
 
@@ -190,7 +190,9 @@ When moving a file between folders:
 
 ## Implementation Slices
 
-### Slice 1: Index-only reorder (no disk change)
+### Slice 1: Index-only reorder (no disk change) ✅
+
+**Status:** Complete
 
 **Tasks:**
 1. Add IPC channel `trama:index:reorder` + schemas
@@ -212,13 +214,15 @@ When moving a file between folders:
 
 ---
 
-### Slice 2: File move between folders (disk change)
+### Slice 2: File move between folders (disk change) ✅
+
+**Status:** Complete
 
 **Tasks:**
 1. Add IPC channel `trama:file:move` + schemas
 2. Add `documentRepository.moveDocument()`
 3. Add `handleMoveFile` IPC handler
-4. Add move action hook `use-drag-drop-actions.ts`
+4. Add `useMoveFileAction` hook in `use-project-editor-ui-actions.ts`
 5. Wire move flow (drag on folder → IPC → reorder)
 
 **Tests:**
@@ -238,7 +242,7 @@ When moving a file between folders:
 
 **Tasks:**
 1. Add path remap logic in `project-editor-logic.ts`
-2. Update `use-drag-drop-actions.ts` to remap open pane paths
+2. Update `useMoveFileAction` to remap open pane paths
 3. Reopen project preserving remapped pane targets
 
 **Tests:**
@@ -269,28 +273,48 @@ When moving a file between folders:
   - Drop on section root moves file to root of section
   - Error toast shown when move blocked (collision, dirty, etc.)
 
-## Files to Create
+## Files Created
 
-- `electron/ipc/handlers/project-handlers/order-handlers.ts`
-- `src/features/project-editor/use-drag-drop-actions.ts`
-- `src/features/project-editor/components/sidebar/drop-indicator.tsx`
-- `tests/order-handlers.test.ts`
-- `tests/drag-drop-sidebar.test.ts`
+- `electron/ipc/handlers/project-handlers/order-handlers.ts` - IPC handlers for reorder and move
+- `tests/order-handlers.test.ts` - Tests for IPC handlers
+- `tests/drag-drop-sidebar.test.ts` - Tests for sidebar drag-drop UI
 
-## Files to Modify
+## Files Modified
 
-- `src/shared/ipc.ts`
-- `electron/preload.cts`
-- `src/types/trama-api.d.ts`
-- `electron/services/index-service.ts`
-- `electron/services/document-repository.ts`
-- `electron/ipc/handlers/project-handlers/index.ts`
-- `electron/ipc.ts`
-- `src/features/project-editor/project-editor-types.ts`
-- `src/features/project-editor/use-project-editor-state.ts`
-- `src/features/project-editor/components/sidebar/sidebar-tree.tsx`
-- `src/features/project-editor/components/sidebar/sidebar-tree-row-button.tsx`
-- `src/features/project-editor/project-editor-logic.ts`
+- `src/shared/ipc.ts` - Added reorderFiles and moveFile IPC channels and schemas
+- `electron/preload.cts` - Exposed reorderFiles and moveFile to renderer
+- `src/types/trama-api.d.ts` - Added moveFile and reorderFiles to interface
+- `electron/services/document-repository.ts` - Added moveDocument() method
+- `electron/ipc.ts` - Registered order handlers
+- `electron/ipc/handlers/project-handlers/index.ts` - Re-exported order handlers
+- `src/features/project-editor/project-editor-types.ts` - Added moveFile action
+- `src/features/project-editor/use-project-editor-ui-actions.ts` - Implemented useMoveFileAction hook
+- `src/features/project-editor/project-editor-view.tsx` - Wired onMoveFile prop
+- `src/features/project-editor/components/sidebar/sidebar-panel.tsx` - Added onMoveFile prop
+- `src/features/project-editor/components/sidebar/sidebar-panel-body.tsx` - Added onMoveFile prop
+- `src/features/project-editor/components/sidebar/sidebar-explorer-content.tsx` - Added onMoveFile prop
+- `src/features/project-editor/components/sidebar/sidebar-explorer-body.tsx` - Added onMoveFile prop
+- `src/features/project-editor/components/sidebar/sidebar-tree.tsx` - Added onMoveFile prop and drag-drop logic
+
+## Bugs Fixed During Implementation
+
+1. **Missing export in handlers/index.ts**: `handleMoveFile` was not re-exported from the project handlers index, causing TypeScript compilation error at `electron/ipc.ts:43`.
+
+2. **Property name mismatch**: The `moveDocument()` method returns `renamedTo` (not `movedTo`), but the handler and UI action code initially used `movedTo`. Fixed in:
+   - `electron/ipc/handlers/project-handlers/order-handlers.ts:73`
+   - `src/features/project-editor/use-project-editor-ui-actions.ts:169-170`
+
+3. **Quote style mismatch in sidebar filter message**: The empty state message used single quotes (`'missing-file'`) but the test expected double quotes (`'missing-file'`). Fixed in `sidebar-tree.tsx:201`.
+
+4. **Missing section root prefix in onMoveFile**: The sidebar tree passes paths relative to the section (e.g., `Acto-01/file.md`) but IPC expects full paths relative to project root (e.g., `book/Acto-01/file.md`). The `onMoveFile` handler in `sidebar-panel-body.tsx` was not prepending the section root prefix like other file operations do. Fixed by adding `${sectionConfig.root}` prefix to both source and target paths.
+
+5. **Folder rows not receiving drag events**: Adding `onDragEnter` handler to `SidebarTreeRowButton` that forwards to `onDragOver` so folder rows can be valid drop targets during drag operations.
+
+## Notes
+
+- The `moveFile` action was integrated into `use-project-editor-ui-actions.ts` rather than a separate `use-drag-drop-actions.ts` file as originally planned.
+- The `reorderFiles` action was similarly integrated rather than creating separate drag-drop action hooks.
+- The `SidebarTreeRowButton` component already had drag handles from a previous implementation.
 
 ## Acceptance Criteria
 

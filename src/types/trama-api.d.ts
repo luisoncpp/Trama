@@ -38,6 +38,8 @@ import type {
   SpellcheckSettingsResponse,
   ReorderFilesRequest,
   ReorderFilesResponse,
+  MoveFileRequest,
+  MoveFileResponse,
 } from '../shared/ipc'
 import type { TagGetIndexResponse, TagResolveRequest, TagResolveResponse } from '../shared/ipc-tag'
 
@@ -69,6 +71,7 @@ declare global {
       getTagIndex(): Promise<IpcEnvelope<TagGetIndexResponse>>
       resolveTag(payload: TagResolveRequest): Promise<IpcEnvelope<TagResolveResponse>>
       reorderFiles(payload: ReorderFilesRequest): Promise<IpcEnvelope<ReorderFilesResponse>>
+      moveFile(payload: MoveFileRequest): Promise<IpcEnvelope<MoveFileResponse>>
     }
   }
 }

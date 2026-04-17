@@ -12,6 +12,7 @@ export {
   handleSaveDocument,
   handleSelectProjectFolder,
   handleReorderFiles,
+  handleMoveFile,
 } from './project-handlers/index.js'
 export {
   handleAiImportPreview,

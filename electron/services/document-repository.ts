@@ -145,11 +145,32 @@ export class DocumentRepository {
     return buildRenameResult(normalizedPath, nextRelativePath)
   }
 
-  async deleteDocument(projectRoot: string, relativePath: string): Promise<{ path: string; deletedAt: string }> {
+async deleteDocument(projectRoot: string, relativePath: string): Promise<{ path: string; deletedAt: string }> {
     const normalizedPath = validateRelativePath(relativePath)
     if (!normalizedPath.endsWith('.md')) throw new Error('Only markdown files are supported')
-    const fullPath = resolveProjectPath(projectRoot, normalizedPath)
+    const fullPath = resolveProjectPath(projectRoot, relativePath)
     await rm(fullPath)
     return { path: normalizeRelative(normalizedPath), deletedAt: new Date().toISOString() }
+  }
+
+  async moveDocument(projectRoot: string, sourceRelativePath: string, targetFolder: string): Promise<{ path: string; renamedTo: string; updatedAt: string }> {
+    const normalizedSource = validateRelativePath(sourceRelativePath)
+    if (!normalizedSource.endsWith('.md')) throw new Error('Only markdown files are supported')
+
+    const sourceFullPath = resolveProjectPath(projectRoot, normalizedSource)
+    const sourceInfo = await stat(sourceFullPath)
+    if (!sourceInfo.isFile()) throw new Error('Source is not a file')
+
+    const fileName = path.posix.basename(normalizedSource)
+    const normalizedTargetFolder = targetFolder ? validateRelativePath(targetFolder) : ''
+    const targetRelativePath = normalizedTargetFolder ? `${normalizedTargetFolder}/${fileName}` : fileName
+
+    if (normalizeRelative(targetRelativePath) === normalizeRelative(normalizedSource)) {
+      throw new Error('Source and target paths are the same')
+    }
+
+    await renamePath(projectRoot, normalizedSource, targetRelativePath)
+
+return buildRenameResult(normalizedSource, targetRelativePath)
   }
 }

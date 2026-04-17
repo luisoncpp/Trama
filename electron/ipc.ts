@@ -40,6 +40,7 @@ import {
   handleTagGetIndex,
   handleTagResolve,
   handleReorderFiles,
+  handleMoveFile,
 } from './ipc/handlers/index.js'
 import { registerSpellcheckHandler } from './ipc/spellcheck.js'
 
@@ -102,6 +103,7 @@ function registerProjectHandlers(ipcMain: IpcMain): void {
   ipcMain.handle(IPC_CHANNELS.selectProjectFolder, () => handleSelectProjectFolder())
   ipcMain.handle(IPC_CHANNELS.getIndex, () => handleGetIndex())
   ipcMain.handle(IPC_CHANNELS.reorderFiles, (_event, payload) => handleReorderFiles(payload))
+  ipcMain.handle(IPC_CHANNELS.moveFile, (_event, payload) => handleMoveFile(payload))
 }
 
 function registerDocumentHandlers(ipcMain: IpcMain): void {

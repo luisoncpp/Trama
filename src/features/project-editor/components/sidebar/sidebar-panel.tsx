@@ -6,6 +6,7 @@ import { useSidebarResponsiveCollapse } from './use-sidebar-responsive-collapse'
 
 type SidebarPanelProps = SidebarPanelCommonProps & {
   onReorderFiles?: (folderPath: string, orderedIds: string[]) => Promise<void>
+  onMoveFile?: (sourcePath: string, targetFolder: string) => Promise<void>
 }
 
 function buildSidebarPanelContentProps(props: SidebarPanelProps) {
@@ -46,6 +47,7 @@ function buildSidebarPanelContentProps(props: SidebarPanelProps) {
     focusScope: props.focusScope,
     onFocusScopeChange: props.onFocusScopeChange,
     onReorderFiles: props.onReorderFiles,
+    onMoveFile: props.onMoveFile,
   }
 }
 
@@ -90,6 +92,8 @@ function buildSidebarBodyProps(props: SidebarPanelProps, effectiveCollapsed: boo
     onSpellcheckLanguageChange: props.onSpellcheckLanguageChange,
     focusScope: props.focusScope,
     onFocusScopeChange: props.onFocusScopeChange,
+    onReorderFiles: props.onReorderFiles,
+    onMoveFile: props.onMoveFile,
     contentProps: buildSidebarPanelContentProps(props),
   })
 }
