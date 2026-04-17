@@ -23,6 +23,12 @@ interface ProjectEditorViewProps {
   onSpellcheckLanguageChange: (language: string) => void
 }
 
+interface SidebarExtraProps extends Omit<ProjectEditorViewProps, 'model'> {
+  onImportClick: () => void
+  onBookExportClick: (format: BookExportFormat) => void
+  onExportClick: () => void
+}
+
 interface ProjectEditorMainPaneProps {
   model: ProjectEditorModel
   spellcheckEnabled: boolean
@@ -68,17 +74,7 @@ function ProjectEditorMainPane({ model, spellcheckEnabled }: ProjectEditorMainPa
   )
 }
 
-function buildSidebarSectionProps(
-  model: ProjectEditorModel,
-  props: Omit<
-    ProjectEditorViewProps,
-    'model'
-  > & {
-    onImportClick: () => void
-    onBookExportClick: (format: BookExportFormat) => void
-    onExportClick: () => void
-  },
-) {
+function buildSidebarSectionProps(model: ProjectEditorModel, props: SidebarExtraProps) {
   const { state, actions } = model
 
   return {
@@ -140,7 +136,13 @@ function SidebarSection({
   onBookExportClick: (format: BookExportFormat) => void
   onExportClick: () => void
 }) {
-  return <SidebarPanel {...buildSidebarSectionProps(model, { themePreference, resolvedTheme, onThemePreferenceChange, spellcheckEnabled, spellcheckLanguage, spellcheckLanguageOptions, spellcheckLanguageSelectionSupported, onSpellcheckEnabledChange, onSpellcheckLanguageChange, onImportClick, onBookExportClick, onExportClick })} />
+  const sidebarProps = buildSidebarSectionProps(model, {
+    themePreference, resolvedTheme, onThemePreferenceChange,
+    spellcheckEnabled, spellcheckLanguage, spellcheckLanguageOptions,
+    spellcheckLanguageSelectionSupported, onSpellcheckEnabledChange,
+    onSpellcheckLanguageChange, onImportClick, onBookExportClick, onExportClick,
+  })
+  return <SidebarPanel {...sidebarProps} />
 }
 
 export function ProjectEditorView({
