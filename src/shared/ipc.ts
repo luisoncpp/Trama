@@ -71,7 +71,14 @@ export const aiImportModeSchema = z.enum(['append', 'replace'])
 export const aiImportRequestSchema = z.object({ clipboardContent: z.string().trim().min(1), projectRoot: z.string().trim().min(1), importMode: aiImportModeSchema.default('replace') })
 export const aiImportFileSchema = z.object({ path: z.string(), content: z.string(), frontmatter: documentMetaSchema.optional(), exists: z.boolean() })
 export const aiImportPreviewSchema = z.object({ files: z.array(aiImportFileSchema), totalFiles: z.number().int().nonnegative(), newFiles: z.number().int().nonnegative(), existingFiles: z.number().int().nonnegative() })
-export const aiImportResponseSchema = z.object({ success: z.boolean(), created: z.array(z.string()), appended: z.array(z.string()), replaced: z.array(z.string()), skipped: z.array(z.string()), errors: z.array(z.object({ path: z.string(), error: z.string() })) })
+export const aiImportResponseSchema = z.object({
+  success: z.boolean(),
+  created: z.array(z.string()),
+  appended: z.array(z.string()),
+  replaced: z.array(z.string()),
+  skipped: z.array(z.string()),
+  errors: z.array(z.object({ path: z.string(), error: z.string() })),
+})
 export const aiExportRequestSchema = z.object({ filePaths: z.array(z.string().trim().min(1)), projectRoot: z.string().trim().min(1), includeFrontmatter: z.boolean().default(true) })
 export const aiExportResponseSchema = z.object({ success: z.boolean(), formattedContent: z.string(), fileCount: z.number().int().nonnegative() })
 export const bookExportFormatSchema = z.enum(['markdown', 'html', 'docx', 'epub', 'pdf'])
