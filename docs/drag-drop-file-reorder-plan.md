@@ -1,7 +1,7 @@
 # Drag & Drop File Reorder Implementation Plan
 
 Date: 2026-04-16
-Status: Planned
+Status: Slice 1 complete (reorder-only, no disk change)
 Related: `docs/START-HERE.md`, `docs/folder-rename-implementation-plan.md`, `docs/phase-4-detailed-plan.md`
 
 ## Goal

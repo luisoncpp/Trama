@@ -61,6 +61,8 @@ Mandatory doc navigation for new chats:
   - Folder rename handler with subtree internal-write tagging and index/tag reconcile.
 - `electron/ipc/handlers/project-handlers/index-handler.ts`
   - Get index handler.
+- `electron/ipc/handlers/project-handlers/order-handlers.ts`
+  - File reorder handler (`handleReorderFiles`) for drag-and-drop reorder in sidebar.
 - `electron/ipc/handlers/ai-handlers.ts`
   - AI import/export handlers: preview import, execute import, and backend export formatting endpoint.
 - `electron/ipc/handlers/book-export-handler.ts`
@@ -256,9 +258,13 @@ Mandatory doc navigation for new chats:
 - `src/features/project-editor/components/sidebar/sidebar-explorer-body.tsx`
   - Explorer body (path, filter, tree, state hints, menus/dialogs).
 - `src/features/project-editor/components/sidebar/sidebar-tree.tsx`
-  - Interactive tree rows, keyboard nav, right-click file hook.
+  - Interactive tree rows, keyboard nav, right-click file hook, and drag-and-drop reorder state management.
 - `src/features/project-editor/components/sidebar/sidebar-tree-logic.ts`
   - Pure tree build/flatten helpers.
+- `src/features/project-editor/components/sidebar/sidebar-tree-row-button.tsx`
+  - Individual tree row with drag handle and drag event handlers (onDragStart/onDragOver/onDrop).
+- `src/features/project-editor/components/sidebar/drop-indicator.tsx`
+  - Visual drop indicator component for drag-and-drop reorder (between-files line, folder highlight, section root).
 - `src/features/project-editor/components/sidebar/use-sidebar-tree-expanded-folders.ts`
   - Expanded folder state management, including rename remap consumption via sidebar folder-rename events.
 - `src/features/project-editor/components/sidebar/sidebar-folder-rename-events.ts`
@@ -360,6 +366,10 @@ Core and regression suites:
   - IPC folder rename envelope coverage and on-disk subtree move assertions.
 - `tests/project-editor-folder-logic.test.ts`
   - Pure path-remap coverage for folder rename in split-layout state.
+- `tests/order-handlers.test.ts`
+  - IPC handler coverage for `handleReorderFiles` (saves order to index, handles empty folder path, rejects no-active-project, rejects invalid payload).
+- `tests/drag-drop-sidebar.test.ts`
+  - Sidebar drag-drop logic coverage (folder vs file drop targets, between-position reorder logic, tree row filtering).
 - `tests/markdown-layout-directives.test.ts`
   - Unit coverage for directive extraction, warning behavior, artifact rendering, and canonical serialization helpers.
 - `tests/ai-import-service.test.ts`

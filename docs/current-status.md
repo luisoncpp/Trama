@@ -1,10 +1,10 @@
-# Current Status (Phase 3 Complete + Phase 4 WS2/WS5 Partial)
+# Current Status (Phase 3 Complete + Phase 4 WS2/WS5 Partial + Drag-Drop Reorder Slice 1)
 
 > **New conversation?** Open `docs/START-HERE.md` first — it routes you to the 3-4 files you actually need.
 
 ## Product state
 
-The repository has completed Phase 2 and all Phase 3 workstreams (WS1–WS5).
+The repository has completed Phase 2, all Phase 3 workstreams (WS1–WS5), and Phase 4 WS2 folder rename/delete V1. Drag-and-drop file reorder Slice 1 is now implemented.
 
 Implemented now:
 - Electron + Vite + Preact desktop shell.
@@ -35,6 +35,7 @@ Implemented now:
 - Folder rename V1 implemented end-to-end: IPC contract (`trama:folder:rename`), repository rename operation, sidebar folder context-menu rename flow, dirty-subtree guard, split-pane open-path remap, and expanded-folder-state remap after refresh.
 - Folder delete V1 implemented end-to-end: IPC contract (`trama:folder:delete`), recursive repository delete operation, sidebar folder context-menu delete flow, dirty-subtree guard, split-pane path pruning for deleted subtree, and internal-write watcher tagging for removed markdown files.
 - WS2 scope freeze applied after V1 closure: folder move/reparent and drag-and-drop wiring were intentionally rolled back to keep the branch focused on stable rename/delete behavior before continuing with move workflows.
+- Drag-and-drop file reorder (Slice 1): IPC channel `trama:index:reorder`, `IndexService.updateFolderOrder()`, `handleReorderFiles` handler, renderer `reorderFiles` action, drag handles on file rows, drop indicator UI, and sidebar drag state management. Persists `corkboardOrder` in index without disk changes.
 - Workspace split-layout foundation: single/split mode toggle, ratio control, active pane switching, pane document assignment, and local persistence (`trama.workspace.layout.v1`).
 - Layout reconciliation hardening: preferred-document restores now respect active pane intent during project reopen flows.
 - Per-pane editor state model: independent `primaryPane`/`secondaryPane` document content, metadata, and dirty flags.
@@ -71,8 +72,8 @@ Implemented now:
 - Book export regression expansion: `tests/book-export-renderers.test.ts` now covers image flows across HTML (local -> data URL conversion), PDF (data URL + local), DOCX (embedded `word/media` artifacts), and EPUB (data URL + local path materialization).
 
 Not implemented yet (planned in later phases):
-- Folder move / reparent workflows.
-- Drag-and-drop reorder/move workflows.
+- Folder move / reparent workflows (WS2 Slice 2+).
+- Drag-and-drop file move between folders (WS2 Slice 2).
 - Wiki links, templates, corkboard DnD.
 
 WS2 next step:
@@ -82,8 +83,8 @@ WS2 next step:
 
 Current verification baseline:
 - `npm run build` passes.
-- `npm run lint` passes.
-- `npm run test` passes (31 suites, 160 tests).
+- `npm run lint` passes (pre-existing long-line/function-length issues in unrelated files).
+- `npm run test` passes (46 suites, 226 tests).
 - `npm run test:smoke` passes.
 
 **Running tests**: In sandboxed agent environments, `npm test` may fail due to environment restrictions. Use the PowerShell script instead, which runs in a full PowerShell context and passes consistently:
@@ -138,7 +139,7 @@ See `docs/phase-4-detailed-plan.md` for the complete plan with 5 workstreams:
 | Workstream | Description | Key Deliverables | Status |
 |---|---|---|---|
 | **WS1** | Wiki Tag Links | TagIndexService, implicit tag matching, Ctrl+click navigation | ✅ Complete |
-| **WS2** | Folder Operations | Rename, delete, move with conflict safety | In progress (rename + delete V1 complete) |
+| **WS2** | Folder Operations | Rename, delete, move with conflict safety | In progress (rename + delete V1 complete; drag-drop reorder Slice 1 done) |
 | **WS3** | Templates | Create from schema, placeholder system, default templates | Pending |
 | **WS4** | Corkboard | Drag-and-drop card view, persistence | Pending |
 | **WS5** | AI Import/Export | Import/export implemented end-to-end, including export hardening and regression tests | ✅ Complete |

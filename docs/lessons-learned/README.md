@@ -49,3 +49,5 @@ Create a new file in this directory named after the topic (e.g., `auth-token-ref
 | `rich-editor-effect-deps-remount.md` | Including runtime flags like `spellcheckEnabled` in Quill init-effect deps can recreate the editor and leave stale DOM references; keep init deps stable and sync dynamic flags in dedicated effects. | 2026-04-15 |
 | `folder-rename-split-layout-remap.md` | Folder rename must remap split-pane layout paths and sidebar expanded-folder paths to avoid context loss after refresh. | 2026-04-15 |
 | `pdf-centered-heading-regression.md` | PDF heading styling fix regressed `trama:center`; heading and paragraph render paths must both receive layout alignment state. | 2026-04-16 |
+| `docx-heading-centered-regression.md` | DOCX heading style fix regressed centered alignment; `createHeadingParagraph` must receive and apply `centered` flag like `createTextParagraph` does. | 2026-04-16 |
+| `ipc-handler-export-chain.md` | IPC handler exports need re-export at `handlers/index.ts` level, not just `project-handlers/index.ts` | 2026-04-16 |

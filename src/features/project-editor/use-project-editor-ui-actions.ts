@@ -149,7 +149,6 @@ function usePrimaryProjectEditorActions(
   const { createArticle, createCategory } = useProjectEditorCreateActions({ values, setters, openProject })
   const { renameFile, deleteFile, editFileTags } = useProjectEditorFileActions({ values, setters, openProject })
   const { renameFolder, deleteFolder } = useProjectEditorFolderActions({ values, setters, openProject })
-  const reorderFiles = useReorderFilesAction({ setters })
   const setSidebarSection = useSetSidebarSectionAction(setters)
   const toggleSidebarPanelCollapsed = useToggleSidebarPanelCollapsedAction(values, setters)
   const setSidebarPanelWidth = useSetSidebarPanelWidthAction(setters)
@@ -161,6 +160,7 @@ function usePrimaryProjectEditorActions(
   const setFullscreenEnabled = useSetFullscreenEnabledAction(setters)
   const toggleFocusMode = useToggleFocusModeAction(values, setters)
   const setFocusScope = useSetFocusScopeAction(setters)
+  const reorderFiles = useReorderFilesAction({ setters })
 
   return {
     pickProjectFolder,

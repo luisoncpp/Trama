@@ -1,7 +1,22 @@
 # Exportar Libro - Plan de Implementacion
 
-Fecha: 2026-04-13 → 2026-04-14  
-Estado: ✅ Completado (Fases A-D implementadas, hardening de PDF terminado, soporte de imágenes en PDF/DOCX/EPUB agregado)
+Fecha: 2026-04-13 → 2026-04-16  
+Estado: ✅ Completado (Fases A-E implementadas, hardening de PDF terminado, soporte de imágenes en PDF/DOCX/EPUB, soporte de estilos de heading en DOCX con alineación centrada)
+
+## Nota sobre headings en DOCX (2026-04-16)
+
+**DOCX**: ✅ Soporta estilos de heading (Heading1-Heading6) para líneas markdown `#`, `##`, etc.
+**DOCX**: ✅ Respeta alineación centrada en headings dentro de directivas `<!-- trama:center:start -->`
+
+El renderer DOCX ahora tiene:
+- `createHeadingParagraph(text, level, centered)` - crea párrafos con estilo de heading y alineación
+- `detectHeading(line)` - detecta líneas markdown de heading (`# Title` o `#/Title`)
+- `processLine()` propagando el flag `centered` a ambas funciones de creación de párrafo
+
+Pruebas de regresión en `tests/book-export-renderers.test.ts`:
+- `renders docx with Heading1 style for h1 markdown`
+- `renders docx with centered alignment for headings inside center directives`
+- `renders docx with multiple heading levels`
 
 ## Nota sobre imágenes
 
