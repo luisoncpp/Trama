@@ -2,7 +2,7 @@ import path from 'node:path'
 import type { BookExportChapter } from './book-export-renderers.js'
 import { parseDirectiveLine } from './book-export-directives.js'
 import { resolveImagePath } from './book-export-image-utils.js'
-import type { PdfWriter, PdfLayoutState } from './book-export-pdf-renderer.js'
+import type { PdfWriter, PdfLayoutState } from './book-export-pdf-utils.js'
 
 export async function renderPdfChapter(
   chapter: BookExportChapter,

@@ -23,6 +23,7 @@ Open these only when relevant:
 - Phase planning details: `docs/phase-4-detailed-plan.md`
 - Wiki Tag Links system guide + debug playbook: `docs/wiki-tag-links-system-guide.md`
 - Markdown layout directives (center/spacer/pagebreak + EPUB/MOBI): `docs/markdown-layout-directives-spec.md`
+- Book export architecture (PDF/DOCX/EPUB/HTML/Markdown pipeline): `docs/book-export-architecture.md`
 
 ## Fast routing by task
 

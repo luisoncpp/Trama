@@ -52,3 +52,4 @@ Create a new file in this directory named after the topic (e.g., `auth-token-ref
 | `docx-heading-centered-regression.md` | DOCX heading style fix regressed centered alignment; `createHeadingParagraph` must receive and apply `centered` flag like `createTextParagraph` does. | 2026-04-16 |
 | `ipc-handler-export-chain.md` | IPC handler exports need re-export at `handlers/index.ts` level, not just `project-handlers/index.ts` | 2026-04-16 |
 | `quill-text-vs-delta-index-mismatch.md` | `getText()` offsets drift from Quill document indexes when embeds exist; map text offsets through Delta ops before `getBounds` to avoid shifted/oversized tag underlines | 2026-04-16 |
+| `pdf-renderer-split.md` | Split `book-export-pdf-renderer.ts` (202 lines) into `pdf-font-utils.ts`, `pdf-utils.ts`, and a 3-line barrel to fix `max-lines` lint error; update file-map and REFACTORIZAR.md when splitting | 2026-04-17 |

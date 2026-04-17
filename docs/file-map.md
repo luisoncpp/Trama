@@ -96,15 +96,15 @@ Mandatory doc navigation for new chats:
   - PDF font loading strategy: registers `@pdf-lib/fontkit`, resolves Unicode-capable system serif fonts, and falls back to standard fonts.
 - `electron/services/book-export-pdf-inline.ts`
   - PDF inline text helpers: markdown inline tokenization (`**bold**`/`__bold__`), line wrapping, and width measurement for mixed regular/bold runs.
-- `electron/services/book-export-renderers.ts`
-  - Markdown/HTML renderers plus common chapter metadata model and HTML chapter rendering/template helpers.
-- `electron/services/book-export-docx-renderer.ts`
-  - DOCX renderer using `docx`, mapping directive semantics (center/spacer/pagebreak) to Word-native structure.
-- `electron/services/book-export-epub-renderer.ts`
-  - EPUB renderer using `epub-gen`, compiling chapter HTML sections into a `.epub` package.
+- `electron/services/book-export-pdf-font-utils.ts`
+  - Font normalization utilities: `normalizeForFont`, `safeTextForFont`, `normalizeRunsForFonts`. Shared between PDF rendering functions.
+- `electron/services/book-export-pdf-utils.ts`
+  - Core PDF writer implementation: `createPdfWriter`, `PdfWriter` interface, `PdfLayoutState`, and all drawing functions (drawRuns, drawHeading, drawPdfImage, etc.)
 - `electron/services/book-export-pdf-renderer.ts`
-  - PDF renderer using `pdf-lib` with pagination, directive-aware spacing/page breaks, wrapped inline formatting, and chapter boundary page management.
+  - Re-export barrel for PDF book rendering. Exports `PdfWriter`, `PdfLayoutState` types and `renderPdfBook`, `createPdfWriter` from `book-export-pdf-utils.ts`. Uses `pdf-lib` with pagination, directive-aware spacing/page breaks, wrapped inline formatting, and chapter boundary page management.
   - Uses Unicode-capable system serif fonts when available (fallback to standard fonts).
+- `docs/book-export-architecture.md`
+  - Canonical reference for the book export pipeline. Explains the file layout, PDF render pipeline, data models, directive mapping, image handling, page metrics, and test coverage.
 
 ## Renderer layer
 
