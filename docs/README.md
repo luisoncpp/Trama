@@ -20,6 +20,9 @@ Coordination architecture:
 Implementation plans:
 - `wiki-tag-links-implementation-plan.md` (WS1 execution guide)
 
+System guides:
+- `wiki-tag-links-system-guide.md` (WS1 architecture map + fast debug playbook)
+
 ## Recommended reading order
 
 1. `START-HERE.md`
@@ -60,7 +63,7 @@ Implemented foundation:
 - Project-editor orchestration/actions: `src/features/project-editor/use-project-editor*.ts`.
 - Understand split-pane coordination model: `docs/split-pane-coordination.md`.
 - Split-pane dirty/unsaved mismatch: `docs/troubleshooting.md` (split pane dirty section) -> `src/features/project-editor/components/workspace-editor-panels.tsx` -> `src/features/project-editor/use-project-editor-ui-actions.ts` -> `tests/project-editor-conflict-flow.test.ts`.
-- Wiki Tag Links feature work: `docs/wiki-tag-links-spec.md` + `docs/wiki-tag-links-implementation-plan.md`.
+- Wiki Tag Links feature work: `docs/wiki-tag-links-spec.md` + `docs/wiki-tag-links-implementation-plan.md` + `docs/wiki-tag-links-system-guide.md`.
 - Regressions after refactor: check `tests/sidebar-panels.test.ts`, `tests/use-project-editor.test.ts`, `tests/ipc-contract.test.ts` first.
 
 ## Important note

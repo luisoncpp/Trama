@@ -330,6 +330,7 @@ Core and regression suites:
 - `tests/project-editor-logic.test.ts`
 - `tests/project-folder-dialog-handler.test.ts`
 - `tests/rich-markdown-editor.test.ts`
+- `tests/rich-markdown-editor-tag-overlay.test.ts`
 - `tests/paste-markdown.test.ts`
 - `tests/focus-mode-scope.test.ts`
 - `tests/sidebar-tree.test.ts`

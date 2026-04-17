@@ -51,3 +51,4 @@ Create a new file in this directory named after the topic (e.g., `auth-token-ref
 | `pdf-centered-heading-regression.md` | PDF heading styling fix regressed `trama:center`; heading and paragraph render paths must both receive layout alignment state. | 2026-04-16 |
 | `docx-heading-centered-regression.md` | DOCX heading style fix regressed centered alignment; `createHeadingParagraph` must receive and apply `centered` flag like `createTextParagraph` does. | 2026-04-16 |
 | `ipc-handler-export-chain.md` | IPC handler exports need re-export at `handlers/index.ts` level, not just `project-handlers/index.ts` | 2026-04-16 |
+| `quill-text-vs-delta-index-mismatch.md` | `getText()` offsets drift from Quill document indexes when embeds exist; map text offsets through Delta ops before `getBounds` to avoid shifted/oversized tag underlines | 2026-04-16 |

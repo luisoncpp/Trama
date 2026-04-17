@@ -1,6 +1,7 @@
 # Wiki Tag Links — Technical Specification
 
 Implementation guide: `docs/wiki-tag-links-implementation-plan.md`
+System guide + debug playbook: `docs/wiki-tag-links-system-guide.md`
 
 ## 1. Goal
 

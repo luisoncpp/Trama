@@ -58,8 +58,44 @@ For WS1 execution details, use `docs/wiki-tag-links-implementation-plan.md` toge
 5. Run tests with `npm run test` before finishing.
 6. Run `npm run build` for final compile confidence.
 7. Run `npm run test:smoke` when touching preload/window/IPC startup paths.
-8. Update the documentation
+8. Update the documentation (see mandatory checklist below)
 9. If a whole md implementation plan is finished, move it to `docs/done`.
+
+## Documentation requirements (mandatory)
+
+When a change affects behavior (not only formatting), documentation updates are required in the same task.
+
+Minimum required updates:
+1. `docs/file-map.md`
+2. `docs/lessons-learned/README.md` (+ create lesson file if a non-trivial bug/risk was found)
+3. `docs/current-status.md` (only if feature status/scope changed)
+4. Task-specific docs (`spec`, implementation plan, troubleshooting, or system guide)
+
+Required depth (to avoid shallow updates):
+1. Explain data flow end-to-end (where data originates, transforms, and is consumed).
+2. List exact files by responsibility (main process, IPC, renderer, tests).
+3. Document invariants and non-obvious rules (for example, index/coordinate assumptions).
+4. Add a fast debug playbook with ordered steps and focused tests.
+5. Record known failure modes and links to lessons learned.
+
+PR/handoff quality gate:
+1. A future contributor should be able to localize the subsystem entry points in under 5 minutes using docs only.
+2. A future contributor should be able to run a focused regression suite without codebase-wide search.
+
+If these conditions are not met, documentation is incomplete.
+
+## Documentation update protocol for future chats
+
+When asked to "update docs", do not stop at status bullets. Include implementation-level guidance.
+
+Expected protocol:
+1. Add or update a subsystem guide if the area is complex or repeatedly breaks.
+2. Update `docs/START-HERE.md` fast-routing table so the new guide is discoverable.
+3. Add troubleshooting or lesson entries for every resolved bug with root cause and fix rule.
+4. Include focused test commands in docs for the changed subsystem.
+5. Verify links between docs are reciprocal (spec -> guide -> troubleshooting -> lessons -> tests).
+
+This protocol is mandatory for recurring systems like Wiki Tag Links, split-pane coordination, and export pipelines.
 
 ## Sidebar-specific manual checks
 

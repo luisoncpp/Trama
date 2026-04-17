@@ -12,6 +12,38 @@ export interface UseTagOverlayParams {
   ctrlPressed: boolean
 }
 
+interface DeltaOp {
+  insert?: string | Record<string, unknown>
+}
+
+function mapPlainTextIndexToQuillIndex(editor: Quill, plainTextIndex: number): number {
+  const ops = (editor.getContents()?.ops ?? []) as DeltaOp[]
+  const target = Math.max(0, plainTextIndex)
+
+  let plainOffset = 0
+  let quillOffset = 0
+
+  for (const op of ops) {
+    if (typeof op.insert === 'string') {
+      const segment = op.insert
+      const remaining = target - plainOffset
+
+      if (remaining <= segment.length) {
+        return quillOffset + remaining
+      }
+
+      plainOffset += segment.length
+      quillOffset += segment.length
+      continue
+    }
+
+    // Quill counts embeds as one document unit, while getText() does not include them.
+    quillOffset += 1
+  }
+
+  return quillOffset
+}
+
 export function buildTagOverlayMatches(editor: Quill, tagIndex: Record<string, string>): TagOverlayMatch[] {
   const text = editor.getText()
   const allMatches = findTagMatchesInText(text, tagIndex)
@@ -19,7 +51,14 @@ export function buildTagOverlayMatches(editor: Quill, tagIndex: Record<string, s
 
   const matchesWithBounds: TagOverlayMatch[] = []
   for (const match of filteredMatches) {
-    const bounds = editor.getBounds(match.start, match.end - match.start)
+    const quillStart = mapPlainTextIndexToQuillIndex(editor, match.start)
+    const quillEnd = mapPlainTextIndexToQuillIndex(editor, match.end)
+    const matchLength = Math.max(0, quillEnd - quillStart)
+    if (matchLength === 0) {
+      continue
+    }
+
+    const bounds = editor.getBounds(quillStart, matchLength)
     matchesWithBounds.push({
       ...match,
       bounds,
