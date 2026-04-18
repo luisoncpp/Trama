@@ -7,14 +7,8 @@ import {
   type ReorderFilesResponse,
 } from '../../../../src/shared/ipc.js'
 import { errorEnvelope } from '../../../ipc-errors.js'
-import {
-  getActiveIndexService,
-  getActiveProjectRoot,
-  getActiveTagIndexService,
-  markInternalWrite,
-} from '../../../ipc-runtime.js'
-import { scanProject } from '../../../services/project-scanner.js'
-import { documentRepository, readMetaByPath } from './shared.js'
+import { getActiveIndexService, getActiveProjectRoot, markInternalWrite } from '../../../ipc-runtime.js'
+import { documentRepository, reconcileActiveProjectIndex } from './shared.js'
 
 export async function handleReorderFiles(rawPayload: unknown): Promise<IpcEnvelope<ReorderFilesResponse>> {
   const payload = reorderFilesRequestSchema.safeParse(rawPayload)
@@ -40,23 +34,6 @@ export async function handleReorderFiles(rawPayload: unknown): Promise<IpcEnvelo
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unable to reorder files'
     return errorEnvelope('REORDER_FILES_FAILED', message)
-  }
-}
-
-async function reconcileActiveProjectIndex(projectRoot: string): Promise<void> {
-  const indexService = getActiveIndexService()
-  const tagIndexService = getActiveTagIndexService()
-  if (!indexService && !tagIndexService) {
-    return
-  }
-
-  const { markdownFiles } = await scanProject(projectRoot)
-  const metaByPath = await readMetaByPath(projectRoot, markdownFiles)
-  if (indexService) {
-    await indexService.reconcileIndex(markdownFiles, metaByPath)
-  }
-  if (tagIndexService) {
-    await tagIndexService.buildIndex(markdownFiles, metaByPath)
   }
 }
 

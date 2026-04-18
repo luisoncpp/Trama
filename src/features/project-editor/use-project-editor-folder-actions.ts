@@ -6,6 +6,7 @@ import {
   isPathInsideFolder,
 } from './project-editor-folder-logic'
 import { noteSidebarFolderRenamed } from './components/sidebar/sidebar-folder-rename-events'
+import { normalizeName, isInvalidRenameInput } from '../../shared/sidebar-utils'
 import type { ProjectEditorActions, SidebarRenameInput, WorkspaceLayoutState } from './project-editor-types'
 import type { UseProjectEditorStateResult } from './use-project-editor-state'
 
@@ -13,15 +14,6 @@ interface UseProjectEditorFolderActionsParams {
   values: UseProjectEditorStateResult['values']
   setters: UseProjectEditorStateResult['setters']
   openProject: (projectRoot: string, preferredFilePath?: string, preferredPane?: 'primary' | 'secondary') => Promise<void>
-}
-
-function normalizeFolderName(value: string): string {
-  return value.trim().replaceAll('\\', '/').replace(/^\/+/, '').replace(/\/+$/, '')
-}
-
-function isInvalidFolderRenameInput(input: SidebarRenameInput): boolean {
-  const normalizedName = normalizeFolderName(input.newName)
-  return !input.path || normalizedName.length === 0 || normalizedName.includes('/')
 }
 
 function hasDirtyPathInsideFolder(values: UseProjectEditorStateResult['values'], folderPath: string): boolean {
@@ -45,7 +37,7 @@ async function executeFolderRename(
     return
   }
 
-  if (isInvalidFolderRenameInput(input)) {
+  if (isInvalidRenameInput(input)) {
     setters.setStatusMessage('Provide a valid folder name without path separators.')
     return
   }
@@ -57,7 +49,7 @@ async function executeFolderRename(
 
   const response = await window.tramaApi.renameFolder({
     path: input.path,
-    newName: normalizeFolderName(input.newName),
+    newName: normalizeName(input.newName),
   })
   if (!response.ok) {
     setters.setStatusMessage(`Could not rename folder: ${response.error.message}`)

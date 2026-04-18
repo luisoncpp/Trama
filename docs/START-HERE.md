@@ -6,6 +6,22 @@ This file is the required first stop for new conversations.
 
 Goal: avoid repeated codebase-wide searches and reduce drift between implementation and docs.
 
+## REGLA CRÍTICA: Rutas de archivo
+
+No leas rutas que no te hayan sido dadas explícitamente
+
+Cuando el usuario te dé una ruta de archivo, USA ESA RUTA EXACTAMENTE.
+NO la transformes, no la "mejores", no intentes rutas alternativas.
+
+Si el usuario dice: "lee C:\Proyectos\trama\docs\START-HERE.md"
+→ Lees exactamente: `C:\Proyectos\trama\docs\START-HERE.md`
+→ NO: `C:\repo\trama\...`, `C:\trama-projects\trama\...`, `src\...`, etc.
+
+Si no puedes leer esa ruta, di claramente "No puedo leer esa ruta" y PÁRATE.
+NO sigas intentando otras rutas.
+
+NO te estoy pidiendo que leas un archivo por ahora, sólo establezco reglas.
+
 ## 3-minute bootstrap
 
 1. Read `docs/current-status.md` for implemented vs pending features.

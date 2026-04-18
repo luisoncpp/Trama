@@ -1,14 +1,10 @@
 import { useState } from 'preact/hooks'
+import { getBaseName } from '../../../../shared/sidebar-utils'
 import type { SidebarFolderActionMode } from './sidebar-folder-actions-dialog.tsx'
 
 interface UseSidebarFolderActionsDialogParams {
   onRenameFolder: (path: string, newName: string) => void
   onDeleteFolder: (path: string) => void
-}
-
-function getFolderName(path: string): string {
-  const segments = path.split('/').filter(Boolean)
-  return segments.at(-1) ?? path
 }
 
 export function useSidebarFolderActionsDialog({ onRenameFolder, onDeleteFolder }: UseSidebarFolderActionsDialogParams) {
@@ -29,7 +25,7 @@ export function useSidebarFolderActionsDialog({ onRenameFolder, onDeleteFolder }
 
     setMode('rename')
     setTargetPath(path)
-    setRenameValue(getFolderName(path))
+    setRenameValue(getBaseName(path))
   }
 
   const openDelete = (path: string) => {

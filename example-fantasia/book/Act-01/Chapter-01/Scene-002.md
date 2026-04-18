@@ -18,5 +18,4 @@ El tallador intenta recordar historias de la Antigua Alianza y luego se corrige,
 
 —Porque a veces lo que se recuerda vuelve con hambre —contesta él, en voz baja—. Pero si vais con cuidado, quizá lo que encontréis sean respuestas, no monstruos.
 
-Aina guarda la tapa en su bolsa y mira a Marek; el peso de la decisión comparte su brillo con la brasa del amuleto.
-El tallador intenta hablar de la Antigua Alianza y luego se corrige, como si la memoria fuera algo peligroso de nombrar en voz alta. Aina escucha, toma la tapa y siente, bajo la piel, el cosquilleo de una posibilidad: que lo que tiene en las manos sea una llave más que un talismán.
+Aina guarda la tapa en su bolsa y mira a Marek; el peso de la decisión comparte su brillo con la brasa del amuleto. El tallador intenta hablar de la Antigua Alianza y luego se corrige, como si la memoria fuera algo peligroso de nombrar en voz alta. Aina escucha, toma la tapa y siente, bajo la piel, el cosquilleo de una posibilidad: que lo que tiene en las manos sea una llave más que un talismán.

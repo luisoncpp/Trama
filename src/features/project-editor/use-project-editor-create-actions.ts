@@ -1,5 +1,6 @@
 import { useCallback } from 'preact/hooks'
 import { PROJECT_EDITOR_STRINGS } from './project-editor-strings'
+import { normalizeName } from '../../shared/sidebar-utils'
 import type { ProjectEditorActions } from './project-editor-types'
 import type { SidebarCreateInput } from './project-editor-types'
 import type { UseProjectEditorStateResult } from './use-project-editor-state'
@@ -13,14 +14,6 @@ interface UseProjectEditorCreateActionsParams {
 
 function ensureMarkdownExtension(value: string): string {
   return value.toLowerCase().endsWith('.md') ? value : `${value}.md`
-}
-
-function normalizeDirectory(value: string): string {
-  return value.trim().replaceAll('\\', '/').replace(/^\/+/, '').replace(/\/+$/, '')
-}
-
-function normalizeName(value: string): string {
-  return value.trim().replaceAll('\\', '/').replace(/^\/+/, '').replace(/\/+$/, '')
 }
 
 function buildCandidatePath(
@@ -79,7 +72,7 @@ function useCreateArticleAction({
       return
     }
 
-    const directory = normalizeDirectory(input.directory)
+    const directory = normalizeName(input.directory)
     const name = normalizeName(input.name)
 
     const maxAttempts = 20
@@ -124,7 +117,7 @@ function useCreateCategoryAction({
       return
     }
 
-    const directory = normalizeDirectory(input.directory)
+    const directory = normalizeName(input.directory)
     const name = normalizeName(input.name)
 
     const maxAttempts = 20
