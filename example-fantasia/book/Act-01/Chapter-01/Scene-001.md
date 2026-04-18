@@ -1,4 +1,10 @@
-El mercado de Lirio-Amanecer bulle de voces y olores: miel, cuero recién curado y madera que huele a lluvia. Aina, con su capa azul manchada de polvo y una sonrisa tímida, arregla su puesto mientras los amuletos sobre la mesa emiten un tenue crujido de luz al enfriarse la tarde. Vende esas pequeñas piezas a quienes buscan consuelo o una buena historia; descifra las arrugas del rostro de los clientes como si fueran mapas.
+<!-- trama:center:start -->
+
+# Capitulo 1
+
+<!-- trama:center:end -->
+
+**El mercado de Lirio-Amanecer** bulle de voces y olores: miel, cuero recién curado y madera que huele a lluvia. Aina, con su capa azul manchada de polvo y una sonrisa tímida, arregla su puesto mientras los amuletos **sobre** la mesa emiten un tenue crujido de luz al enfriarse la tarde. Vende esas pequeñas piezas a quienes buscan consuelo o una buena historia; descifra las arrugas del rostro de los clientes como si fueran mapas.
 
 La frase de su abuela —“Las llamas buscan lo que está roto para volverlo entero”— la acompaña con la naturalidad de un hábito. Esa tarde la frase parece señalarle una dirección: una carta sellada que deja caer un muchacho con ojos de hojalata. Se presenta con una voz apresurada: "Perdón", dice, y sus dedos tropiezan al recogerla.
 

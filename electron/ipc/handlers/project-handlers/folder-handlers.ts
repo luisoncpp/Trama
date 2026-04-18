@@ -6,14 +6,9 @@ import {
   type RenameFolderResponse,
 } from '../../../../src/shared/ipc.js'
 import { errorEnvelope } from '../../../ipc-errors.js'
-import {
-  getActiveIndexService,
-  getActiveProjectRoot,
-  getActiveTagIndexService,
-  markInternalWrite,
-} from '../../../ipc-runtime.js'
+import { getActiveProjectRoot, markInternalWrite } from '../../../ipc-runtime.js'
 import { scanProject } from '../../../services/project-scanner.js'
-import { documentRepository, readMetaByPath } from './shared.js'
+import { documentRepository, reconcileActiveProjectIndex } from './shared.js'
 
 function withTrailingSlash(folderPath: string): string {
   return folderPath.endsWith('/') ? folderPath : `${folderPath}/`
@@ -28,23 +23,6 @@ function remapFolderFilePath(filePath: string, oldFolderPath: string, newFolderP
   const oldPrefix = withTrailingSlash(oldFolderPath)
   const newPrefix = withTrailingSlash(newFolderPath)
   return `${newPrefix}${filePath.slice(oldPrefix.length)}`
-}
-
-async function reconcileActiveProjectIndex(projectRoot: string): Promise<void> {
-  const indexService = getActiveIndexService()
-  const tagIndexService = getActiveTagIndexService()
-  if (!indexService && !tagIndexService) {
-    return
-  }
-
-  const { markdownFiles } = await scanProject(projectRoot)
-  const metaByPath = await readMetaByPath(projectRoot, markdownFiles)
-  if (indexService) {
-    await indexService.reconcileIndex(markdownFiles, metaByPath)
-  }
-  if (tagIndexService) {
-    await tagIndexService.buildIndex(markdownFiles, metaByPath)
-  }
 }
 
 export async function handleRenameFolder(rawPayload: unknown): Promise<IpcEnvelope<RenameFolderResponse>> {

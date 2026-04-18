@@ -1,4 +1,5 @@
 import { useState } from 'preact/hooks'
+import { getBaseName, parseStringAsTags, serializeTags } from '../../../../shared/sidebar-utils'
 import type { SidebarFileActionMode } from './sidebar-file-actions-dialog.tsx'
 
 interface UseSidebarFileActionsDialogParams {
@@ -6,44 +7,6 @@ interface UseSidebarFileActionsDialogParams {
   onDeleteFile: (path: string) => void
   onEditFileTags: (path: string, tags: string[]) => void
   onLoadFileTags: (path: string) => Promise<string[]>
-}
-
-function getFileName(path: string): string {
-  const segments = path.split('/').filter(Boolean)
-  return segments.at(-1) ?? path
-}
-
-function parseTags(rawValue: string): string[] {
-  const seen = new Set<string>()
-  const tags: string[] = []
-  for (const entry of rawValue.split(/[\n,]/g)) {
-    const next = entry.trim()
-    if (!next) {
-      continue
-    }
-
-    const lower = next.toLocaleLowerCase()
-    if (seen.has(lower)) {
-      continue
-    }
-
-    seen.add(lower)
-    tags.push(next)
-  }
-
-  return tags
-}
-
-function serializeTags(tags: unknown): string {
-  if (!Array.isArray(tags)) {
-    return ''
-  }
-
-  return tags
-    .filter((entry): entry is string => typeof entry === 'string')
-    .map((entry) => entry.trim())
-    .filter(Boolean)
-    .join(', ')
 }
 
 interface CreateSidebarFileDialogActionsParams {
@@ -107,7 +70,7 @@ function createConfirmAction(params: CreateSidebarFileDialogActionsParams, close
     }
 
     if (mode === 'edit-tags') {
-      params.onEditFileTags(targetPath, parseTags(tagsValue))
+      params.onEditFileTags(targetPath, parseStringAsTags(tagsValue))
       closeDialog()
       return
     }
@@ -127,7 +90,7 @@ function createSidebarFileDialogActions(params: CreateSidebarFileDialogActionsPa
 
     params.setTargetPath(path)
     params.setMode('rename')
-    params.setRenameValue(getFileName(path))
+    params.setRenameValue(getBaseName(path))
   }
 
   const openDelete = (path: string) => {

@@ -299,6 +299,16 @@ Mandatory doc navigation for new chats:
   - Create buttons (`+Article`, `+Category`).
 - `src/features/project-editor/components/sidebar/sidebar-settings-content.tsx`
   - Sidebar settings panel (width slider, theme/focus controls, and spellcheck settings UI).
+- `src/features/project-editor/components/sidebar/sidebar-settings-subcomponents.tsx`
+  - Split-out sub-components for settings: theme preference buttons, focus scope select, spellcheck language select, spellcheck controls, panel width control.
+- `src/features/project-editor/components/sidebar/theme-setting.tsx`
+  - Theme settings section (theme preference buttons with resolved theme display).
+- `src/features/project-editor/components/sidebar/spellcheck-setting.tsx`
+  - Spellcheck settings section (spellcheck controls wrapper).
+- `src/features/project-editor/components/sidebar/focus-scope-setting.tsx`
+  - Focus scope settings section (focus scope select wrapper).
+- `src/features/project-editor/components/sidebar/panel-width-setting.tsx`
+  - Panel width settings section (panel width control wrapper).
 - `src/features/project-editor/components/sidebar/sidebar-transfer-content.tsx`
   - Transfer section composition: separate `Project interchange` (AI import/export) and `Book export` blocks with format selector + export trigger.
 

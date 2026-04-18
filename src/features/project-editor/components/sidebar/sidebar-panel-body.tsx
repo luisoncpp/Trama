@@ -56,6 +56,16 @@ export interface SidebarPanelBodyProps {
   >
 }
 
+const makeRootPath = (root: string) => (path: string) => `${root}${path}`
+
+function loadFileTags(root: string) {
+  return async (path: string): Promise<string[]> => {
+    const response = await window.tramaApi.readDocument({ path: `${root}${path}` })
+    if (!response.ok || !Array.isArray(response.data.meta.tags)) return []
+    return response.data.meta.tags.filter((value): value is string => typeof value === 'string')
+  }
+}
+
 function renderSidebarExplorerContent({
   contentProps,
   sectionConfig,
@@ -75,18 +85,9 @@ function renderSidebarExplorerContent({
   onReorderFiles,
   onMoveFile,
 }: SidebarPanelBodyProps) {
-  if (!sectionConfig) {
-    return null
-  }
+  if (!sectionConfig) return null
 
-  const loadFileTags = async (path: string): Promise<string[]> => {
-    const response = await window.tramaApi.readDocument({ path: `${sectionConfig.root}${path}` })
-    if (!response.ok || !Array.isArray(response.data.meta.tags)) {
-      return []
-    }
-
-    return response.data.meta.tags.filter((value): value is string => typeof value === 'string')
-  }
+  const withRoot = makeRootPath(sectionConfig.root)
 
   return (
     <SidebarExplorerContent
@@ -99,15 +100,15 @@ function renderSidebarExplorerContent({
       onFilterQueryChange={onFilterQueryChange}
       onCreateArticle={onCreateArticle}
       onCreateCategory={onCreateCategory}
-      onRenameFile={(path, newName) => onRenameFile(`${sectionConfig.root}${path}`, newName)}
-      onRenameFolder={(path, newName) => onRenameFolder(`${sectionConfig.root}${path}`, newName)}
-      onDeleteFolder={(path) => onDeleteFolder(`${sectionConfig.root}${path}`)}
-      onDeleteFile={(path) => onDeleteFile(`${sectionConfig.root}${path}`)}
-      onEditFileTags={(path, tags) => onEditFileTags(`${sectionConfig.root}${path}`, tags)}
-      onLoadFileTags={loadFileTags}
-      onSelectFile={(filePath) => onSelectFile(`${sectionConfig.root}${filePath}`)}
+      onRenameFile={(path, newName) => onRenameFile(withRoot(path), newName)}
+      onRenameFolder={(path, newName) => onRenameFolder(withRoot(path), newName)}
+      onDeleteFolder={(path) => onDeleteFolder(withRoot(path))}
+      onDeleteFile={(path) => onDeleteFile(withRoot(path))}
+      onEditFileTags={(path, tags) => onEditFileTags(withRoot(path), tags)}
+      onLoadFileTags={loadFileTags(sectionConfig.root)}
+      onSelectFile={(filePath) => onSelectFile(withRoot(filePath))}
       onReorderFiles={onReorderFiles}
-      onMoveFile={onMoveFile ? (sourcePath, targetFolder) => onMoveFile(`${sectionConfig.root}${sourcePath}`, `${sectionConfig.root}${targetFolder}`) : undefined}
+      onMoveFile={onMoveFile ? (s, t) => onMoveFile(withRoot(s), withRoot(t)) : undefined}
     />
   )
 }

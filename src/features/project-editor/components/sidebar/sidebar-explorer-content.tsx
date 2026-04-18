@@ -92,56 +92,37 @@ function SidebarHeader({ title, apiAvailable, loadingProject, onPickFolder }: Si
 export function SidebarExplorerContent(props: SidebarExplorerContentProps) {
   const { createDialog, fileDialog, folderDialog } = useSidebarExplorerDialogs(props)
   const filterInputElementRef = useRef<HTMLInputElement | null>(null)
-  const setFilterInputRef = (element: HTMLInputElement | null) => {
-    filterInputElementRef.current = element
+  const setFilterInputRef = (el: HTMLInputElement | null) => { filterInputElementRef.current = el }
+
+  const bodyProps = {
+    title: props.title, visibleFiles: props.visibleFiles, selectedPath: props.selectedPath,
+    loadingDocument: props.loadingDocument, onSelectFile: props.onSelectFile,
+    loadingProject: props.loadingProject, apiAvailable: props.apiAvailable,
+    scopePathLabel: props.scopePathLabel, filterQuery: props.filterQuery,
+    onFilterQueryChange: props.onFilterQueryChange,
+    createMode: createDialog.createMode, createInput: createDialog.createInput,
+    openCreateDialog: createDialog.openCreateDialog, closeCreateDialog: createDialog.closeCreateDialog,
+    submitCreateDialog: createDialog.submitCreateDialog,
+    fileActionMode: fileDialog.mode, fileActionTargetPath: fileDialog.targetPath,
+    renameValue: fileDialog.renameValue, openRenameDialog: fileDialog.openRename,
+    openDeleteDialog: fileDialog.openDelete, openEditTagsDialog: fileDialog.openEditTags,
+    openRenameFolderDialog: folderDialog.openRename, openDeleteFolderDialog: folderDialog.openDelete,
+    closeFileActionDialog: fileDialog.closeDialog, confirmFileActionDialog: fileDialog.confirm,
+    onRenameValueChange: fileDialog.setRenameValue, tagsValue: fileDialog.tagsValue,
+    loadingTags: fileDialog.loadingTags, onTagsValueChange: fileDialog.setTagsValue,
+    folderActionMode: folderDialog.mode, folderRenameValue: folderDialog.renameValue,
+    folderActionTargetPath: folderDialog.targetPath,
+    onFolderRenameValueChange: folderDialog.setRenameValue,
+    confirmFolderActionDialog: folderDialog.confirm, closeFolderActionDialog: folderDialog.closeDialog,
+    onDirectoryChange: createDialog.setCreateDirectory, onNameChange: createDialog.setCreateName,
+    filterInputRef: setFilterInputRef, onReorderFiles: props.onReorderFiles, onMoveFile: props.onMoveFile,
   }
 
   return (
     <div class="sidebar-panel-content">
       <aside class="workspace-panel workspace-panel--sidebar" aria-busy={props.loadingProject ? 'true' : 'false'}>
         <SidebarHeader title={props.title} apiAvailable={props.apiAvailable} loadingProject={props.loadingProject} onPickFolder={props.onPickFolder} />
-        <SidebarExplorerBody
-          title={props.title}
-          visibleFiles={props.visibleFiles}
-          selectedPath={props.selectedPath}
-          loadingDocument={props.loadingDocument}
-          onSelectFile={props.onSelectFile}
-          loadingProject={props.loadingProject}
-          apiAvailable={props.apiAvailable}
-          scopePathLabel={props.scopePathLabel}
-          filterQuery={props.filterQuery}
-          onFilterQueryChange={props.onFilterQueryChange}
-          createMode={createDialog.createMode}
-          createInput={createDialog.createInput}
-          openCreateDialog={createDialog.openCreateDialog}
-          closeCreateDialog={createDialog.closeCreateDialog}
-          submitCreateDialog={createDialog.submitCreateDialog}
-          fileActionMode={fileDialog.mode}
-          fileActionTargetPath={fileDialog.targetPath}
-          renameValue={fileDialog.renameValue}
-          openRenameDialog={fileDialog.openRename}
-          openDeleteDialog={fileDialog.openDelete}
-          openEditTagsDialog={fileDialog.openEditTags}
-          openRenameFolderDialog={folderDialog.openRename}
-          openDeleteFolderDialog={folderDialog.openDelete}
-          closeFileActionDialog={fileDialog.closeDialog}
-          confirmFileActionDialog={fileDialog.confirm}
-          onRenameValueChange={fileDialog.setRenameValue}
-          tagsValue={fileDialog.tagsValue}
-          loadingTags={fileDialog.loadingTags}
-          onTagsValueChange={fileDialog.setTagsValue}
-          folderActionMode={folderDialog.mode}
-          folderRenameValue={folderDialog.renameValue}
-          folderActionTargetPath={folderDialog.targetPath}
-          onFolderRenameValueChange={folderDialog.setRenameValue}
-          confirmFolderActionDialog={folderDialog.confirm}
-          closeFolderActionDialog={folderDialog.closeDialog}
-          onDirectoryChange={createDialog.setCreateDirectory}
-          onNameChange={createDialog.setCreateName}
-          filterInputRef={setFilterInputRef}
-          onReorderFiles={props.onReorderFiles}
-          onMoveFile={props.onMoveFile}
-        />
+        <SidebarExplorerBody {...bodyProps} />
       </aside>
     </div>
   )

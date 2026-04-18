@@ -7,3 +7,5 @@ La imagen del mapa toma mayor sentido: el Bosque Encantado, con sus corrientes s
 —Vayamos ahora o esperemos? —pregunta Marek, arremangándose la capa.
 
 —Ahora —responde Aina con decisión—. No quiero dejar que el mapa se enfríe.
+
+<!-- trama:pagebreak -->

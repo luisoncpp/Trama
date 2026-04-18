@@ -1,6 +1,7 @@
 import { useCallback } from 'preact/hooks'
 import { PROJECT_EDITOR_STRINGS } from './project-editor-strings'
 import { notifyTagIndexRefresh } from './tag-index-events'
+import { normalizeName, isInvalidRenameInput, deduplicateTags } from '../../shared/sidebar-utils'
 import type { ProjectEditorActions, SidebarRenameInput } from './project-editor-types'
 import type { UseProjectEditorStateResult } from './use-project-editor-state'
 
@@ -8,36 +9,6 @@ interface UseProjectEditorFileActionsParams {
   values: UseProjectEditorStateResult['values']
   setters: UseProjectEditorStateResult['setters']
   openProject: (projectRoot: string, preferredFilePath?: string) => Promise<void>
-}
-
-function normalizeName(value: string): string {
-  return value.trim().replaceAll('\\', '/').replace(/^\/+/, '').replace(/\/+$/, '')
-}
-
-function normalizeTags(tags: string[]): string[] {
-  const seen = new Set<string>()
-  const normalized: string[] = []
-  for (const value of tags) {
-    const next = value.trim()
-    if (!next) {
-      continue
-    }
-
-    const key = next.toLocaleLowerCase()
-    if (seen.has(key)) {
-      continue
-    }
-
-    seen.add(key)
-    normalized.push(next)
-  }
-
-  return normalized
-}
-
-function isInvalidRenameInput(input: SidebarRenameInput): boolean {
-  const normalizedName = normalizeName(input.newName)
-  return !input.path || normalizedName.length === 0 || normalizedName.includes('/')
 }
 
 function useRenameFileAction({
@@ -113,7 +84,7 @@ function useEditFileTagsAction({ values, setters }: UseProjectEditorFileActionsP
       return
     }
 
-    const normalizedTags = normalizeTags(tags)
+    const normalizedTags = deduplicateTags(tags)
     const nextMeta = { ...readResponse.data.meta }
     if (normalizedTags.length === 0) {
       delete nextMeta.tags

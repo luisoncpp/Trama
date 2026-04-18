@@ -1,0 +1,15 @@
+{
+  "version": "1.0.0",
+  "corkboardOrder": {
+    "outline": [
+      "outline/arc-general-v2.md",
+      "outline/arc-general.md",
+      "outline/layout-directives-test.md"
+    ]
+  },
+  "cache": {
+    "outline/arc-general-v2.md": {},
+    "outline/arc-general.md": {},
+    "outline/layout-directives-test.md": {}
+  }
+}

@@ -31,22 +31,25 @@
       "book/Act-02/Chapter-03/Scene-002.md",
       "book/Act-02/Chapter-03/Scene-003.md"
     ],
+    "exports": [
+      "exports/book.md"
+    ],
     "lore/characters": [
-      "lore/characters/Aina.md",
+      "lore/characters/Corin.md",
+      "lore/characters/Elio.md",
       "lore/characters/Marek.md",
       "lore/characters/Nix.md",
-      "lore/characters/Sombra-del-Lirio.md",
-      "lore/characters/Elio.md",
       "lore/characters/Nora.md",
-      "lore/characters/Corin.md"
+      "lore/characters/Sombra-del-Lirio.md",
+      "lore/characters/Aina.md"
     ],
     "lore/places": [
       "lore/places/bosque-encantado.md",
       "lore/places/ciudad-principal.md"
     ],
     "lore/systems": [
-      "lore/systems/magia.md",
-      "lore/systems/politica.md"
+      "lore/systems/politica.md",
+      "lore/systems/magia.md"
     ],
     "outline/Act-01/Chapter-01": [
       "outline/Act-01/Chapter-01/chapter-beats.md"
@@ -92,6 +95,7 @@
     "book/Act-02/Chapter-03/Scene-001.md": {},
     "book/Act-02/Chapter-03/Scene-002.md": {},
     "book/Act-02/Chapter-03/Scene-003.md": {},
+    "exports/book.md": {},
     "lore/characters/Aina.md": {
       "tags": [
         "aina"
@@ -130,13 +134,13 @@
     },
     "lore/characters/Sombra-del-Lirio.md": {},
     "lore/places/bosque-encantado.md": {
-      "title": "El Bosque Encantado",
       "type": "location",
       "tags": [
         "bosque",
         "rio",
         "muntana"
-      ]
+      ],
+      "title": "El Bosque Encantado"
     },
     "lore/places/ciudad-principal.md": {
       "title": "Ciudad de Lirio-Amanecer",

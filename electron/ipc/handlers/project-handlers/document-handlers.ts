@@ -14,31 +14,8 @@ import {
   type SaveDocumentResponse,
 } from '../../../../src/shared/ipc.js'
 import { errorEnvelope } from '../../../ipc-errors.js'
-import {
-  getActiveIndexService,
-  getActiveTagIndexService,
-  getActiveProjectRoot,
-  markInternalWrite,
-} from '../../../ipc-runtime.js'
-import { scanProject } from '../../../services/project-scanner.js'
-import { documentRepository, readMetaByPath } from './shared.js'
-
-async function reconcileActiveProjectIndex(projectRoot: string): Promise<void> {
-  const indexService = getActiveIndexService()
-  const tagIndexService = getActiveTagIndexService()
-  if (!indexService && !tagIndexService) {
-    return
-  }
-
-  const { markdownFiles } = await scanProject(projectRoot)
-  const metaByPath = await readMetaByPath(projectRoot, markdownFiles)
-  if (indexService) {
-    await indexService.reconcileIndex(markdownFiles, metaByPath)
-  }
-  if (tagIndexService) {
-    await tagIndexService.buildIndex(markdownFiles, metaByPath)
-  }
-}
+import { getActiveProjectRoot, markInternalWrite } from '../../../ipc-runtime.js'
+import { documentRepository, reconcileActiveProjectIndex } from './shared.js'
 
 export async function handleReadDocument(rawPayload: unknown): Promise<IpcEnvelope<ReadDocumentResponse>> {
   const payload = readDocumentRequestSchema.safeParse(rawPayload)

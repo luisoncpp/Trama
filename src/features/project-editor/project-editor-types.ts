@@ -1,4 +1,4 @@
-import type { DocumentMeta } from '../../shared/ipc'
+import type { DocumentMeta } from '../../shared/ipc.js'
 
 export type SidebarSection = 'explorer' | 'outline' | 'lore' | 'transfer' | 'settings'
 export type WorkspaceLayoutMode = 'single' | 'split'
