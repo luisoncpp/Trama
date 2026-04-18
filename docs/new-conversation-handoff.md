@@ -13,6 +13,7 @@ If the task is about AI import/export, also open:
 If task is about Wiki Tag Links (WS1), also open:
 - `docs/wiki-tag-links-spec.md`
 - `docs/wiki-tag-links-implementation-plan.md`
+- `docs/wiki-tag-links-system-guide.md`
 
 If task touches split workspace behavior (active pane, dirty state, file-open routing), also open:
 - `docs/split-pane-coordination.md`
@@ -99,6 +100,15 @@ UX hardening (WS4) is now live:
   - `src/features/project-editor/use-project-editor-ui-actions.ts`
   - `src/features/project-editor/use-project-editor-state.ts`
   - `tests/project-editor-conflict-flow.test.ts`
+
+- Debug Wiki Tag Links (stale index / underline offset / Ctrl-Cmd click):
+  - `docs/wiki-tag-links-system-guide.md`
+  - `docs/lessons-learned/README.md` (tag/quill entries)
+  - `src/features/project-editor/components/rich-markdown-editor-tag-helpers.ts`
+  - `src/features/project-editor/components/rich-markdown-editor-tag-overlay.ts`
+  - `electron/services/tag-index-service.ts`
+  - `tests/tag-index-ipc-regression.test.ts`
+  - `tests/rich-markdown-editor-tag-overlay.test.ts`
 
 ## High-value invariants (do not break)
 

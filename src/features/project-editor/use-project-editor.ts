@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'preact/hooks'
 import type { ProjectEditorModel } from './project-editor-types'
+import type { WorkspaceLayoutState } from './project-editor-types'
 import { useProjectEditorActions } from './use-project-editor-actions'
 import { useProjectEditorAutosaveEffect } from './use-project-editor-autosave-effect'
 import { useProjectEditorContextMenuEffect } from './use-project-editor-context-menu-effect'
@@ -8,6 +9,38 @@ import { useProjectEditorFullscreenEffect } from './use-project-editor-fullscree
 import { useProjectEditorShortcutsEffect } from './use-project-editor-shortcuts-effect'
 import { useProjectEditorState } from './use-project-editor-state'
 
+function useAutoPickProjectFolderEffect(
+  pickProjectFolder: () => Promise<void>,
+  autoPickProjectFolderOnStart: boolean,
+  apiAvailable: boolean,
+  rootPath: string | null,
+): void {
+  const hasRequestedProjectFolderRef = useRef(false)
+  useEffect(() => {
+    if (!autoPickProjectFolderOnStart || hasRequestedProjectFolderRef.current) return
+    if (!apiAvailable || rootPath) return
+    hasRequestedProjectFolderRef.current = true
+    void pickProjectFolder()
+  }, [pickProjectFolder, autoPickProjectFolderOnStart, apiAvailable, rootPath])
+}
+
+function buildShortcutsEffectParams(
+  actions: ReturnType<typeof useProjectEditorActions>['actions'],
+  isFullscreen: boolean,
+  workspaceLayout: WorkspaceLayoutState,
+) {
+  return {
+    onToggleSplitLayout: actions.toggleWorkspaceLayoutMode,
+    onToggleFullscreen: () => void actions.setFullscreenEnabled(!isFullscreen),
+    onToggleFocusMode: actions.toggleFocusMode,
+    onSwitchActivePane: () => {
+      if (workspaceLayout.mode !== 'split') return
+      actions.setWorkspaceActivePane(workspaceLayout.activePane === 'primary' ? 'secondary' : 'primary')
+    },
+    onSaveNow: () => actions.saveNow(),
+  }
+}
+
 function useProjectEditorEffects(
   values: ReturnType<typeof useProjectEditorState>['values'],
   setters: ReturnType<typeof useProjectEditorState>['setters'],
@@ -15,20 +48,9 @@ function useProjectEditorEffects(
   core: ReturnType<typeof useProjectEditorActions>['core'],
   autoPickProjectFolderOnStart: boolean,
 ): void {
-  const hasRequestedProjectFolderRef = useRef(false)
-
-  useEffect(/* autoPickProjectFolderOnStart */ () => {
-    if (!autoPickProjectFolderOnStart || hasRequestedProjectFolderRef.current) {
-      return
-    }
-
-    if (!values.apiAvailable || values.rootPath) {
-      return
-    }
-
-    hasRequestedProjectFolderRef.current = true
-    void actions.pickProjectFolder()
-  }, [actions.pickProjectFolder, autoPickProjectFolderOnStart, values.apiAvailable, values.rootPath] /*Inputs for autoPickProjectFolderOnStart*/)
+  useAutoPickProjectFolderEffect(
+    actions.pickProjectFolder, autoPickProjectFolderOnStart, values.apiAvailable, values.rootPath,
+  )
 
   useProjectEditorAutosaveEffect({
     selectedPath: values.selectedPath,
@@ -51,26 +73,9 @@ function useProjectEditorEffects(
     setStatusMessage: setters.setStatusMessage,
   })
 
-  useProjectEditorFullscreenEffect({
-    setIsFullscreen: setters.setIsFullscreen,
-  })
+  useProjectEditorFullscreenEffect({ setIsFullscreen: setters.setIsFullscreen })
 
-  useProjectEditorShortcutsEffect({
-    onToggleSplitLayout: actions.toggleWorkspaceLayoutMode,
-    onToggleFullscreen: () => void actions.setFullscreenEnabled(!values.isFullscreen),
-    onToggleFocusMode: actions.toggleFocusMode,
-    onSwitchActivePane: () => {
-      if (values.workspaceLayout.mode !== 'split') {
-        return
-      }
-
-      const nextPane = values.workspaceLayout.activePane === 'primary' ? 'secondary' : 'primary'
-      actions.setWorkspaceActivePane(nextPane)
-    },
-    onSaveNow: () => {
-      actions.saveNow()
-    },
-  })
+  useProjectEditorShortcutsEffect(buildShortcutsEffectParams(actions, values.isFullscreen, values.workspaceLayout))
 
   useProjectEditorContextMenuEffect({
     isFullscreen: values.isFullscreen,

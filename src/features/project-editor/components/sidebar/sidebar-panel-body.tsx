@@ -46,6 +46,8 @@ export interface SidebarPanelBodyProps {
   onImport: () => void
   onExportBook: SidebarProjectContextProps['onExportBook']
   onExport: () => void
+  onReorderFiles?: (folderPath: string, orderedIds: string[]) => Promise<void>
+  onMoveFile?: (sourcePath: string, targetFolder: string) => Promise<void>
   contentProps: Omit<
     SidebarProjectContextProps & SidebarSelectionProps,
     | 'visibleFiles'
@@ -70,6 +72,8 @@ function renderSidebarExplorerContent({
   onDeleteFile,
   onEditFileTags,
   onSelectFile,
+  onReorderFiles,
+  onMoveFile,
 }: SidebarPanelBodyProps) {
   if (!sectionConfig) {
     return null
@@ -102,6 +106,8 @@ function renderSidebarExplorerContent({
       onEditFileTags={(path, tags) => onEditFileTags(`${sectionConfig.root}${path}`, tags)}
       onLoadFileTags={loadFileTags}
       onSelectFile={(filePath) => onSelectFile(`${sectionConfig.root}${filePath}`)}
+      onReorderFiles={onReorderFiles}
+      onMoveFile={onMoveFile ? (sourcePath, targetFolder) => onMoveFile(`${sectionConfig.root}${sourcePath}`, `${sectionConfig.root}${targetFolder}`) : undefined}
     />
   )
 }

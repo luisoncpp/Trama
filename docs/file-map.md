@@ -61,6 +61,8 @@ Mandatory doc navigation for new chats:
   - Folder rename handler with subtree internal-write tagging and index/tag reconcile.
 - `electron/ipc/handlers/project-handlers/index-handler.ts`
   - Get index handler.
+- `electron/ipc/handlers/project-handlers/order-handlers.ts`
+  - File reorder handler (`handleReorderFiles`) for drag-and-drop reorder in sidebar.
 - `electron/ipc/handlers/ai-handlers.ts`
   - AI import/export handlers: preview import, execute import, and backend export formatting endpoint.
 - `electron/ipc/handlers/book-export-handler.ts`
@@ -94,15 +96,15 @@ Mandatory doc navigation for new chats:
   - PDF font loading strategy: registers `@pdf-lib/fontkit`, resolves Unicode-capable system serif fonts, and falls back to standard fonts.
 - `electron/services/book-export-pdf-inline.ts`
   - PDF inline text helpers: markdown inline tokenization (`**bold**`/`__bold__`), line wrapping, and width measurement for mixed regular/bold runs.
-- `electron/services/book-export-renderers.ts`
-  - Markdown/HTML renderers plus common chapter metadata model and HTML chapter rendering/template helpers.
-- `electron/services/book-export-docx-renderer.ts`
-  - DOCX renderer using `docx`, mapping directive semantics (center/spacer/pagebreak) to Word-native structure.
-- `electron/services/book-export-epub-renderer.ts`
-  - EPUB renderer using `epub-gen`, compiling chapter HTML sections into a `.epub` package.
+- `electron/services/book-export-pdf-font-utils.ts`
+  - Font normalization utilities: `normalizeForFont`, `safeTextForFont`, `normalizeRunsForFonts`. Shared between PDF rendering functions.
+- `electron/services/book-export-pdf-utils.ts`
+  - Core PDF writer implementation: `createPdfWriter`, `PdfWriter` interface, `PdfLayoutState`, and all drawing functions (drawRuns, drawHeading, drawPdfImage, etc.)
 - `electron/services/book-export-pdf-renderer.ts`
-  - PDF renderer using `pdf-lib` with pagination, directive-aware spacing/page breaks, wrapped inline formatting, and chapter boundary page management.
+  - Re-export barrel for PDF book rendering. Exports `PdfWriter`, `PdfLayoutState` types and `renderPdfBook`, `createPdfWriter` from `book-export-pdf-utils.ts`. Uses `pdf-lib` with pagination, directive-aware spacing/page breaks, wrapped inline formatting, and chapter boundary page management.
   - Uses Unicode-capable system serif fonts when available (fallback to standard fonts).
+- `docs/book-export-architecture.md`
+  - Canonical reference for the book export pipeline. Explains the file layout, PDF render pipeline, data models, directive mapping, image handling, page metrics, and test coverage.
 
 ## Renderer layer
 
@@ -256,9 +258,13 @@ Mandatory doc navigation for new chats:
 - `src/features/project-editor/components/sidebar/sidebar-explorer-body.tsx`
   - Explorer body (path, filter, tree, state hints, menus/dialogs).
 - `src/features/project-editor/components/sidebar/sidebar-tree.tsx`
-  - Interactive tree rows, keyboard nav, right-click file hook.
+  - Interactive tree rows, keyboard nav, right-click file hook, and drag-and-drop reorder state management.
 - `src/features/project-editor/components/sidebar/sidebar-tree-logic.ts`
   - Pure tree build/flatten helpers.
+- `src/features/project-editor/components/sidebar/sidebar-tree-row-button.tsx`
+  - Individual tree row with drag handle and drag event handlers (onDragStart/onDragOver/onDrop).
+- `src/features/project-editor/components/sidebar/drop-indicator.tsx`
+  - Visual drop indicator component for drag-and-drop reorder (between-files line, folder highlight, section root).
 - `src/features/project-editor/components/sidebar/use-sidebar-tree-expanded-folders.ts`
   - Expanded folder state management, including rename remap consumption via sidebar folder-rename events.
 - `src/features/project-editor/components/sidebar/sidebar-folder-rename-events.ts`
@@ -324,6 +330,7 @@ Core and regression suites:
 - `tests/project-editor-logic.test.ts`
 - `tests/project-folder-dialog-handler.test.ts`
 - `tests/rich-markdown-editor.test.ts`
+- `tests/rich-markdown-editor-tag-overlay.test.ts`
 - `tests/paste-markdown.test.ts`
 - `tests/focus-mode-scope.test.ts`
 - `tests/sidebar-tree.test.ts`
@@ -360,6 +367,10 @@ Core and regression suites:
   - IPC folder rename envelope coverage and on-disk subtree move assertions.
 - `tests/project-editor-folder-logic.test.ts`
   - Pure path-remap coverage for folder rename in split-layout state.
+- `tests/order-handlers.test.ts`
+  - IPC handler coverage for `handleReorderFiles` (saves order to index, handles empty folder path, rejects no-active-project, rejects invalid payload).
+- `tests/drag-drop-sidebar.test.ts`
+  - Sidebar drag-drop logic coverage (folder vs file drop targets, between-position reorder logic, tree row filtering).
 - `tests/markdown-layout-directives.test.ts`
   - Unit coverage for directive extraction, warning behavior, artifact rendering, and canonical serialization helpers.
 - `tests/ai-import-service.test.ts`

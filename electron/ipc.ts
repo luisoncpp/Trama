@@ -39,6 +39,8 @@ import {
   handleBookExport,
   handleTagGetIndex,
   handleTagResolve,
+  handleReorderFiles,
+  handleMoveFile,
 } from './ipc/handlers/index.js'
 import { registerSpellcheckHandler } from './ipc/spellcheck.js'
 
@@ -79,69 +81,51 @@ function registerFullscreenHandler(ipcMain: IpcMain, getMainWindow: () => Browse
   })
 }
 
-function registerCoreHandlers(ipcMain: IpcMain): void {
+function registerDebugHandler(ipcMain: IpcMain): void {
   ipcMain.handle(IPC_CHANNELS.debugLog, (_event, payload: DebugLogRequest) => {
     const parsed = debugLogRequestSchema.safeParse(payload)
-    if (!parsed.success) {
-      return
-    }
-
+    if (!parsed.success) return
     const { source, message, details } = parsed.data
     if (details === undefined) {
       console.log(`[renderer:${source}] ${message}`)
-      return
+    } else {
+      console.log(`[renderer:${source}] ${message}`, details)
     }
-
-    console.log(`[renderer:${source}] ${message}`, details)
   })
+}
 
-  ipcMain.handle(IPC_CHANNELS.ping, (_event, payload: PingRequest) => {
-    return buildPingResponse(payload)
-  })
+function registerPingHandler(ipcMain: IpcMain): void {
+  ipcMain.handle(IPC_CHANNELS.ping, (_event, payload) => buildPingResponse(payload))
+}
 
-  ipcMain.handle(IPC_CHANNELS.openProject, (_event, payload: OpenProjectRequest) => {
-    return handleOpenProject(payload)
-  })
+function registerProjectHandlers(ipcMain: IpcMain): void {
+  ipcMain.handle(IPC_CHANNELS.openProject, (_event, payload) => handleOpenProject(payload))
+  ipcMain.handle(IPC_CHANNELS.selectProjectFolder, () => handleSelectProjectFolder())
+  ipcMain.handle(IPC_CHANNELS.getIndex, () => handleGetIndex())
+  ipcMain.handle(IPC_CHANNELS.reorderFiles, (_event, payload) => handleReorderFiles(payload))
+  ipcMain.handle(IPC_CHANNELS.moveFile, (_event, payload) => handleMoveFile(payload))
+}
 
-  ipcMain.handle(IPC_CHANNELS.selectProjectFolder, () => {
-    return handleSelectProjectFolder()
-  })
+function registerDocumentHandlers(ipcMain: IpcMain): void {
+  ipcMain.handle(IPC_CHANNELS.readDocument, (_event, payload) => handleReadDocument(payload))
+  ipcMain.handle(IPC_CHANNELS.saveDocument, (_event, payload) => handleSaveDocument(payload))
+  ipcMain.handle(IPC_CHANNELS.createDocument, (_event, payload) => handleCreateDocument(payload))
+  ipcMain.handle(IPC_CHANNELS.renameDocument, (_event, payload) => handleRenameDocument(payload))
+  ipcMain.handle(IPC_CHANNELS.deleteDocument, (_event, payload) => handleDeleteDocument(payload))
+}
 
-  ipcMain.handle(IPC_CHANNELS.readDocument, (_event, payload: ReadDocumentRequest) => {
-    return handleReadDocument(payload)
-  })
+function registerFolderHandlers(ipcMain: IpcMain): void {
+  ipcMain.handle(IPC_CHANNELS.createFolder, (_event, payload) => handleCreateFolder(payload))
+  ipcMain.handle(IPC_CHANNELS.renameFolder, (_event, payload) => handleRenameFolder(payload))
+  ipcMain.handle(IPC_CHANNELS.deleteFolder, (_event, payload) => handleDeleteFolder(payload))
+}
 
-  ipcMain.handle(IPC_CHANNELS.saveDocument, (_event, payload: SaveDocumentRequest) => {
-    return handleSaveDocument(payload)
-  })
-
-  ipcMain.handle(IPC_CHANNELS.createDocument, (_event, payload: CreateDocumentRequest) => {
-    return handleCreateDocument(payload)
-  })
-
-  ipcMain.handle(IPC_CHANNELS.createFolder, (_event, payload: CreateFolderRequest) => {
-    return handleCreateFolder(payload)
-  })
-
-  ipcMain.handle(IPC_CHANNELS.renameFolder, (_event, payload: RenameFolderRequest) => {
-    return handleRenameFolder(payload)
-  })
-
-  ipcMain.handle(IPC_CHANNELS.deleteFolder, (_event, payload: DeleteFolderRequest) => {
-    return handleDeleteFolder(payload)
-  })
-
-  ipcMain.handle(IPC_CHANNELS.renameDocument, (_event, payload: RenameDocumentRequest) => {
-    return handleRenameDocument(payload)
-  })
-
-  ipcMain.handle(IPC_CHANNELS.deleteDocument, (_event, payload: DeleteDocumentRequest) => {
-    return handleDeleteDocument(payload)
-  })
-
-  ipcMain.handle(IPC_CHANNELS.getIndex, () => {
-    return handleGetIndex()
-  })
+function registerCoreHandlers(ipcMain: IpcMain): void {
+  registerDebugHandler(ipcMain)
+  registerPingHandler(ipcMain)
+  registerProjectHandlers(ipcMain)
+  registerDocumentHandlers(ipcMain)
+  registerFolderHandlers(ipcMain)
 }
 
 function registerAiHandlers(ipcMain: IpcMain): void {

@@ -1,5 +1,5 @@
 import path from 'node:path'
-import { AlignmentType, Document, ImageRun, Packer, Paragraph, TextRun } from 'docx'
+import { AlignmentType, Document, HeadingLevel, ImageRun, Packer, Paragraph, TextRun } from 'docx'
 import { parseDirectiveLine } from './book-export-directives.js'
 import { loadImageBytes, resolveImagePath } from './book-export-image-utils.js'
 import type { BookExportChapter, BookExportMetadata } from './book-export-renderers.js'
@@ -16,6 +16,107 @@ function stripInlineMarkdown(text: string): string {
 
 const IMAGE_LINE_PATTERN = /^!\[([^\]]*)\]\(([^)]+)\)$/
 
+function handleDirective(dir: ReturnType<typeof parseDirectiveLine>, paragraphs: Paragraph[]): boolean {
+  if (!dir) return false
+  if (dir.kind === 'pagebreak') {
+    paragraphs.push(new Paragraph({ pageBreakBefore: true }))
+  } else if (dir.kind === 'spacer') {
+    for (let i = 0; i < dir.lines; i += 1) {
+      paragraphs.push(new Paragraph({ text: '' }))
+    }
+  }
+  return true
+}
+
+function extractImagePath(line: string): string | null {
+  const match = line.trim().match(IMAGE_LINE_PATTERN)
+  return match ? match[2] : null
+}
+
+function createImageParagraph(bytes: Uint8Array, type: string): Paragraph {
+  return new Paragraph({
+    children: [
+      new ImageRun({
+        data: bytes,
+        type: type === 'png' ? 'png' : 'jpg',
+        transformation: { width: 500, height: 300 },
+      }),
+    ],
+  })
+}
+
+function createTextParagraph(text: string, centered: boolean): Paragraph {
+  return new Paragraph({
+    children: [new TextRun(text)],
+    alignment: centered ? AlignmentType.CENTER : AlignmentType.LEFT,
+  })
+}
+
+function createHeadingParagraph(text: string, level: 1 | 2 | 3 | 4 | 5 | 6, centered: boolean): Paragraph {
+  return new Paragraph({
+    children: [new TextRun({ text, bold: true })],
+    heading: `Heading${level}` as 'Heading1' | 'Heading2' | 'Heading3' | 'Heading4' | 'Heading5' | 'Heading6',
+    alignment: centered ? AlignmentType.CENTER : AlignmentType.LEFT,
+  })
+}
+
+function detectHeading(line: string): { text: string; level: 1 | 2 | 3 | 4 | 5 | 6 } | null {
+  const match = line.match(/^(#{1,6})\/? ?(.*)$/)
+  if (!match) return null
+  return { level: match[1].length as 1 | 2 | 3 | 4 | 5 | 6, text: match[2].trim() }
+}
+
+function addSpacing(paragraphs: Paragraph[], count: number): void {
+  for (let i = 0; i < count; i += 1) {
+    paragraphs.push(new Paragraph({ text: '' }))
+  }
+}
+
+async function processLine(
+  line: string,
+  centered: boolean,
+  projectRoot: string,
+  chapterDir: string,
+  paragraphs: Paragraph[],
+): Promise<{ centered: boolean; isPagebreak: boolean }> {
+  const directive = parseDirectiveLine(line)
+  if (directive) {
+    if (directive.kind === 'centerStart') return { centered: true, isPagebreak: false }
+    if (directive.kind === 'centerEnd') return { centered: false, isPagebreak: false }
+    const handled = handleDirective(directive, paragraphs)
+    return { centered, isPagebreak: handled && directive.kind === 'pagebreak' }
+  }
+
+  const imagePath = extractImagePath(line)
+  if (imagePath) {
+    const resolvedPath = await resolveImagePath(imagePath, projectRoot, chapterDir)
+    const { bytes, type } = await loadImageBytes(resolvedPath)
+    if (bytes && type) {
+      try {
+        paragraphs.push(createImageParagraph(bytes, type))
+      } catch (err) {
+        console.warn(`Failed to embed image in DOCX: ${resolvedPath}`, err instanceof Error ? err.message : String(err))
+      }
+    }
+    return { centered, isPagebreak: false }
+  }
+
+  const heading = detectHeading(line)
+  if (heading) {
+    paragraphs.push(createHeadingParagraph(heading.text, heading.level, centered))
+    return { centered, isPagebreak: false }
+  }
+
+  const text = stripInlineMarkdown(line)
+  if (!text) {
+    paragraphs.push(new Paragraph({ text: '' }))
+    return { centered, isPagebreak: false }
+  }
+
+  paragraphs.push(createTextParagraph(text, centered))
+  return { centered, isPagebreak: false }
+}
+
 async function chapterParagraphs(
   chapter: BookExportChapter,
   isLast: boolean,
@@ -23,75 +124,17 @@ async function chapterParagraphs(
 ): Promise<Paragraph[]> {
   const paragraphs: Paragraph[] = []
   const chapterDir = path.dirname(chapter.path)
-
   let centered = false
   let lastWasPagebreak = false
 
   for (const line of chapter.content.split('\n')) {
-    const directive = parseDirectiveLine(line)
-
-    if (directive) {
-      if (directive.kind === 'centerStart') {
-        centered = true
-        lastWasPagebreak = false
-      } else if (directive.kind === 'centerEnd') {
-        centered = false
-        lastWasPagebreak = false
-      } else if (directive.kind === 'pagebreak') {
-        paragraphs.push(new Paragraph({ pageBreakBefore: true }))
-        lastWasPagebreak = true
-      } else if (directive.kind === 'spacer') {
-        for (let index = 0; index < directive.lines; index += 1) {
-          paragraphs.push(new Paragraph({ text: '' }))
-        }
-        lastWasPagebreak = false
-      }
-      continue
-    }
-
-    const imageMatch = line.trim().match(IMAGE_LINE_PATTERN)
-    if (imageMatch) {
-      const imagePath = imageMatch[2]
-      const resolvedPath = await resolveImagePath(imagePath, projectRoot, chapterDir)
-      const { bytes, type } = await loadImageBytes(resolvedPath)
-      if (bytes && type) {
-        try {
-          paragraphs.push(
-            new Paragraph({
-              children: [
-                new ImageRun({
-                  data: bytes,
-                  type: type === 'png' ? 'png' : 'jpg',
-                  transformation: { width: 500, height: 300 },
-                }),
-              ],
-            }),
-          )
-        } catch (err) {
-          console.warn(`Failed to embed image in DOCX: ${resolvedPath}`, err instanceof Error ? err.message : String(err))
-        }
-      }
-      lastWasPagebreak = false
-      continue
-    }
-
-    const text = stripInlineMarkdown(line)
-    if (!text) {
-      paragraphs.push(new Paragraph({ text: '' }))
-      lastWasPagebreak = false
-      continue
-    }
-
-    paragraphs.push(new Paragraph({
-      children: [new TextRun(text)],
-      alignment: centered ? AlignmentType.CENTER : AlignmentType.LEFT,
-    }))
-    lastWasPagebreak = false
+    const result = await processLine(line, centered, projectRoot, chapterDir, paragraphs)
+    centered = result.centered
+    lastWasPagebreak = result.isPagebreak
   }
 
   if (!isLast && !lastWasPagebreak) {
-    paragraphs.push(new Paragraph({ text: '' }))
-    paragraphs.push(new Paragraph({ text: '' }))
+    addSpacing(paragraphs, 2)
   }
 
   return paragraphs

@@ -23,6 +23,12 @@ interface ProjectEditorViewProps {
   onSpellcheckLanguageChange: (language: string) => void
 }
 
+interface SidebarExtraProps extends Omit<ProjectEditorViewProps, 'model'> {
+  onImportClick: () => void
+  onBookExportClick: (format: BookExportFormat) => void
+  onExportClick: () => void
+}
+
 interface ProjectEditorMainPaneProps {
   model: ProjectEditorModel
   spellcheckEnabled: boolean
@@ -68,17 +74,7 @@ function ProjectEditorMainPane({ model, spellcheckEnabled }: ProjectEditorMainPa
   )
 }
 
-function buildSidebarSectionProps(
-  model: ProjectEditorModel,
-  props: Omit<
-    ProjectEditorViewProps,
-    'model'
-  > & {
-    onImportClick: () => void
-    onBookExportClick: (format: BookExportFormat) => void
-    onExportClick: () => void
-  },
-) {
+function buildSidebarSectionProps(model: ProjectEditorModel, props: SidebarExtraProps) {
   const { state, actions } = model
 
   return {
@@ -99,6 +95,8 @@ function buildSidebarSectionProps(
     onDeleteFolder: (path: string) => void actions.deleteFolder(path),
     onDeleteFile: (path: string) => void actions.deleteFile(path),
     onEditFileTags: (path: string, tags: string[]) => void actions.editFileTags(path, tags),
+    onReorderFiles: (folderPath: string, orderedIds: string[]) => actions.reorderFiles(folderPath, orderedIds),
+    onMoveFile: (sourcePath: string, targetFolder: string) => actions.moveFile(sourcePath, targetFolder),
     apiAvailable: state.apiAvailable,
     loadingProject: state.loadingProject,
     rootPath: state.rootPath,
@@ -140,7 +138,13 @@ function SidebarSection({
   onBookExportClick: (format: BookExportFormat) => void
   onExportClick: () => void
 }) {
-  return <SidebarPanel {...buildSidebarSectionProps(model, { themePreference, resolvedTheme, onThemePreferenceChange, spellcheckEnabled, spellcheckLanguage, spellcheckLanguageOptions, spellcheckLanguageSelectionSupported, onSpellcheckEnabledChange, onSpellcheckLanguageChange, onImportClick, onBookExportClick, onExportClick })} />
+  const sidebarProps = buildSidebarSectionProps(model, {
+    themePreference, resolvedTheme, onThemePreferenceChange,
+    spellcheckEnabled, spellcheckLanguage, spellcheckLanguageOptions,
+    spellcheckLanguageSelectionSupported, onSpellcheckEnabledChange,
+    onSpellcheckLanguageChange, onImportClick, onBookExportClick, onExportClick,
+  })
+  return <SidebarPanel {...sidebarProps} />
 }
 
 export function ProjectEditorView({

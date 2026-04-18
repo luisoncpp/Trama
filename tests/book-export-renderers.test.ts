@@ -124,6 +124,25 @@ describe('book export renderers', () => {
     expect(htmlDirectiveDoc.getPageCount()).toBe(2)
   })
 
+  it('renders centered pdf headings inside center directives', async () => {
+    const pdfBytes = await renderPdfBook([
+      {
+        path: 'book/chapter-centered-heading.md',
+        title: 'Centered Heading',
+        content: [
+          '<!-- trama:center:start -->',
+          '# Heading Centered',
+          'Centered paragraph',
+          '<!-- trama:center:end -->',
+        ].join('\n'),
+      },
+    ])
+
+    const doc = await PDFDocument.load(pdfBytes)
+    expect(doc.getPageCount()).toBe(1)
+    expect(pdfBytes.byteLength).toBeGreaterThan(0)
+  })
+
   it('renders pdf with embedded images (data url and local files)', async () => {
     const fixture = await createProjectWithImageFixture()
     const pdfWithImages = await renderPdfBook([
@@ -161,6 +180,79 @@ describe('book export renderers', () => {
 
     const docxBuffer = Buffer.from(docx)
     expect(docxBuffer.includes(Buffer.from('word/media/'))).toBe(true)
+  })
+
+  it('renders docx with Heading1 style for h1 markdown', async () => {
+    const docx = await renderDocxBook([
+      {
+        path: 'book/chapter-h1.md',
+        title: 'H1 Chapter',
+        content: '# Chapter One\n\nBody paragraph.\n\n## Subsection\n\nMore text.',
+      },
+    ], {
+      title: 'Heading Test',
+      author: 'QA Team',
+    })
+
+    const { default: JSZip } = await import('jszip')
+    const zip = await JSZip.loadAsync(docx)
+    const documentXml = await zip.file('word/document.xml')?.async('string')
+    expect(documentXml).toBeDefined()
+    expect(documentXml).toContain('Chapter One')
+    expect(documentXml).toMatch(/Heading1/)
+  })
+
+  it('renders docx with centered alignment for headings inside center directives', async () => {
+    const docx = await renderDocxBook([
+      {
+        path: 'book/chapter-centered.md',
+        title: 'Centered Chapter',
+        content: [
+          '<!-- trama:center:start -->',
+          '# Centered Heading',
+          'Centered body text',
+          '<!-- trama:center:end -->',
+          'Normal text after.',
+        ].join('\n'),
+      },
+    ], {
+      title: 'Centered Heading Test',
+      author: 'QA Team',
+    })
+
+    const { default: JSZip } = await import('jszip')
+    const zip = await JSZip.loadAsync(docx)
+    const documentXml = await zip.file('word/document.xml')?.async('string')
+    expect(documentXml).toBeDefined()
+    expect(documentXml).toContain('Centered Heading')
+    expect(documentXml).toMatch(/jc.*center|w:jc.*w:val/)
+  })
+
+  it('renders docx with multiple heading levels', async () => {
+    const docx = await renderDocxBook([
+      {
+        path: 'book/chapter-headings.md',
+        title: 'Multi Level',
+        content: [
+          '# Title H1',
+          '## Subtitle H2',
+          '### Section H3',
+          'Regular paragraph.',
+          '# Another H1',
+        ].join('\n'),
+      },
+    ], {
+      title: 'Multi Heading Test',
+      author: 'QA Team',
+    })
+
+    const { default: JSZip } = await import('jszip')
+    const zip = await JSZip.loadAsync(docx)
+    const documentXml = await zip.file('word/document.xml')?.async('string')
+    expect(documentXml).toBeDefined()
+    expect(documentXml).toMatch(/Heading1/)
+    expect(documentXml).toMatch(/Heading2/)
+    expect(documentXml).toMatch(/Heading3/)
   })
 
   it('renders epub file to disk', async () => {

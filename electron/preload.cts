@@ -34,10 +34,14 @@ import {
   type RenameFolderResponse,
   type SaveDocumentRequest,
   type SaveDocumentResponse,
+  type ReorderFilesRequest,
+  type ReorderFilesResponse,
+  type MoveFileRequest,
+  type MoveFileResponse,
+  type SelectProjectFolderResponse,
   type SetSpellcheckSettingsRequest,
   type SetFullscreenRequest,
   type SetFullscreenResponse,
-  type SelectProjectFolderResponse,
   type SpellcheckSettingsResponse,
 } from '../src/shared/ipc'
 import { type TagGetIndexResponse, type TagResolveRequest, type TagResolveResponse, tagGetIndexResponseSchema, tagResolveRequestSchema } from '../src/shared/ipc-tag'
@@ -144,6 +148,12 @@ const tramaApi = {
       })
     }
     return ipcRenderer.invoke(IPC_CHANNELS.tagResolve, parsed.data)
+  },
+  reorderFiles(payload: ReorderFilesRequest): Promise<IpcEnvelope<ReorderFilesResponse>> {
+    return ipcRenderer.invoke(IPC_CHANNELS.reorderFiles, payload)
+  },
+  moveFile(payload: MoveFileRequest): Promise<IpcEnvelope<MoveFileResponse>> {
+    return ipcRenderer.invoke(IPC_CHANNELS.moveFile, payload)
   },
 }
 
