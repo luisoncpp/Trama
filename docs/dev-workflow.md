@@ -11,9 +11,9 @@ If work touches AI import/export, also read:
 
 ## Current phase
 
-Phase 4 planning is documented in `docs/phase-4-detailed-plan.md`. The recommended execution sequence is: WS1 (Wiki Tag Links) → WS2 (Folder Operations) → WS3 (Templates) → WS4 (Corkboard) → WS5 (AI Import/Export) → Phase 4 closure.
+Phase 4 planning is documented in `docs/plan/phase-4-detailed-plan.md`. The recommended execution sequence is: WS1 (Wiki Tag Links) → WS2 (Folder Operations) → WS3 (Templates) → WS4 (Corkboard) → WS5 (AI Import/Export) → Phase 4 closure.
 
-For WS1 execution details, use `docs/wiki-tag-links-implementation-plan.md` together with `docs/wiki-tag-links-spec.md`.
+For WS1 execution details, use `docs/plan/wiki-tag-links-implementation-plan.md` together with `docs/spec/wiki-tag-links-spec.md`.
 
 ## Main commands
 

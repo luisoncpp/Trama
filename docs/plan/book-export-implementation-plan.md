@@ -270,4 +270,4 @@ Mitigacion: migrar renderer PDF a fuentes Unicode embebidas (TTF/OTF) en `pdf-li
 1. Actualizar `docs/current-status.md` con estado de Book Export.
 2. Actualizar `docs/file-map.md` con nuevos archivos TS/TSX.
 3. Registrar aprendizaje en `docs/lessons-learned/README.md` si aplica.
-4. Mover este plan a `docs/done/` cuando termine la implementacion.
+4. Mover este plan a `docs/plan/done/` cuando termine la implementacion.

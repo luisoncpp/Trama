@@ -3,7 +3,7 @@
 Status: Draft v1  
 Last updated: 2026-04-12
 
-Implementation guide: `docs/done/markdown-layout-directives-implementation-plan.md`
+Implementation guide: `docs/plan/done/markdown-layout-directives-implementation-plan.md`
 
 ## 1. Goal
 

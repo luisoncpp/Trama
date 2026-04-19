@@ -5,8 +5,8 @@ Note for agents: each time you are asked to update the documentation, if you fou
 Mandatory doc navigation for new chats:
 1. Start with `docs/START-HERE.md`.
 2. Read `docs/lessons-learned/README.md` before implementation changes.
-3. If task is WS1 Wiki Tag Links, read `docs/wiki-tag-links-spec.md` and `docs/wiki-tag-links-implementation-plan.md`.
-4. If task touches split workspace behavior, read `docs/split-pane-coordination.md`.
+3. If task is WS1 Wiki Tag Links, read `docs/spec/wiki-tag-links-spec.md` and `docs/plan/wiki-tag-links-implementation-plan.md`.
+4. If task touches split workspace behavior, read `docs/architecture/split-pane-coordination.md`.
 
 ## Root-level project files
 
@@ -103,7 +103,7 @@ Mandatory doc navigation for new chats:
 - `electron/services/book-export-pdf-renderer.ts`
   - Re-export barrel for PDF book rendering. Exports `PdfWriter`, `PdfLayoutState` types and `renderPdfBook`, `createPdfWriter` from `book-export-pdf-utils.ts`. Uses `pdf-lib` with pagination, directive-aware spacing/page breaks, wrapped inline formatting, and chapter boundary page management.
   - Uses Unicode-capable system serif fonts when available (fallback to standard fonts).
-- `docs/book-export-architecture.md`
+- `docs/architecture/book-export-architecture.md`
   - Canonical reference for the book export pipeline. Explains the file layout, PDF render pipeline, data models, directive mapping, image handling, page metrics, and test coverage.
 
 ## Renderer layer

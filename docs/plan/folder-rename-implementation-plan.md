@@ -2,7 +2,7 @@
 
 Date: 2026-04-15
 Status: Planned
-Related: `docs/START-HERE.md`, `docs/phase-4-detailed-plan.md`, `docs/lessons-learned/sidebar-path-scoping.md`, `docs/split-pane-coordination.md`
+Related: `docs/START-HERE.md`, `docs/plan/phase-4-detailed-plan.md`, `docs/lessons-learned/sidebar-path-scoping.md`, `docs/architecture/split-pane-coordination.md`
 
 ## Goal
 
@@ -18,7 +18,7 @@ This document covers only **folder rename**. Folder delete and move remain separ
 
 ## Why a Dedicated Plan
 
-`docs/phase-4-detailed-plan.md` already reserves WS2 for folder operations, but that section is intentionally broad and partially outdated against the current codebase. In the real implementation today:
+`docs/plan/phase-4-detailed-plan.md` already reserves WS2 for folder operations, but that section is intentionally broad and partially outdated against the current codebase. In the real implementation today:
 
 - Filesystem mutations live in `electron/services/document-repository.ts`, not `electron/services/repo-service.ts`.
 - Folder create already exists end-to-end via `createFolder`.

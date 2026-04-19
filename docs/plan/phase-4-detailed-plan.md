@@ -2,7 +2,7 @@
 
 Date: 2026-04-11
 Status: **In Progress** — Planning phase
-Related: `docs/current-status.md`, `docs/dev-workflow.md`, `docs/wiki-tag-links-spec.md`, `docs/wiki-tag-links-implementation-plan.md`, `REQUIREMENTS.md`
+Related: `docs/current-status.md`, `docs/dev-workflow.md`, `docs/spec/wiki-tag-links-spec.md`, `docs/plan/wiki-tag-links-implementation-plan.md`, `REQUIREMENTS.md`
 
 ## 1. Context and Starting Point
 
@@ -63,7 +63,7 @@ Current architecture to preserve:
 - Main-process orchestration through `electron/ipc.ts` with modular handlers.
 - Window security baseline from `electron/window-config.ts`.
 - Per-pane editor state model (`primaryPane`/`secondaryPane`).
-- Tag-based wiki link specification in `docs/wiki-tag-links-spec.md`.
+- Tag-based wiki link specification in `docs/spec/wiki-tag-links-spec.md`.
 
 Known constraints:
 - `sandbox: false` remains a temporary tradeoff; do not increase renderer attack surface.
@@ -77,7 +77,7 @@ Known constraints:
 
 ## WS1 - Wiki Tag Links
 
-**Objective**: Implement tag-based implicit wiki link system as specified in `docs/wiki-tag-links-spec.md`.
+**Objective**: Implement tag-based implicit wiki link system as specified in `docs/spec/wiki-tag-links-spec.md`.
 
 **Status**: In progress (rename/delete V1 complete; move/reparent and DnD deferred).
 
@@ -159,7 +159,7 @@ Known constraints:
 
 **Objective**: Complete file-tree operations for folders, extending the existing file rename/delete/create infrastructure.
 
-Detailed first implementation slice: `docs/folder-rename-implementation-plan.md`. Use that document as the source of truth for folder rename file targets and sequencing when it differs from the broad WS2 notes below.
+Detailed first implementation slice: `docs/plan/folder-rename-implementation-plan.md`. Use that document as the source of truth for folder rename file targets and sequencing when it differs from the broad WS2 notes below.
 
 **Status**: Not started.
 

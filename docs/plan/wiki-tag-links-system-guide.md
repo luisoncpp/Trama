@@ -3,8 +3,8 @@
 > Purpose: provide a single operational map for future changes and bugfixes so contributors do not need broad exploratory searches.
 
 Related docs:
-- `docs/wiki-tag-links-spec.md` (what the feature should do)
-- `docs/wiki-tag-links-implementation-plan.md` (what was implemented)
+- `docs/spec/wiki-tag-links-spec.md` (what the feature should do)
+- `docs/plan/wiki-tag-links-implementation-plan.md` (what was implemented)
 - `docs/troubleshooting.md` (cross-feature runtime issues)
 - `docs/lessons-learned/README.md` (historical bug patterns)
 

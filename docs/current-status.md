@@ -130,11 +130,11 @@ Additional regression checks in suite include:
 - `npm run test` ✅ passes (21 suites, 97 tests)
 - `npm run test:smoke` ✅ passes
 
-**Next phase**: Phase 4 — Wiki tag links, folder operations, templates, corkboard, and closing WS5 (AI export UX + tests). See `docs/phase-4-detailed-plan.md` for full plan.
+**Next phase**: Phase 4 — Wiki tag links, folder operations, templates, corkboard, and closing WS5 (AI export UX + tests). See `docs/plan/phase-4-detailed-plan.md` for full plan.
 
 ## Phase 4 planned work
 
-See `docs/phase-4-detailed-plan.md` for the complete plan with 5 workstreams:
+See `docs/plan/phase-4-detailed-plan.md` for the complete plan with 5 workstreams:
 
 | Workstream | Description | Key Deliverables | Status |
 |---|---|---|---|

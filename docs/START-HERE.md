@@ -33,13 +33,13 @@ NO te estoy pidiendo que leas un archivo por ahora, sólo establezco reglas.
 
 Open these only when relevant:
 
-- IPC extension workflow: `docs/ipc-architecture.md`
-- Split pane coordination model: `docs/split-pane-coordination.md`
-- Folder rename implementation slice: `docs/folder-rename-implementation-plan.md`
-- Phase planning details: `docs/phase-4-detailed-plan.md`
-- Wiki Tag Links system guide + debug playbook: `docs/wiki-tag-links-system-guide.md`
-- Markdown layout directives (center/spacer/pagebreak + EPUB/MOBI): `docs/markdown-layout-directives-spec.md`
-- Book export architecture (PDF/DOCX/EPUB/HTML/Markdown pipeline): `docs/book-export-architecture.md`
+- IPC extension workflow: `docs/architecture/ipc-architecture.md`
+- Split pane coordination model: `docs/architecture/split-pane-coordination.md`
+- Folder rename implementation slice: `docs/plan/folder-rename-implementation-plan.md`
+- Phase planning details: `docs/plan/phase-4-detailed-plan.md`
+- Wiki Tag Links system guide + debug playbook: `docs/plan/wiki-tag-links-system-guide.md`
+- Markdown layout directives (center/spacer/pagebreak + EPUB/MOBI): `docs/spec/markdown-layout-directives-spec.md`
+- Book export architecture (PDF/DOCX/EPUB/HTML/Markdown pipeline): `docs/architecture/book-export-architecture.md`
 
 ## Fast routing by task
 
@@ -53,9 +53,9 @@ Open these only when relevant:
 | Add a test | `tests/` + `docs/dev-workflow.md` (checklist) |
 | Understand split pane coordination | `docs/split-pane-coordination.md` → `src/features/project-editor/use-project-editor-state.ts` → `src/features/project-editor/use-project-editor-layout-actions.ts` |
 | Debug split-pane unsaved/dirty mismatch | `docs/troubleshooting.md` (Split pane dirty section) → `src/features/project-editor/components/workspace-editor-panels.tsx` → `src/features/project-editor/use-project-editor-ui-actions.ts` → `src/features/project-editor/use-project-editor-state.ts` → `tests/project-editor-conflict-flow.test.ts` |
-| Implement Wiki Tag Links (WS1) | `docs/wiki-tag-links-spec.md` → `docs/wiki-tag-links-implementation-plan.md` → `docs/phase-4-detailed-plan.md` |
-| Debug Wiki Tag Links (stale index, underline offsets, Ctrl/Cmd click) | `docs/wiki-tag-links-system-guide.md` → `docs/lessons-learned/README.md` (tag/quill lessons) → `tests/tag-index-ipc-regression.test.ts` + `tests/rich-markdown-editor-tag-overlay.test.ts` |
-| Implement folder rename (WS2 slice) | `docs/folder-rename-implementation-plan.md` → `src/features/project-editor/components/sidebar/sidebar-tree.tsx` → `src/features/project-editor/components/sidebar/sidebar-panel-body.tsx` → `electron/services/document-repository.ts` |
+| Implement Wiki Tag Links (WS1) | `docs/spec/wiki-tag-links-spec.md` → `docs/plan/wiki-tag-links-implementation-plan.md` → `docs/plan/phase-4-detailed-plan.md` |
+| Debug Wiki Tag Links (stale index, underline offsets, Ctrl/Cmd click) | `docs/plan/wiki-tag-links-system-guide.md` → `docs/lessons-learned/README.md` (tag/quill lessons) → `tests/tag-index-ipc-regression.test.ts` + `tests/rich-markdown-editor-tag-overlay.test.ts` |
+| Implement folder rename (WS2 slice) | `docs/plan/folder-rename-implementation-plan.md` → `src/features/project-editor/components/sidebar/sidebar-tree.tsx` → `src/features/project-editor/components/sidebar/sidebar-panel-body.tsx` → `electron/services/document-repository.ts` |
 | Understand feature status | `docs/current-status.md` → `docs/phase-4-detailed-plan.md` |
 | Understand project structure | `docs/file-map.md` |
 | Debug a runtime issue | `docs/troubleshooting.md` → `docs/lessons-learned/README.md` |

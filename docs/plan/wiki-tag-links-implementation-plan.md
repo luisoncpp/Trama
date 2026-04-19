@@ -2,8 +2,8 @@
 
 Date: 2026-04-11
 Status: **Implemented**
-Related: `docs/wiki-tag-links-spec.md`, `docs/phase-4-detailed-plan.md`, `docs/current-status.md`
-Operational reference: `docs/wiki-tag-links-system-guide.md`
+Related: `docs/spec/wiki-tag-links-spec.md`, `docs/plan/phase-4-detailed-plan.md`, `docs/current-status.md`
+Operational reference: `docs/plan/wiki-tag-links-system-guide.md`
 
 ## 1. Goal
 

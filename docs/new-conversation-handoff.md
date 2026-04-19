@@ -8,12 +8,12 @@ Before code exploration, open these docs in order:
 3. `docs/lessons-learned/README.md`
 
 If the task is about AI import/export, also open:
-- `docs/markdown-layout-directives-spec.md`
+- `docs/spec/markdown-layout-directives-spec.md`
 
 If task is about Wiki Tag Links (WS1), also open:
-- `docs/wiki-tag-links-spec.md`
-- `docs/wiki-tag-links-implementation-plan.md`
-- `docs/wiki-tag-links-system-guide.md`
+- `docs/spec/wiki-tag-links-spec.md`
+- `docs/plan/wiki-tag-links-implementation-plan.md`
+- `docs/plan/wiki-tag-links-system-guide.md`
 
 If task touches split workspace behavior (active pane, dirty state, file-open routing), also open:
 - `docs/split-pane-coordination.md`
@@ -60,8 +60,8 @@ UX hardening (WS4) is now live:
 
 1. `docs/START-HERE.md`
 2. `docs/current-status.md`
-3. `docs/implementation-overview.md`
-4. `docs/ipc-architecture.md`
+3. `docs/plan/implementation-overview.md`
+4. `docs/architecture/ipc-architecture.md`
 5. `docs/file-map.md`
 7. `docs/dev-workflow.md`
 8. `docs/troubleshooting.md`
@@ -94,7 +94,7 @@ UX hardening (WS4) is now live:
   - `src/features/project-editor/use-project-editor-create-actions.ts`
 
 - Debug split-pane dirty/unsaved mismatch:
-  - `docs/split-pane-coordination.md`
+- `docs/architecture/split-pane-coordination.md`
   - `docs/troubleshooting.md` (Split pane dirty section)
   - `src/features/project-editor/components/workspace-editor-panels.tsx`
   - `src/features/project-editor/use-project-editor-ui-actions.ts`
@@ -102,7 +102,7 @@ UX hardening (WS4) is now live:
   - `tests/project-editor-conflict-flow.test.ts`
 
 - Debug Wiki Tag Links (stale index / underline offset / Ctrl-Cmd click):
-  - `docs/wiki-tag-links-system-guide.md`
+  - `docs/plan/wiki-tag-links-system-guide.md`
   - `docs/lessons-learned/README.md` (tag/quill entries)
   - `src/features/project-editor/components/rich-markdown-editor-tag-helpers.ts`
   - `src/features/project-editor/components/rich-markdown-editor-tag-overlay.ts`
@@ -150,5 +150,5 @@ UX hardening (WS4) is now live:
 
 ## Current high-value next tasks
 
-1. Start WS1 Wiki Tag Links using `docs/wiki-tag-links-implementation-plan.md`.
+1. Start WS1 Wiki Tag Links using `docs/plan/wiki-tag-links-implementation-plan.md`.
 2. Keep WS2 folder rename/delete/move workflows queued next.

@@ -68,7 +68,7 @@ Notable modules added in WS3 and UX hardening:
 - `src/shared/workspace-context-menu.ts`
 - `electron/main-process/context-menu.ts`
 
-See `ipc-architecture.md` for endpoint mapping and extension workflow.
+See `docs/architecture/ipc-architecture.md` for endpoint mapping and extension workflow.
 
 ## Security baseline
 
