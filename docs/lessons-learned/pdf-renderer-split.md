@@ -16,7 +16,7 @@
 1. Create new files with extracted code
 2. Update barrel to re-export from new files
 3. Update all importers to use barrel path (not internal files)
-4. Update `docs/file-map.md` with new file entries
+4. Update `docs/live/file-map.md` with new file entries
 5. Update `docs/REFACTORIZAR.md` to mark as resolved
 6. Add lesson to `docs/lessons-learned/`
 7. Run lint to confirm no regressions

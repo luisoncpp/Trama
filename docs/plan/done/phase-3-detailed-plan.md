@@ -2,7 +2,7 @@
 
 Date: 2026-04-05
 Status: **Complete** — All workstreams (WS1–WS5) finished and signed off. Phase 3 closed.
-Related: `docs/current-status.md`, `docs/implementation-overview.md`, `DESIGN_SPEC.md`
+Related: `docs/live/current-status.md`, `docs/implementation-overview.md`, `DESIGN_SPEC.md`
 
 ## 1. Context and Starting Point
 
@@ -247,10 +247,8 @@ Deliverables:
 - Explicit Phase 3 completion evidence.
 
 Docs to update at closure:
-- `docs/current-status.md`
-- `docs/implementation-overview.md`
-- `docs/new-conversation-handoff.md`
-- `docs/file-map.md`
+- `docs/live/current-status.md`
+- `docs/live/file-map.md`
 - `docs/dev-workflow.md` (if workflow changes)
 
 Validation gate:

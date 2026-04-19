@@ -1,7 +1,7 @@
 # Folder Rename Implementation Plan
 
 Date: 2026-04-15
-Status: Planned
+Status: ✅ Implemented (V1 rename/delete complete, drag-reorder Slice 1 done; move/reparent pending next slice)
 Related: `docs/START-HERE.md`, `docs/plan/phase-4-detailed-plan.md`, `docs/lessons-learned/sidebar-path-scoping.md`, `docs/architecture/split-pane-coordination.md`
 
 ## Goal

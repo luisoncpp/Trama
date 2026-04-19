@@ -2,11 +2,7 @@
 
 Note for agents: each time you are asked to update the documentation, if you found a ts or tsx file not specified here, you have to add it.
 
-Mandatory doc navigation for new chats:
-1. Start with `docs/START-HERE.md`.
-2. Read `docs/lessons-learned/README.md` before implementation changes.
-3. If task is WS1 Wiki Tag Links, read `docs/spec/wiki-tag-links-spec.md` and `docs/plan/wiki-tag-links-implementation-plan.md`.
-4. If task touches split workspace behavior, read `docs/architecture/split-pane-coordination.md`.
+Mandatory doc navigation for new chats: start with `docs/START-HERE.md` — it provides the full bootstrap sequence and routes to all other docs.
 
 ## Root-level project files
 

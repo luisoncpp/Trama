@@ -136,7 +136,7 @@ Implemented:
 
 Open these first:
 1. `docs/START-HERE.md`
-2. `docs/file-map.md`
+2. `docs/live/file-map.md`
 3. `src/shared/ipc.ts`
 4. `electron/services/ai-export-service.ts`
 5. `src/features/project-editor/project-editor-view.tsx`

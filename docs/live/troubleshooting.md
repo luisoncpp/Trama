@@ -110,14 +110,7 @@ This file captures practical issues observed during implementation.
 
 ## 7) Fast recovery checklist
 
-When things break after refactors, run:
-
-1. `npm run lint`
-2. `npm run test -- tests/sidebar-panels.test.ts`
-3. `npm run test -- tests/use-project-editor.test.ts`
-4. `npm run build`
-5. `npm run test:smoke` (if startup/preload touched)
-6. `npm run dev` and manually verify editor + sidebar flows.
+When things break after refactors, run the recovery sequence per `docs/dev-workflow.md`.
 
 ## 8) Contributor signals
 

@@ -199,8 +199,8 @@ Tags inside any inline formatting (**bold**, *italic*, # headers) **are** matche
 | `electron/services/watcher-service.ts` | Trigger tag index rebuild on Lore file changes |
 | `src/features/project-editor/components/rich-markdown-editor.tsx` | Import tag overlay decorator |
 | `src/features/project-editor/components/rich-markdown-editor-core.ts` | Register Ctrl + click listener for tag navigation |
-| `docs/file-map.md` | Register new files |
-| `docs/new-conversation-handoff.md` | Add wiki tag links to feature summary |
+| `docs/live/file-map.md` | Register new files |
+| `docs/live/current-status.md` | Update phase status |
 | `REQUIREMENTS.md` | Update section 3.3 to reference this spec |
 
 ## 8. Acceptance Criteria

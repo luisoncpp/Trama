@@ -2,10 +2,7 @@
 
 ## Mandatory startup checklist (new conversations)
 
-Before searching the codebase, read in this order:
-1. `docs/START-HERE.md`
-2. `docs/file-map.md`
-3. `docs/lessons-learned/README.md`
+Before searching the codebase, read `docs/START-HERE.md` first — it provides the full bootstrap sequence.
 
 If work touches AI import/export, also read:
 
@@ -13,7 +10,7 @@ If work touches AI import/export, also read:
 
 Phase 4 planning is documented in `docs/plan/phase-4-detailed-plan.md`. The recommended execution sequence is: WS1 (Wiki Tag Links) → WS2 (Folder Operations) → WS3 (Templates) → WS4 (Corkboard) → WS5 (AI Import/Export) → Phase 4 closure.
 
-For WS1 execution details, use `docs/plan/wiki-tag-links-implementation-plan.md` together with `docs/spec/wiki-tag-links-spec.md`.
+For WS1 execution details, see `docs/spec/wiki-tag-links-spec.md` and `docs/plan/done/wiki-tag-links-implementation-plan.md`.
 
 ## Main commands
 
@@ -63,39 +60,7 @@ For WS1 execution details, use `docs/plan/wiki-tag-links-implementation-plan.md`
 
 ## Documentation requirements (mandatory)
 
-When a change affects behavior (not only formatting), documentation updates are required in the same task.
-
-Minimum required updates:
-1. `docs/file-map.md`
-2. `docs/lessons-learned/README.md` (+ create lesson file if a non-trivial bug/risk was found)
-3. `docs/current-status.md` (only if feature status/scope changed)
-4. Task-specific docs (`spec`, implementation plan, troubleshooting, or system guide)
-
-Required depth (to avoid shallow updates):
-1. Explain data flow end-to-end (where data originates, transforms, and is consumed).
-2. List exact files by responsibility (main process, IPC, renderer, tests).
-3. Document invariants and non-obvious rules (for example, index/coordinate assumptions).
-4. Add a fast debug playbook with ordered steps and focused tests.
-5. Record known failure modes and links to lessons learned.
-
-PR/handoff quality gate:
-1. A future contributor should be able to localize the subsystem entry points in under 5 minutes using docs only.
-2. A future contributor should be able to run a focused regression suite without codebase-wide search.
-
-If these conditions are not met, documentation is incomplete.
-
-## Documentation update protocol for future chats
-
-When asked to "update docs", do not stop at status bullets. Include implementation-level guidance.
-
-Expected protocol:
-1. Add or update a subsystem guide if the area is complex or repeatedly breaks.
-2. Update `docs/START-HERE.md` fast-routing table so the new guide is discoverable.
-3. Add troubleshooting or lesson entries for every resolved bug with root cause and fix rule.
-4. Include focused test commands in docs for the changed subsystem.
-5. Verify links between docs are reciprocal (spec -> guide -> troubleshooting -> lessons -> tests).
-
-This protocol is mandatory for recurring systems like Wiki Tag Links, split-pane coordination, and export pipelines.
+When a change affects behavior (not only formatting), documentation updates are required in the same task. Read the requirements in `docs/update.md`.
 
 ## Sidebar-specific manual checks
 

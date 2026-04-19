@@ -1,8 +1,8 @@
 # Phase 4 Detailed Plan - Knowledge Graph & Authoring Tools
 
 Date: 2026-04-11
-Status: **In Progress** — Planning phase
-Related: `docs/current-status.md`, `docs/dev-workflow.md`, `docs/spec/wiki-tag-links-spec.md`, `docs/plan/wiki-tag-links-implementation-plan.md`, `REQUIREMENTS.md`
+Status: **In Progress** — WS1 ✅, WS2 ✅ (rename/delete/drag-reorder), WS5 ✅; WS3 Templates and WS4 Corkboard pending
+Related: `docs/live/current-status.md`, `docs/dev-workflow.md`, `docs/spec/wiki-tag-links-spec.md`, `docs/plan/done/wiki-tag-links-implementation-plan.md`, `REQUIREMENTS.md`
 
 ## 1. Context and Starting Point
 
@@ -79,7 +79,7 @@ Known constraints:
 
 **Objective**: Implement tag-based implicit wiki link system as specified in `docs/spec/wiki-tag-links-spec.md`.
 
-**Status**: In progress (rename/delete V1 complete; move/reparent and DnD deferred).
+**Status**: ✅ Complete (TagIndexService, IPC, renderer cache, Ctrl+click overlay — all implemented and passing quality gates).
 
 ### Deliverables
 
@@ -159,9 +159,9 @@ Known constraints:
 
 **Objective**: Complete file-tree operations for folders, extending the existing file rename/delete/create infrastructure.
 
-Detailed first implementation slice: `docs/plan/folder-rename-implementation-plan.md`. Use that document as the source of truth for folder rename file targets and sequencing when it differs from the broad WS2 notes below.
+Detailed first implementation slice: `docs/plan/done/folder-rename-implementation-plan.md`. Use that document as the source of truth for folder rename file targets and sequencing when it differs from the broad WS2 notes below.
 
-**Status**: Not started.
+**Status**: ✅ Rename and Delete V1 complete. Drag-drop reorder Slice 1 complete. Move/reparent pending next slice.
 
 ### Deliverables
 
@@ -213,12 +213,12 @@ Detailed first implementation slice: `docs/plan/folder-rename-implementation-pla
 
 ### Acceptance Criteria
 
-1. Right-click folder → Rename → type new name → folder renames on disk and in sidebar.
-2. Right-click folder → Delete → confirmation → folder and all contents removed.
-3. Drag folder onto another folder → moves as child.
-4. Renaming/moving a folder updates all contained file paths in `.trama.index.json`.
-5. Deleting a folder with dirty files prompts warning.
-6. All operations pass lint, test, and build.
+1. Right-click folder → Rename → type new name → folder renames on disk and in sidebar. ✅
+2. Right-click folder → Delete → confirmation → folder and all contents removed. ✅
+3. Drag folder onto another folder → moves as child. (Pending next slice)
+4. Renaming/moving a folder updates all contained file paths in `.trama.index.json`. ✅
+5. Deleting a folder with dirty files prompts warning. ✅
+6. All operations pass lint, test, and build. ✅
 
 ---
 
@@ -353,19 +353,14 @@ Detailed first implementation slice: `docs/plan/folder-rename-implementation-pla
 
 **Objective**: Enable structured import of LLM-generated content and structured export for AI context.
 
-**Status**: In progress (AI import completed, AI export completed).
+**Status**: ✅ Complete (AI import + AI export implemented end-to-end, including sidebar transfer UX and regression tests).
 
 ### Current implementation snapshot
 
-- Completed:
-   - Structured parser for clipboard format (`=== FILE: ... ===`).
-   - AI import preview + execute services in main process.
-   - IPC contracts and handlers for `aiImportPreview`, `aiImport`, and `aiExport`.
-   - Renderer import flow with `AiImportDialog` + `useAiImport` hook.
-- Pending:
-   - Renderer export UX (selection/dialog/clipboard flow).
-   - Compilation export flow (single consolidated markdown + options).
-   - Dedicated automated tests for AI export/compilation behavior.
+All WS5 deliverables are implemented:
+- AI import: parser, preview, execute, IPC handlers, renderer hook/dialog.
+- AI export: sidebar trigger, multi-file dialog, include/exclude frontmatter, path validation, IPC handler, clipboard copy, success toast notification.
+- Regression tests: `tests/ai-export-service.test.ts`, `tests/ai-export-ipc-handler.test.ts`, `tests/use-ai-export.test.ts`.
 
 ### Deliverables
 

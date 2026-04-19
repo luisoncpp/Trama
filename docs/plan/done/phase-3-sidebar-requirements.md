@@ -2,7 +2,7 @@
 
 Fecha: 2026-04-04
 Estado: Propuesta de requerimientos funcionales y técnicos
-Referencia: DESIGN_SPEC.md, REQUIREMENTS.md, docs/current-status.md
+Referencia: DESIGN_SPEC.md, REQUIREMENTS.md, docs/live/current-status.md
 
 ## 1. Objetivo
 

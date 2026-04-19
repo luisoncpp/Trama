@@ -103,9 +103,9 @@ Primary files:
 - electron/ipc/handlers/project-handlers/document-handlers.ts
 - electron/services/index-service.ts
 - electron/services/watcher-service.ts
-- docs/current-status.md
+- docs/live/current-status.md
 - docs/implementation-overview.md
-- docs/new-conversation-handoff.md
+- docs/START-HERE.md
 
 Acceptance criteria:
 - No regression in open/edit/autosave flow.

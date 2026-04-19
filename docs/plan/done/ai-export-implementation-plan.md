@@ -117,10 +117,10 @@ Objetivo: dejar trazabilidad completa y evitar drift.
 
 Docs a actualizar:
 
-- docs/current-status.md
-- docs/file-map.md
+- docs/live/current-status.md
+- docs/live/file-map.md
 - docs/ai-import-export-implementation-map.md
-- docs/lessons-learned/README.md (si aparece aprendizaje relevante)
+- docs/lessons-learned/ (si aparece aprendizaje relevante)
 
 Checklist final:
 

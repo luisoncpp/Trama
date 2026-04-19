@@ -2,9 +2,9 @@
 
 > **New conversation?** Open `docs/START-HERE.md` first — it routes you to the 3-4 files you actually need.
 
-For deep onboarding, read `docs/START-HERE.md` → `docs/current-status.md` → this file.
+For deep onboarding, read `docs/START-HERE.md` → `docs/live/current-status.md` → this file.
 
-**Phase 3 status**: All workstreams (WS1–WS5) completed and signed off. See `docs/current-status.md` for completion evidence.
+**Phase 3 status**: All workstreams (WS1–WS5) completed and signed off. See `docs/live/current-status.md` for completion evidence.
 
 **Phase 4 status (WS5)**: AI import is implemented end-to-end. AI export is currently backend-only (IPC + formatter service) and still needs renderer UX and dedicated tests.
 

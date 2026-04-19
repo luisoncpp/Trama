@@ -87,10 +87,7 @@ Current verification baseline:
 - `npm run test` passes (46 suites, 226 tests).
 - `npm run test:smoke` passes.
 
-**Running tests**: In sandboxed agent environments, `npm test` may fail due to environment restrictions. Use the PowerShell script instead, which runs in a full PowerShell context and passes consistently:
-- Script: `powershell -ExecutionPolicy Bypass -File scripts/run-tests.ps1`
-- VS Code shortcut: `Ctrl+Shift+T` (task: "Run Tests & Report")
-- Output: `reports/test-report.txt` (timestamped report + console output)
+**Running tests**: In sandboxed agent environments, `npm test` may fail due to environment restrictions. Use the PowerShell script instead — see `docs/dev-workflow.md` for test execution details.
 
 Additional regression checks in suite include:
 - Electron smoke startup flow (`tests/electron-smoke.test.ts`).

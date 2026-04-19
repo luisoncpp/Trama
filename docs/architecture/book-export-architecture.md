@@ -211,5 +211,5 @@ Línea nueva cuando cursorY < MARGIN → addPage() automático (ensureLineCapaci
 2. Implementar interfaz: `render{Formato}Book(chapters: BookExportChapter[], metadata, projectRoot): Promise<Uint8Array | string>`
 3. Agregar import + case en `book-export-service.ts` (switch sobre `request.format`)
 4. Agregar tests de regresión en `tests/book-export-renderers.test.ts`
-5. Agregar entrada en `docs/file-map.md`
+5. Agregar entrada en `docs/live/file-map.md`
 6. Si el renderer excede 200 líneas → splitear como se hizo con el PDF renderer

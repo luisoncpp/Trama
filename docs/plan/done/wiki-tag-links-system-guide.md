@@ -4,9 +4,9 @@
 
 Related docs:
 - `docs/spec/wiki-tag-links-spec.md` (what the feature should do)
-- `docs/plan/wiki-tag-links-implementation-plan.md` (what was implemented)
-- `docs/troubleshooting.md` (cross-feature runtime issues)
-- `docs/lessons-learned/README.md` (historical bug patterns)
+- `docs/plan/done/wiki-tag-links-implementation-plan.md` (what was implemented)
+- `docs/live/troubleshooting.md` (cross-feature runtime issues)
+- `docs/lessons-learned/README.md` (counter-intuitive facts and effective strategies relevant to this subsystem)
 
 ## 1. End-to-end architecture
 

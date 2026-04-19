@@ -2,7 +2,7 @@
 
 Date: 2026-04-17
 Status: Slice 1 and Slice 2 complete
-Related: `docs/START-HERE.md`, `docs/plan/folder-rename-implementation-plan.md`, `docs/plan/phase-4-detailed-plan.md`
+Related: `docs/START-HERE.md`, `docs/plan/done/folder-rename-implementation-plan.md`, `docs/plan/phase-4-detailed-plan.md`
 
 ## Goal
 
