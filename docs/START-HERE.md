@@ -56,6 +56,9 @@ Open these only when relevant:
 - Wiki Tag Links system guide + debug playbook: `docs/plan/done/wiki-tag-links-system-guide.md`
 - Markdown layout directives (center/spacer/pagebreak + EPUB/MOBI): `docs/spec/markdown-layout-directives-spec.md`
 - Book export architecture (PDF/DOCX/EPUB/HTML/Markdown pipeline): `docs/architecture/book-export-architecture.md`
+- AI import/export architecture (clipboard pipeline, format grammar, path validation): `docs/architecture/ai-import-export-architecture.md`
+- Sidebar path scoping model (section-relative ↔ project-relative conversion): `docs/architecture/sidebar-path-scoping-model.md`
+- Project index data model and reconciliation: `docs/architecture/project-index-architecture.md`
 
 ## Fast routing by task
 
@@ -64,13 +67,15 @@ Open these only when relevant:
 | Add/change IPC channel | `src/shared/ipc.ts` → `electron/ipc.ts` → `electron/preload.cts` → `src/types/trama-api.d.ts` |
 | Add/change IPC handler | `electron/ipc/handlers/` + `electron/ipc-handlers.ts` → `docs/ipc-architecture.md` |
 | Change sidebar UX | `src/features/project-editor/components/sidebar/sidebar-types.ts` → target component in `sidebar/` |
+| Debug sidebar path scoping | `docs/architecture/sidebar-path-scoping-model.md` → `src/features/project-editor/components/sidebar/sidebar-panel-body.tsx` → `src/features/project-editor/components/sidebar/sidebar-panel-logic.ts` |
 | Change editor behavior | `src/features/project-editor/components/rich-markdown-editor*.ts*` |
 | Change filesystem/repo layer | `electron/services/document-repository.ts` → `electron/ipc/handlers/project-handlers/document-handlers.ts` |
 | Add a test | `tests/` + `docs/dev-workflow.md` (checklist) |
-| Understand split pane coordination | `docs/architecture/split-pane-coordination.md` → `src/features/project-editor/use-project-editor-state.ts` → `src/features/project-editor/use-project-editor-layout-actions.ts` |
-| Debug split-pane unsaved/dirty mismatch | `docs/live/troubleshooting.md` (Split pane dirty section) → `src/features/project-editor/components/workspace-editor-panels.tsx` → `src/features/project-editor/use-project-editor-ui-actions.ts` → `src/features/project-editor/use-project-editor-state.ts` → `tests/project-editor-conflict-flow.test.ts` |
-| Implement Wiki Tag Links (WS1) | `docs/spec/wiki-tag-links-spec.md` → `docs/plan/done/wiki-tag-links-implementation-plan.md` → `docs/plan/phase-4-detailed-plan.md` |
-| Debug Wiki Tag Links (stale index, underline offsets, Ctrl/Cmd click) | `docs/plan/done/wiki-tag-links-system-guide.md` → `docs/lessons-learned/README.md` (tag/quill lessons) → `tests/tag-index-ipc-regression.test.ts` + `tests/rich-markdown-editor-tag-overlay.test.ts` |
+| Understand split pane coordination | `docs/architecture/split-pane-coordination.md` (canonical: per-pane state contracts, two-layer model, pane-targeted action rules) |
+| Debug split-pane issues | `docs/architecture/split-pane-coordination.md` → `src/features/project-editor/components/workspace-editor-panels.tsx` → `src/features/project-editor/use-project-editor-ui-actions.ts` → `tests/project-editor-conflict-flow.test.ts` |
+| Implement Wiki Tag Links (WS1) | `docs/spec/wiki-tag-links-spec.md` → `docs/architecture/wiki-tag-links-architecture.md` → `docs/plan/done/wiki-tag-links-implementation-plan.md` → `docs/plan/phase-4-detailed-plan.md` |
+| Debug Wiki Tag Links (stale index, underline offsets, Ctrl/Cmd click) | `docs/architecture/wiki-tag-links-architecture.md` → `docs/plan/done/wiki-tag-links-system-guide.md` → `docs/lessons-learned/README.md` (tag/quill lessons) → `tests/tag-index-ipc-regression.test.ts` + `tests/rich-markdown-editor-tag-overlay.test.ts` |
+| Debug AI import/export | `docs/architecture/ai-import-export-architecture.md` → `src/shared/ai-import-parser.ts` → `electron/services/ai-import-service.ts` / `electron/services/ai-export-service.ts` → `electron/ipc/handlers/ai-handlers.ts` |
 | Implement folder rename (WS2 slice) | `docs/plan/done/folder-rename-implementation-plan.md` → `src/features/project-editor/components/sidebar/sidebar-tree.tsx` → `src/features/project-editor/components/sidebar/sidebar-panel-body.tsx` → `electron/services/document-repository.ts` |
 | Understand feature status | `docs/live/current-status.md` → `docs/plan/phase-4-detailed-plan.md` |
 | Understand project structure | `docs/live/file-map.md` |

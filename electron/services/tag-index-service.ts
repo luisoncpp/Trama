@@ -1,10 +1,7 @@
-import path from 'node:path'
 import type { DocumentMeta } from '../../src/shared/ipc.js'
 
 export class TagIndexService {
   private tagToPath = new Map<string, string>()
-
-  constructor(private readonly projectRoot: string) {}
 
   async buildIndex(markdownFiles: string[], metaByPath: Record<string, DocumentMeta>): Promise<void> {
     this.tagToPath.clear()

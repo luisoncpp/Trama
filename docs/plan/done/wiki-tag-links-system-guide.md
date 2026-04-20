@@ -38,7 +38,8 @@ Critical invariant:
 
 - `electron/services/tag-index-service.ts`
   - Build and resolve tag mappings.
-  - Longest-match-first + deterministic duplicate handling.
+  - Longest-match-first for overlapping matches.
+  - Alphabetically first path for duplicate tags.
 - `electron/ipc-runtime.ts`
   - Holds active `TagIndexService` per active project.
 - `electron/ipc/handlers/tag-handlers.ts`

@@ -9,7 +9,6 @@ export interface TagOverlayMatch extends TagMatch {
 export interface UseTagOverlayParams {
   editorRef: { current: Quill | null }
   tagIndex: Record<string, string> | null
-  ctrlPressed: boolean
 }
 
 interface DeltaOp {
@@ -68,7 +67,7 @@ export function buildTagOverlayMatches(editor: Quill, tagIndex: Record<string, s
   return matchesWithBounds
 }
 
-export function useTagOverlay({ editorRef, tagIndex, ctrlPressed }: UseTagOverlayParams): TagOverlayMatch[] {
+export function useTagOverlay({ editorRef, tagIndex }: UseTagOverlayParams): TagOverlayMatch[] {
   const matches = useMemo(() => {
     if (!tagIndex || Object.keys(tagIndex).length === 0) {
       return []
@@ -80,7 +79,7 @@ export function useTagOverlay({ editorRef, tagIndex, ctrlPressed }: UseTagOverla
     }
 
     return buildTagOverlayMatches(editor, tagIndex)
-  }, [editorRef.current, tagIndex, ctrlPressed])
+  }, [editorRef.current, tagIndex])
 
   return matches
 }

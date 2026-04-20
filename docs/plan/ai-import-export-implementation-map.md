@@ -13,7 +13,7 @@ Status snapshot (April 2026):
 
 Delimited format used by import and export:
 
-`=== ARCHIVO: relative/path.md ===`
+`=== FILE: relative/path.md ===`
 
 Parser source of truth:
 - `src/shared/ai-import-parser.ts`

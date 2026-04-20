@@ -84,7 +84,7 @@ export function RichMarkdownEditor(props: RichMarkdownEditorProps) {
   const { shellRef, hostRef, editorRef, onChangeRef, lastEditorValueRef, isApplyingExternalValueRef, turndownRef } = useRichEditorRefs(value, onChange)
   const ctrlPressed = useCtrlKeyState()
   const safeTagIndex = tagIndex ?? null
-  const tagMatches = useTagOverlay({ editorRef, tagIndex: safeTagIndex, ctrlPressed })
+  const tagMatches = useTagOverlay({ editorRef, tagIndex: safeTagIndex })
   const handleEditorMouseDown = useTagClickHandler(editorRef, safeTagIndex, onTagClick)
 
   useRichEditorLifecycle({ documentId, value, disabled, spellcheckEnabled, hostRef, editorRef, onChangeRef, isApplyingExternalValueRef, lastEditorValueRef, turndownRef })

@@ -3,14 +3,11 @@ import type Quill from 'quill'
 import type TurndownService from 'turndown'
 import { registerTypographyHandler } from './rich-markdown-editor-typography'
 import { WORKSPACE_CONTEXT_MENU_EVENT } from '../../../shared/workspace-context-menu'
-import { normalizeBlankLinesToSpacerDirectives } from '../../../shared/markdown-layout-directives-spacing'
 import { registerWorkspaceCommandListener } from './rich-markdown-editor-commands'
 import { syncCenteredLayoutArtifacts } from './rich-markdown-editor-layout-centering'
-import { createQuillEditor, normalizeMarkdown, applyMarkdownToEditor, syncEditorSpellcheck } from './rich-markdown-editor-quill'
+import { createQuillEditor, normalizeMarkdown, applyMarkdownToEditor, syncEditorSpellcheck, serializeEditorMarkdownFromRef } from './rich-markdown-editor-quill'
 
 export { normalizeMarkdown }
-
-type QuillChangeSource = 'api' | 'user' | 'silent'
 
 interface UseRichEditorLifecycleParams {
   documentId: string | null
@@ -23,11 +20,6 @@ interface UseRichEditorLifecycleParams {
   lastEditorValueRef: { current: string }
   isApplyingExternalValueRef: { current: boolean }
   turndownRef: { current: TurndownService }
-}
-
-function serializeEditorMarkdown(turndownRef: { current: TurndownService }, html: string): string {
-  const markdown = normalizeMarkdown(turndownRef.current.turndown(html))
-  return normalizeBlankLinesToSpacerDirectives(markdown)
 }
 
 function registerEditorTextChangeHandler({
@@ -46,7 +38,7 @@ function registerEditorTextChangeHandler({
   editor.on('text-change', () => {
     if (isApplyingExternalValueRef.current) return
     syncCenteredLayoutArtifacts(editor)
-    const markdown = serializeEditorMarkdown(turndownRef, editor.root.innerHTML)
+    const markdown = serializeEditorMarkdownFromRef(turndownRef, editor.root.innerHTML)
     lastEditorValueRef.current = markdown
     onChangeRef.current(markdown)
   })

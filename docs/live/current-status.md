@@ -57,11 +57,8 @@ Implemented now:
 - `npm run dev` automatically builds the Electron main process before starting the dev server (`build:electron && dev:desktop`).
 - AI import (clipboard) implemented end-to-end: parser, preview, import dialog, renderer hook, IPC handlers, and main-process file creation flow.
 - AI export implemented end-to-end: sidebar export trigger, multi-file export dialog, include/exclude frontmatter option, secure path validation in backend service, IPC handler coverage, and clipboard copy flow.
-- AI export UX polish: export copy flow now shows a success toast notification after clipboard write.
-- Wiki tag link stability hardening: tag index now refreshes immediately after document save flows (including frontmatter tag edits), so Ctrl/Cmd+Click navigation works without restarting the app.
-- Markdown layout directives hardening complete: Quill now uses registered layout directive blots plus clipboard matchers for `center/spacer/pagebreak/unknown` artifacts, applies centered styling to blocks between center boundaries, renders pagebreak as a large viewport-relative separator, enforces explicit ArrowLeft/ArrowRight atomic traversal over pagebreak embeds, and includes copy-as-markdown plus richer round-trip ordering regression coverage.
-- AI import/export sidebar refactor: import and export actions moved from the explorer header into a dedicated "Transfer" sidebar rail section (`SidebarSection = 'explorer' | 'outline' | 'lore' | 'transfer' | 'settings'`).
 - AI import collision modes: import dialog now supports `replace` (overwrite existing file) and `append` (append imported content at end of existing file) modes selectable before executing the import. Preview and execution share the same `importMode` contract in the IPC schema.
+- Architecture doc: `docs/architecture/ai-import-export-architecture.md`
 - Book export Phase C multi-format backend: export service now renders `markdown`, `html`, `docx`, `epub`, and `pdf` outputs to disk through dedicated renderer modules, while preserving directive semantics for non-markdown formats.
 - Book export pipeline hardening: book compilation now uses ordered chapter models (`book/` only, index-aware ordering), common sanitize stage, and format-specific render dispatch.
 - Book export Transfer UX refinement: `Project interchange` remains AI import/export only, and `Book export` is now a separate box with format selector + export action, keeping it visually decoupled from AI transfer.

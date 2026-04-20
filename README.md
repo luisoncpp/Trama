@@ -111,8 +111,8 @@ If you are starting a new implementation conversation, begin with:
 -   [docs/START-HERE.md](docs/START-HERE.md)
 
 This entrypoint routes to the mandatory docs that are often missed:
--   [docs/current-status.md](docs/current-status.md)
--   [docs/file-map.md](docs/file-map.md)
+-   [docs/live/current-status.md](docs/live/current-status.md)
+-   [docs/live/file-map.md](docs/live/file-map.md)
 -   [docs/lessons-learned/README.md](docs/lessons-learned/README.md)
 -   [docs/dev-workflow.md](docs/dev-workflow.md)
 

@@ -56,5 +56,9 @@ Avoid: "bug description + fix". Prefer: "what I learned that applies to future w
 | `electron-spellcheck-settings.md` | Electron spellcheck runtime-settable via `session.setSpellCheckerEnabled()`; macOS language selection managed by OS | 2026-04-04 |
 | `split-pane-sidebar-layout-vs-pane-path.md` | Sidebar selectedPath must derive from layout path, not async-loading pane document path | 2026-04-04 |
 | `split-pane-pane-targeted-save.md` | Manual save in split layout must receive explicit pane identity, not infer from active pane | 2026-04-04 |
+
+> **Split-pane note:** The 7 split-pane lessons above document individual bugfixes. The canonical architectural reference is `docs/architecture/split-pane-coordination.md`, which formally specifies the per-pane state model, the two-layer state contract, and all pane-targeted action rules. These files are retained for debugging context.
+
 | `tag-index-stale-after-save.md` | Any write path affecting tags must refresh both persisted and in-memory tag index before returning | 2026-04-04 |
 | `css-patch-corruption.md` | CSS patch tool can inject rules inside open blocks; use large anchors, validate after each edit | 2026-04-04 |
+| `index-reorder-payload-id-vs-path.md` | Reorder payloads for `.trama.index.json` must use same key/value identity model as reconciliation and downstream readers | 2026-04-19 |

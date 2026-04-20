@@ -30,7 +30,7 @@ export function configureMainWindowResolver(getMainWindow: () => BrowserWindow |
 export function setActiveProject(projectRoot: string, indexService: IndexService, markdownFiles?: string[], metaByPath?: Record<string, DocumentMeta>): void {
   activeProjectRoot = projectRoot
   activeIndexService = indexService
-  activeTagIndexService = new TagIndexService(projectRoot)
+  activeTagIndexService = new TagIndexService()
   if (markdownFiles && metaByPath && activeTagIndexService) {
     activeTagIndexService.buildIndex(markdownFiles, metaByPath)
   }

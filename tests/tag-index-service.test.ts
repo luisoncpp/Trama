@@ -8,7 +8,7 @@ describe('tag-index-service', () => {
   let service: TagIndexService
 
   beforeEach(() => {
-    service = new TagIndexService(ROOT)
+    service = new TagIndexService()
   })
 
   describe('buildIndex', () => {

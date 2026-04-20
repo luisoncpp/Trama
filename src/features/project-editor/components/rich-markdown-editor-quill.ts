@@ -57,3 +57,7 @@ export function serializeEditorMarkdown(turndownService: TurndownService, html: 
   const markdown = normalizeMarkdown(turndownService.turndown(html))
   return normalizeBlankLinesToSpacerDirectives(markdown)
 }
+
+export function serializeEditorMarkdownFromRef(turndownRef: { current: TurndownService }, html: string): string {
+  return serializeEditorMarkdown(turndownRef.current, html)
+}

@@ -41,8 +41,8 @@ Out of scope (later workstreams):
 **Created:**
 - `electron/services/tag-index-service.ts`
   - Build and maintain `Map<string, string>` (`lowerTag -> filePath`).
-  - Resolve runtime text to file path with longest-match-first.
-  - Handle duplicates deterministically (alphabetically first path wins).
+  - Resolve text to match array with longest-match-first.
+  - Handle duplicate tags: alphabetically first path wins.
 
 - `electron/ipc/handlers/tag-handlers.ts`
   - Handlers for `tag:getIndex` and `tag:resolve` IPC channels.
@@ -79,6 +79,12 @@ Out of scope (later workstreams):
 - `src/features/project-editor/use-tag-index.ts`
   - Fetch/cache tag index from main process.
   - Subscribes to external file events for index refresh.
+  - Also listens to `TAG_INDEX_REFRESH_EVENT` for internal tag index invalidation.
+
+- `src/features/project-editor/tag-index-events.ts`
+  - Internal event emitter for tag index refresh notifications.
+  - Exports `TAG_INDEX_REFRESH_EVENT` constant and `notifyTagIndexRefresh()`.
+  - Called by file actions when tags are modified to trigger index refresh.
 
 - `src/features/project-editor/components/rich-markdown-editor-tag-helpers.ts`
   - Pure matching helpers: `findTagMatchesInText()`, `isInsideCodeBlock()`, `filterMatchesOutsideCode()`.
@@ -127,9 +133,13 @@ Out of scope (later workstreams):
 **Created:**
 - `tests/tag-index-service.test.ts`
   - Build index, duplicate tags (alphabetical tie-breaker), resolve path, word boundaries, case insensitivity, longest match.
+- `tests/tag-index-ipc-regression.test.ts`
+  - IPC integration tests for tag index service.
+- `tests/rich-markdown-editor-tag-overlay.test.ts`
+  - Tests for tag overlay rendering and `isInsideCodeBlock()` logic.
 
 **Passed:**
-- All 129 existing tests pass.
+- All 249 tests pass.
 - `npm run lint` passes.
 - `npm run build` succeeds.
 
@@ -137,7 +147,7 @@ Out of scope (later workstreams):
 
 ✅ All completed:
 1. `npm run lint`
-2. `npm run test` (129 tests passing)
+2. `npm run test` (249 tests passing)
 3. `npm run build`
 4. `npm run test:smoke` (electron smoke test passing)
 

@@ -1,162 +1,207 @@
-# Split Pane Coordination Guide
+# Split Pane Architecture
 
-Goal: explain how `primary`/`secondary` panes are coordinated end-to-end so regressions can be debugged without broad code searches.
+Goal: document the per-pane state model and the formal contracts that govern split-pane coordination. This doc supersedes the informal coordination notes and encodes the lessons learned from 8 split-pane bugfixes.
 
-## Scope
+## Why This Exists
 
-This guide covers renderer-side coordination in `project-editor`:
-- pane state ownership
-- active-pane projection
-- split/single mode transitions
-- file-open and pane-switch behavior
-- dirty/save semantics
-- conflict and autosave implications
+The split pane feature had 8 dedicated lessons-learned files because the per-pane state model was never formally documented. Every one of those bugs — dirty badge in wrong pane, pane-targeted save routing, sidebar showing wrong file on pane switch, preferred pane reset after reopen, test non-determinism — traced back to the same root cause: actions inferring pane identity from global active-pane state instead of receiving it explicitly.
 
-## Core model
+## The Two-Layer State Model
 
-There are two layers of state:
+Split pane coordination has **two distinct layers** that must not be conflated:
 
-1. Pane-owned document state (`PaneDocumentState`)
-- `primaryPane`: `{ path, content, meta, isDirty }`
-- `secondaryPane`: `{ path, content, meta, isDirty }`
-- Source: `src/features/project-editor/use-project-editor-state.ts`
+### Layer 1 — Workspace Layout (synchronous, decisional)
 
-2. Workspace layout state (`WorkspaceLayoutState`)
-- `mode`: `single | split`
-- `primaryPath`, `secondaryPath`
-- `activePane`: `primary | secondary`
-- Source: `src/features/project-editor/project-editor-types.ts`
+```
+WorkspaceLayoutState {
+  mode: 'single' | 'split'
+  ratio: number
+  primaryPath: string | null   ← file assigned to primary pane
+  secondaryPath: string | null ← file assigned to secondary pane
+  activePane: 'primary' | 'secondary'  ← which pane is "in focus"
+  focusModeEnabled: boolean
+  focusScope: 'line' | 'sentence' | 'paragraph'
+}
+```
 
-The active editor view is a projection:
-- `selectedPath`, `editorValue`, `editorMeta`, `isDirty`
-- computed from `workspaceLayout.activePane` in `buildValues()`
-- Source: `src/features/project-editor/use-project-editor-state.ts`
+**Layout state is synchronous.** It decides which file belongs to which pane and which pane is active. All UI-shared state (`selectedPath`, toolbar state) must derive from layout state, not from document state.
 
-## Source of truth by concern
+**Source:** `src/features/project-editor/project-editor-types.ts` + `src/features/project-editor/use-workspace-layout-state.ts`
 
-- Pane content/dirty: `primaryPane` / `secondaryPane`
-- Which pane is currently driving generic editor actions: `workspaceLayout.activePane`
-- Which files are assigned to panes: `workspaceLayout.primaryPath` / `workspaceLayout.secondaryPath`
-- Single-panel UI values: derived projection (`selectedPath`, `editorValue`, `isDirty`)
+### Layer 2 — Pane Document State (asynchronous, per-pane content)
 
-## Action flow map
+```
+PaneDocumentState {
+  path: string | null        ← document currently loaded in this pane
+  content: string            ← live editor content
+  meta: DocumentMeta
+  isDirty: boolean
+}
+```
 
-### 1) Typing in editor
+There are two independent `PaneDocumentState` instances: `primaryPane` and `secondaryPane`.
 
-Split mode:
-- `PaneEditor` routes onChange with explicit pane:
-- `actions.updateEditorValue(nextValue, pane)`
-- Source: `src/features/project-editor/components/workspace-editor-panels.tsx`
+**Document state is asynchronous.** Documents load after layout changes. During a pane switch, `workspaceLayout.activePane` updates synchronously but the new pane's document loads asynchronously. Deriving UI state from pane document state causes stale/null flashes during transitions.
 
-Single mode:
-- `ActiveEditorPanel` calls `actions.updateEditorValue(nextValue)`
-- action falls back to `pane ?? activePane`
-- Source: `src/features/project-editor/use-project-editor-ui-actions.ts`
+**Source:** `src/features/project-editor/use-project-editor-state.ts`
 
-Dirty semantics:
-- target pane gets `{ content: nextValue, isDirty: true }`
-- other pane remains unchanged
+## The Formal Contracts
 
-### 2) Switching active pane
+### Contract 1: `selectedPath` derives from layout, not document state
 
-- `setWorkspaceActivePane(pane)` resolves `nextPath` from layout
-- guarded by `canSelectFile(values.isDirty, values.selectedPath, nextPath)`
-- if blocked, status: `Save or wait for autosave before switching files.`
-- if allowed, updates `activePane` and conditionally loads document into target pane when `targetPaneState.path !== nextPath`
-- Source: `src/features/project-editor/use-project-editor-layout-actions.ts`
+**Wrong:**
+```typescript
+// Causes lag when switching panes — pane.path is async-loading
+selectedPath: activePaneState.path
+```
 
-Important:
-- the dirty guard checks the active projection (`values.isDirty`), not both panes.
-- this is intentional: it protects from leaving the currently active dirty document.
+**Correct:**
+```typescript
+// Sidebar updates immediately — layout path is synchronous
+const activePaneLayoutPath = workspaceLayout.activePane === 'secondary'
+  ? workspaceLayout.secondaryPath
+  : workspaceLayout.primaryPath
+selectedPath: activePaneLayoutPath
+```
 
-### 3) Opening a file in a specific pane
+**Why it matters:** When activating a pane, `workspaceLayout.activePane` updates immediately but the target pane's document (`secondaryPane.path`) may still be loading. Deriving `selectedPath` from document state causes the sidebar to go blank during the load window.
 
-- `openFileInPane(filePath, pane)`
-- secondary path:
-  - forces split mode (`single -> split`)
-  - sets `activePane = secondary`
-  - sets `secondaryPath = filePath`
-  - loads file only when path changed
-- primary path:
-  - guarded by `canSelectFile(...)`
-  - sets `activePane = primary`, `primaryPath = filePath`
-  - loads file when path changed
-- Source: `src/features/project-editor/use-project-editor-layout-actions.ts`
+**File:** `src/features/project-editor/use-project-editor-state.ts:97`
 
-### 3b) Selecting a file from sidebar (selectFile)
+### Contract 2: Editor `onChange` should pass explicit pane identity
 
-`selectFile(filePath)` transitions between documents. Behavior (newer pattern, replaces old blocking guard):
-- auto-saves current document if `isDirty`, regardless of target file
-- only reloads from disk if navigating to a *different* file
-- skips reload if selecting the same file (content is just-saved, no reload needed)
-- Source: `src/features/project-editor/use-project-editor-ui-actions.ts`
+**Rule:** Every `onChange` callback from a split-pane editor should call `updateEditorValue(nextValue, pane)` with an explicit pane argument when possible. Both `updateEditorValue` and `saveNow` accept an optional `pane` parameter — when omitted, they fall back to `workspaceLayout.activePane`. Explicit routing avoids race conditions when the secondary editor's `onChange` fires while `activePane` still points at primary.
 
-This removes user friction by persisting before navigation rather than blocking with "please save first" errors.
+**Wrong:**
+```typescript
+// Infers target pane from global activePane — drifts with event timing
+onPaneEditorChange = (nextValue: string) => {
+  actions.updateEditorValue(nextValue)  // falls back to activePane
+}
+```
 
-### 4) Open project / restore layout
+**Correct:**
+```typescript
+// Routes directly to the pane that emitted the event
+onPaneEditorChange = (nextValue: string) => {
+  actions.updateEditorValue(nextValue, pane)  // explicit pane
+}
+```
 
-- `reconcileWorkspaceLayout(...)` normalizes ratio/mode/paths and preferred path handling
-- `applyOpenedProject(...)`:
-  - stores snapshot
-  - reconciles layout
-  - loads active pane file first
-  - preloads inactive pane file in split mode if different
-- Sources:
-  - `src/features/project-editor/project-editor-logic.ts`
-  - `src/features/project-editor/use-project-editor-open-project.ts`
+**Why it matters:** Pointer/focus timing can leave `workspaceLayout.activePane` pointing at the wrong pane when the secondary editor's `onChange` fires. Explicit routing avoids this race.
 
-## Save semantics
+**File:** `src/features/project-editor/components/workspace-editor-panels.tsx:37-39`
 
-`saveDocumentNow(path, content, meta)`:
-- writes one path through IPC
-- clears dirty in any pane whose `pane.path === savedPath`
-- this can clear one or both panes if they reference same path
-- Source: `src/features/project-editor/use-project-editor-actions.ts`
+### Contract 3: Manual save should pass explicit pane identity
 
-Manual save button semantics:
-- single-pane UI uses `saveNow()` and therefore saves the active projected document
-- split-pane UI must call `saveNow(pane)` so the clicked panel saves its own pane state even if `activePane` has not switched yet
-- Source: `src/features/project-editor/use-project-editor-ui-actions.ts` and `src/features/project-editor/components/workspace-editor-panels.tsx`
+**Rule:** Each pane's save affordance should call `saveNow(pane)` so clicks in the secondary pane save the secondary pane's document, not the active pane's. Both `updateEditorValue` and `saveNow` accept an optional `pane` parameter — when omitted, they fall back to `activePane`. Explicit routing is preferred when the call site knows which pane triggered the action.
 
-## Autosave semantics
+**Wrong:**
+```typescript
+// Could save primary when user clicked secondary's save button
+onPaneSaveNow = () => actions.saveNow()  // falls back to activePane
+```
 
-Autosave runs on projected active values only:
-- `selectedPath`
-- `isDirty`
-- `editorValue`
-- `editorMeta`
+**Correct:**
+```typescript
+// Saves the pane whose button was clicked
+onPaneSaveNow = () => actions.saveNow(pane)
+```
 
-Therefore autosave targets the active pane document.
-- Source: `src/features/project-editor/use-project-editor-autosave-effect.ts`
+**Why it matters:** `workspaceLayout.activePane` can differ from the pane whose save button was clicked if focus hasn't followed the pointer.
 
-## External conflict semantics
+**File:** `src/features/project-editor/components/workspace-editor-panels.tsx:40-42`
 
-External-event handling receives:
-- active pane
-- selected path
-- projected `isDirty`
+### Contract 4: Dirty guard protects the active projected document only
 
-Conflict UI is driven from active document context.
-- Source: `src/features/project-editor/use-project-editor.ts` and `use-project-editor-external-events-effect.ts`
+**Rule:** The dirty guard (`canSelectFile`) checks `values.isDirty` — the active pane's projected dirty state — not both panes.
 
-## Known invariants
+```typescript
+if (!canSelectFile(values.isDirty, values.selectedPath, filePath)) {
+  setters.setStatusMessage(PROJECT_EDITOR_STRINGS.statusNeedSaveBeforeSwitch)
+  return
+}
+```
 
-1. Split editors must pass explicit pane in onChange.
-2. Active projection must remain a pure derived view from `activePane`.
-3. Save dirty-clear must remain path-based, not pane-based.
-4. Pane switching dirty guard protects current active document.
-5. Open-project preload keeps both panes coherent in split mode.
+**Why it matters:** This protects the currently active document from unsaved-work loss. Both panes being dirty is fine — the guard only blocks if navigating away from the active dirty document.
 
-## Fast debug path (2-3 minutes)
+**File:** `src/features/project-editor/use-project-editor-layout-actions.ts:143-145`
 
-1. Read this file.
-2. Verify wiring in `src/features/project-editor/components/workspace-editor-panels.tsx`.
-3. Verify update behavior in `src/features/project-editor/use-project-editor-ui-actions.ts`.
-4. Verify guards/load rules in `src/features/project-editor/use-project-editor-layout-actions.ts`.
-5. Run `npm run test -- tests/project-editor-conflict-flow.test.ts`.
+### Contract 5: `openProject(root, preferredFilePath?, preferredPane?)` with explicit pane handling
 
-## Regression tests to trust first
+The `preferredPane` parameter exists so conflict-resolution flows (save-as-copy) can reopen the project with the new file in the same pane where the conflict occurred.
 
-- `tests/project-editor-conflict-flow.test.ts`
-- `tests/use-project-editor.test.ts`
-- `tests/typescript-compile.test.ts`
+**Flow:**
+1. `applyOpenedProject` reconciles layout and applies `preferredPane` to `activePane`
+2. Loads active pane document first
+3. Preloads inactive pane document if in split mode and path differs
+
+**Why `preferredPane` matters:** Without it, the single-document state model would overwrite pane intent on reopen.
+
+**File:** `src/features/project-editor/use-project-editor-open-project.ts:35-72`
+
+### Contract 6: Split mode transitions are explicit, not automatic
+
+| Transition | Trigger | Behavior |
+|---|---|---|
+| `single` → `split` | `openFileInPane(path, 'secondary')` | Forces split, sets `secondaryPath`, activates secondary |
+| `single` → `split` | `toggleWorkspaceLayoutMode()` with candidate | Finds second file, activates primary |
+| `split` → `single` | `toggleWorkspaceLayoutMode()` | Sets `mode: 'single'`, activates primary |
+
+**No implicit mode changes.** Split mode only enters via explicit action.
+
+**File:** `src/features/project-editor/use-project-editor-layout-actions.ts:47-70`
+
+### Contract 7: Test setup must normalize layout before asserting
+
+**Rule:** Any split-mode test must explicitly set `mode` and `activePane` before the scenario under test.
+
+```typescript
+// WRONG — toggle is non-deterministic if mode is already split
+await act(async () => { model?.actions.toggleWorkspaceLayoutMode() })
+
+// CORRECT — normalize to known state first
+if (model?.state.workspaceLayout.mode !== 'split') {
+  await act(async () => { model?.actions.toggleWorkspaceLayoutMode() })
+}
+expect(model?.state.workspaceLayout.mode).toBe('split')
+```
+
+**Why it matters:** Layout persists across test runs (`trama.workspace.layout.v1`). Tests that assume fixed initial layout without normalizing setup are non-deterministic.
+
+**File:** `tests/project-editor-conflict-flow.test.ts`
+
+## State Projection Map
+
+From `buildValues()` in `use-project-editor-state.ts`:
+
+| Projected value | Source | Notes |
+|---|---|---|
+| `selectedPath` | `workspaceLayout.primaryPath` or `secondaryPath` | **Layout layer** — synchronous, use for sidebar |
+| `editorValue` | `activePane.content` | Document layer — async |
+| `editorMeta` | `activePane.meta` | Document layer |
+| `isDirty` | `activePane.isDirty` | Document layer |
+
+The active pane is determined by `workspaceLayout.activePane` and then used to select which `PaneDocumentState` feeds the projection.
+
+## Key Implementation Files
+
+| File | Role |
+|---|---|
+| `src/features/project-editor/project-editor-types.ts` | `WorkspaceLayoutState`, `PaneDocumentState`, `WorkspacePane` type definitions |
+| `src/features/project-editor/use-project-editor-state.ts` | `buildValues()` — projection from layout+document layers to shared state |
+| `src/features/project-editor/use-project-editor-layout-actions.ts` | `openFileInPane`, `setWorkspaceActivePane`, `toggleWorkspaceLayoutMode` |
+| `src/features/project-editor/use-project-editor-ui-actions.ts` | `updateEditorValue(pane?)`, `saveNow(pane?)` with explicit pane routing |
+| `src/features/project-editor/use-project-editor-open-project.ts` | `applyOpenedProject` with `preferredPane` handling |
+| `src/features/project-editor/project-editor-logic.ts` | `reconcileWorkspaceLayout`, `canSelectFile` |
+| `src/features/project-editor/components/workspace-editor-panels.tsx` | Split UI with explicit pane routing in `PaneEditor` |
+
+## Regression Tests
+
+Run these first when debugging split-pane issues:
+
+```bash
+npm run test -- tests/project-editor-conflict-flow.test.ts
+npm run test -- tests/use-project-editor.test.ts
+npm run test -- tests/workspace-layout-persistence.test.ts
+```

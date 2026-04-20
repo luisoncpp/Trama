@@ -3,12 +3,7 @@ import TurndownService from 'turndown'
 import { marked } from 'marked'
 import { WORKSPACE_CONTEXT_MENU_EVENT, type WorkspaceContextCommand } from '../../../shared/workspace-context-menu'
 import { renderDirectiveArtifactsToMarkdown } from '../../../shared/markdown-layout-directives'
-import { normalizeBlankLinesToSpacerDirectives } from '../../../shared/markdown-layout-directives-spacing'
-
-function serializeEditorMarkdown(turndownRef: { current: TurndownService }, html: string): string {
-  const markdown = turndownRef.current.turndown(html).replace(/\r\n/g, '\n').trimEnd()
-  return normalizeBlankLinesToSpacerDirectives(markdown)
-}
+import { serializeEditorMarkdownFromRef } from './rich-markdown-editor-quill'
 
 function getCopySourceHtml(editor: Quill): string {
   const selection = editor.getSelection()
@@ -37,7 +32,7 @@ export function registerWorkspaceCommandListener(
         const { markdownWithArtifacts } = renderDirectiveArtifactsToMarkdown(clipboardText)
         editor.clipboard.dangerouslyPasteHTML(index, marked.parse(markdownWithArtifacts) as string, 'user')
       } else {
-        const markdown = serializeEditorMarkdown(turndownRef, getCopySourceHtml(editor))
+        const markdown = serializeEditorMarkdownFromRef(turndownRef, getCopySourceHtml(editor))
         await navigator.clipboard.writeText(markdown)
       }
     } catch {

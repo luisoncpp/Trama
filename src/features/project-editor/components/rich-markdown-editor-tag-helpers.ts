@@ -53,8 +53,14 @@ export function findTagMatchesInText(
 
 export function isInsideCodeBlock(text: string, position: number): boolean {
   const beforePosition = text.substring(0, position)
+
   const codeBlockOpenCount = (beforePosition.match(/```/g) || []).length
   if (codeBlockOpenCount % 2 === 1) {
+    return true
+  }
+
+  const singleBacktickCount = (beforePosition.match(/`/g) || []).length
+  if (singleBacktickCount % 2 === 1) {
     return true
   }
 

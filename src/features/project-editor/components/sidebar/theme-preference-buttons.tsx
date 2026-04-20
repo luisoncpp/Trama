@@ -1,4 +1,4 @@
-import type { ResolvedTheme, ThemePreference } from '../../../../theme/theme-types'
+import type { ThemePreference } from '../../../../theme/theme-types'
 
 const THEME_OPTIONS: Array<{ value: ThemePreference; label: string }> = [
   { value: 'light', label: 'Light' },

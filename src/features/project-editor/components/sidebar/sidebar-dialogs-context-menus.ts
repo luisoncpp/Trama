@@ -1,7 +1,3 @@
-import type { SidebarCreateInput } from '../../project-editor-types'
-import type { SidebarCreateMode } from './sidebar-create-dialog.tsx'
-import { SidebarCreateDialog } from './sidebar-create-dialog.tsx'
-import { SidebarFooterActions } from './sidebar-footer-actions.tsx'
 import { useSidebarFileContextMenu } from './use-sidebar-file-context-menu'
 import { useSidebarFolderContextMenu } from './use-sidebar-folder-context-menu'
 

@@ -74,6 +74,7 @@ Mandatory doc navigation for new chats: start with `docs/START-HERE.md` — it p
   - YAML frontmatter parse/serialize.
 - `electron/services/index-service.ts`
   - `.trama.index.json` load/save/reconcile.
+  - Architecture: `docs/architecture/project-index-architecture.md`.
 - `electron/services/watcher-service.ts`
   - Chokidar wrapper + internal/external write classification.
 - `electron/services/ai-import-service.ts`
@@ -101,6 +102,8 @@ Mandatory doc navigation for new chats: start with `docs/START-HERE.md` — it p
   - Uses Unicode-capable system serif fonts when available (fallback to standard fonts).
 - `docs/architecture/book-export-architecture.md`
   - Canonical reference for the book export pipeline. Explains the file layout, PDF render pipeline, data models, directive mapping, image handling, page metrics, and test coverage.
+- `docs/architecture/ai-import-export-architecture.md`
+  - AI import/export clipboard pipeline. Covers format grammar, import preview/execute flow, export formatting, path validation, IPC contract, and test coverage.
 
 ## Renderer layer
 
@@ -139,6 +142,8 @@ Mandatory doc navigation for new chats: start with `docs/START-HERE.md` — it p
   - Global workspace shortcuts (split/fullscreen/focus/pane switch).
 - `src/features/project-editor/use-workspace-layout-state.ts`
   - Persist workspace layout (`trama.workspace.layout.v1`).
+- `docs/architecture/split-pane-coordination.md`
+  - Canonical reference for the split pane per-pane state model. Documents the two-layer state model (layout vs document), all 7 formal contracts, state projection map, and key implementation files.
 - `src/features/project-editor/use-sidebar-ui-state.ts`
   - Persist sidebar UI (`trama.sidebar.ui.v1`).
 - `src/features/project-editor/use-ai-import.ts`

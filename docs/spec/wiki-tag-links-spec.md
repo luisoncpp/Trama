@@ -93,7 +93,7 @@ Matches respect word boundaries. The tag `magia` will **not** match inside `magi
 - **Responsibilities**:
   - Build a `Map<string, string>` of `lowercaseTag → filePath` on project scan.
   - Update on file save/create/delete events.
-  - Expose `getTagIndex()` and `resolveTag(tagText, fromPath)` methods.
+  - Expose `getTagIndex()` and `resolveMatches(text)` for finding all tag matches in text.
 - **Lifecycle**: Rebuilt on project open; incrementally updated via watcher events.
 
 ### 4.2. IPC Contract
@@ -103,7 +103,7 @@ New endpoints added to `src/shared/ipc.ts`:
 | Channel | Direction | Payload | Response |
 |---------|-----------|---------|----------|
 | `getTagIndex` | Renderer → Main | — | `{ tags: Record<string, string> }` |
-| `resolveTag` | Renderer → Main | `{ tag: string }` | `{ found: boolean, path?: string, meta?: DocumentMeta }` |
+| `tagResolve` | Renderer → Main | `{ text: string }` | `{ matches: Array<{ tag: string, start: number, end: number, filePath: string }> }` |
 
 ### 4.3. Renderer Tag Cache
 
