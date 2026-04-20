@@ -1769,6 +1769,10 @@ select {
   opacity: 1;
 }
 
+.rich-editor .ql-editor.is-focus-mode-inactive {
+  opacity: 0.35;
+}
+
 .rich-editor .ql-editor.is-focus-mode.is-focus-scope-sentence,
 .rich-editor .ql-editor.is-focus-mode.is-focus-scope-line {
   position: relative;
@@ -1810,10 +1814,23 @@ select {
   text-shadow: 0 0 0.01px currentColor;
 }
 
+.rich-editor .ql-editor.is-focus-mode-inactive {
+  opacity: 0.35;
+}
+
 .rich-editor .ql-editor.is-focus-mode.is-focus-scope-paragraph > *.is-focus-emphasis,
 .rich-editor .ql-editor.is-focus-mode.is-focus-scope-sentence > *.is-focus-emphasis,
 .rich-editor .ql-editor.is-focus-mode.is-focus-scope-line > *.is-focus-emphasis {
   opacity: 1;
+}
+
+.rich-editor .ql-editor.is-focus-mode-inactive.is-focus-scope-sentence > *,
+.rich-editor .ql-editor.is-focus-mode-inactive.is-focus-scope-line > * {
+  opacity: 0.35;
+}
+
+.rich-editor .ql-editor.is-focus-mode-inactive.is-focus-scope-paragraph > * {
+  opacity: 0.35;
 }
 
 .workspace-split-pane .rich-editor .ql-editor {

@@ -182,7 +182,7 @@ export function getSelectionViewportRect(quill: Quill): DOMRect | null {
 }
 
 export function clearFocusScope(editorRoot: HTMLElement): void {
-	editorRoot.classList.remove('is-focus-mode', 'is-focus-scope-line', 'is-focus-scope-sentence', 'is-focus-scope-paragraph')
+	editorRoot.classList.remove('is-focus-mode', 'is-focus-mode-inactive', 'is-focus-scope-line', 'is-focus-scope-sentence', 'is-focus-scope-paragraph')
 	clearBlockFocusScope(editorRoot)
 	clearFocusTextHighlight(editorRoot)
 	editorRoot.style.removeProperty('--focus-extra-top')

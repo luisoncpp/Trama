@@ -26,6 +26,7 @@ interface RichMarkdownEditorProps {
   focusScope?: FocusScope
   tagIndex?: Record<string, string> | null
   onTagClick?: (filePath: string) => void
+  isActive?: boolean
 }
 
 function createTurndownService(): TurndownService {
@@ -80,7 +81,7 @@ function useTagClickHandler(
 }
 
 export function RichMarkdownEditor(props: RichMarkdownEditorProps) {
-  const { documentId, value, disabled, spellcheckEnabled = true, onChange, saveDisabled, saveLabel, onSaveNow, syncState, syncStateLabel, focusModeEnabled = false, focusScope = 'paragraph', tagIndex, onTagClick } = props
+  const { documentId, value, disabled, spellcheckEnabled = true, onChange, saveDisabled, saveLabel, onSaveNow, syncState, syncStateLabel, focusModeEnabled = false, focusScope = 'paragraph', tagIndex, onTagClick, isActive = true } = props
   const { shellRef, hostRef, editorRef, onChangeRef, lastEditorValueRef, isApplyingExternalValueRef, turndownRef } = useRichEditorRefs(value, onChange)
   const ctrlPressed = useCtrlKeyState()
   const safeTagIndex = tagIndex ?? null
@@ -89,7 +90,7 @@ export function RichMarkdownEditor(props: RichMarkdownEditorProps) {
 
   useRichEditorLifecycle({ documentId, value, disabled, spellcheckEnabled, hostRef, editorRef, onChangeRef, isApplyingExternalValueRef, lastEditorValueRef, turndownRef })
   useSyncToolbarControls({ documentId, hostRef, editorRef, saveDisabled, saveLabel, onSaveNow, syncState, syncStateLabel })
-  useFocusModeScopeEffect(editorRef, hostRef, focusModeEnabled, focusScope)
+  useFocusModeScopeEffect(editorRef, hostRef, focusModeEnabled, focusScope, isActive)
 
   const findBar = useRichEditorFind({ documentId, hostRef, editorRef })
   const editorContainerRect = editorRef.current?.container.getBoundingClientRect() ?? null

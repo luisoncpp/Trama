@@ -18,12 +18,15 @@ useToggleFocusModeAction()
         │
         ▼
 useFocusModeScopeEffect()
-  • Monitors focusModeEnabled + focusScope
+  • Monitors focusModeEnabled + focusScope + isActive
   • Initializes or clears focus rendering
         │
         ├─── focusModeEnabled = false ───► clearFocusScope()
         │
-        └─── focusModeEnabled = true ───► initializeFocusMode()
+        ├─── isActive = false ──────────► cleanupInactiveEditor()
+        │                                    (.is-focus-mode-inactive class)
+        │
+        └─── isActive = true ───────────► initializeAndSetup()
                                               │
                                               ▼
                                     applyFocusScope(quill, editorRoot, scope)
@@ -39,6 +42,18 @@ useFocusModeScopeEffect()
             CSS Highlights API      CSS Highlights API      .is-focus-emphasis
             + fallback overlay      + fallback overlay     (class on line node)
 ```
+
+### Split Pane Behavior
+
+When multiple `RichMarkdownEditor` instances exist (split layout), each receives an `isActive` prop. The effect handles three states:
+
+| State | Classes Applied | Result |
+|-------|----------------|--------|
+| `focusModeEnabled = false` | None | All focus styling cleared |
+| `isActive = false` | `is-focus-mode-inactive` | All content dimmed via CSS opacity |
+| `isActive = true` | `is-focus-mode` + `is-focus-scope-*` + `is-focus-text-highlight` | Full focus highlighting on target scope |
+
+The inactive pane uses `.is-focus-mode-inactive { opacity: 0.35 }` for uniform dimming without per-scope complexity.
 
 ---
 
@@ -159,7 +174,8 @@ Even if persisted layout has `focusModeEnabled: true`, it is force-reset to `fal
 
 | Class | Applied To | Purpose |
 |-------|-----------|---------|
-| `is-focus-mode` | `.ql-editor` | Global focus mode indicator |
+| `is-focus-mode` | `.ql-editor` | Global focus mode indicator (active pane) |
+| `is-focus-mode-inactive` | `.ql-editor` | Focus mode inactive pane (dimmed via CSS opacity) |
 | `is-focus-scope-line` | `.ql-editor` | Line scope active |
 | `is-focus-scope-sentence` | `.ql-editor` | Sentence scope active |
 | `is-focus-scope-paragraph` | `.ql-editor` | Paragraph scope active |
@@ -221,6 +237,7 @@ The sidebar cannot be reopened while focus mode is active (`use-project-editor-s
 3. **Paragraph scope uses block emphasis only**: No CSS Highlights API for paragraph — only `is-focus-emphasis` class on the line node.
 4. **Highlight marker required**: `is-focus-text-highlight` must remain even without direct CSS consumer — it is the test-observable signal that highlight path is active.
 5. **Two RAF passes for scroll**: Typewriter centering requires recomputing after CSS spacing is applied.
+6. **Split pane focus is per-pane**: Each editor receives `isActive` prop; effect uses strict equality (`isActive === false`) so undefined prop defaults to active behavior. Inactive pane gets `.is-focus-mode-inactive` with uniform CSS opacity dimming.
 
 ---
 
@@ -229,4 +246,4 @@ The sidebar cannot be reopened while focus mode is active (`use-project-editor-s
 - Rich markdown editor architecture: `docs/architecture/rich-markdown-editor-core-architecture.md`
 - Split pane coordination: `docs/architecture/split-pane-coordination.md`
 - Lessons learned: `docs/lessons-learned/focus-mode-centered-scroll-spacers.md`, `docs/lessons-learned/focus-mode-rich-editor-highlight-vs-overlay.md`
-- Tests: `tests/focus-mode-scope.test.ts`, `tests/rich-markdown-editor-focus-rendering.test.ts`
+- Tests: `tests/focus-mode-scope.test.ts`, `tests/rich-markdown-editor-focus-rendering.test.ts`, `tests/rich-markdown-editor-focus-split-pane.test.ts`

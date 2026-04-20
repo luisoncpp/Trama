@@ -9,11 +9,7 @@ import {
 } from './rich-markdown-editor-focus-scope-helpers'
 import type { FocusScope } from '../project-editor-types'
 
-function initializeFocusMode(
-	host: HTMLDivElement,
-	quill: Quill,
-	focusScope: FocusScope,
-): { editorRoot: HTMLElement; container: HTMLElement; updateCenteredScroll: () => void } | null {
+function getEditorElements(host: HTMLDivElement): { editorRoot: HTMLElement; container: HTMLElement } | null {
 	const editorRoot = host.querySelector('.ql-editor')
 	if (!(editorRoot instanceof HTMLElement)) {
 		return null
@@ -24,10 +20,15 @@ function initializeFocusMode(
 		return null
 	}
 
-	editorRoot.classList.add('is-focus-mode')
-	updateFocusScopeClasses(editorRoot, focusScope)
-	applyFocusScope(quill, editorRoot, focusScope)
+	return { editorRoot, container }
+}
 
+function setupScrollCentering(
+	container: HTMLElement,
+	editorRoot: HTMLElement,
+	quill: Quill,
+	focusScope: FocusScope,
+): () => void {
 	const updateCenteredScroll = createUpdateCenteredScroll(
 		container,
 		editorRoot,
@@ -35,15 +36,6 @@ function initializeFocusMode(
 		() => getSelectionViewportRect(quill),
 	)
 
-	return { editorRoot, container, updateCenteredScroll }
-}
-
-function setupFocusModeListeners(
-	quill: Quill,
-	editorRoot: HTMLElement,
-	focusScope: FocusScope,
-	updateCenteredScroll: () => void,
-): { scheduleRefresh: () => void; rafId: { current: number } } {
 	const rafId = { current: 0 }
 
 	const refresh = () => {
@@ -67,7 +59,67 @@ function setupFocusModeListeners(
 	quill.on('text-change', scheduleRefresh)
 	window.addEventListener('resize', scheduleRefresh)
 
-	return { scheduleRefresh, rafId }
+	return () => {
+		if (rafId.current) {
+			cancelAnimationFrame(rafId.current)
+		}
+
+		quill.off('selection-change', scheduleRefresh)
+		quill.off('text-change', scheduleRefresh)
+		window.removeEventListener('resize', scheduleRefresh)
+		editorRoot.style.removeProperty('--focus-extra-top')
+		editorRoot.style.removeProperty('--focus-extra-bottom')
+	}
+}
+
+function initializeAndSetup(
+	host: HTMLDivElement,
+	quill: Quill,
+	focusScope: FocusScope,
+): { scheduleRefresh: () => void; cleanup: () => void } | null {
+	const elements = getEditorElements(host)
+	if (!elements) {
+		return null
+	}
+
+	const { editorRoot, container } = elements
+	editorRoot.classList.add('is-focus-mode')
+	updateFocusScopeClasses(editorRoot, focusScope)
+	applyFocusScope(quill, editorRoot, focusScope)
+
+	const cleanupScroll = setupScrollCentering(container, editorRoot, quill, focusScope)
+
+	return {
+		scheduleRefresh: () => {
+			updateFocusScopeClasses(editorRoot, focusScope)
+			applyFocusScope(quill, editorRoot, focusScope)
+		},
+		cleanup: cleanupScroll,
+	}
+}
+
+function cleanupInactiveEditor(editorRoot: HTMLElement): void {
+	clearFocusScope(editorRoot)
+	editorRoot.classList.remove('is-focus-mode')
+	editorRoot.classList.add('is-focus-mode-inactive')
+}
+
+function cleanupAllFocus(editorRoot: HTMLElement): void {
+	clearFocusScope(editorRoot)
+	editorRoot.classList.remove('is-focus-mode', 'is-focus-mode-inactive')
+}
+
+function activateFocusMode(
+	host: HTMLDivElement,
+	quill: Quill,
+	focusScope: FocusScope,
+): { scheduleRefresh: () => void; cleanup: () => void } | null {
+	const setup = initializeAndSetup(host, quill, focusScope)
+	if (!setup) {
+		return null
+	}
+
+	return setup
 }
 
 export function useFocusModeScopeEffect(
@@ -75,6 +127,7 @@ export function useFocusModeScopeEffect(
 	hostRef: { current: HTMLDivElement | null },
 	focusModeEnabled: boolean,
 	focusScope: FocusScope,
+	isActive: boolean,
 ): void {
 	useEffect(() => {
 		const quill = editorRef.current
@@ -89,34 +142,25 @@ export function useFocusModeScopeEffect(
 		}
 
 		if (!focusModeEnabled) {
-			clearFocusScope(editorRoot)
+			cleanupAllFocus(editorRoot)
 			return
 		}
 
-		const init = initializeFocusMode(host, quill, focusScope)
-		if (!init) {
+		if (isActive === false) {
+			cleanupInactiveEditor(editorRoot)
 			return
 		}
 
-		const { scheduleRefresh, rafId } = setupFocusModeListeners(
-			quill,
-			init.editorRoot,
-			focusScope,
-			init.updateCenteredScroll,
-		)
+		editorRoot.classList.remove('is-focus-mode-inactive')
+		editorRoot.classList.add('is-focus-mode')
 
-		scheduleRefresh()
-
-		return () => {
-			if (rafId.current) {
-				cancelAnimationFrame(rafId.current)
-			}
-
-			quill.off('selection-change', scheduleRefresh)
-			quill.off('text-change', scheduleRefresh)
-			window.removeEventListener('resize', scheduleRefresh)
-			init.editorRoot.style.removeProperty('--focus-extra-top')
-			init.editorRoot.style.removeProperty('--focus-extra-bottom')
+		const active = activateFocusMode(host, quill, focusScope)
+		if (!active) {
+			return
 		}
-	}, [editorRef, hostRef, focusModeEnabled, focusScope])
+
+		active.scheduleRefresh()
+
+		return active.cleanup
+	}, [editorRef, hostRef, focusModeEnabled, focusScope, isActive])
 }

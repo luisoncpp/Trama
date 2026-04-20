@@ -73,6 +73,7 @@ function PaneEditor({ model, spellcheckEnabled, pane, tagIndex, onTagClick }: Pa
           onInteract={onActivate}
           tagIndex={tagIndex}
           onTagClick={onTagClick}
+          isActive={isActive}
         />
       </div>
     </section>

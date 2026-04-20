@@ -17,6 +17,7 @@ interface EditorPanelProps {
   onInteract?: () => void
   tagIndex?: Record<string, string> | null
   onTagClick?: (filePath: string) => void
+  isActive?: boolean
 }
 
 function computeSyncStateLabel(selectedPath: string | null, loadingDocument: boolean, saving: boolean, isDirty: boolean): string {
@@ -40,6 +41,7 @@ export function EditorPanel({
   onInteract,
   tagIndex,
   onTagClick,
+  isActive = true,
 }: EditorPanelProps) {
   const saveDisabled = !selectedPath || saving || !isDirty
   const saveLabel = saving
@@ -69,6 +71,7 @@ export function EditorPanel({
           focusScope={focusScope}
           tagIndex={tagIndex}
           onTagClick={onTagClick}
+          isActive={isActive}
         />
       </div>
     </article>

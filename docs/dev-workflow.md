@@ -60,7 +60,7 @@ For WS1 execution details, see `docs/spec/wiki-tag-links-spec.md` and `docs/plan
 
 ## Documentation requirements (mandatory)
 
-When a change affects behavior (not only formatting), documentation updates are required in the same task. Read the requirements in `docs/update.md`.
+When a change affects behavior (not only formatting) or when detecting anything in the code that contradicts existing documentation, documentation updates are required in the same task. Read the requirements in `docs/update.md`.
 
 ## Sidebar-specific manual checks
 
