@@ -259,7 +259,7 @@ Mandatory doc navigation for new chats: start with `docs/START-HERE.md` — it p
 - `src/features/project-editor/components/sidebar/sidebar-explorer-body.tsx`
   - Explorer body (path, filter, tree, state hints, menus/dialogs).
 - `src/features/project-editor/components/sidebar/sidebar-tree.tsx`
-  - Interactive tree rows, keyboard nav, right-click file hook, and drag-and-drop reorder state management.
+  - Interactive tree rows, keyboard nav, right-click file hook, and drag-and-drop reorder state. Drag handler logic lives in `use-sidebar-tree-drag-handlers.ts`.
 - `src/features/project-editor/components/sidebar/sidebar-tree-logic.ts`
   - Pure tree build/flatten helpers.
 - `src/features/project-editor/components/sidebar/sidebar-tree-row-button.tsx`
@@ -268,6 +268,8 @@ Mandatory doc navigation for new chats: start with `docs/START-HERE.md` — it p
   - Visual drop indicator component for drag-and-drop reorder (between-files line, folder highlight, section root).
 - `src/features/project-editor/components/sidebar/use-sidebar-tree-expanded-folders.ts`
   - Expanded folder state management, including rename remap consumption via sidebar folder-rename events.
+- `src/features/project-editor/components/sidebar/use-sidebar-tree-drag-handlers.ts`
+  - Drag-and-drop handler logic (dragStart, dragOver, drop) and drop position calculation, extracted from `sidebar-tree.tsx`.
 - `src/features/project-editor/components/sidebar/sidebar-folder-rename-events.ts`
   - One-shot folder rename event bridge used to remap expanded folder state after refresh.
 - `src/features/project-editor/components/sidebar/sidebar-filter.tsx`
@@ -344,6 +346,10 @@ Core and regression suites:
 - `tests/rich-markdown-editor-tag-overlay.test.ts`
 - `tests/paste-markdown.test.ts`
 - `tests/focus-mode-scope.test.ts`
+- `tests/rich-markdown-editor-focus-rendering.test.ts`
+  - CSS Highlights API priority, fallback overlay, scope change marker behavior.
+- `tests/rich-markdown-editor-focus-split-pane.test.ts`
+  - Split pane focus regression: active/inactive pane behavior, `isActive` strict equality (`=== false`), CSS class application for `.is-focus-mode-inactive` dimming.
 - `tests/sidebar-tree.test.ts`
 - `tests/sidebar-filter.test.ts`
 - `tests/sidebar-panels.test.ts`

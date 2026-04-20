@@ -60,5 +60,6 @@ Avoid: "bug description + fix". Prefer: "what I learned that applies to future w
 > **Split-pane note:** The 7 split-pane lessons above document individual bugfixes. The canonical architectural reference is `docs/architecture/split-pane-coordination.md`, which formally specifies the per-pane state model, the two-layer state contract, and all pane-targeted action rules. These files are retained for debugging context.
 
 | `focus-mode-split-pane-inactive.md` | Split pane focus: use strict `isActive === false` check, not `!isActive`; dim inactive pane via CSS `.is-focus-mode-inactive { opacity: 0.35 }`, not per-scope logic | 2026-04-20 |
+| `focus-mode-css-vars-sync-init.md` | Focus mode CSS vars need synchronous init; RAF-only event updates miss initial render state | 2026-04-20 |
 | `css-patch-corruption.md` | CSS patch tool can inject rules inside open blocks; use large anchors, validate after each edit | 2026-04-04 |
 | `index-reorder-payload-id-vs-path.md` | Reorder payloads for `.trama.index.json` must use same key/value identity model as reconciliation and downstream readers | 2026-04-19 |

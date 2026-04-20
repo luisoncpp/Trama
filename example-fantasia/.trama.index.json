@@ -74,6 +74,19 @@
     ],
     "": [
       "README.md"
+    ],
+    "characters": [
+      "characters/Aina.md",
+      "characters/Corin.md",
+      "characters/Nora.md",
+      "characters/Elio.md",
+      "characters/Marek.md",
+      "characters/Nix.md",
+      "characters/Sombra-del-Lirio.md",
+      "places/bosque-encantado.md",
+      "places/ciudad-principal.md",
+      "systems/magia.md",
+      "systems/politica.md"
     ]
   },
   "cache": {

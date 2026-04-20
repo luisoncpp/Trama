@@ -6,6 +6,10 @@ This file is the required first stop for new conversations.
 
 Goal: avoid repeated codebase-wide searches and reduce drift between implementation and docs.
 
+## Documentation requirements (mandatory)
+
+When a change affects behavior (not only formatting) or when detecting anything in the code that contradicts existing documentation, documentation updates are required in the same task. Read the requirements in `docs/update.md`. **DO NOT SKIP THIS**
+
 ## REGLA CRÍTICA: Rutas de archivo
 
 No leas rutas que no te hayan sido dadas explícitamente

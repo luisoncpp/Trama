@@ -3,6 +3,7 @@ import { PROJECT_EDITOR_STRINGS } from '../../project-editor-strings'
 import { filterSidebarTree } from './sidebar-filter-logic'
 import { buildSidebarTree, getVisibleSidebarRows } from './sidebar-tree-logic'
 import { useSidebarTreeExpandedFolders } from './use-sidebar-tree-expanded-folders'
+import { useSidebarTreeDragHandlers } from './use-sidebar-tree-drag-handlers'
 import { SidebarTreeRowButton } from './sidebar-tree-row-button'
 import { DropIndicator, type DropIndicatorPosition } from './drop-indicator'
 import type { SidebarTreeRow } from './sidebar-tree-types'
@@ -38,38 +39,25 @@ export interface SidebarTreeRowsProps {
   }
 }
 
-function calculateDropPosition(
-  rows: SidebarTreeRow[],
-  hoveredPath: string,
-  clientY: number,
-  containerRef: { current: HTMLDivElement | null },
-): DropIndicatorPosition | null {
-  if (!containerRef.current) return null
-
-  const rowElements = containerRef.current.querySelectorAll<HTMLButtonElement>('[data-sidebar-row-index]')
-  let closestRow: HTMLButtonElement | null = null
-
-  for (const rowEl of rowElements) {
-    const rect = rowEl.getBoundingClientRect()
-    const midY = rect.top + rect.height / 2
-    if (clientY < midY) {
-      if (!closestRow || rect.top < closestRow.getBoundingClientRect().top) {
-        closestRow = rowEl
-      }
-    }
-  }
-
-  if (!closestRow) return null
-
-  const hoveredRow = rows.find((r) => r.path === hoveredPath)
-  if (!hoveredRow) return null
-
-  if (hoveredRow.type === 'folder') {
-    return { type: 'onFolder', folderPath: hoveredRow.path }
-  }
-
-  const beforeIndex = rows.findIndex((r) => r.path === hoveredPath)
-  return { type: 'between', beforeIndex }
+function useSidebarTreeData(visibleFiles: string[], selectedPath: string | null, filterQuery: string) {
+  const tree = useMemo(() => buildSidebarTree(visibleFiles), [visibleFiles])
+  const filterResult = useMemo(() => filterSidebarTree(tree, filterQuery), [filterQuery, tree])
+  const [setFolderExpanded, effectiveExpandedFolders] = useSidebarTreeExpandedFolders(
+    tree,
+    selectedPath,
+    filterQuery,
+    filterResult.autoExpandFolderPaths,
+  )
+  const rows = useMemo(
+    () =>
+      getVisibleSidebarRows(
+        tree,
+        new Set(effectiveExpandedFolders),
+        filterResult.query ? filterResult.visibleNodePaths : undefined,
+      ),
+    [effectiveExpandedFolders, filterResult, tree],
+  )
+  return { rows, filterResult, setFolderExpanded }
 }
 
 export function SidebarTreeRows({
@@ -86,55 +74,16 @@ export function SidebarTreeRows({
   dragState,
 }: SidebarTreeRowsProps) {
   const { draggingPath, dropPosition, setDraggingPath, setDropPosition } = dragState
-
-  const handleDragStart = (filePath: string, _event: DragEvent) => {
-    setDraggingPath(filePath)
-    setDropPosition(null)
-  }
-
-  const handleDragOver = (filePath: string, event: DragEvent) => {
-    if (!draggingPath) return
-    const position = calculateDropPosition(rows, filePath, event.clientY, containerRef)
-    setDropPosition(position)
-  }
-
-  const handleDrop = async (filePath: string, _event: DragEvent) => {
-    if (!draggingPath || !dropPosition) return
-
-    const sourceRow = rows.find((r) => r.path === draggingPath)
-    if (!sourceRow || sourceRow.type !== 'file') return
-
-    if (dropPosition.type === 'onFolder' && dropPosition.folderPath !== undefined) {
-      await onMoveFile?.(draggingPath, dropPosition.folderPath)
-      setDraggingPath(null)
-      setDropPosition(null)
-      return
-    }
-
-    const folderPath = sourceRow.path.includes('/')
-      ? sourceRow.path.split('/').slice(0, -1).join('/')
-      : ''
-
-    const reorderedIds = rows
-      .filter((r) => r.type === 'file')
-      .map((r) => r.path)
-
-    const sourceIndex = reorderedIds.indexOf(draggingPath)
-    if (sourceIndex === -1) return
-
-    reorderedIds.splice(sourceIndex, 1)
-
-    if (dropPosition.type === 'between' && dropPosition.beforeIndex !== undefined) {
-      const targetIndex = reorderedIds.indexOf(filePath)
-      if (targetIndex !== -1) {
-        reorderedIds.splice(targetIndex, 0, draggingPath)
-      }
-    }
-
-    await onReorderFiles?.(folderPath, reorderedIds)
-    setDraggingPath(null)
-    setDropPosition(null)
-  }
+  const { handleDragStart, handleDragOver, handleDrop } = useSidebarTreeDragHandlers({
+    rows,
+    draggingPath,
+    dropPosition,
+    setDraggingPath,
+    setDropPosition,
+    containerRef,
+    onMoveFile,
+    onReorderFiles,
+  })
 
   return (
     <>
@@ -171,23 +120,7 @@ export function SidebarTree({
   onReorderFiles,
   onMoveFile,
 }: SidebarTreeProps) {
-  const tree = useMemo(() => buildSidebarTree(visibleFiles), [visibleFiles])
-  const filterResult = useMemo(() => filterSidebarTree(tree, filterQuery), [filterQuery, tree])
-  const [setFolderExpanded, effectiveExpandedFolders] = useSidebarTreeExpandedFolders(
-    tree,
-    selectedPath,
-    filterQuery,
-    filterResult.autoExpandFolderPaths,
-  )
-  const rows = useMemo(
-    () =>
-      getVisibleSidebarRows(
-        tree,
-        new Set(effectiveExpandedFolders),
-        filterResult.query ? filterResult.visibleNodePaths : undefined,
-      ),
-    [effectiveExpandedFolders, filterResult, tree],
-  )
+  const { rows, filterResult, setFolderExpanded } = useSidebarTreeData(visibleFiles, selectedPath, filterQuery)
   const containerRef = useRef<HTMLDivElement | null>(null)
   const hasFilterQuery = filterResult.query.length > 0
   const [draggingPath, setDraggingPath] = useState<string | null>(null)
