@@ -13,14 +13,12 @@ export function createUpdateCenteredScroll(
 ): () => void {
 	return function updateCenteredScroll() {
 		const selection = quill.getSelection()
-		if (!selection) {
-			editorRoot.style.removeProperty('--focus-extra-top')
-			editorRoot.style.removeProperty('--focus-extra-bottom')
-			return
-		}
-
 		const selectionRect = getSelectionRect()
-		if (!selectionRect) {
+
+		if (!selection || !selectionRect) {
+			const basePad = Math.max(0, Math.round(container.clientHeight / 2))
+			editorRoot.style.setProperty('--focus-extra-top', `${basePad}px`)
+			editorRoot.style.setProperty('--focus-extra-bottom', `${basePad}px`)
 			return
 		}
 

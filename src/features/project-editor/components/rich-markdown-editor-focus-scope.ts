@@ -28,7 +28,7 @@ function setupScrollCentering(
 	editorRoot: HTMLElement,
 	quill: Quill,
 	focusScope: FocusScope,
-): () => void {
+): { updateCenteredScroll: () => void; cleanup: () => void } {
 	const updateCenteredScroll = createUpdateCenteredScroll(
 		container,
 		editorRoot,
@@ -59,16 +59,19 @@ function setupScrollCentering(
 	quill.on('text-change', scheduleRefresh)
 	window.addEventListener('resize', scheduleRefresh)
 
-	return () => {
-		if (rafId.current) {
-			cancelAnimationFrame(rafId.current)
-		}
+	return {
+		updateCenteredScroll,
+		cleanup: () => {
+			if (rafId.current) {
+				cancelAnimationFrame(rafId.current)
+			}
 
-		quill.off('selection-change', scheduleRefresh)
-		quill.off('text-change', scheduleRefresh)
-		window.removeEventListener('resize', scheduleRefresh)
-		editorRoot.style.removeProperty('--focus-extra-top')
-		editorRoot.style.removeProperty('--focus-extra-bottom')
+			quill.off('selection-change', scheduleRefresh)
+			quill.off('text-change', scheduleRefresh)
+			window.removeEventListener('resize', scheduleRefresh)
+			editorRoot.style.removeProperty('--focus-extra-top')
+			editorRoot.style.removeProperty('--focus-extra-bottom')
+		},
 	}
 }
 
@@ -87,14 +90,15 @@ function initializeAndSetup(
 	updateFocusScopeClasses(editorRoot, focusScope)
 	applyFocusScope(quill, editorRoot, focusScope)
 
-	const cleanupScroll = setupScrollCentering(container, editorRoot, quill, focusScope)
+	const { updateCenteredScroll, cleanup } = setupScrollCentering(container, editorRoot, quill, focusScope)
 
 	return {
 		scheduleRefresh: () => {
 			updateFocusScopeClasses(editorRoot, focusScope)
 			applyFocusScope(quill, editorRoot, focusScope)
+			updateCenteredScroll()
 		},
-		cleanup: cleanupScroll,
+		cleanup,
 	}
 }
 
