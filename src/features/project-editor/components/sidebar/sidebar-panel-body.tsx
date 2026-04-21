@@ -48,6 +48,7 @@ export interface SidebarPanelBodyProps {
   onExport: () => void
   onReorderFiles?: (folderPath: string, orderedIds: string[]) => Promise<void>
   onMoveFile?: (sourcePath: string, targetFolder: string) => Promise<void>
+  corkboardOrder?: Record<string, string[]>
   contentProps: Omit<
     SidebarProjectContextProps & SidebarSelectionProps,
     | 'visibleFiles'
@@ -58,11 +59,42 @@ export interface SidebarPanelBodyProps {
 
 const makeRootPath = (root: string) => (path: string) => `${root}${path}`
 
+export function scopeCorkboardOrder(order: Record<string, string[]> | undefined, sectionRoot: string): Record<string, string[]> | undefined {
+  if (!order) return undefined
+  const result: Record<string, string[]> = {}
+  const rootPrefix = sectionRoot.replace(/\/+$/, '')
+
+  for (const [key, ids] of Object.entries(order)) {
+    const scopedKey = key === rootPrefix ? '' : key.startsWith(`${rootPrefix}/`) ? key.slice(rootPrefix.length + 1) : null
+    if (scopedKey === null) continue
+    const scopedIds = ids.map((id) => {
+      const prefix = key ? `${key}/` : `${rootPrefix}/`
+      return id.startsWith(prefix) ? id.slice(prefix.length) : id
+    })
+    result[scopedKey] = scopedIds
+  }
+
+  return result
+}
+
 function loadFileTags(root: string) {
   return async (path: string): Promise<string[]> => {
     const response = await window.tramaApi.readDocument({ path: `${root}${path}` })
     if (!response.ok || !Array.isArray(response.data.meta.tags)) return []
     return response.data.meta.tags.filter((value): value is string => typeof value === 'string')
+  }
+}
+
+function buildScopedReorderHandler(
+  onReorderFiles: ((folderPath: string, orderedIds: string[]) => Promise<void>) | undefined,
+  withRoot: (path: string) => string,
+  sectionRoot: string,
+): ((folderPath: string, orderedIds: string[]) => Promise<void>) | undefined {
+  if (!onReorderFiles) return undefined
+  return (folderPath: string, orderedIds: string[]) => {
+    const projectFolder = folderPath ? withRoot(folderPath) : sectionRoot.replace(/\/+$/, '')
+    const projectIds = orderedIds.map((id) => withRoot(id))
+    return onReorderFiles(projectFolder, projectIds)
   }
 }
 
@@ -84,10 +116,12 @@ function renderSidebarExplorerContent({
   onSelectFile,
   onReorderFiles,
   onMoveFile,
+  corkboardOrder,
 }: SidebarPanelBodyProps) {
   if (!sectionConfig) return null
 
   const withRoot = makeRootPath(sectionConfig.root)
+  const scopedOrder = scopeCorkboardOrder(corkboardOrder, sectionConfig.root)
 
   return (
     <SidebarExplorerContent
@@ -107,7 +141,8 @@ function renderSidebarExplorerContent({
       onEditFileTags={(path, tags) => onEditFileTags(withRoot(path), tags)}
       onLoadFileTags={loadFileTags(sectionConfig.root)}
       onSelectFile={(filePath) => onSelectFile(withRoot(filePath))}
-      onReorderFiles={onReorderFiles}
+      corkboardOrder={scopedOrder}
+      onReorderFiles={buildScopedReorderHandler(onReorderFiles, withRoot, sectionConfig.root)}
       onMoveFile={onMoveFile ? (s, t) => onMoveFile(withRoot(s), withRoot(t)) : undefined}
     />
   )

@@ -58,6 +58,7 @@ export interface SidebarFileActions {
   onDeleteFile: (path: string) => void
   onEditFileTags: (path: string, tags: string[]) => void
   onReorderFiles?: (folderPath: string, orderedIds: string[]) => Promise<void>
+  corkboardOrder?: Record<string, string[]>
 }
 
 export type SidebarPanelCommonProps = SidebarSelectionProps &

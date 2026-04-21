@@ -36,6 +36,8 @@ export async function handleRenameFolder(rawPayload: unknown): Promise<IpcEnvelo
     const { markdownFiles } = await scanProject(projectRoot)
     const oldFiles = markdownFilesUnderFolder(markdownFiles, payload.data.path)
 
+    console.log('Renaming folder', { oldPath: payload.data.path, newName: payload.data.newName, affectedFiles: oldFiles })
+
     const result = await documentRepository.renameFolder(projectRoot, payload.data.path, payload.data.newName)
 
     for (const oldFilePath of oldFiles) {

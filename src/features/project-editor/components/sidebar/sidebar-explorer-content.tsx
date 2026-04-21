@@ -42,6 +42,7 @@ interface SidebarExplorerContentProps {
   onEditFileTags: SidebarExplorerCommonProps['onEditFileTags']
   onLoadFileTags: (path: string) => Promise<string[]>
   onPickFolder: SidebarExplorerCommonProps['onPickFolder']
+  corkboardOrder?: Record<string, string[]>
   onReorderFiles?: (folderPath: string, orderedIds: string[]) => Promise<void>
   onMoveFile?: (sourcePath: string, targetFolder: string) => Promise<void>
 }
@@ -115,7 +116,7 @@ export function SidebarExplorerContent(props: SidebarExplorerContentProps) {
     onFolderRenameValueChange: folderDialog.setRenameValue,
     confirmFolderActionDialog: folderDialog.confirm, closeFolderActionDialog: folderDialog.closeDialog,
     onDirectoryChange: createDialog.setCreateDirectory, onNameChange: createDialog.setCreateName,
-    filterInputRef: setFilterInputRef, onReorderFiles: props.onReorderFiles, onMoveFile: props.onMoveFile,
+    filterInputRef: setFilterInputRef, corkboardOrder: props.corkboardOrder, onReorderFiles: props.onReorderFiles, onMoveFile: props.onMoveFile,
   }
 
   return (

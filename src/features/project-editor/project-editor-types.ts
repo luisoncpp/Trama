@@ -43,6 +43,7 @@ export interface ProjectEditorState {
   externalConflictPath: string | null
   conflictComparisonContent: string | null
   visibleFiles: string[]
+  corkboardOrder: Record<string, string[]>
   primaryPane: PaneDocumentState
   secondaryPane: PaneDocumentState
   selectedPath: string | null

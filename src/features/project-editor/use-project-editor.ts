@@ -99,6 +99,7 @@ function buildProjectEditorModelState(values: ReturnType<typeof useProjectEditor
     externalConflictPath: values.externalConflictPath,
     conflictComparisonContent: values.conflictComparisonContent,
     visibleFiles: values.visibleFiles,
+    corkboardOrder: values.corkboardOrder,
     primaryPane: values.primaryPane,
     secondaryPane: values.secondaryPane,
     selectedPath: values.selectedPath,

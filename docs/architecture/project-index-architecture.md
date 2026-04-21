@@ -1,6 +1,6 @@
 # Project Index Architecture (`.trama.index.json`)
 
-> **Created:** 2026-04-19
+> **Last updated:** 2026-04-21
 
 ## Purpose
 
@@ -29,14 +29,12 @@ interface DocumentMeta {
 
 ### Key invariants
 
-- `corkboardOrder` keys use **two different namespaces** (see "CorkboardOrder key scoping" below):
-  - **Reconciliation** writes **project-relative** keys (e.g. `"outline"`, `"book/chapter-1"`).
-  - **Reorder** (drag-drop) writes **section-relative** keys (e.g. `""` for section root, `"chapter-1"` for a subfolder within the active section).
-  - Section-relative keys from reorder are **lost on the next reconciliation**, since no scanned file matches them as project-relative paths.
-- `corkboardOrder` values currently come from **two different writers**:
-  - **Reconciliation** writes **document IDs**. The ID comes from `meta.id` if present, otherwise falls back to the **project-relative file path**.
-  - **Reorder** (drag-drop) currently writes the sidebar payload **as-is**. The current renderer sends **section-relative file paths**, not document IDs.
-  - Reorder-written values therefore do **not** match reconciliation/book-export expectations for files with explicit `meta.id`, and even path-fallback values are section-relative rather than project-relative.
+- `corkboardOrder` keys use **project-relative** paths (e.g. `"book"`, `"book/chapter-1"`, `"outline"`).
+  - Both reconciliation and reorder now write project-relative keys.
+  - `scopeCorkboardOrder()` in `sidebar-panel-body.tsx` converts project-relative keys/IDs to section-relative for the sidebar tree; `buildScopedReorderHandler()` converts section-relative back to project-relative before IPC.
+- `corkboardOrder` values are **project-relative file paths** (e.g. `"book/Act-01/scene-2.md"`).
+  - Both reconciliation and reorder now write project-relative values.
+  - For files with explicit `meta.id`, reconciliation uses the ID instead of the path; reorder always uses the project-relative path. This means reconciliation and reorder may use different identifiers for the same file when `meta.id` is present.
 - `cache` keys are **project-relative file paths** (e.g. `"01_intro.md"`, `"outline/chapter-1.md"`).
 - The file lives at `<projectRoot>/.trama.index.json`.
 - The file watcher **ignores `.trama.index.json`** entirely (`watcher-service.ts` chokidar config). Index writes never trigger watcher events.
@@ -144,27 +142,27 @@ This means documents without an explicit `id` in their frontmatter use their **c
 
 ## CorkboardOrder key scoping
 
-`corkboardOrder` keys are produced by two different code paths that use **different path scoping**:
+`corkboardOrder` keys are now consistently **project-relative** across both writers:
 
-| Source | Path scoping | Example key | Files |
+| Source | Path scoping | Example key | Example values |
 |--------|-------------|-------------|-------|
-| `reconcileIndex` | Project-relative (from `scanProject`) | `"book/chapter-1"`, `"outline"`, `""` | `index-service.ts:15-18` (`folderFromPath`) |
-| `handleReorderFiles` | Section-relative (from sidebar tree) | `"chapter-1"`, `""` | `sidebar-panel-body.tsx:110` (no `withRoot` conversion) |
+| `reconcileIndex` | Project-relative | `"book/chapter-1"`, `"outline"` | Document IDs (`meta.id` or project-relative path fallback) |
+| `handleReorderFiles` | Project-relative | `"book/chapter-1"`, `"book"` | Project-relative file paths |
 
-**How this happens:**
+**How this works:**
+
 1. The sidebar scopes `visibleFiles` to section-relative paths via `getScopedFiles()` (strips the section root prefix like `"book/"`).
 2. The sidebar tree is built from these section-relative paths.
-3. Drag-drop reorder derives `folderPath` from `sourceRow.path` (section-relative) → `sidebar-tree.tsx:114-116`.
-4. Drag-drop reorder also builds `orderedIds` from `rows.filter((r) => r.type === 'file').map((r) => r.path)` in `sidebar-tree.tsx:120-134`, which yields **section-relative file paths**.
-5. The `onReorderFiles` callback in `sidebar-panel-body.tsx:110` is passed through **without** `withRoot()` conversion (unlike `onMoveFile` at line 111 which does apply `withRoot`).
-6. The section-relative `folderPath` and section-relative file-path `orderedIds` are sent directly to `trama:index:reorder` IPC.
+3. Drag-drop reorder derives `folderPath` from `sourceRow.path` (section-relative) in `use-sidebar-tree-drag-handlers.ts`.
+4. `buildScopedReorderHandler()` in `sidebar-panel-body.tsx` converts section-relative `folderPath` and `orderedIds` to project-relative before calling the IPC action.
+5. The project-relative `folderPath` and project-relative file-path `orderedIds` are sent to `trama:index:reorder` IPC.
 
-**Consequence:** reorder writes can drift from reconciliation in **both keys and values**:
+**Sidebar reading path:**
 
-- Section-relative `corkboardOrder` keys from reorder are **lost on the next reconciliation**, because `reconcileIndex` builds `next.corkboardOrder` only from project-relative folder paths (via `idsByFolder`). The section-relative key has no matching entry in `idsByFolder` and is simply dropped.
-- Reorder-written values are currently **section-relative file paths**, while reconciliation and book export compare against **document IDs** (explicit `meta.id` when present, otherwise project-relative file path). For files with explicit IDs, reorder order is therefore not consumable by ID-based readers.
+6. `scopeCorkboardOrder()` in `sidebar-panel-body.tsx` converts project-relative `corkboardOrder` keys and IDs back to section-relative for the sidebar tree.
+7. `sortTreeRowsByOrder()` in `sidebar-tree-sort.ts` reorders the tree rows by the scoped order.
 
-The `book-export-order.ts` service also uses project-relative keys (via its own `folderFromPath`), so it only reads keys that reconciliation created — not reorder keys.
+**Remaining inconsistency:** reconciliation values use document IDs (preferring `meta.id` over path), while reorder values always use project-relative paths. For files without explicit `meta.id`, both writers use the same project-relative path and values match. For files with `meta.id`, the values differ and reconciliation overwrites reorder's path-based ordering with ID-based ordering on next run.
 
 ## Known risks and mitigations
 
@@ -175,13 +173,14 @@ The `book-export-order.ts` service also uses project-relative keys (via its own 
 | Stale IDs after rename without explicit `id` | Reconciliation uses current `meta.id` or path; old path entries are pruned |
 | Watcher-triggered reconciliation loop | `markInternalWrite()` prevents re-processing internal mutations |
 | Corrupted index file | `loadIndex()` catches parse errors and returns a safe default |
-| CorkboardOrder key/value namespace mismatch | Reorder currently writes section-relative keys and section-relative file-path values; reconciliation writes project-relative keys and document-ID values. Reorder state is therefore ephemeral until reconciliation runs, and may not be consumable by ID-based readers even before reconciliation. |
+| CorkboardOrder value mismatch (meta.id vs path) | Reorder writes project-relative paths; reconciliation writes document IDs (preferring `meta.id`). For files without `meta.id` both use the same path. Reconciliation overwrites reorder values on next run, so custom order is preserved only until the next file mutation. |
 | Folder rename loses custom order | Reconciliation creates new folder key with no previous order; files appear in filesystem scan order |
 
-## Current test coverage gap
+## Current test coverage
 
-- `tests/order-handlers.test.ts` verifies `handleReorderFiles()` when called directly with ID-shaped payloads.
-- Current renderer behavior is different: `sidebar-tree.tsx` sends section-relative file paths, and there is no end-to-end test that exercises that exact payload through reorder persistence plus later reconciliation/export reads.
+- `tests/order-handlers.test.ts` verifies `handleReorderFiles()` with project-relative payloads.
+- `tests/sidebar-tree.test.ts` verifies `sortTreeRowsByOrder()` and `scopeCorkboardOrder()` with section-relative keys and values.
+- No end-to-end test exercises the full cycle: reorder IPC with project-relative payload → index persistence → reconciliation → book-export-order read.
 
 ## Related files
 
@@ -198,6 +197,7 @@ The `book-export-order.ts` service also uses project-relative keys (via its own 
 | `electron/services/watcher-service.ts` | Chokidar wrapper + internal/external write classification; ignores `.trama.index.json` |
 | `electron/services/book-export-order.ts` | Book export ordering — reads project-relative `corkboardOrder` keys |
 | `src/shared/ipc.ts` | Schema definitions (`projectIndexSchema`, `documentMetaSchema`) |
-| `src/features/project-editor/components/sidebar/sidebar-panel-body.tsx` | Section-relative `onReorderFiles` pass-through (no `withRoot` conversion) |
+| `src/features/project-editor/components/sidebar/sidebar-panel-body.tsx` | `scopeCorkboardOrder()` converts project-relative → section-relative; `buildScopedReorderHandler()` converts section-relative → project-relative for reorder IPC |
+| `src/features/project-editor/components/sidebar/sidebar-tree-sort.ts` | `sortTreeRowsByOrder()` — reorders tree rows by scoped `corkboardOrder` |
 | `src/features/project-editor/components/sidebar/sidebar-panel-logic.ts` | `getScopedFiles()` — strips section root prefix |
 | `tests/index-reconciliation.test.ts` | Reconciliation behavior tests |

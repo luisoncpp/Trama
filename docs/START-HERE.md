@@ -81,6 +81,7 @@ Open these only when relevant:
 | Debug Wiki Tag Links (stale index, underline offsets, Ctrl/Cmd click) | `docs/architecture/wiki-tag-links-architecture.md` → `docs/plan/done/wiki-tag-links-system-guide.md` → `docs/lessons-learned/README.md` (tag/quill lessons) → `tests/tag-index-ipc-regression.test.ts` + `tests/rich-markdown-editor-tag-overlay.test.ts` |
 | Debug AI import/export | `docs/architecture/ai-import-export-architecture.md` → `src/shared/ai-import-parser.ts` → `electron/services/ai-import-service.ts` / `electron/services/ai-export-service.ts` → `electron/ipc/handlers/ai-handlers.ts` |
 | Implement folder rename (WS2 slice) | `docs/plan/done/folder-rename-implementation-plan.md` → `src/features/project-editor/components/sidebar/sidebar-tree.tsx` → `src/features/project-editor/components/sidebar/sidebar-panel-body.tsx` → `electron/services/document-repository.ts` |
+| Implement folder drag-drop or corkboardOrder integration (WS2 slice) | `docs/plan/sidebar-drag-drop-reorder-folder-move-plan.md` |
 | Understand feature status | `docs/live/current-status.md` → `docs/plan/phase-4-detailed-plan.md` |
 | Understand project structure | `docs/live/file-map.md` |
 | Debug a runtime issue | `docs/live/troubleshooting.md` → `docs/lessons-learned/README.md` |

@@ -46,6 +46,45 @@ interface UseSidebarTreeDragHandlersProps {
   onReorderFiles?: (folderPath: string, orderedIds: string[]) => Promise<void>
 }
 
+async function executeDrop(
+  rows: SidebarTreeRow[],
+  draggingPath: string,
+  dropPosition: DropIndicatorPosition,
+  onMoveFile: ((sourcePath: string, targetFolder: string) => Promise<void>) | undefined,
+  onReorderFiles: ((folderPath: string, orderedIds: string[]) => Promise<void>) | undefined,
+): Promise<void> {
+  const sourceRow = rows.find((r) => r.path === draggingPath)
+  if (!sourceRow || sourceRow.type !== 'file') return
+
+  if (dropPosition.type === 'onFolder' && dropPosition.folderPath !== undefined) {
+    await onMoveFile?.(draggingPath, dropPosition.folderPath)
+    return
+  }
+
+  const folderPath = sourceRow.path.includes('/')
+    ? sourceRow.path.split('/').slice(0, -1).join('/')
+    : ''
+  const siblingFiles = rows.filter(
+    (r) => r.type === 'file' && r.depth === sourceRow.depth && (folderPath === '' ? !r.path.includes('/') : r.path.startsWith(`${folderPath}/`)),
+  )
+  const reorderedIds = siblingFiles.map((r) => r.path)
+  const sourceIndex = reorderedIds.indexOf(draggingPath)
+  if (sourceIndex === -1) return
+  reorderedIds.splice(sourceIndex, 1)
+
+  if (dropPosition.type === 'between' && dropPosition.beforeIndex !== undefined) {
+    const targetRow = rows[dropPosition.beforeIndex]
+    if (targetRow) {
+      const targetIndex = reorderedIds.indexOf(targetRow.path)
+      if (targetIndex !== -1) {
+        reorderedIds.splice(targetIndex, 0, draggingPath)
+      }
+    }
+  }
+
+  await onReorderFiles?.(folderPath, reorderedIds)
+}
+
 export function useSidebarTreeDragHandlers({
   rows,
   draggingPath,
@@ -67,30 +106,9 @@ export function useSidebarTreeDragHandlers({
     setDropPosition(position)
   }
 
-  const handleDrop = async (filePath: string, _event: DragEvent) => {
+  const handleDrop = async (_filePath: string, _event: DragEvent) => {
     if (!draggingPath || !dropPosition) return
-    const sourceRow = rows.find((r) => r.path === draggingPath)
-    if (!sourceRow || sourceRow.type !== 'file') return
-    if (dropPosition.type === 'onFolder' && dropPosition.folderPath !== undefined) {
-      await onMoveFile?.(draggingPath, dropPosition.folderPath)
-      setDraggingPath(null)
-      setDropPosition(null)
-      return
-    }
-    const folderPath = sourceRow.path.includes('/')
-      ? sourceRow.path.split('/').slice(0, -1).join('/')
-      : ''
-    const reorderedIds = rows.filter((r) => r.type === 'file').map((r) => r.path)
-    const sourceIndex = reorderedIds.indexOf(draggingPath)
-    if (sourceIndex === -1) return
-    reorderedIds.splice(sourceIndex, 1)
-    if (dropPosition.type === 'between' && dropPosition.beforeIndex !== undefined) {
-      const targetIndex = reorderedIds.indexOf(filePath)
-      if (targetIndex !== -1) {
-        reorderedIds.splice(targetIndex, 0, draggingPath)
-      }
-    }
-    await onReorderFiles?.(folderPath, reorderedIds)
+    await executeDrop(rows, draggingPath, dropPosition, onMoveFile, onReorderFiles)
     setDraggingPath(null)
     setDropPosition(null)
   }

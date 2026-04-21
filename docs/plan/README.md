@@ -10,6 +10,7 @@ Active implementation plans — work that is in progress or planned but not yet 
 | `implementation-overview.md` | Phase 3 closure summary |
 | `ai-import-export-implementation-map.md` | AI import/export feature mapping |
 | `drag-drop-file-reorder-plan.md` | Drag-and-drop file reorder Slice 1 and Slice 2 |
+| `sidebar-drag-drop-reorder-folder-move-plan.md` | Item A: integrate corkboardOrder into sidebar tree; Item B: folder drag-and-drop move/reparent |
 | `book-export-implementation-plan.md` | Book export Phase C multi-format backend |
 
 ## When to add a doc here

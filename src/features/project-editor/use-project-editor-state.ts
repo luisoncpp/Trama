@@ -23,6 +23,7 @@ export interface ProjectEditorStateValues {
   conflictComparisonContent: string | null
   statusMessage: string
   visibleFiles: string[]
+  corkboardOrder: Record<string, string[]>
   sidebarActiveSection: SidebarSection
   sidebarPanelCollapsed: boolean
   sidebarPanelWidth: number
@@ -106,6 +107,7 @@ function buildValues(params: BuildValuesParams): ProjectEditorStateValues {
     conflictComparisonContent: params.conflictComparisonContent,
     statusMessage: params.statusMessage,
     visibleFiles: params.visibleFiles,
+    corkboardOrder: params.corkboardOrder,
     sidebarActiveSection: params.sidebarUiState.values.activeSection,
     sidebarPanelCollapsed: params.sidebarUiState.values.panelCollapsed,
     sidebarPanelWidth: params.sidebarUiState.values.panelWidth,
@@ -140,6 +142,10 @@ export function useProjectEditorState(): UseProjectEditorStateResult {
 
   const apiAvailable = Boolean(window.tramaApi?.openProject)
   const visibleFiles = useMemo(() => getVisibleSidebarPaths(coreState.snapshot), [coreState.snapshot])
+  const corkboardOrder = useMemo(
+    () => coreState.snapshot?.index?.corkboardOrder ?? {},
+    [coreState.snapshot],
+  )
 
   const values = buildValues({
     apiAvailable,
@@ -155,6 +161,7 @@ export function useProjectEditorState(): UseProjectEditorStateResult {
     conflictComparisonContent: coreState.conflictComparisonContent,
     statusMessage: coreState.statusMessage,
     visibleFiles,
+    corkboardOrder,
     workspaceLayout,
     sidebarUiState,
   })

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { filterSidebarTree } from '../src/features/project-editor/components/sidebar/sidebar-filter-logic'
-import { buildSidebarTree, getAncestorFolderPaths, getVisibleSidebarRows } from '../src/features/project-editor/components/sidebar/sidebar-tree-logic'
+import { buildSidebarTree, getAncestorFolderPaths, getVisibleSidebarRows, sortTreeRowsByOrder } from '../src/features/project-editor/components/sidebar/sidebar-tree-logic'
+import { scopeCorkboardOrder } from '../src/features/project-editor/components/sidebar/sidebar-panel-body.tsx'
 
 describe('sidebar tree logic', () => {
   it('builds hierarchical folders and files with folder-first sorting', () => {
@@ -76,5 +77,122 @@ describe('sidebar tree logic', () => {
 
     const rows = getVisibleSidebarRows(tree, new Set(['Lore']))
     expect(rows.map((row) => row.path)).toEqual(['Lore', 'Lore/Worldbuilding'])
+  })
+})
+
+describe('sortTreeRowsByOrder', () => {
+  it('returns rows unchanged when corkboardOrder is empty', () => {
+    const tree = buildSidebarTree(['a.md', 'b.md', 'c.md'])
+    const rows = getVisibleSidebarRows(tree, new Set())
+    const sorted = sortTreeRowsByOrder(rows, {})
+    expect(sorted.map((r) => r.path)).toEqual(rows.map((r) => r.path))
+  })
+
+  it('sorts root-level files by corkboardOrder key ""', () => {
+    const tree = buildSidebarTree(['scene-a.md', 'scene-b.md', 'scene-c.md'])
+    const rows = getVisibleSidebarRows(tree, new Set())
+    const sorted = sortTreeRowsByOrder(rows, { '': ['scene-c.md', 'scene-a.md', 'scene-b.md'] })
+    expect(sorted.map((r) => r.path)).toEqual(['scene-c.md', 'scene-a.md', 'scene-b.md'])
+  })
+
+  it('sorts files inside a folder by corkboardOrder folder key', () => {
+    const tree = buildSidebarTree(['Act-01/scene-a.md', 'Act-01/scene-b.md'])
+    const rows = getVisibleSidebarRows(tree, new Set(['Act-01']))
+    const sorted = sortTreeRowsByOrder(rows, { 'Act-01': ['scene-b.md', 'scene-a.md'] })
+    expect(sorted.map((r) => r.path)).toEqual(['Act-01', 'Act-01/scene-b.md', 'Act-01/scene-a.md'])
+  })
+
+  it('places unlisted files after ordered files in alphabetical fallback', () => {
+    const tree = buildSidebarTree(['Act-01/scene-a.md', 'Act-01/scene-b.md', 'Act-01/scene-c.md'])
+    const rows = getVisibleSidebarRows(tree, new Set(['Act-01']))
+    const sorted = sortTreeRowsByOrder(rows, { 'Act-01': ['scene-c.md'] })
+    const paths = sorted.map((r) => r.path)
+    expect(paths).toEqual(['Act-01', 'Act-01/scene-c.md', 'Act-01/scene-a.md', 'Act-01/scene-b.md'])
+  })
+
+  it('preserves folder rows before file rows within ordered groups', () => {
+    const tree = buildSidebarTree(['Act-01/sub/', 'Act-01/scene-a.md', 'Act-01/scene-b.md'])
+    const rows = getVisibleSidebarRows(tree, new Set(['Act-01']))
+    const sorted = sortTreeRowsByOrder(rows, { 'Act-01': ['scene-b.md', 'scene-a.md'] })
+    const paths = sorted.map((r) => r.path)
+    expect(paths).toEqual(['Act-01', 'Act-01/sub', 'Act-01/scene-b.md', 'Act-01/scene-a.md'])
+  })
+
+  it('handles nested folder ordering independently', () => {
+    const tree = buildSidebarTree([
+      'Act-01/Ch-01/scene-1.md',
+      'Act-01/Ch-01/scene-2.md',
+      'Act-01/Ch-02/scene-3.md',
+    ])
+    const rows = getVisibleSidebarRows(tree, new Set(['Act-01', 'Act-01/Ch-01', 'Act-01/Ch-02']))
+    const sorted = sortTreeRowsByOrder(rows, {
+      'Act-01/Ch-01': ['scene-2.md', 'scene-1.md'],
+    })
+    const paths = sorted.map((r) => r.path)
+    expect(paths).toEqual([
+      'Act-01',
+      'Act-01/Ch-01',
+      'Act-01/Ch-01/scene-2.md',
+      'Act-01/Ch-01/scene-1.md',
+      'Act-01/Ch-02',
+      'Act-01/Ch-02/scene-3.md',
+    ])
+  })
+
+  it('reorders files at root level with empty string key', () => {
+    const tree = buildSidebarTree(['c.md', 'a.md', 'b.md'])
+    const rows = getVisibleSidebarRows(tree, new Set())
+    const sorted = sortTreeRowsByOrder(rows, { '': ['b.md', 'c.md', 'a.md'] })
+    expect(sorted.map((r) => r.path)).toEqual(['b.md', 'c.md', 'a.md'])
+  })
+
+  it('skips ordering for collapsed folders', () => {
+    const tree = buildSidebarTree(['Act-01/scene-b.md', 'Act-01/scene-a.md'])
+    const rows = getVisibleSidebarRows(tree, new Set())
+    const sorted = sortTreeRowsByOrder(rows, { 'Act-01': ['scene-a.md', 'scene-b.md'] })
+    expect(sorted.map((r) => r.path)).toEqual(['Act-01'])
+  })
+})
+
+describe('scopeCorkboardOrder', () => {
+  it('returns undefined for undefined input', () => {
+    expect(scopeCorkboardOrder(undefined, 'book/')).toBeUndefined()
+  })
+
+  it('converts project-relative keys to section-relative keys', () => {
+    const order = {
+      'book': ['scene-b.md', 'scene-a.md'],
+      'book/Act-01': ['scene-2.md', 'scene-1.md'],
+    }
+    const scoped = scopeCorkboardOrder(order, 'book/')
+    expect(scoped).toBeDefined()
+    expect(Object.keys(scoped!)).toEqual(['', 'Act-01'])
+    expect(scoped!['']).toEqual(['scene-b.md', 'scene-a.md'])
+    expect(scoped!['Act-01']).toEqual(['scene-2.md', 'scene-1.md'])
+  })
+
+  it('filters out keys outside the section', () => {
+    const order = {
+      'book': ['scene-b.md', 'scene-a.md'],
+      'lore/places': ['city.md'],
+    }
+    const scoped = scopeCorkboardOrder(order, 'book/')
+    expect(Object.keys(scoped!)).toEqual([''])
+  })
+
+  it('scopes file ids within each key', () => {
+    const order = {
+      'book/Act-01': ['book/Act-01/scene-2.md', 'book/Act-01/scene-1.md'],
+    }
+    const scoped = scopeCorkboardOrder(order, 'book/')
+    expect(scoped!['Act-01']).toEqual(['scene-2.md', 'scene-1.md'])
+  })
+
+  it('handles root-level key with file ids that lack folder prefix', () => {
+    const order = {
+      'book': ['intro.md', 'ch-01.md'],
+    }
+    const scoped = scopeCorkboardOrder(order, 'book/')
+    expect(scoped!['']).toEqual(['intro.md', 'ch-01.md'])
   })
 })

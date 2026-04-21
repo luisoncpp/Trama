@@ -249,7 +249,7 @@ Mandatory doc navigation for new chats: start with `docs/START-HERE.md` — it p
 - `src/features/project-editor/components/sidebar/sidebar-panel.tsx`
   - Sidebar shell/orchestrator.
 - `src/features/project-editor/components/sidebar/sidebar-panel-body.tsx`
-  - Active section body composition.
+  - Active section body composition. Path conversion boundary: `scopeCorkboardOrder()` converts project-relative `corkboardOrder` to section-relative; `buildScopedReorderHandler()` converts section-relative reorder payload to project-relative for IPC.
 - `src/features/project-editor/components/sidebar/sidebar-panel-logic.ts`
   - Section scoping + filter-state helpers.
 - `src/features/project-editor/components/sidebar/sidebar-rail.tsx`
@@ -262,6 +262,8 @@ Mandatory doc navigation for new chats: start with `docs/START-HERE.md` — it p
   - Interactive tree rows, keyboard nav, right-click file hook, and drag-and-drop reorder state. Drag handler logic lives in `use-sidebar-tree-drag-handlers.ts`.
 - `src/features/project-editor/components/sidebar/sidebar-tree-logic.ts`
   - Pure tree build/flatten helpers.
+- `src/features/project-editor/components/sidebar/sidebar-tree-sort.ts`
+  - `sortTreeRowsByOrder()` — reorders sidebar tree rows by `corkboardOrder` from index. Re-exported via `sidebar-tree-logic.ts`.
 - `src/features/project-editor/components/sidebar/sidebar-tree-row-button.tsx`
   - Individual tree row with drag handle and drag event handlers (onDragStart/onDragOver/onDrop).
 - `src/features/project-editor/components/sidebar/drop-indicator.tsx`

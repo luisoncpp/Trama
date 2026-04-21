@@ -1,6 +1,6 @@
 # Sidebar Architecture Guide
 
-> **Last updated:** 2026-04-19
+> **Last updated:** 2026-04-21
 
 Goal: explain the sidebar subsystem end-to-end so contributors can understand data flow, path scoping, and extension points without broad code searches.
 
@@ -85,10 +85,12 @@ Functions responsible:
 ### 1. File list ingestion
 
 ```
-Project open → IPC trama:project:open → snapshot.tree
+Project open → IPC trama:project:open → snapshot.tree + snapshot.index.corkboardOrder
   → getVisibleSidebarPaths() → visibleFiles (project-relative paths)
   → useSidebarContentSection → getScopedFiles() → scopedFiles (section-relative)
+  → scopeCorkboardOrder() → scoped corkboardOrder (section-relative keys/IDs)
   → SidebarTree → buildSidebarTree() → tree nodes
+  → sortTreeRowsByOrder(rows, scopedCorkboardOrder) → sorted rows
 ```
 
 ### 2. Tree building
@@ -208,11 +210,12 @@ drag file → dropPosition.type === 'onFolder'
 trama:index:reorder → { folderPath: string, orderedIds: string[] }
 ```
 
-- `folderPath`: section-relative folder path used as the `corkboardOrder` key (for example `chapter-1` or empty string for section root)
-- `orderedIds`: current Slice 1 renderer sends section-relative file paths from the visible tree rows; downstream export logic later matches these against metadata IDs when available and falls back to file paths
+- `folderPath`: **project-relative** folder path used as the `corkboardOrder` key (for example `book/chapter-1` or `book` for section root). Conversion from section-relative happens in `buildScopedReorderHandler()` at `sidebar-panel-body.tsx`.
+- `orderedIds`: **project-relative** file paths (e.g., `book/Act-01/scene-2.md`). Conversion from section-relative happens in `buildScopedReorderHandler()`.
 - Persists `corkboardOrder` in `.trama.index.json` (no disk file moves)
+- After successful reorder, `openProject(rootPath)` refreshes the snapshot so `corkboardOrder` state updates immediately
 
-**Current implementation note:** this is still a partial drag-and-drop system with two different outcomes. Folder drops use the move callback; between-row drops use Slice 1 reorder and still build `orderedIds` from the visible file rows in the active tree view. The indicator type model includes `onSection`, but current tree logic does not emit it.
+**Current implementation note:** this is still a partial drag-and-drop system with two different outcomes. Folder drops use the move callback; between-row drops use reorder. The indicator type model includes `onSection`, but current tree logic does not emit it.
 
 ## Component hierarchy
 
@@ -254,7 +257,7 @@ SidebarPanelBody
 
 ## Invariants
 
-1. **Path scoping**: sidebar tree paths are section-relative. Filesystem IPC paths (read/create/rename/delete/move) are project-relative at the boundary. Reorder Slice 1 is an exception: its `folderPath` and `orderedIds` currently stay section-relative because they persist ordering keys, not filesystem targets.
+1. **Path scoping**: sidebar tree paths are section-relative. Filesystem IPC paths (read/create/rename/delete/move) are project-relative at the boundary. Reorder also converts to project-relative via `buildScopedReorderHandler()` at `sidebar-panel-body.tsx`.
 2. **Folder modeling**: the tree can derive folders from file path prefixes and can also consume explicit folder paths from scanner output.
 3. **Pane coordination**: sidebar `selectedPath` derives from `workspaceLayout.activePane` path, not from async-loading pane document path (see `lessons-learned/split-pane-sidebar-layout-vs-pane-path.md`).
 4. **Focus mode lock**: sidebar auto-collapses and is locked closed while focus mode is active.

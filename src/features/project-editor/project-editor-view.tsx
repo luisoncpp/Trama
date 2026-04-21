@@ -97,6 +97,7 @@ function buildSidebarSectionProps(model: ProjectEditorModel, props: SidebarExtra
     onEditFileTags: (path: string, tags: string[]) => void actions.editFileTags(path, tags),
     onReorderFiles: (folderPath: string, orderedIds: string[]) => actions.reorderFiles(folderPath, orderedIds),
     onMoveFile: (sourcePath: string, targetFolder: string) => actions.moveFile(sourcePath, targetFolder),
+    corkboardOrder: state.corkboardOrder,
     apiAvailable: state.apiAvailable,
     loadingProject: state.loadingProject,
     rootPath: state.rootPath,

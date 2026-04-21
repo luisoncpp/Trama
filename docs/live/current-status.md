@@ -1,10 +1,10 @@
-# Current Status (Phase 3 Complete + Phase 4 WS2/WS5 Partial + Drag-Drop Reorder Slice 1)
+# Current Status (Phase 3 Complete + Phase 4 WS2 corkboardOrder integration)
 
 > **New conversation?** Open `docs/START-HERE.md` first — it routes you to the 3-4 files you actually need.
 
 ## Product state
 
-The repository has completed Phase 2, all Phase 3 workstreams (WS1–WS5), and Phase 4 WS2 folder rename/delete V1. Drag-and-drop file reorder Slice 1 is now implemented.
+The repository has completed Phase 2, all Phase 3 workstreams (WS1–WS5), and Phase 4 WS2 folder rename/delete V1. Drag-and-drop file reorder Slice 1 is now implemented. corkboardOrder integration (WS2 Slice 1) is now implemented — sidebar tree displays files in index order instead of alphabetical.
 
 Implemented now:
 - Electron + Vite + Preact desktop shell.
@@ -34,8 +34,10 @@ Implemented now:
 - Main-process file operations expanded to create/rename/delete markdown files plus folder create.
 - Folder rename V1 implemented end-to-end: IPC contract (`trama:folder:rename`), repository rename operation, sidebar folder context-menu rename flow, dirty-subtree guard, split-pane open-path remap, and expanded-folder-state remap after refresh.
 - Folder delete V1 implemented end-to-end: IPC contract (`trama:folder:delete`), recursive repository delete operation, sidebar folder context-menu delete flow, dirty-subtree guard, split-pane path pruning for deleted subtree, and internal-write watcher tagging for removed markdown files.
-- WS2 scope freeze applied after V1 closure: folder move/reparent and drag-and-drop wiring were intentionally rolled back to keep the branch focused on stable rename/delete behavior before continuing with move workflows.
+- WS2 V1 closed: folder rename and delete fully implemented and tested. Drag-and-drop file reorder (Slice 1) and file move between folders (Slice 2) implemented. Folder move/reparent next slice.
 - Drag-and-drop file reorder (Slice 1): IPC channel `trama:index:reorder`, `IndexService.updateFolderOrder()`, `handleReorderFiles` handler, renderer `reorderFiles` action, drag handles on file rows, drop indicator UI, and sidebar drag state management. Persists `corkboardOrder` in index without disk changes.
+- corkboardOrder integration (WS2 Slice 1): `sortTreeRowsByOrder()` in `sidebar-tree-sort.ts`, `scopeCorkboardOrder()` and `buildScopedReorderHandler()` in `sidebar-panel-body.tsx`, `corkboardOrder` derived from snapshot and threaded through sidebar component chain. Reorder IPC payload now uses project-relative paths. Sidebar tree displays files in index-sorted order.
+- Drag-and-drop file move between folders (Slice 2): IPC channel `trama:file:move`, `handleMoveFile` handler, `documentRepository.moveDocument()`, renderer `moveFile` action wired to folder drop targets. Moves file on disk and reconciles index.
 - Workspace split-layout foundation: single/split mode toggle, ratio control, active pane switching, pane document assignment, and local persistence (`trama.workspace.layout.v1`).
 - Layout reconciliation hardening: preferred-document restores now respect active pane intent during project reopen flows.
 - Per-pane editor state model: independent `primaryPane`/`secondaryPane` document content, metadata, and dirty flags.
@@ -70,7 +72,7 @@ Implemented now:
 
 Not implemented yet (planned in later phases):
 - Folder move / reparent workflows (WS2 Slice 2+).
-- Drag-and-drop file move between folders (WS2 Slice 2).
+- Drag-and-drop folder move (WS2 Slice 3).
 - Wiki links, templates, corkboard DnD.
 
 WS2 next step:
@@ -133,7 +135,7 @@ See `docs/plan/phase-4-detailed-plan.md` for the complete plan with 5 workstream
 | Workstream | Description | Key Deliverables | Status |
 |---|---|---|---|
 | **WS1** | Wiki Tag Links | TagIndexService, implicit tag matching, Ctrl+click navigation | ✅ Complete |
-| **WS2** | Folder Operations | Rename, delete, move with conflict safety | In progress (rename + delete V1 complete; drag-drop reorder Slice 1 done) |
+| **WS2** | Folder Operations | Rename, delete, move with conflict safety | In progress (rename + delete V1 complete; drag-drop file reorder Slice 1 done; corkboardOrder integration Slice 1 done; drag-drop file move Slice 2 done; folder move/reparent pending) |
 | **WS3** | Templates | Create from schema, placeholder system, default templates | Pending |
 | **WS4** | Corkboard | Drag-and-drop card view, persistence | Pending |
 | **WS5** | AI Import/Export | Import/export implemented end-to-end, including export hardening and regression tests | ✅ Complete |

@@ -1,0 +1,199 @@
+import { useCallback } from 'preact/hooks'
+import type { DocumentMeta } from '../../shared/ipc'
+import { PROJECT_EDITOR_STRINGS } from './project-editor-strings'
+import type { ProjectEditorActions } from './project-editor-types'
+import { useSetSidebarPanelWidthAction, useSetSidebarSectionAction, useToggleSidebarPanelCollapsedAction } from './use-project-editor-sidebar-actions'
+import { useSetFocusScopeAction, useSetFullscreenEnabledAction, useToggleFocusModeAction } from './use-project-editor-focus-actions'
+import {
+  useSetWorkspaceActivePaneAction,
+  useSetWorkspaceLayoutRatioAction,
+  useToggleWorkspaceLayoutModeAction,
+} from './use-project-editor-layout-actions'
+import type { UseProjectEditorStateResult } from './use-project-editor-state'
+import type { WorkspacePane } from './project-editor-types'
+
+export interface UseProjectEditorUiActionsParams {
+  values: UseProjectEditorStateResult['values']
+  setters: UseProjectEditorStateResult['setters']
+  openProject: (projectRoot: string, preferredFilePath?: string, preferredPane?: 'primary' | 'secondary') => Promise<void>
+  loadDocument: (path: string, pane: WorkspacePane) => Promise<void>
+  saveDocumentNow: (path: string, content: string, meta: DocumentMeta) => Promise<void>
+}
+
+export function usePickProjectFolderAction({
+  openProject,
+  setters,
+}: {
+  openProject: (projectRoot: string, preferredFilePath?: string) => Promise<void>
+  setters: UseProjectEditorStateResult['setters']
+}): ProjectEditorActions['pickProjectFolder'] {
+  return useCallback(async (): Promise<void> => {
+    const selected = await window.tramaApi.selectProjectFolder()
+    if (!selected.ok) {
+      setters.setStatusMessage(`Could not open folder picker: ${selected.error.message}`)
+      return
+    }
+
+    if (!selected.data.rootPath) {
+      setters.setStatusMessage(PROJECT_EDITOR_STRINGS.folderSelectionCanceled)
+      return
+    }
+
+    await openProject(selected.data.rootPath)
+  }, [openProject, setters])
+}
+
+export function useSelectFileAction({
+  values,
+  loadDocument,
+  assignFileToActivePane,
+  saveDocumentNow,
+}: {
+  values: UseProjectEditorStateResult['values']
+  loadDocument: (path: string, pane: WorkspacePane) => Promise<void>
+  assignFileToActivePane: (filePath: string) => void
+  saveDocumentNow: (path: string, content: string, meta: DocumentMeta) => Promise<void>
+}): ProjectEditorActions['selectFile'] {
+  return useCallback(
+    async (filePath: string): Promise<void> => {
+      if (values.isDirty && values.selectedPath) {
+        await saveDocumentNow(values.selectedPath, values.editorValue, values.editorMeta)
+      }
+
+      assignFileToActivePane(filePath)
+      if (filePath !== values.selectedPath) {
+        void loadDocument(filePath, values.workspaceLayout.activePane)
+      }
+    },
+    [assignFileToActivePane, loadDocument, saveDocumentNow, values.editorMeta, values.editorValue, values.isDirty, values.selectedPath],
+  )
+}
+
+export function useReorderFilesAction({
+  setters,
+  openProject,
+  rootPath,
+}: {
+  setters: UseProjectEditorStateResult['setters']
+  openProject: (projectRoot: string) => Promise<void>
+  rootPath: string
+}): ProjectEditorActions['reorderFiles'] {
+  return useCallback(
+    async (folderPath: string, orderedIds: string[]): Promise<void> => {
+      try {
+        const response = await window.tramaApi.reorderFiles({ folderPath, orderedIds })
+        if (!response.ok) {
+          setters.setStatusMessage(`Could not reorder files: ${response.error.message}`)
+          return
+        }
+        setters.setStatusMessage(`File order updated for folder: ${folderPath || '(root)'}`)
+        await openProject(rootPath)
+      } catch (error) {
+        setters.setStatusMessage(`Error reordering files: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      }
+    },
+    [openProject, rootPath, setters],
+  )
+}
+
+export function useMoveFileAction({
+  values,
+  setters,
+  openProject,
+}: {
+  values: UseProjectEditorStateResult['values']
+  setters: UseProjectEditorStateResult['setters']
+  openProject: (projectRoot: string, preferredFilePath?: string) => Promise<void>
+}): ProjectEditorActions['moveFile'] {
+  return useCallback(
+    async (sourcePath: string, targetFolder: string): Promise<void> => {
+      if (!values.rootPath) {
+        setters.setStatusMessage('No project is open')
+        return
+      }
+
+      const isSourceDirty =
+        (values.primaryPane.path === sourcePath && values.primaryPane.isDirty) ||
+        (values.secondaryPane.path === sourcePath && values.secondaryPane.isDirty)
+      if (isSourceDirty) {
+        setters.setStatusMessage('Save the file before moving it.')
+        return
+      }
+
+      try {
+        const response = await window.tramaApi.moveFile({ sourcePath, targetFolder })
+        if (!response.ok) {
+          setters.setStatusMessage(`Could not move file: ${response.error.message}`)
+          return
+        }
+
+        setters.setStatusMessage(`Moved file to: ${response.data.renamedTo}`)
+        await openProject(values.rootPath, response.data.renamedTo)
+      } catch (error) {
+        setters.setStatusMessage(`Error moving file: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      }
+    },
+    [openProject, setters, values.primaryPane.isDirty, values.primaryPane.path, values.rootPath, values.secondaryPane.isDirty, values.secondaryPane.path],
+  )
+}
+
+export function useSidebarActions(values: UseProjectEditorStateResult['values'], setters: UseProjectEditorStateResult['setters']) {
+  return {
+    setSidebarSection: useSetSidebarSectionAction(setters),
+    toggleSidebarPanelCollapsed: useToggleSidebarPanelCollapsedAction(values, setters),
+    setSidebarPanelWidth: useSetSidebarPanelWidthAction(setters),
+  }
+}
+
+export function useWorkspaceLayoutActions(
+  values: UseProjectEditorStateResult['values'],
+  setters: UseProjectEditorStateResult['setters'],
+  loadDocument: UseProjectEditorUiActionsParams['loadDocument'],
+  saveDocumentNow: UseProjectEditorUiActionsParams['saveDocumentNow'],
+) {
+  return {
+    toggleWorkspaceLayoutMode: useToggleWorkspaceLayoutModeAction(values, setters),
+    setWorkspaceLayoutRatio: useSetWorkspaceLayoutRatioAction(setters),
+    setWorkspaceActivePane: useSetWorkspaceActivePaneAction({ values, setters, loadDocument, saveDocumentNow }),
+  }
+}
+
+export function useEditorViewActions(
+  values: UseProjectEditorStateResult['values'],
+  setters: UseProjectEditorStateResult['setters'],
+  saveDocumentNow: UseProjectEditorUiActionsParams['saveDocumentNow'],
+) {
+  return {
+    updateEditorValue: (nextValue: string, pane?: WorkspacePane) => {
+      const targetPane = pane ?? values.workspaceLayout.activePane
+      if (targetPane === 'secondary') {
+        setters.setSecondaryPane((prev) => ({ ...prev, content: nextValue, isDirty: true }))
+      } else {
+        setters.setPrimaryPane((prev) => ({ ...prev, content: nextValue, isDirty: true }))
+      }
+    },
+    saveNow: (pane?: WorkspacePane) => {
+      const targetPane = pane ?? values.workspaceLayout.activePane
+      const paneState = targetPane === 'secondary' ? values.secondaryPane : values.primaryPane
+      if (!paneState.path || values.saving || !paneState.isDirty) {
+        return
+      }
+      void saveDocumentNow(paneState.path, paneState.content, paneState.meta)
+    },
+    setFullscreenEnabled: useSetFullscreenEnabledAction(setters),
+    toggleFocusMode: useToggleFocusModeAction(values, setters),
+    setFocusScope: useSetFocusScopeAction(setters),
+  }
+}
+
+export function useProjectPickerActions({
+  openProject,
+  setters,
+}: {
+  openProject: (projectRoot: string, preferredFilePath?: string) => Promise<void>
+  setters: UseProjectEditorStateResult['setters']
+}) {
+  return {
+    pickProjectFolder: usePickProjectFolderAction({ openProject, setters }),
+  }
+}

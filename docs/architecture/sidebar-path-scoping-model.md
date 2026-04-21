@@ -1,6 +1,6 @@
 # Sidebar Path Scoping Model
 
-> **Last updated:** 2026-04-19
+> **Last updated:** 2026-04-21
 
 Goal: document the section-relative ↔ project-relative path conversion model so contributors can understand the boundary functions, conversion tables, and common failure modes without tracing code across multiple files.
 
@@ -114,7 +114,8 @@ Strips trailing separators before joining.
 | Create category | Section-relative + name | Project-relative | `buildCandidatePath()` |
 | Edit file tags | Section-relative | Project-relative | `makeRootPath(sectionConfig.root)` |
 | Move file (drag-drop) | Section-relative | Project-relative | `makeRootPath(sectionConfig.root)` |
-| Reorder files | Section-relative | Section-relative | `onReorderFiles` (stays scoped) |
+| Reorder files | Section-relative | Project-relative | `buildScopedReorderHandler()` at `sidebar-panel-body.tsx` |
+| CorkboardOrder → tree | Project-relative | Section-relative | `scopeCorkboardOrder()` at `sidebar-panel-body.tsx` |
 | UI label display | Project root + section root | Absolute display path | `joinProjectPath()` |
 | Select file | Section-relative | Project-relative | `makeRootPath(sectionConfig.root)` at `sidebar-panel-body.tsx:109` |
 | Load file tags | Section-relative | Project-relative | `loadFileTags(root)` at `sidebar-panel-body.tsx:108` |
@@ -217,19 +218,19 @@ buildCandidatePath('book/', 'drafts', 'my-category', 0, false)
 
 **Symptom:** Drag-drop reorder affects wrong files or fails silently.
 
-**Cause:** `onReorderFiles` uses section-relative paths (for `corkboardOrder` keys), while `onMoveFile` uses project-relative paths (for actual filesystem moves).
+**Cause:** `onReorderFiles` receives section-relative paths from the tree, but the IPC handler needs project-relative paths for `corkboardOrder` keys and values.
 
 **Fix:** In `sidebar-panel-body.tsx`:
 
 ```typescript
-// Reorder: stays section-relative (sidebar-panel-body.tsx:110)
-onReorderFiles={onReorderFiles}
+// Reorder: buildScopedReorderHandler converts section-relative → project-relative
+onReorderFiles={buildScopedReorderHandler(onReorderFiles, withRoot, sectionConfig.root)}
 
-// Move: wrapper converts to project-relative at sidebar-panel-body.tsx:111
+// Move: wrapper converts to project-relative at sidebar-panel-body.tsx
 onMoveFile={onMoveFile ? (s, t) => onMoveFile(withRoot(s), withRoot(t)) : undefined}
 ```
 
-The key detail: `sidebar-tree.tsx:108` passes section-relative paths (`draggingPath`, `dropPosition.folderPath`). The conversion happens in the wrapper at `sidebar-panel-body.tsx:111`, not at the tree layer.
+The key detail: `sidebar-tree.tsx` passes section-relative paths (`draggingPath`, `dropPosition.folderPath`). The conversion happens in `buildScopedReorderHandler()` at `sidebar-panel-body.tsx`, not at the tree layer. For root-level files, `folderPath` is `''` (section-relative empty) which maps to the section root without trailing slash (e.g., `book`).
 
 ## Test cases to verify path scoping
 
@@ -252,7 +253,7 @@ When modifying path scoping logic, verify these cases:
 | File | Responsibility |
 |------|---------------|
 | `src/features/project-editor/components/sidebar/sidebar-panel-logic.ts` | `getScopedFiles()`, `getScopedSelectedPath()`, `joinProjectPath()` |
-| `src/features/project-editor/components/sidebar/sidebar-panel-body.tsx` | `makeRootPath()`, `loadFileTags()`, conversion wrapper `withRoot` |
+| `src/features/project-editor/components/sidebar/sidebar-panel-body.tsx` | `makeRootPath()`, `loadFileTags()`, `scopeCorkboardOrder()`, `buildScopedReorderHandler()`, conversion wrapper `withRoot` |
 | `src/features/project-editor/components/sidebar/sidebar-section-roots.ts` | `SIDEBAR_SECTION_CONFIG` definition |
 | `src/features/project-editor/use-project-editor-create-actions.ts` | `buildCandidatePath()`, create operation scoping |
 | `src/features/project-editor/use-project-editor-file-actions.ts` | File rename/delete/tag operations (receives project-relative paths) |
@@ -262,8 +263,8 @@ When modifying path scoping logic, verify these cases:
 ## Lessons learned
 
 - **Always trace the path format** when debugging sidebar issues. The most common bug is passing section-relative paths to project-relative IPC calls.
-- **The conversion boundary is `sidebar-panel-body.tsx`**. All `withRoot()` calls live there. If a new callback needs project-relative paths, add the conversion at this layer.
-- **Reorder is the exception**. `corkboardOrder` persistence uses section-relative paths because they're index keys, not filesystem targets.
+- **The conversion boundary is `sidebar-panel-body.tsx`**. All `withRoot()` calls and `buildScopedReorderHandler()` live there. If a new callback needs project-relative paths, add the conversion at this layer.
+- **Reorder converts both ways**. `scopeCorkboardOrder()` converts project-relative index keys/IDs to section-relative for the sidebar tree; `buildScopedReorderHandler()` converts section-relative back to project-relative before IPC.
 - **Windows path separators** must be normalized before any string operations. The `normalizePath()` function in `sidebar-panel-logic.ts` handles this.
 - **Empty folders** in the tree come from explicit folder entries in the scanner output, not from path derivation. They still use section-relative paths.
 

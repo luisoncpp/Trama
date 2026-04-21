@@ -31,6 +31,7 @@ function SidebarTreeArea(props: {
   selectedPath: string | null
   loadingDocument: boolean
   filterQuery: string
+  corkboardOrder?: Record<string, string[]>
   onSelectFile: (path: string) => Promise<void>
   onFileContextMenu: (path: string, event: MouseEvent) => void
   onFolderContextMenu: (path: string, event: MouseEvent) => void
@@ -47,6 +48,7 @@ function SidebarTreeArea(props: {
       loadingDocument={props.loadingDocument}
       onSelectFile={props.onSelectFile}
       filterQuery={props.filterQuery}
+      corkboardOrder={props.corkboardOrder}
       onFileContextMenu={props.onFileContextMenu}
       onFolderContextMenu={props.onFolderContextMenu}
       onReorderFiles={props.onReorderFiles}
@@ -94,6 +96,7 @@ interface SidebarExplorerBodyProps {
   onDirectoryChange: (value: string) => void
   onNameChange: (value: string) => void
   filterInputRef: (element: HTMLInputElement | null) => void
+  corkboardOrder?: Record<string, string[]>
   onReorderFiles?: (folderPath: string, orderedIds: string[]) => Promise<void>
   onMoveFile?: (sourcePath: string, targetFolder: string) => Promise<void>
 }
@@ -157,6 +160,7 @@ export function SidebarExplorerBody(props: SidebarExplorerBodyProps) {
         selectedPath={props.selectedPath}
         loadingDocument={props.loadingDocument}
         filterQuery={props.filterQuery}
+        corkboardOrder={props.corkboardOrder}
         onSelectFile={props.onSelectFile}
         onFileContextMenu={fileContextMenu.handleFileContextMenu}
         onFolderContextMenu={folderContextMenu.handleFolderContextMenu}

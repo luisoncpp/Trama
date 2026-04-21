@@ -17,8 +17,8 @@
       "book/Act-01/Chapter-03/Scene-003.md"
     ],
     "book/Act-02/Chapter-01": [
-      "book/Act-02/Chapter-01/Scene-001.md",
       "book/Act-02/Chapter-01/Scene-002.md",
+      "book/Act-02/Chapter-01/Scene-001.md",
       "book/Act-02/Chapter-01/Scene-003.md"
     ],
     "book/Act-02/Chapter-02": [
@@ -35,21 +35,28 @@
       "exports/book.md"
     ],
     "lore/characters": [
+      "lore/characters/Aina.md",
       "lore/characters/Corin.md",
       "lore/characters/Elio.md",
       "lore/characters/Marek.md",
       "lore/characters/Nix.md",
       "lore/characters/Nora.md",
-      "lore/characters/Sombra-del-Lirio.md",
-      "lore/characters/Aina.md"
+      "lore/characters/Sombra-del-Lirio.md"
     ],
     "lore/places": [
       "lore/places/bosque-encantado.md",
-      "lore/places/ciudad-principal.md"
+      "lore/places/ciudad_principal.md"
     ],
     "lore/systems": [
       "lore/systems/politica.md",
       "lore/systems/magia.md"
+    ],
+    "outline/AB": [
+      "outline/AB/a.md",
+      "outline/AB/b.md",
+      "outline/AB/c.md",
+      "outline/AB/d.md",
+      "outline/AB/e.md"
     ],
     "outline/Act-01/Chapter-01": [
       "outline/Act-01/Chapter-01/chapter-beats.md"
@@ -69,24 +76,11 @@
     "outline/Act-02/Chapter-03": [
       "outline/Act-02/Chapter-03/chapter-beats.md"
     ],
-    "outline": [
-      "outline/arc-general.md"
+    "outline/Misc": [
+      "outline/Misc/arc-general.md"
     ],
     "": [
       "README.md"
-    ],
-    "characters": [
-      "characters/Aina.md",
-      "characters/Corin.md",
-      "characters/Nora.md",
-      "characters/Elio.md",
-      "characters/Marek.md",
-      "characters/Nix.md",
-      "characters/Sombra-del-Lirio.md",
-      "places/bosque-encantado.md",
-      "places/ciudad-principal.md",
-      "systems/magia.md",
-      "systems/politica.md"
     ]
   },
   "cache": {
@@ -155,7 +149,7 @@
       ],
       "title": "El Bosque Encantado"
     },
-    "lore/places/ciudad-principal.md": {
+    "lore/places/ciudad_principal.md": {
       "title": "Ciudad de Lirio-Amanecer",
       "type": "location",
       "tags": [
@@ -176,13 +170,18 @@
       ]
     },
     "lore/systems/politica.md": {},
+    "outline/AB/a.md": {},
+    "outline/AB/b.md": {},
+    "outline/AB/c.md": {},
+    "outline/AB/d.md": {},
+    "outline/AB/e.md": {},
     "outline/Act-01/Chapter-01/chapter-beats.md": {},
     "outline/Act-01/Chapter-02/chapter-beats.md": {},
     "outline/Act-01/Chapter-03/chapter-beats.md": {},
     "outline/Act-02/Chapter-01/chapter-beats.md": {},
     "outline/Act-02/Chapter-02/chapter-beats.md": {},
     "outline/Act-02/Chapter-03/chapter-beats.md": {},
-    "outline/arc-general.md": {},
+    "outline/Misc/arc-general.md": {},
     "README.md": {}
   }
 }

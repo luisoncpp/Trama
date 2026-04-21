@@ -212,3 +212,5 @@ export function findParentRowIndex(rows: SidebarTreeRow[], index: number): numbe
 
   return -1
 }
+
+export { sortTreeRowsByOrder } from './sidebar-tree-sort'
