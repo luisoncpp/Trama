@@ -210,12 +210,19 @@ Fixed by mapping text offsets to Quill indexes via Delta ops.
 
 Lesson: `docs/lessons-learned/quill-text-vs-delta-index-mismatch.md`
 
+### Stale underline positions after layout change (resize, split toggle)
+
+Fixed by separating text matching (cacheable) from bounds computation (layout-dependent). `useTagOverlay` now returns `TagMatch[]` without bounds; `TagHighlights` computes `getBounds()` fresh on every render.
+
+Lesson: `docs/lessons-learned/tag-overlay-stale-bounds-on-layout-change.md`
+
 ## Debug Playbook
 
 ### Step 1: Classify Symptom
 
 - **Navigation stale/missing after save** → likely index freshness (main process rebuild path).
 - **Underline misplaced/too wide** → likely Quill index or coordinate reference mismatch.
+- **Underline at wrong position after resize/split toggle** → likely stale cached bounds; `getBounds()` must be computed at render time, not memoized across layout changes.
 - **Ctrl/Cmd click intermittent** → likely modifier event timing/race handling.
 - **Tag exists but not matched** → likely boundaries/code exclusion/tag normalization.
 

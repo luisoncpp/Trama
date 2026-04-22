@@ -15,7 +15,7 @@ interface DeltaOp {
   insert?: string | Record<string, unknown>
 }
 
-function mapPlainTextIndexToQuillIndex(editor: Quill, plainTextIndex: number): number {
+export function mapPlainTextIndexToQuillIndex(editor: Quill, plainTextIndex: number): number {
   const ops = (editor.getContents()?.ops ?? []) as DeltaOp[]
   const target = Math.max(0, plainTextIndex)
 
@@ -36,7 +36,6 @@ function mapPlainTextIndexToQuillIndex(editor: Quill, plainTextIndex: number): n
       continue
     }
 
-    // Quill counts embeds as one document unit, while getText() does not include them.
     quillOffset += 1
   }
 
@@ -67,7 +66,7 @@ export function buildTagOverlayMatches(editor: Quill, tagIndex: Record<string, s
   return matchesWithBounds
 }
 
-export function useTagOverlay({ editorRef, tagIndex }: UseTagOverlayParams): TagOverlayMatch[] {
+export function useTagOverlay({ editorRef, tagIndex }: UseTagOverlayParams): TagMatch[] {
   const matches = useMemo(() => {
     if (!tagIndex || Object.keys(tagIndex).length === 0) {
       return []
@@ -78,20 +77,38 @@ export function useTagOverlay({ editorRef, tagIndex }: UseTagOverlayParams): Tag
       return []
     }
 
-    return buildTagOverlayMatches(editor, tagIndex)
+    const text = editor.getText()
+    const allMatches = findTagMatchesInText(text, tagIndex)
+    return filterMatchesOutsideCode(text, allMatches)
   }, [editorRef.current, tagIndex])
 
   return matches
 }
 
+export function resolveTagBounds(editor: Quill, matches: TagMatch[]): TagOverlayMatch[] {
+  const result: TagOverlayMatch[] = []
+  for (const match of matches) {
+    const quillStart = mapPlainTextIndexToQuillIndex(editor, match.start)
+    const quillEnd = mapPlainTextIndexToQuillIndex(editor, match.end)
+    const matchLength = Math.max(0, quillEnd - quillStart)
+    if (matchLength === 0) {
+      continue
+    }
+
+    const bounds = editor.getBounds(quillStart, matchLength)
+    result.push({ ...match, bounds })
+  }
+  return result
+}
+
 export function findMatchAtPosition(
-  matches: TagOverlayMatch[],
+  overlays: TagOverlayMatch[],
   clientX: number,
   clientY: number,
   editorRect: DOMRect,
   hitPadding = 3,
 ): TagMatch | null {
-  for (const match of matches) {
+  for (const match of overlays) {
     if (!match.bounds) continue
 
     const matchLeft = editorRect.left + match.bounds.left - hitPadding

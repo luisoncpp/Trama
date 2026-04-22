@@ -119,6 +119,7 @@ Use this sequence to avoid broad searches.
 
 - Navigation stale/missing after save -> likely index freshness (main process rebuild path).
 - Underline misplaced/too wide -> likely Quill index or coordinate reference mismatch.
+- Underline at wrong position after layout change (resize, split toggle) -> likely stale cached bounds; compute at render time, not memoize.
 - Ctrl/Cmd click intermittent -> likely modifier event timing/race handling.
 - Tag exists but not matched -> likely boundaries/code exclusion/tag normalization.
 
@@ -176,6 +177,10 @@ Modifier-click issues:
 - Underline shifted or line-wide after embeds:
   - fixed by mapping text offsets to Quill indexes via Delta ops.
   - lesson: `docs/lessons-learned/quill-text-vs-delta-index-mismatch.md`
+
+- Stale underline positions after layout change (resize, split toggle):
+  - fixed by separating text matching (cacheable) from bounds computation (layout-dependent, recomputed each render).
+  - lesson: `docs/lessons-learned/tag-overlay-stale-bounds-on-layout-change.md`
 
 ## 6. Change checklist for future Wiki Tag work
 

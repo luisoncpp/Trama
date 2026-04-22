@@ -64,3 +64,4 @@ Avoid: "bug description + fix". Prefer: "what I learned that applies to future w
 | `css-patch-corruption.md` | CSS patch tool can inject rules inside open blocks; use large anchors, validate after each edit | 2026-04-04 |
 | `index-reorder-payload-id-vs-path.md` | Reorder payloads for `.trama.index.json` must use same key/value identity model as reconciliation and downstream readers | 2026-04-19 |
 | `corkboard-order-path-scoping.md` | `corkboardOrder` keys are project-relative; sidebar tree uses section-relative paths — conversion must happen at the boundary (`sidebar-panel-body.tsx`) | 2026-04-21 |
+| `tag-overlay-stale-bounds-on-layout-change.md` | Quill `getBounds()` results are layout-dependent; never cache them across renders — compute fresh at render or event time | 2026-04-21 |

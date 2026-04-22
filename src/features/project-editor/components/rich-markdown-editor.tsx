@@ -102,7 +102,7 @@ export function RichMarkdownEditor(props: RichMarkdownEditorProps) {
     <div ref={shellRef} class="rich-editor-shell w-full" onMouseDownCapture={handleEditorMouseDown}>
       <div ref={hostRef} class="rich-editor w-full" />
       {findBar}
-      {ctrlPressed && tagIndex && <TagHighlights tagMatches={tagMatches} offsetTop={tagOffsetTop} offsetLeft={tagOffsetLeft} />}
+      {ctrlPressed && tagIndex && editorRef.current && <TagHighlights matches={tagMatches} editor={editorRef.current} offsetTop={tagOffsetTop} offsetLeft={tagOffsetLeft} />}
     </div>
   )
 }
