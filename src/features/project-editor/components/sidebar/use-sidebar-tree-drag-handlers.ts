@@ -1,6 +1,9 @@
 import type { DropIndicatorPosition } from './drop-indicator'
 import type { SidebarTreeRow } from './sidebar-tree-types'
 
+const FOLDER_ZONE_RATIO = 0.5
+const EDGE_ZONE_RATIO = 0.25
+
 function calculateDropPosition(
   rows: SidebarTreeRow[],
   hoveredPath: string,
@@ -10,29 +13,30 @@ function calculateDropPosition(
   if (!containerRef.current) return null
 
   const rowElements = containerRef.current.querySelectorAll<HTMLButtonElement>('[data-sidebar-row-index]')
-  let closestRow: HTMLButtonElement | null = null
+  const hoveredEl = Array.from(rowElements).find((el) => el.getAttribute('data-path') === hoveredPath)
+  if (!hoveredEl) return null
 
-  for (const rowEl of rowElements) {
-    const rect = rowEl.getBoundingClientRect()
-    const midY = rect.top + rect.height / 2
-    if (clientY < midY) {
-      if (!closestRow || rect.top < closestRow.getBoundingClientRect().top) {
-        closestRow = rowEl
-      }
-    }
-  }
-
-  if (!closestRow) return null
+  const rect = hoveredEl.getBoundingClientRect()
+  const relativeY = clientY - rect.top
+  const heightFraction = relativeY / rect.height
 
   const hoveredRow = rows.find((r) => r.path === hoveredPath)
   if (!hoveredRow) return null
 
   if (hoveredRow.type === 'folder') {
-    return { type: 'onFolder', folderPath: hoveredRow.path }
+    if (heightFraction > EDGE_ZONE_RATIO && heightFraction < 1 - EDGE_ZONE_RATIO) {
+      return { type: 'onFolder', targetPath: hoveredRow.path }
+    }
   }
 
-  const beforeIndex = rows.findIndex((r) => r.path === hoveredPath)
-  return { type: 'between', beforeIndex }
+  const hoveredIndex = rows.findIndex((r) => r.path === hoveredPath)
+  if (hoveredIndex === -1) return null
+
+  if (heightFraction < FOLDER_ZONE_RATIO) {
+    return { type: 'before', targetIndex: hoveredIndex, targetPath: hoveredRow.path }
+  }
+
+  return { type: 'after', targetIndex: hoveredIndex, targetPath: hoveredRow.path }
 }
 
 interface UseSidebarTreeDragHandlersProps {
@@ -56,8 +60,11 @@ async function executeDrop(
   const sourceRow = rows.find((r) => r.path === draggingPath)
   if (!sourceRow || sourceRow.type !== 'file') return
 
-  if (dropPosition.type === 'onFolder' && dropPosition.folderPath !== undefined) {
-    await onMoveFile?.(draggingPath, dropPosition.folderPath)
+  if (dropPosition.type === 'onFolder' && dropPosition.targetPath !== undefined) {
+    if (dropPosition.targetPath === sourceRow.path) return
+    const parentPath = sourceRow.path.includes('/') ? sourceRow.path.split('/').slice(0, -1).join('/') : ''
+    if (parentPath === dropPosition.targetPath) return
+    await onMoveFile?.(draggingPath, dropPosition.targetPath)
     return
   }
 
@@ -72,12 +79,20 @@ async function executeDrop(
   if (sourceIndex === -1) return
   reorderedIds.splice(sourceIndex, 1)
 
-  if (dropPosition.type === 'between' && dropPosition.beforeIndex !== undefined) {
-    const targetRow = rows[dropPosition.beforeIndex]
+  if (dropPosition.type === 'before' && dropPosition.targetIndex !== undefined) {
+    const targetRow = rows[dropPosition.targetIndex]
     if (targetRow) {
       const targetIndex = reorderedIds.indexOf(targetRow.path)
       if (targetIndex !== -1) {
         reorderedIds.splice(targetIndex, 0, draggingPath)
+      }
+    }
+  } else if (dropPosition.type === 'after' && dropPosition.targetIndex !== undefined) {
+    const targetRow = rows[dropPosition.targetIndex]
+    if (targetRow) {
+      const targetIndex = reorderedIds.indexOf(targetRow.path)
+      if (targetIndex !== -1) {
+        reorderedIds.splice(targetIndex + 1, 0, draggingPath)
       }
     }
   }

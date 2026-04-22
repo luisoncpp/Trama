@@ -1,9 +1,9 @@
-export type DropIndicatorType = 'between' | 'onFolder' | 'onSection'
+export type DropIndicatorType = 'before' | 'after' | 'onFolder' | 'onSection'
 
 export interface DropIndicatorPosition {
   type: DropIndicatorType
-  folderPath?: string
-  beforeIndex?: number
+  targetPath?: string
+  targetIndex?: number
 }
 
 interface DropIndicatorProps {
@@ -17,16 +17,7 @@ export function DropIndicator({ position }: DropIndicatorProps) {
     return (
       <div
         class="sidebar-drop-indicator is-folder-highlight"
-        data-folder={position.folderPath}
-      />
-    )
-  }
-
-  if (position.type === 'between' && position.beforeIndex !== undefined) {
-    return (
-      <div
-        class="sidebar-drop-indicator is-between"
-        data-before-index={position.beforeIndex}
+        data-folder={position.targetPath}
       />
     )
   }
@@ -35,6 +26,15 @@ export function DropIndicator({ position }: DropIndicatorProps) {
     return (
       <div
         class="sidebar-drop-indicator is-section-root"
+      />
+    )
+  }
+
+  if ((position.type === 'before' || position.type === 'after') && position.targetIndex !== undefined) {
+    return (
+      <div
+        class={`sidebar-drop-indicator is-line is-${position.type}`}
+        data-target-index={position.targetIndex}
       />
     )
   }

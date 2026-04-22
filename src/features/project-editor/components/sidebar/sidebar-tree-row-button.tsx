@@ -15,6 +15,7 @@ interface SidebarTreeRowButtonProps {
   onDragStart?: (filePath: string, event: DragEvent) => void
   onDragOver?: (filePath: string, event: DragEvent) => void
   onDrop?: (filePath: string, event: DragEvent) => void
+  dropIndicatorClass?: string
 }
 
 function focusRowInContainer(containerRef: { current: HTMLDivElement | null }, rows: SidebarTreeRow[], index: number) {
@@ -65,7 +66,7 @@ export function handleTreeRowKeyDown(
 
 export function SidebarTreeRowButton({
   row, index, selectedPath, loadingDocument, onSelectFile, onToggleFolder, containerRef,
-  onFileContextMenu, onFolderContextMenu, onDragStart, onDragOver, onDrop,
+  onFileContextMenu, onFolderContextMenu, onDragStart, onDragOver, onDrop, dropIndicatorClass,
 }: SidebarTreeRowButtonProps) {
   const isFolder = row.type === 'folder'
 
@@ -76,8 +77,9 @@ export function SidebarTreeRowButton({
       aria-expanded={isFolder ? row.isExpanded : undefined}
       aria-level={row.depth + 1}
       data-sidebar-row-index={index}
+      data-path={row.path}
       disabled={loadingDocument}
-      class={`sidebar-tree__row ${isFolder ? 'is-folder' : 'is-file'} ${selectedPath === row.path ? 'is-active' : ''}`}
+      class={`sidebar-tree__row ${isFolder ? 'is-folder' : 'is-file'} ${selectedPath === row.path ? 'is-active' : ''}${dropIndicatorClass ?? ''}`}
       style={{ paddingLeft: `${12 + row.depth * 16}px` }}
       onClick={() => (isFolder ? onToggleFolder(row.path, !row.isExpanded) : void onSelectFile(row.path))}
       onContextMenu={(e) => { e.preventDefault(); (isFolder ? onFolderContextMenu : onFileContextMenu)?.(row.path, e) }}

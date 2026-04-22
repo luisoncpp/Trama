@@ -46,16 +46,22 @@ describe('drag-drop-sidebar', () => {
       expect(rows.filter((r) => r.type === 'file').length).toBeGreaterThan(0)
     })
 
-    it('onFolder position has folderPath property', () => {
-      const position: DropIndicatorPosition = { type: 'onFolder', folderPath: 'outline/characters' }
+    it('onFolder position has targetPath property', () => {
+      const position: DropIndicatorPosition = { type: 'onFolder', targetPath: 'outline/characters' }
       expect(position.type).toBe('onFolder')
-      expect(position.folderPath).toBe('outline/characters')
+      expect(position.targetPath).toBe('outline/characters')
     })
 
-    it('between position has beforeIndex property', () => {
-      const position: DropIndicatorPosition = { type: 'between', beforeIndex: 2 }
-      expect(position.type).toBe('between')
-      expect(position.beforeIndex).toBe(2)
+    it('before position has targetIndex property', () => {
+      const position: DropIndicatorPosition = { type: 'before', targetIndex: 2, targetPath: 'outline/a.md' }
+      expect(position.type).toBe('before')
+      expect(position.targetIndex).toBe(2)
+    })
+
+    it('after position has targetIndex property', () => {
+      const position: DropIndicatorPosition = { type: 'after', targetIndex: 1, targetPath: 'outline/b.md' }
+      expect(position.type).toBe('after')
+      expect(position.targetIndex).toBe(1)
     })
   })
 

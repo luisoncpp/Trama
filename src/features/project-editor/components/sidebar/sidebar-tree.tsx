@@ -5,7 +5,7 @@ import { buildSidebarTree, getVisibleSidebarRows, sortTreeRowsByOrder } from './
 import { useSidebarTreeExpandedFolders } from './use-sidebar-tree-expanded-folders'
 import { useSidebarTreeDragHandlers } from './use-sidebar-tree-drag-handlers'
 import { SidebarTreeRowButton } from './sidebar-tree-row-button'
-import { DropIndicator, type DropIndicatorPosition } from './drop-indicator'
+import type { DropIndicatorPosition } from './drop-indicator'
 import type { SidebarTreeRow } from './sidebar-tree-types'
 
 export interface SidebarTreeProps {
@@ -65,6 +65,18 @@ function useSidebarTreeData(visibleFiles: string[], selectedPath: string | null,
   return { rows, filterResult, setFolderExpanded }
 }
 
+function getDropIndicatorClass(
+  dropPosition: DropIndicatorPosition | null,
+  index: number,
+  path: string,
+): string {
+  if (!dropPosition || dropPosition.targetIndex !== index && dropPosition.targetPath !== path) return ''
+  if (dropPosition.type === 'before' && dropPosition.targetIndex === index) return ' is-drop-before'
+  if (dropPosition.type === 'after' && dropPosition.targetIndex === index) return ' is-drop-after'
+  if (dropPosition.type === 'onFolder' && dropPosition.targetPath === path) return ' is-drop-onFolder'
+  return ''
+}
+
 export function SidebarTreeRows({
   rows,
   selectedPath,
@@ -107,9 +119,9 @@ export function SidebarTreeRows({
           onDragStart={handleDragStart}
           onDragOver={handleDragOver}
           onDrop={handleDrop}
+          dropIndicatorClass={getDropIndicatorClass(dropPosition, index, row.path)}
         />
       ))}
-      <DropIndicator position={dropPosition} />
     </>
   )
 }

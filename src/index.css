@@ -1340,6 +1340,23 @@ select {
   color: var(--text-main);
 }
 
+.sidebar-tree__row.is-drop-onFolder {
+  background: var(--surface-accent-bg);
+  border-color: var(--accent-border);
+  outline: 1px dashed var(--accent-border-strong);
+  outline-offset: -2px;
+}
+
+.sidebar-tree__row.is-drop-before {
+  border-top: 2px solid var(--accent);
+  margin-top: -1px;
+}
+
+.sidebar-tree__row.is-drop-after {
+  border-bottom: 2px solid var(--accent);
+  margin-bottom: -1px;
+}
+
 .sidebar-tree__chevron {
   min-width: 14px;
   width: 14px;
