@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vitest'
 import { buildSidebarTree, getVisibleSidebarRows } from '../src/features/project-editor/components/sidebar/sidebar-tree-logic'
 import type { SidebarTreeRow } from '../src/features/project-editor/components/sidebar/sidebar-tree-types'
 import type { DropIndicatorPosition } from '../src/features/project-editor/components/sidebar/drop-indicator'
+import { calculateDropPosition } from '../src/features/project-editor/components/sidebar/use-sidebar-tree-drag-handlers'
 
 describe('drag-drop-sidebar', () => {
   describe('calculateDropPosition', () => {
@@ -62,6 +63,79 @@ describe('drag-drop-sidebar', () => {
       const position: DropIndicatorPosition = { type: 'after', targetIndex: 1, targetPath: 'outline/b.md' }
       expect(position.type).toBe('after')
       expect(position.targetIndex).toBe(1)
+    })
+  })
+
+  describe('calculateDropPosition', () => {
+    function mockContainer(rowHeights: Record<string, number> = {}) {
+      const container = document.createElement('div')
+      container.innerHTML = `
+        <button data-sidebar-row-index="0" data-path="outline/scene-1.md"></button>
+        <button data-sidebar-row-index="1" data-path="outline/scene-2.md"></button>
+        <button data-sidebar-row-index="2" data-path="outline/characters"></button>
+        <button data-sidebar-row-index="3" data-path="outline/locations"></button>
+      `
+      const buttons = Array.from(container.querySelectorAll('button'))
+      for (const btn of buttons) {
+        const pathAttr = btn.getAttribute('data-path') ?? ''
+        const height = rowHeights[pathAttr] ?? 40
+        btn.getBoundingClientRect = () => ({
+          top: 0,
+          left: 0,
+          right: 200,
+          bottom: height,
+          width: 200,
+          height,
+          x: 0,
+          y: 0,
+          toJSON: () => '',
+        })
+      }
+      return { current: container }
+    }
+
+    it('returns onFolder when hovering folder center while dragging file', () => {
+      const rows: SidebarTreeRow[] = [
+        { nodeId: 'a', name: 'scene-1', path: 'outline/scene-1.md', type: 'file', depth: 1, isExpanded: false },
+        { nodeId: 'b', name: 'characters', path: 'outline/characters', type: 'folder', depth: 1, isExpanded: false },
+      ]
+      const containerRef = mockContainer()
+      const pos = calculateDropPosition(rows, 'outline/scene-1.md', 'outline/characters', 20, containerRef)
+
+      expect(pos).toEqual({ type: 'onFolder', targetPath: 'outline/characters' })
+    })
+
+    it('returns before when hovering top edge of file row while dragging file', () => {
+      const rows: SidebarTreeRow[] = [
+        { nodeId: 'a', name: 'scene-1', path: 'outline/scene-1.md', type: 'file', depth: 1, isExpanded: false },
+        { nodeId: 'b', name: 'scene-2', path: 'outline/scene-2.md', type: 'file', depth: 1, isExpanded: false },
+      ]
+      const containerRef = mockContainer()
+      const pos = calculateDropPosition(rows, 'outline/scene-1.md', 'outline/scene-2.md', 5, containerRef)
+
+      expect(pos).toEqual({ type: 'before', targetIndex: 1, targetPath: 'outline/scene-2.md' })
+    })
+
+    it('returns null for before/after when dragging folder (no reorder for folders)', () => {
+      const rows: SidebarTreeRow[] = [
+        { nodeId: 'a', name: 'characters', path: 'outline/characters', type: 'folder', depth: 1, isExpanded: false },
+        { nodeId: 'b', name: 'locations', path: 'outline/locations', type: 'folder', depth: 1, isExpanded: false },
+      ]
+      const containerRef = mockContainer()
+      const pos = calculateDropPosition(rows, 'outline/characters', 'outline/locations', 5, containerRef)
+
+      expect(pos).toBeNull()
+    })
+
+    it('returns onFolder when dragging folder onto another folder center', () => {
+      const rows: SidebarTreeRow[] = [
+        { nodeId: 'a', name: 'characters', path: 'outline/characters', type: 'folder', depth: 1, isExpanded: false },
+        { nodeId: 'b', name: 'locations', path: 'outline/locations', type: 'folder', depth: 1, isExpanded: false },
+      ]
+      const containerRef = mockContainer()
+      const pos = calculateDropPosition(rows, 'outline/characters', 'outline/locations', 20, containerRef)
+
+      expect(pos).toEqual({ type: 'onFolder', targetPath: 'outline/locations' })
     })
   })
 

@@ -84,8 +84,8 @@ export function SidebarTreeRowButton({
       onClick={() => (isFolder ? onToggleFolder(row.path, !row.isExpanded) : void onSelectFile(row.path))}
       onContextMenu={(e) => { e.preventDefault(); (isFolder ? onFolderContextMenu : onFileContextMenu)?.(row.path, e) }}
       onKeyDown={(e) => handleTreeRowKeyDown(e, index, [row], onToggleFolder, onSelectFile, containerRef)}
-      draggable={!isFolder}
-      onDragStart={(e) => { if (!isFolder) onDragStart?.(row.path, e) }}
+      draggable={true}
+      onDragStart={(e) => { onDragStart?.(row.path, e) }}
       onDragOver={(e) => { e.preventDefault(); onDragOver?.(row.path, e) }}
       onDragEnter={(e) => { e.preventDefault(); onDragOver?.(row.path, e) }}
       onDrop={(e) => { e.preventDefault(); onDrop?.(row.path, e) }}

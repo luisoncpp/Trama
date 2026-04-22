@@ -27,9 +27,9 @@
       "book/Act-02/Chapter-02/Scene-003.md"
     ],
     "book/Act-02/Chapter-03": [
-      "book/Act-02/Chapter-03/Scene-001.md",
       "book/Act-02/Chapter-03/Scene-002.md",
-      "book/Act-02/Chapter-03/Scene-003.md"
+      "book/Act-02/Chapter-03/Scene-003.md",
+      "book/Act-02/Chapter-03/Scene-001.md"
     ],
     "exports": [
       "exports/book.md"
@@ -53,9 +53,9 @@
     ],
     "outline/AB": [
       "outline/AB/a.md",
+      "outline/AB/d.md",
       "outline/AB/b.md",
       "outline/AB/c.md",
-      "outline/AB/d.md",
       "outline/AB/e.md"
     ],
     "outline/Act-01/Chapter-01": [
@@ -63,9 +63,6 @@
     ],
     "outline/Act-01/Chapter-02": [
       "outline/Act-01/Chapter-02/chapter-beats.md"
-    ],
-    "outline/Act-01/Chapter-03": [
-      "outline/Act-01/Chapter-03/chapter-beats.md"
     ],
     "outline/Act-02/Chapter-01": [
       "outline/Act-02/Chapter-01/chapter-beats.md"
@@ -75,6 +72,9 @@
     ],
     "outline/Act-02/Chapter-03": [
       "outline/Act-02/Chapter-03/chapter-beats.md"
+    ],
+    "outline/Chapter-03": [
+      "outline/Chapter-03/chapter-beats.md"
     ],
     "outline/Misc": [
       "outline/Misc/arc-general.md"
@@ -177,10 +177,10 @@
     "outline/AB/e.md": {},
     "outline/Act-01/Chapter-01/chapter-beats.md": {},
     "outline/Act-01/Chapter-02/chapter-beats.md": {},
-    "outline/Act-01/Chapter-03/chapter-beats.md": {},
     "outline/Act-02/Chapter-01/chapter-beats.md": {},
     "outline/Act-02/Chapter-02/chapter-beats.md": {},
     "outline/Act-02/Chapter-03/chapter-beats.md": {},
+    "outline/Chapter-03/chapter-beats.md": {},
     "outline/Misc/arc-general.md": {},
     "README.md": {}
   }

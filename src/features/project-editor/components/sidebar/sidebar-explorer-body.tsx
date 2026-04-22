@@ -37,6 +37,7 @@ function SidebarTreeArea(props: {
   onFolderContextMenu: (path: string, event: MouseEvent) => void
   onReorderFiles?: (folderPath: string, orderedIds: string[]) => Promise<void>
   onMoveFile?: (sourcePath: string, targetFolder: string) => Promise<void>
+  onMoveFolder?: (sourcePath: string, targetParent: string) => Promise<void>
 }) {
   if (props.showOnlyStateHint) {
     return <EmptyStateHint {...props} />
@@ -53,6 +54,7 @@ function SidebarTreeArea(props: {
       onFolderContextMenu={props.onFolderContextMenu}
       onReorderFiles={props.onReorderFiles}
       onMoveFile={props.onMoveFile}
+      onMoveFolder={props.onMoveFolder}
     />
   )
 }
@@ -99,6 +101,7 @@ interface SidebarExplorerBodyProps {
   corkboardOrder?: Record<string, string[]>
   onReorderFiles?: (folderPath: string, orderedIds: string[]) => Promise<void>
   onMoveFile?: (sourcePath: string, targetFolder: string) => Promise<void>
+  onMoveFolder?: (sourcePath: string, targetParent: string) => Promise<void>
 }
 
 function buildDialogsProps(props: SidebarExplorerBodyProps, fileContextMenu: ReturnType<typeof useSidebarDialogs>['fileContextMenu'], folderContextMenu: ReturnType<typeof useSidebarDialogs>['folderContextMenu']) {
@@ -166,6 +169,7 @@ export function SidebarExplorerBody(props: SidebarExplorerBodyProps) {
         onFolderContextMenu={folderContextMenu.handleFolderContextMenu}
         onReorderFiles={props.onReorderFiles}
         onMoveFile={props.onMoveFile}
+        onMoveFolder={props.onMoveFolder}
       />
       <SidebarExplorerDialogs {...buildDialogsProps(props, fileContextMenu, folderContextMenu)} />
     </>

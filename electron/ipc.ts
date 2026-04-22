@@ -25,6 +25,7 @@ import {
   handleCreateFolder,
   handleDeleteFolder,
   handleDeleteDocument,
+  handleMoveFolder,
   handleGetIndex,
   handleOpenProject,
   handleReadDocument,
@@ -118,6 +119,7 @@ function registerFolderHandlers(ipcMain: IpcMain): void {
   ipcMain.handle(IPC_CHANNELS.createFolder, (_event, payload) => handleCreateFolder(payload))
   ipcMain.handle(IPC_CHANNELS.renameFolder, (_event, payload) => handleRenameFolder(payload))
   ipcMain.handle(IPC_CHANNELS.deleteFolder, (_event, payload) => handleDeleteFolder(payload))
+  ipcMain.handle(IPC_CHANNELS.moveFolder, (_event, payload) => handleMoveFolder(payload))
 }
 
 function registerCoreHandlers(ipcMain: IpcMain): void {

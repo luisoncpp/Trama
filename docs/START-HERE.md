@@ -32,6 +32,7 @@ NO te estoy pidiendo que leas un archivo por ahora, sólo establezco reglas.
 2. Read `docs/live/file-map.md` for file ownership and where to edit.
 3. Read `docs/lessons-learned/README.md` and any relevant lesson files.
 4. Read `docs/dev-workflow.md` for build/test/checklist rules.
+5. Read `docs/architecture/README.md` to read any documents relevant to your current task before writing/reading any code.
 
 ## 90-second project summary
 
@@ -55,7 +56,6 @@ Open these only when relevant:
 
 - IPC extension workflow: `docs/architecture/ipc-architecture.md`
 - Split pane coordination model: `docs/architecture/split-pane-coordination.md`
-- Folder rename implementation slice: `docs/plan/done/folder-rename-implementation-plan.md`
 - Phase planning details: `docs/plan/phase-4-detailed-plan.md`
 - Wiki Tag Links system guide + debug playbook: `docs/plan/done/wiki-tag-links-system-guide.md`
 - Markdown layout directives (center/spacer/pagebreak + EPUB/MOBI): `docs/spec/markdown-layout-directives-spec.md`

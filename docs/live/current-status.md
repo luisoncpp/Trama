@@ -38,6 +38,9 @@ Implemented now:
 - Drag-and-drop file reorder (Slice 1): IPC channel `trama:index:reorder`, `IndexService.updateFolderOrder()`, `handleReorderFiles` handler, renderer `reorderFiles` action, drag handles on file rows, drop indicator UI, and sidebar drag state management. Persists `corkboardOrder` in index without disk changes.
 - corkboardOrder integration (WS2 Slice 1): `sortTreeRowsByOrder()` in `sidebar-tree-sort.ts`, `scopeCorkboardOrder()` and `buildScopedReorderHandler()` in `sidebar-panel-body.tsx`, `corkboardOrder` derived from snapshot and threaded through sidebar component chain. Reorder IPC payload now uses project-relative paths. Sidebar tree displays files in index-sorted order.
 - Drag-and-drop file move between folders (Slice 2): IPC channel `trama:file:move`, `handleMoveFile` handler, `documentRepository.moveDocument()`, renderer `moveFile` action wired to folder drop targets. Moves file on disk and reconciles index.
+- Folder move IPC + repository (Slice 2): IPC channel `trama:folder:move`, `handleMoveFolder` handler, `documentRepository.moveFolder()`, renderer `moveFolder` action with dirty-subtree guard and split-pane path remapping. Moves folder subtree on disk and reconciles index.
+- Folder drag-drop UI wiring (Slice 3): Folder rows are now draggable. `use-sidebar-tree-drag-handlers.ts` routes folder drops to `onMoveFolder` (folder-on-folder and section-root drops). Path scoping via `withRoot` in `sidebar-panel-body.tsx`. Split-pane path remapping on folder move.
+- Folder move regression tests: `tests/folder-move-repository.test.ts` (7 tests), `tests/folder-move-ipc-handler.test.ts` (5 tests), `tests/drag-drop-sidebar.test.ts` folder drag-drop coverage (4 tests), `tests/sidebar-panel-body.test.ts` path scoping coverage (4 tests).
 - Workspace split-layout foundation: single/split mode toggle, ratio control, active pane switching, pane document assignment, and local persistence (`trama.workspace.layout.v1`).
 - Layout reconciliation hardening: preferred-document restores now respect active pane intent during project reopen flows.
 - Per-pane editor state model: independent `primaryPane`/`secondaryPane` document content, metadata, and dirty flags.
@@ -71,8 +74,6 @@ Implemented now:
 - Book export regression expansion: `tests/book-export-renderers.test.ts` now covers image flows across HTML (local -> data URL conversion), PDF (data URL + local), DOCX (embedded `word/media` artifacts), and EPUB (data URL + local path materialization).
 
 Not implemented yet (planned in later phases):
-- Folder move / reparent workflows (WS2 Slice 2+).
-- Drag-and-drop folder move (WS2 Slice 3).
 - Wiki links, templates, corkboard DnD.
 
 WS2 next step:
@@ -135,7 +136,7 @@ See `docs/plan/phase-4-detailed-plan.md` for the complete plan with 5 workstream
 | Workstream | Description | Key Deliverables | Status |
 |---|---|---|---|
 | **WS1** | Wiki Tag Links | TagIndexService, implicit tag matching, Ctrl+click navigation | ✅ Complete |
-| **WS2** | Folder Operations | Rename, delete, move with conflict safety | In progress (rename + delete V1 complete; drag-drop file reorder Slice 1 done; corkboardOrder integration Slice 1 done; drag-drop file move Slice 2 done; folder move/reparent pending) |
+| **WS2** | Folder Operations | Rename, delete, move with conflict safety | In progress (rename + delete V1 complete; drag-drop file reorder Slice 1 done; corkboardOrder integration Slice 1 done; drag-drop file move Slice 2 done; folder move IPC + repository Slice 2 done; folder DnD UI wiring Slice 3 done) |
 | **WS3** | Templates | Create from schema, placeholder system, default templates | Pending |
 | **WS4** | Corkboard | Drag-and-drop card view, persistence | Pending |
 | **WS5** | AI Import/Export | Import/export implemented end-to-end, including export hardening and regression tests | ✅ Complete |

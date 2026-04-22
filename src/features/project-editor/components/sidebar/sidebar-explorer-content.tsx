@@ -45,6 +45,7 @@ interface SidebarExplorerContentProps {
   corkboardOrder?: Record<string, string[]>
   onReorderFiles?: (folderPath: string, orderedIds: string[]) => Promise<void>
   onMoveFile?: (sourcePath: string, targetFolder: string) => Promise<void>
+  onMoveFolder?: (sourcePath: string, targetParent: string) => Promise<void>
 }
 
 function useSidebarExplorerDialogs(props: SidebarExplorerContentProps) {
@@ -116,7 +117,7 @@ export function SidebarExplorerContent(props: SidebarExplorerContentProps) {
     onFolderRenameValueChange: folderDialog.setRenameValue,
     confirmFolderActionDialog: folderDialog.confirm, closeFolderActionDialog: folderDialog.closeDialog,
     onDirectoryChange: createDialog.setCreateDirectory, onNameChange: createDialog.setCreateName,
-    filterInputRef: setFilterInputRef, corkboardOrder: props.corkboardOrder, onReorderFiles: props.onReorderFiles, onMoveFile: props.onMoveFile,
+    filterInputRef: setFilterInputRef, corkboardOrder: props.corkboardOrder, onReorderFiles: props.onReorderFiles, onMoveFile: props.onMoveFile, onMoveFolder: props.onMoveFolder,
   }
 
   return (

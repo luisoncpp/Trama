@@ -38,6 +38,8 @@ import {
   type ReorderFilesResponse,
   type MoveFileRequest,
   type MoveFileResponse,
+  type MoveFolderRequest,
+  type MoveFolderResponse,
   type SelectProjectFolderResponse,
   type SetSpellcheckSettingsRequest,
   type SetFullscreenRequest,
@@ -154,6 +156,9 @@ const tramaApi = {
   },
   moveFile(payload: MoveFileRequest): Promise<IpcEnvelope<MoveFileResponse>> {
     return ipcRenderer.invoke(IPC_CHANNELS.moveFile, payload)
+  },
+  moveFolder(payload: MoveFolderRequest): Promise<IpcEnvelope<MoveFolderResponse>> {
+    return ipcRenderer.invoke(IPC_CHANNELS.moveFolder, payload)
   },
 }
 

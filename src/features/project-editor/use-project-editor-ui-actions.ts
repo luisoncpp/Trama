@@ -41,7 +41,7 @@ export function usePrimaryProjectEditorActions(
   const selectFile = useSelectFileAction({ values, loadDocument, assignFileToActivePane, saveDocumentNow })
   const { createArticle, createCategory } = useProjectEditorCreateActions({ values, setters, openProject })
   const { renameFile, deleteFile, editFileTags } = useProjectEditorFileActions({ values, setters, openProject })
-  const { renameFolder, deleteFolder } = useProjectEditorFolderActions({ values, setters, openProject })
+  const { renameFolder, deleteFolder, moveFolder } = useProjectEditorFolderActions({ values, setters, openProject })
   const sidebarActions = useSidebarActions(values, setters)
   const layoutActions = useWorkspaceLayoutActions(values, setters, loadDocument, saveDocumentNow)
   const editorViewActions = useEditorViewActions(values, setters, saveDocumentNow)
@@ -62,6 +62,7 @@ export function usePrimaryProjectEditorActions(
     editFileTags,
     reorderFiles,
     moveFile,
+    moveFolder,
     ...sidebarActions,
     ...layoutActions,
     ...editorViewActions,

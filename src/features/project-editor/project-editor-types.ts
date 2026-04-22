@@ -68,6 +68,7 @@ export interface ProjectEditorActions {
   editFileTags: (path: string, tags: string[]) => Promise<void>
   reorderFiles: (folderPath: string, orderedIds: string[]) => Promise<void>
   moveFile: (sourcePath: string, targetFolder: string) => Promise<void>
+  moveFolder: (sourcePath: string, targetParent: string) => Promise<void>
   setSidebarSection: (section: SidebarSection) => void
   toggleSidebarPanelCollapsed: () => void
   setSidebarPanelWidth: (width: number) => void

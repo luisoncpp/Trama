@@ -1,6 +1,8 @@
 import {
   deleteFolderRequestSchema,
   type DeleteFolderResponse,
+  moveFolderRequestSchema,
+  type MoveFolderResponse,
   renameFolderRequestSchema,
   type IpcEnvelope,
   type RenameFolderResponse,
@@ -83,5 +85,35 @@ export async function handleDeleteFolder(rawPayload: unknown): Promise<IpcEnvelo
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unable to delete folder'
     return errorEnvelope('FOLDER_DELETE_FAILED', message)
+  }
+}
+
+export async function handleMoveFolder(rawPayload: unknown): Promise<IpcEnvelope<MoveFolderResponse>> {
+  const payload = moveFolderRequestSchema.safeParse(rawPayload)
+  if (!payload.success) {
+    return errorEnvelope('VALIDATION_ERROR', 'Invalid payload for folder move', payload.error.flatten())
+  }
+
+  try {
+    const projectRoot = getActiveProjectRoot()
+    const { markdownFiles } = await scanProject(projectRoot)
+    const oldFiles = markdownFilesUnderFolder(markdownFiles, payload.data.sourcePath)
+
+    const result = await documentRepository.moveFolder(projectRoot, payload.data.sourcePath, payload.data.targetParent)
+
+    for (const oldFilePath of oldFiles) {
+      markInternalWrite(oldFilePath)
+      markInternalWrite(remapFolderFilePath(oldFilePath, result.sourcePath, result.renamedTo))
+    }
+
+    await reconcileActiveProjectIndex(projectRoot)
+
+    return {
+      ok: true,
+      data: result,
+    }
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unable to move folder'
+    return errorEnvelope('FOLDER_MOVE_FAILED', message)
   }
 }

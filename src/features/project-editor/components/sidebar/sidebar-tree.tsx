@@ -3,7 +3,7 @@ import { PROJECT_EDITOR_STRINGS } from '../../project-editor-strings'
 import { filterSidebarTree } from './sidebar-filter-logic'
 import { buildSidebarTree, getVisibleSidebarRows, sortTreeRowsByOrder } from './sidebar-tree-logic'
 import { useSidebarTreeExpandedFolders } from './use-sidebar-tree-expanded-folders'
-import { useSidebarTreeDragHandlers } from './use-sidebar-tree-drag-handlers'
+import { createContainerDragOverHandler, createContainerDropHandler, useSidebarTreeDragHandlers } from './use-sidebar-tree-drag-handlers'
 import { SidebarTreeRowButton } from './sidebar-tree-row-button'
 import type { DropIndicatorPosition } from './drop-indicator'
 import type { SidebarTreeRow } from './sidebar-tree-types'
@@ -19,6 +19,7 @@ export interface SidebarTreeProps {
   onFolderContextMenu?: (folderPath: string, event: MouseEvent) => void
   onReorderFiles?: (folderPath: string, orderedIds: string[]) => Promise<void>
   onMoveFile?: (sourcePath: string, targetFolder: string) => Promise<void>
+  onMoveFolder?: (sourcePath: string, targetParent: string) => Promise<void>
 }
 
 export interface SidebarTreeRowsProps {
@@ -32,6 +33,7 @@ export interface SidebarTreeRowsProps {
   onFolderContextMenu?: (folderPath: string, event: MouseEvent) => void
   onReorderFiles?: (folderPath: string, orderedIds: string[]) => Promise<void>
   onMoveFile?: (sourcePath: string, targetFolder: string) => Promise<void>
+  onMoveFolder?: (sourcePath: string, targetParent: string) => Promise<void>
   dragState: {
     draggingPath: string | null
     dropPosition: DropIndicatorPosition | null
@@ -88,6 +90,7 @@ export function SidebarTreeRows({
   onFolderContextMenu,
   onReorderFiles,
   onMoveFile,
+  onMoveFolder,
   dragState,
 }: SidebarTreeRowsProps) {
   const { draggingPath, dropPosition, setDraggingPath, setDropPosition } = dragState
@@ -99,6 +102,7 @@ export function SidebarTreeRows({
     setDropPosition,
     containerRef,
     onMoveFile,
+    onMoveFolder,
     onReorderFiles,
   })
 
@@ -137,6 +141,7 @@ export function SidebarTree({
   onFolderContextMenu,
   onReorderFiles,
   onMoveFile,
+  onMoveFolder,
 }: SidebarTreeProps) {
   const { rows, filterResult, setFolderExpanded } = useSidebarTreeData(visibleFiles, selectedPath, filterQuery, corkboardOrder)
   const containerRef = useRef<HTMLDivElement | null>(null)
@@ -147,13 +152,19 @@ export function SidebarTree({
   if (visibleFiles.length === 0 && !hasFilterQuery) {
     return <p class='file-tree__empty'>{PROJECT_EDITOR_STRINGS.noMarkdownFiles}</p>
   }
-
   if (rows.length === 0 && hasFilterQuery) {
     return <p class='file-tree__empty'>No files match &quot;{filterResult.query}&quot;.</p>
   }
 
   return (
-    <div class='file-tree sidebar-tree' ref={containerRef} role='tree' aria-label='Project files'>
+    <div
+      class='file-tree sidebar-tree'
+      ref={containerRef}
+      role='tree'
+      aria-label='Project files'
+      onDragOver={createContainerDragOverHandler(rows, draggingPath, setDropPosition)}
+      onDrop={createContainerDropHandler(draggingPath, dropPosition, onMoveFolder, setDraggingPath, setDropPosition)}
+    >
       <SidebarTreeRows
         rows={rows}
         selectedPath={selectedPath}
@@ -165,6 +176,7 @@ export function SidebarTree({
         onFolderContextMenu={onFolderContextMenu}
         onReorderFiles={onReorderFiles}
         onMoveFile={onMoveFile}
+        onMoveFolder={onMoveFolder}
         dragState={{ draggingPath, dropPosition, setDraggingPath, setDropPosition }}
       />
     </div>

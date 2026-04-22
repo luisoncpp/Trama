@@ -171,6 +171,25 @@ async deleteDocument(projectRoot: string, relativePath: string): Promise<{ path:
 
     await renamePath(projectRoot, normalizedSource, targetRelativePath)
 
-return buildRenameResult(normalizedSource, targetRelativePath)
+    return buildRenameResult(normalizedSource, targetRelativePath)
+  }
+
+  async moveFolder(projectRoot: string, sourceFolder: string, targetParent: string): Promise<{ sourcePath: string; renamedTo: string; updatedAt: string }> {
+    const normalizedSource = validateRelativePath(sourceFolder)
+    const sourceFullPath = resolveProjectPath(projectRoot, normalizedSource)
+    const sourceInfo = await stat(sourceFullPath)
+    if (!sourceInfo.isDirectory()) throw new Error('Source is not a folder')
+
+    const folderName = path.posix.basename(normalizedSource)
+    const normalizedTargetParent = targetParent ? validateRelativePath(targetParent) : ''
+    const targetRelativePath = normalizedTargetParent ? `${normalizedTargetParent}/${folderName}` : folderName
+
+    if (normalizeRelative(targetRelativePath) === normalizeRelative(normalizedSource)) {
+      throw new Error('Source and target paths are the same')
+    }
+
+    await renamePath(projectRoot, normalizedSource, targetRelativePath)
+
+    return { sourcePath: normalizeRelative(normalizedSource), renamedTo: normalizeRelative(targetRelativePath), updatedAt: new Date().toISOString() }
   }
 }

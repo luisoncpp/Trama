@@ -187,8 +187,8 @@ Positioned absolutely at click coordinates. Click outside closes.
 - Entire file row is draggable (`draggable` on file rows)
 - `draggingPath`: file being dragged
 - `dropPosition`: calculated from `clientY` relative to row midpoints
-- Drop types currently produced by `sidebar-tree.tsx`: `onFolder` (drop onto folder), `between` (drop between rows)
-- `DropIndicator` type model also includes `onSection`, but the tree logic does not currently calculate that position
+- Drop types produced by `sidebar-tree.tsx`: `onFolder` (drop onto folder), `before` (drop above row), `after` (drop below row), `onSection` (drop at section root)
+- `DropIndicatorPosition` type model lives in `drop-indicator.tsx`; visual rendering uses CSS classes on `SidebarTreeRowButton` (`is-drop-before`, `is-drop-after`, `is-drop-onFolder`)
 
 ### Move path
 
@@ -215,7 +215,7 @@ trama:index:reorder → { folderPath: string, orderedIds: string[] }
 - Persists `corkboardOrder` in `.trama.index.json` (no disk file moves)
 - After successful reorder, `openProject(rootPath)` refreshes the snapshot so `corkboardOrder` state updates immediately
 
-**Current implementation note:** this is still a partial drag-and-drop system with two different outcomes. Folder drops use the move callback; between-row drops use reorder. The indicator type model includes `onSection`, but current tree logic does not emit it.
+**Current implementation note:** drag-and-drop supports two outcomes. Folder drops (`onFolder`) use the move callback (`onMoveFile`). Row-position drops (`before`/`after`) use reorder (`onReorderFiles`). The `onSection` type exists in the model but the tree logic does not currently emit it.
 
 ## Component hierarchy
 
@@ -227,8 +227,7 @@ SidebarPanelBody
 │       ├── SidebarFilter
 │       ├── SidebarTree
 │       │   └── SidebarTreeRows
-│       │       ├── SidebarTreeRowButton (per row)
-│       │       └── DropIndicator
+│       │       └── SidebarTreeRowButton (per row, includes drop-indicator CSS classes)
 │       └── SidebarExplorerDialogs
 │           ├── ContextMenus
 │           ├── FooterAndCreateDialog
@@ -272,3 +271,13 @@ SidebarPanelBody
 | Split pane | Sidebar selectedPath from wrong pane | `lessons-learned/split-pane-sidebar-layout-vs-pane-path.md` |
 | Tree rendering | Cursor jumping on re-init | Watch `buildSidebarTree` deps | See `docs/architecture/tree-building-and-implicit-folders.md` |
 | Filter | Auto-expand not restoring | Check `autoExpandFolderPaths` flow | See `docs/architecture/tree-building-and-implicit-folders.md` |
+| Drag-drop | Reorder uses stale rows or wrong path scoping | See `docs/architecture/sidebar-drag-drop-architecture.md` |
+
+## See also
+
+- Drag-and-drop architecture: `docs/architecture/sidebar-drag-drop-architecture.md`
+- Path scoping model: `docs/architecture/sidebar-path-scoping-model.md`
+- Tree building: `docs/architecture/tree-building-and-implicit-folders.md`
+- Project index architecture: `docs/architecture/project-index-architecture.md`
+- Focus mode architecture: `docs/architecture/focus-mode-architecture.md`
+- Split pane coordination: `docs/architecture/split-pane-coordination.md`

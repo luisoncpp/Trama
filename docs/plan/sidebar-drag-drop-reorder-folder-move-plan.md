@@ -61,7 +61,7 @@ This is more complex than file move because the subtree moves.
 - Add renderer action `moveFolder` in `use-project-editor-ui-actions.ts`.
 - Wire drag-drop on folder rows → `onMoveFolder` callback.
 - Split pane path remapping for moved folder subtree.
-- Drop indicator for folder move (reuse existing `onFolder` indicator type).
+- Drop indicator for folder move (reuse existing `onFolder` indicator class).
 
 **Out of scope:**
 - Moving a folder across sections that share the same root (book ↔ lore ↔ outline cross-moves).
@@ -269,7 +269,7 @@ Update drop position calculation to allow dropping folders onto other folders (s
 
 ---
 
-### Slice 2: Folder move IPC + repository ✅ (planned)
+### Slice 2: Folder move IPC + repository ✅ (done)
 
 **Tasks:**
 1. Add `moveFolder` IPC channel + schemas to `src/shared/ipc.ts`.
@@ -287,7 +287,7 @@ Update drop position calculation to allow dropping folders onto other folders (s
 
 ---
 
-### Slice 3: Folder move UI wiring ✅ (planned)
+### Slice 3: Folder move UI wiring ✅ (done)
 
 **Tasks:**
 1. Wire `onMoveFolder` prop through sidebar component chain.
@@ -338,7 +338,8 @@ Update drop position calculation to allow dropping folders onto other folders (s
 - `src/features/project-editor/components/sidebar/sidebar-tree.tsx` — add `onMoveFolder` prop
 - `src/features/project-editor/components/sidebar/sidebar-tree-row-button.tsx` — ensure folder rows are draggable
 - `src/features/project-editor/components/sidebar/use-sidebar-tree-drag-handlers.ts` — handle folder drag-drop
-- `src/features/project-editor/components/sidebar/drop-indicator.tsx` — folder drop highlight (reuse `onFolder` type)
+- `src/features/project-editor/components/sidebar/drop-indicator.tsx` — drop indicator position types (`before`, `after`, `onFolder`, `onSection`)
+- `src/features/project-editor/components/sidebar/sidebar-tree-row-button.tsx` — drop indicator CSS classes (`is-drop-before`, `is-drop-after`, `is-drop-onFolder`)
 - `tests/drag-drop-sidebar.test.ts` — folder move tests
 
 ## Acceptance Criteria

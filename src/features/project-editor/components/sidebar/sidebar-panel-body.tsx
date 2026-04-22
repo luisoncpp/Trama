@@ -48,6 +48,7 @@ export interface SidebarPanelBodyProps {
   onExport: () => void
   onReorderFiles?: (folderPath: string, orderedIds: string[]) => Promise<void>
   onMoveFile?: (sourcePath: string, targetFolder: string) => Promise<void>
+  onMoveFolder?: (sourcePath: string, targetParent: string) => Promise<void>
   corkboardOrder?: Record<string, string[]>
   contentProps: Omit<
     SidebarProjectContextProps & SidebarSelectionProps,
@@ -77,15 +78,7 @@ export function scopeCorkboardOrder(order: Record<string, string[]> | undefined,
   return result
 }
 
-function loadFileTags(root: string) {
-  return async (path: string): Promise<string[]> => {
-    const response = await window.tramaApi.readDocument({ path: `${root}${path}` })
-    if (!response.ok || !Array.isArray(response.data.meta.tags)) return []
-    return response.data.meta.tags.filter((value): value is string => typeof value === 'string')
-  }
-}
-
-function buildScopedReorderHandler(
+export function buildScopedReorderHandler(
   onReorderFiles: ((folderPath: string, orderedIds: string[]) => Promise<void>) | undefined,
   withRoot: (path: string) => string,
   sectionRoot: string,
@@ -98,31 +91,23 @@ function buildScopedReorderHandler(
   }
 }
 
-function renderSidebarExplorerContent({
-  contentProps,
-  sectionConfig,
-  rootPath,
-  scopedFiles,
-  scopedSelectedPath,
-  activeFilterQuery,
-  onFilterQueryChange,
-  onCreateArticle,
-  onCreateCategory,
-  onRenameFile,
-  onRenameFolder,
-  onDeleteFolder,
-  onDeleteFile,
-  onEditFileTags,
-  onSelectFile,
-  onReorderFiles,
-  onMoveFile,
-  corkboardOrder,
-}: SidebarPanelBodyProps) {
+function loadFileTags(root: string) {
+  return async (path: string): Promise<string[]> => {
+    const response = await window.tramaApi.readDocument({ path: `${root}${path}` })
+    if (!response.ok || !Array.isArray(response.data.meta.tags)) return []
+    return response.data.meta.tags.filter((value): value is string => typeof value === 'string')
+  }
+}
+
+function renderExplorer(props: SidebarPanelBodyProps) {
+  const {
+    contentProps, sectionConfig, rootPath, scopedFiles, scopedSelectedPath,
+    activeFilterQuery, onFilterQueryChange, onCreateArticle, onCreateCategory,
+    onRenameFile, onRenameFolder, onDeleteFolder, onDeleteFile, onEditFileTags,
+    onSelectFile, onReorderFiles, onMoveFile, onMoveFolder, corkboardOrder,
+  } = props
   if (!sectionConfig) return null
-
   const withRoot = makeRootPath(sectionConfig.root)
-  const scopedOrder = scopeCorkboardOrder(corkboardOrder, sectionConfig.root)
-
   return (
     <SidebarExplorerContent
       {...contentProps}
@@ -141,78 +126,49 @@ function renderSidebarExplorerContent({
       onEditFileTags={(path, tags) => onEditFileTags(withRoot(path), tags)}
       onLoadFileTags={loadFileTags(sectionConfig.root)}
       onSelectFile={(filePath) => onSelectFile(withRoot(filePath))}
-      corkboardOrder={scopedOrder}
+      corkboardOrder={scopeCorkboardOrder(corkboardOrder, sectionConfig.root)}
       onReorderFiles={buildScopedReorderHandler(onReorderFiles, withRoot, sectionConfig.root)}
       onMoveFile={onMoveFile ? (s, t) => onMoveFile(withRoot(s), withRoot(t)) : undefined}
-    />
-  )
-}
-
-function renderSidebarSettingsContent({
-  sidebarPanelWidth,
-  onSidebarPanelWidthChange,
-  themePreference,
-  resolvedTheme,
-  onThemePreferenceChange,
-  spellcheckEnabled,
-  spellcheckLanguage,
-  spellcheckLanguageOptions,
-  spellcheckLanguageSelectionSupported,
-  onSpellcheckEnabledChange,
-  onSpellcheckLanguageChange,
-  focusScope,
-  onFocusScopeChange,
-}: SidebarPanelBodyProps) {
-  return (
-    <SidebarSettingsContent
-      panelWidth={sidebarPanelWidth}
-      onPanelWidthChange={onSidebarPanelWidthChange}
-      themePreference={themePreference}
-      resolvedTheme={resolvedTheme}
-      onThemePreferenceChange={onThemePreferenceChange}
-      spellcheckEnabled={spellcheckEnabled}
-      spellcheckLanguage={spellcheckLanguage}
-      spellcheckLanguageOptions={spellcheckLanguageOptions}
-      spellcheckLanguageSelectionSupported={spellcheckLanguageSelectionSupported}
-      onSpellcheckEnabledChange={onSpellcheckEnabledChange}
-      onSpellcheckLanguageChange={onSpellcheckLanguageChange}
-      focusScope={focusScope}
-      onFocusScopeChange={onFocusScopeChange}
-    />
-  )
-}
-
-function renderSidebarTransferContent({ contentProps, onImport, onExportBook, onExport }: SidebarPanelBodyProps) {
-  return (
-    <SidebarTransferContent
-      disabled={contentProps.loadingProject || !contentProps.apiAvailable}
-      onImport={onImport}
-      onExportBook={onExportBook}
-      onExport={onExport}
+      onMoveFolder={
+        onMoveFolder ? (s, t) => onMoveFolder(withRoot(s), t ? withRoot(t) : sectionConfig.root.replace(/\/+$/, '')) : undefined
+      }
     />
   )
 }
 
 export function SidebarPanelBody(props: SidebarPanelBodyProps) {
-  if (props.effectiveCollapsed) {
-    return null
-  }
-
-  if (props.sectionConfig) {
-    return renderSidebarExplorerContent(props)
-  }
-
+  if (props.effectiveCollapsed) return null
+  if (props.sectionConfig) return renderExplorer(props)
   if (props.sidebarActiveSection === 'settings') {
-    return renderSidebarSettingsContent(props)
+    return (
+      <SidebarSettingsContent
+        panelWidth={props.sidebarPanelWidth}
+        onPanelWidthChange={props.onSidebarPanelWidthChange}
+        themePreference={props.themePreference}
+        resolvedTheme={props.resolvedTheme}
+        onThemePreferenceChange={props.onThemePreferenceChange}
+        spellcheckEnabled={props.spellcheckEnabled}
+        spellcheckLanguage={props.spellcheckLanguage}
+        spellcheckLanguageOptions={props.spellcheckLanguageOptions}
+        spellcheckLanguageSelectionSupported={props.spellcheckLanguageSelectionSupported}
+        onSpellcheckEnabledChange={props.onSpellcheckEnabledChange}
+        onSpellcheckLanguageChange={props.onSpellcheckLanguageChange}
+        focusScope={props.focusScope}
+        onFocusScopeChange={props.onFocusScopeChange}
+      />
+    )
   }
-
   if (props.sidebarActiveSection === 'transfer') {
-    return renderSidebarTransferContent(props)
+    return (
+      <SidebarTransferContent
+        disabled={props.contentProps.loadingProject || !props.contentProps.apiAvailable}
+        onImport={props.onImport}
+        onExportBook={props.onExportBook}
+        onExport={props.onExport}
+      />
+    )
   }
-
   return null
 }
 
-export function buildSidebarPanelBodyProps(params: SidebarPanelBodyProps): SidebarPanelBodyProps {
-  return params
-}
+export function buildSidebarPanelBodyProps(params: SidebarPanelBodyProps): SidebarPanelBodyProps { return params }

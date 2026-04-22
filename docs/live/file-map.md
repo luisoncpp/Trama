@@ -264,10 +264,12 @@ Mandatory doc navigation for new chats: start with `docs/START-HERE.md` — it p
   - Pure tree build/flatten helpers.
 - `src/features/project-editor/components/sidebar/sidebar-tree-sort.ts`
   - `sortTreeRowsByOrder()` — reorders sidebar tree rows by `corkboardOrder` from index. Re-exported via `sidebar-tree-logic.ts`.
+- `docs/architecture/sidebar-drag-drop-architecture.md`
+  - Comprehensive reference for sidebar drag-and-drop architecture: drop position model, data flow for reorder vs move, path scoping rules, IPC contracts, component hierarchy, and Slice 1 implementation details.
 - `src/features/project-editor/components/sidebar/sidebar-tree-row-button.tsx`
-  - Individual tree row with drag handle and drag event handlers (onDragStart/onDragOver/onDrop).
+  - Individual tree row with drag handle, drag event handlers, and drop-indicator CSS classes (`is-drop-before`, `is-drop-after`, `is-drop-onFolder`).
 - `src/features/project-editor/components/sidebar/drop-indicator.tsx`
-  - Visual drop indicator component for drag-and-drop reorder (between-files line, folder highlight, section root).
+  - Drop indicator position type model (`before` | `after` | `onFolder` | `onSection`). Visual rendering is handled by CSS classes on `SidebarTreeRowButton`.
 - `src/features/project-editor/components/sidebar/use-sidebar-tree-expanded-folders.ts`
   - Expanded folder state management, including rename remap consumption via sidebar folder-rename events.
 - `src/features/project-editor/components/sidebar/use-sidebar-tree-drag-handlers.ts`
@@ -389,7 +391,7 @@ Core and regression suites:
 - `tests/order-handlers.test.ts`
   - IPC handler coverage for `handleReorderFiles` (saves order to index, handles empty folder path, rejects no-active-project, rejects invalid payload).
 - `tests/drag-drop-sidebar.test.ts`
-  - Sidebar drag-drop logic coverage (folder vs file drop targets, between-position reorder logic, tree row filtering).
+  - Sidebar drag-drop logic coverage (folder vs file drop targets, before/after position reorder logic, tree row filtering).
 - `tests/markdown-layout-directives.test.ts`
   - Unit coverage for directive extraction, warning behavior, artifact rendering, and canonical serialization helpers.
 - `tests/ai-import-service.test.ts`
