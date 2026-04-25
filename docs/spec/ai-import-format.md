@@ -23,20 +23,70 @@ file content goes here
 
 ## Frontmatter Support
 
-Files can include YAML frontmatter at the beginning:
+Files can include YAML frontmatter at the beginning to include tags(each article can have multiple tags, but no tag should be in multiple articles, tags are aliases for the internal wikilink-like system, they may have spaces and they are not case sensitive):
 
 ```markdown
-=== FILE: lore/characters/protagonist.md ===
+=== FILE: lore/characters/link.md ===
 ---
-name: Elena Vance
-type: character
-tags: [protagonist, magic]
+tags:
+  - Link
+  - Hero of Time
 ---
 
-# Elena Vance
+# Link
 
-A powerful sorceress with a dark secret...
+The green Zelda
 ```
+
+## Folder Structure
+
+The folder structure should resemble this(it's an example, but it should have the same numbering, and also the `book`, `outline`, `lore`, `lore/characters`, `lore/places`, `lore/systems` even if the book is written in a different language):
+
+```text
+mi-proyecto/
+  book/
+    Act-01/
+      Chapter-01/
+        Scene-001.md
+        Scene-002.md
+      Chapter-02/
+        Scene-001.md
+    Act-02/
+      Chapter-01/
+        Scene-001.md
+
+  outline/
+    arc-general.md
+    Act-01/
+      chapter-beats.md
+      scene-beats.md
+    Act-02/
+      chapter-beats.md
+
+  lore/
+    characters/
+      protagonista.md
+      antagonista.md
+    places/
+      ciudad-principal.md
+      region-norte.md
+    systems/
+      magia.md
+      politica.md
+    timeline.md
+
+  assets/
+    references/
+    images/
+
+  .trama.index.json
+```
+
+## Prompt
+
+Ya tengo un proyecto, no quiero que geners el proyecto entero, sólo algunos archivos
+Genera (en español, pero respetando la nomenclatura de los directorios) artículos de {}
+No escribas nada más en la respuesta a parte de los archivos en ese formato. No lo escribas en diferentes bloques de las 3 `, el importador usa un solo paste y espera encontrar todos los archivos juntos sin otros separadores distintos a los especificados.
 
 ## Complete Example
 

@@ -145,10 +145,10 @@ export class DocumentRepository {
     return buildRenameResult(normalizedPath, nextRelativePath)
   }
 
-async deleteDocument(projectRoot: string, relativePath: string): Promise<{ path: string; deletedAt: string }> {
+  async deleteDocument(projectRoot: string, relativePath: string): Promise<{ path: string; deletedAt: string }> {
     const normalizedPath = validateRelativePath(relativePath)
     if (!normalizedPath.endsWith('.md')) throw new Error('Only markdown files are supported')
-    const fullPath = resolveProjectPath(projectRoot, relativePath)
+    const fullPath = resolveProjectPath(projectRoot, normalizedPath)
     await rm(fullPath)
     return { path: normalizeRelative(normalizedPath), deletedAt: new Date().toISOString() }
   }

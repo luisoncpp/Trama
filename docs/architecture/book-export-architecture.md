@@ -13,7 +13,7 @@ book-export-service.ts          — Orquestador: compila capítulos, sanitiza, d
 ├── book-export-order.ts        — Ordena archivos por índice corkboardOrder
 ├── book-export-sanitize.ts     — Elimina frontmatter, normaliza saltos
 ├── book-export-directives.ts   — Parsea directivas layout (center/spacer/pagebreak)
-├── book-export-image-utils.ts  — Resolve paths, carga bytes, parsea data URLs
+├── book-export-image-utils.ts  — Resolve paths, carga bytes, parsea data URLs, lee dimensiones PNG/JPEG, escala para DOCX, extrae referencias markdown
 │
 ├── book-export-renderers.ts    — Modelo común BookExportChapter + renderer HTML/Markdown
 │
@@ -146,6 +146,11 @@ El fallback a `StandardFonts` puede fallar con caracteres no-WinAnsi (ej. acento
 
 ## Imágenes en PDF
 
+**Reference-style e inline**:
+- Se detectan tanto `![alt](url)` como `![][ref]` / `![alt][ref]` / `![ref]`
+- Las referencias se extraen una sola vez por capítulo (`extractImageReferences`)
+- Las líneas de definición `[ref]: url` se omiten del output
+
 **Data URLs (base64)**:
 - Detectadas por prefijo `data:image/`
 - NO pasan por `path.resolve()` — se parsean directamente
@@ -165,6 +170,23 @@ scale = min(
 )
 ```
 Restricciones: no más ancho que el área printable, no más alto que 300px, sin escalar si ya es menor.
+
+---
+
+## Imágenes en DOCX
+
+**Reference-style e inline**:
+- Se detectan tanto `![alt](url)` como `![][ref]` / `![alt][ref]` / `![ref]`
+- Las referencias se extraen una sola vez por capítulo (`extractImageReferences`)
+- Las líneas de definición `[ref]: url` se omiten del output
+
+**Dimensiones**:
+- Se leen los bytes reales del PNG/JPEG (`getImageDimensions`)
+- Se calcula tamaño en **píxeles** (no EMU) limitando a 600×800 px máximo
+- Se preserva el aspect ratio; imágenes pequeñas no se escalan hacia arriba
+- Fallback: 500×300 px cuando no se pueden leer las dimensiones
+
+**Nota de implementación**: la librería `docx` recibe `transformation` en píxeles y convierte internamente a EMU. Pasar EMU directamente produce imágenes gigantescas o invisibles en lectores como LibreOffice y Calibre.
 
 ---
 
@@ -202,9 +224,17 @@ Línea nueva cuando cursorY < MARGIN → addPage() automático (ensureLineCapaci
 - Pagebreak + variante HTML (`<!-- pagebreak -->`)
 - Data URLs en PDF (base64 embebido)
 - Imágenes locales en PDF
+- Imágenes reference-style en PDF
 - Center directives en headings y párrafos
 - Heading levels en DOCX
+- Imágenes reference-style en DOCX (data URL y local path)
 - Imágenes en EPUB (data URL + local path con materialización a temp)
+
+`tests/book-export-image-utils.test.ts` cubre:
+- Lectura de dimensiones PNG/JPEG desde bytes
+- Cálculo de tamaño DOCX con preservación de aspect ratio y límites
+- Extracción de referencias markdown
+- Detección de líneas de definición de referencia
 
 ---
 
@@ -214,9 +244,9 @@ Línea nueva cuando cursorY < MARGIN → addPage() automático (ensureLineCapaci
 |---------|-------|-------|
 | `markdown` | concatenación | Directivas removidas del output |
 | `html` | marked + template | Directivas convertidas a CSS classes |
-| `docx` | `docx` package | Heading styles, pagebreak como 2 líneas en blanco, imágenes via ImageRun |
+| `docx` | `docx` package | Heading styles, pagebreak como 2 líneas en blanco, imágenes reference-style + inline via `ImageRun` con dimensiones reales (píxeles, no EMU) |
 | `epub` | `epub-gen` | Data URLs materializadas a archivos temporales con path `file://` |
-| `pdf` | `pdf-lib` | Renderer dedicado, fuente Unicode embebida, layout state-driven; **no recibe metadata aún** (ver sección Metadata) |
+| `pdf` | `pdf-lib` | Renderer dedicado, fuente Unicode embebida, layout state-driven; imágenes reference-style + inline; **no recibe metadata aún** (ver sección Metadata) |
 
 ---
 
@@ -225,6 +255,8 @@ Línea nueva cuando cursorY < MARGIN → addPage() automático (ensureLineCapaci
 - **`WinAnsi cannot encode`**: Fuente del sistema no disponible → fallback a StandardFonts → falla en Unicode. Fix: asegurar que `@pdf-lib/fontkit` encuentra fuente serif del sistema.
 - **Data URL corrompida**: `path.resolve()` aplicado a `data:image/...` → ruta absoluta inválida. Fix: check `startsWith('data:image/')` antes de path resolution.
 - **Center regression**: `drawHeading()` no recibía `centered` flag → headings ignoraban directivas de centrado. Fix: pasó `centered` a `drawHeading()` y calculó `x` igual que párrafos.
+- **Imágenes reference-style ignoradas en DOCX**: el renderer solo parseaba `![alt](url)`, por lo que `![][ref]` + `[ref]: url` se renderizaba como texto plano. Fix: `extractImageReferences` + `extractImageInfo` soportan inline, explicit-ref e implicit-ref; las líneas de definición se skippean.
+- **DOCX ImageRun con EMU en lugar de píxeles**: pasar EMU directamente a `transformation` produce imágenes gigantescas (página entera en Calibre) o invisibles (LibreOffice). Fix: `calculateDocxImageSize` retorna píxeles; la librería `docx` hace la conversión interna a EMU.
 
 ---
 

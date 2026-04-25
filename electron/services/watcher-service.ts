@@ -50,6 +50,10 @@ export class WatcherService {
     this.watcher.on('add', (filePath) => handle('add', filePath))
     this.watcher.on('change', (filePath) => handle('change', filePath))
     this.watcher.on('unlink', (filePath) => handle('unlink', filePath))
+    this.watcher.on('error', (error) => {
+      if ((error as NodeJS.ErrnoException).code === 'EINVAL') return
+      console.error('[WatcherService] chokidar error:', error)
+    })
   }
 
   markInternalWrite(relativePath: string): void {

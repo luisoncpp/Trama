@@ -1,5 +1,5 @@
-import path from 'node:path'
 import { readdir } from 'node:fs/promises'
+import path from 'node:path'
 import type { TreeItem } from '../../src/shared/ipc.js'
 
 const IGNORED_DIRECTORIES = new Set([

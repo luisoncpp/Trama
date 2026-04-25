@@ -1,7 +1,7 @@
 import path from 'node:path'
 import { AlignmentType, Document, HeadingLevel, ImageRun, Packer, Paragraph, TextRun } from 'docx'
 import { parseDirectiveLine } from './book-export-directives.js'
-import { loadImageBytes, resolveImagePath } from './book-export-image-utils.js'
+import { loadImageBytes, resolveImagePath, extractImageReferences, extractImageInfo, isReferenceDefinitionLine, getImageDimensions, calculateDocxImageSize } from './book-export-image-utils.js'
 import type { BookExportChapter, BookExportMetadata } from './book-export-renderers.js'
 
 function stripInlineMarkdown(text: string): string {
@@ -13,8 +13,6 @@ function stripInlineMarkdown(text: string): string {
     .replace(/^#{1,6}\s+/g, '')
     .trim()
 }
-
-const IMAGE_LINE_PATTERN = /^!\[([^\]]*)\]\(([^)]+)\)$/
 
 function handleDirective(dir: ReturnType<typeof parseDirectiveLine>, paragraphs: Paragraph[]): boolean {
   if (!dir) return false
@@ -28,18 +26,19 @@ function handleDirective(dir: ReturnType<typeof parseDirectiveLine>, paragraphs:
   return true
 }
 
-function extractImagePath(line: string): string | null {
-  const match = line.trim().match(IMAGE_LINE_PATTERN)
-  return match ? match[2] : null
-}
-
 function createImageParagraph(bytes: Uint8Array, type: string): Paragraph {
+  const docxType = type === 'png' ? 'png' : 'jpg'
+  const dimensions = getImageDimensions(bytes, type === 'png' ? 'png' : 'jpeg')
+  const size = dimensions
+    ? calculateDocxImageSize(dimensions)
+    : { width: 500, height: 300 }
+
   return new Paragraph({
     children: [
       new ImageRun({
         data: bytes,
-        type: type === 'png' ? 'png' : 'jpg',
-        transformation: { width: 500, height: 300 },
+        type: docxType,
+        transformation: { width: size.width, height: size.height },
       }),
     ],
   })
@@ -78,6 +77,7 @@ async function processLine(
   projectRoot: string,
   chapterDir: string,
   paragraphs: Paragraph[],
+  references: Map<string, string>,
 ): Promise<{ centered: boolean; isPagebreak: boolean }> {
   const directive = parseDirectiveLine(line)
   if (directive) {
@@ -87,9 +87,13 @@ async function processLine(
     return { centered, isPagebreak: handled && directive.kind === 'pagebreak' }
   }
 
-  const imagePath = extractImagePath(line)
-  if (imagePath) {
-    const resolvedPath = await resolveImagePath(imagePath, projectRoot, chapterDir)
+  if (isReferenceDefinitionLine(line)) {
+    return { centered, isPagebreak: false }
+  }
+
+  const imageInfo = extractImageInfo(line, references)
+  if (imageInfo) {
+    const resolvedPath = await resolveImagePath(imageInfo.source, projectRoot, chapterDir)
     const { bytes, type } = await loadImageBytes(resolvedPath)
     if (bytes && type) {
       try {
@@ -124,11 +128,12 @@ async function chapterParagraphs(
 ): Promise<Paragraph[]> {
   const paragraphs: Paragraph[] = []
   const chapterDir = path.dirname(chapter.path)
+  const references = extractImageReferences(chapter.content)
   let centered = false
   let lastWasPagebreak = false
 
   for (const line of chapter.content.split('\n')) {
-    const result = await processLine(line, centered, projectRoot, chapterDir, paragraphs)
+    const result = await processLine(line, centered, projectRoot, chapterDir, paragraphs, references)
     centered = result.centered
     lastWasPagebreak = result.isPagebreak
   }

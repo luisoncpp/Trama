@@ -31,19 +31,15 @@ interface PdfPageContext {
 }
 
 function drawWrappedParagraph(text: string, centered: boolean, drawLine: (line: PdfTextToken[], centered: boolean) => void, state: PdfLayoutState, measure: (line: PdfTextToken[]) => number) {
-  console.log(`Drawing paragraph with centered=${centered}:`, text)
   const lines = wrapTokens(inlineTokens(text), PAGE_WIDTH - MARGIN * 2, measure)
-  console.log(`Wrapped paragraph into ${lines.length} lines`)
   if (lines.length === 0) {
     state.cursorY -= LINE_HEIGHT
     return
   }
 
   for (const line of lines) {
-    console.log(`Drawing line with ${line.length} tokens:`, line)
     drawLine(line, centered)
   }
-  console.log(`Finished drawing paragraph`)
 }
 
 function resetCursor(state: PdfLayoutState) {

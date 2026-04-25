@@ -400,6 +400,8 @@ Core and regression suites:
   - Book export sanitize coverage: frontmatter/tag removal, markdown-only comment stripping, and whitespace normalization.
 - `tests/book-export-renderers.test.ts`
   - Renderer coverage for markdown/html/docx/epub/pdf outputs, including directive conversion and binary artifact generation.
+- `tests/book-export-image-utils.test.ts`
+  - Image utility coverage: PNG/JPEG dimension parsing from bytes, DOCX proportional size calculation, and markdown reference-style image extraction.
 - `tests/use-ai-export.test.ts`
   - Renderer export hook coverage for IPC call shape, clipboard copy, and error state handling.
 - `tests/folder-rename-repository.test.ts`

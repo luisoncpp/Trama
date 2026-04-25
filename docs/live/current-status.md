@@ -71,9 +71,9 @@ Implemented now:
 - Book export dialog metadata support: export modal now accepts optional `title` and `author` fields, propagated to format renderers that support document metadata.
 - Book export PDF hardening: renderer now embeds Unicode-capable system serif fonts when available (via `@pdf-lib/fontkit`), preserves inline bold markdown in body text, accepts both canonical and HTML-variant layout directives (`pagebreak/center/spacer`), avoids trailing blank pages between chapters, and embeds images from both local files and data URLs (PNG/JPG).
 - ZuluPad import: file-first import of `.zulu` XML pages into project folders (default `lore/`). Options: target folder and configurable tag generation (none / single-word titles / all titles). Parses CDATA-wrapped content, creates markdown files with YAML frontmatter, and avoids collision with auto-numbered suffixes.
-- Book export DOCX hardening: no longer adds chapter title headings at section start; replaces page-break markers with 2 blank lines between sections (unless section ends with explicit pagebreak); now embeds images via `ImageRun` (local files and data URLs).
+- Book export DOCX hardening: no longer adds chapter title headings at section start; replaces page-break markers with 2 blank lines between sections (unless section ends with explicit pagebreak); now embeds images via `ImageRun` (local files and data URLs); supports reference-style images (`![][ref]`); reads real PNG/JPEG dimensions and scales proportionally to page width (max 600 px) using pixel units for `ImageRun.transformation`.
 - Book export image handling refactor: extracted common image utilities into `book-export-image-utils.ts` (`resolveImagePath`, `loadImageBytes`, `parseDataUrl`, `bytesToDataUrl`) and added EPUB preprocessing that materializes data-url images to temporary files and rewrites markdown image sources to `file://` paths for `epub-gen` compatibility (including Windows drive-letter path handling).
-- Book export regression expansion: `tests/book-export-renderers.test.ts` now covers image flows across HTML (local -> data URL conversion), PDF (data URL + local), DOCX (embedded `word/media` artifacts), and EPUB (data URL + local path materialization).
+- Book export regression expansion: `tests/book-export-renderers.test.ts` now covers image flows across HTML (local -> data URL conversion), PDF (data URL + local), DOCX (embedded `word/media` artifacts + reference-style images), and EPUB (data URL + local path materialization). `tests/book-export-image-utils.test.ts` covers PNG/JPEG dimension parsing and DOCX size calculation.
 
 Not implemented yet (planned in later phases):
 - Templates (WS3).
@@ -86,7 +86,7 @@ WS2 next step:
 Current verification baseline:
 - `npm run build` passes.
 - `npm run lint` passes (pre-existing long-line/function-length issues in unrelated files).
-- `npm run test` passes (46 suites, 226 tests).
+- `npm run test` passes (59 suites, 403 tests).
 - `npm run test:smoke` passes.
 
 **Running tests**: In sandboxed agent environments, `npm test` may fail due to environment restrictions. Use the PowerShell script instead — see `docs/dev-workflow.md` for test execution details.
@@ -126,7 +126,7 @@ Additional regression checks in suite include:
 
 - `npm run build` ✅ passes
 - `npm run lint` ✅ passes
-- `npm run test` ✅ passes (21 suites, 97 tests)
+- `npm run test` ✅ passes (59 suites, 403 tests)
 - `npm run test:smoke` ✅ passes
 
 **Next phase**: Phase 4 — Wiki tag links (WS1 ✅), folder operations (WS2 ✅), templates (WS3), AI import/export (WS5 ✅). See `docs/plan/phase-4-detailed-plan.md` for full plan.

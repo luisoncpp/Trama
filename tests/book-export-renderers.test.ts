@@ -165,6 +165,27 @@ describe('book export renderers', () => {
     expect(pdfWithImages.byteLength).toBeGreaterThan(100)
   })
 
+  it('renders pdf with reference-style images', async () => {
+    const fixture = await createProjectWithImageFixture()
+    const pdfWithRefImages = await renderPdfBook([
+      {
+        path: 'book/Act-01/chapter-images.md',
+        title: 'Images',
+        content: [
+          'Texto antes',
+          '![][pixel]',
+          'Texto despues',
+          '',
+          `[pixel]: ${fixture.imageRelativeFromChapter}`,
+        ].join('\n'),
+      },
+    ], fixture.projectRoot)
+
+    const doc = await PDFDocument.load(pdfWithRefImages)
+    expect(doc.getPageCount()).toBeGreaterThanOrEqual(1)
+    expect(pdfWithRefImages.byteLength).toBeGreaterThan(100)
+  })
+
   it('renders docx with embedded local images', async () => {
     const fixture = await createProjectWithImageFixture()
     const docx = await renderDocxBook([
@@ -253,6 +274,65 @@ describe('book export renderers', () => {
     expect(documentXml).toMatch(/Heading1/)
     expect(documentXml).toMatch(/Heading2/)
     expect(documentXml).toMatch(/Heading3/)
+  })
+
+  it('renders docx with reference-style data-url images', async () => {
+    const docx = await renderDocxBook([
+      {
+        path: 'book/chapter-images.md',
+        title: 'Chapter Images',
+        content: [
+          'Texto antes',
+          '![][image1]',
+          'Texto despues',
+          '',
+          '[image1]: <data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==>',
+        ].join('\n'),
+      },
+    ], {
+      title: 'DOCX Ref Image Test',
+      author: 'QA Team',
+    })
+
+    const docxBuffer = Buffer.from(docx)
+    expect(docxBuffer.includes(Buffer.from('word/media/'))).toBe(true)
+
+    const { default: JSZip } = await import('jszip')
+    const zip = await JSZip.loadAsync(docx)
+    const documentXml = await zip.file('word/document.xml')?.async('string')
+    expect(documentXml).toBeDefined()
+    expect(documentXml).toContain('Texto antes')
+    expect(documentXml).toContain('Texto despues')
+    expect(documentXml).not.toContain('[image1]:')
+  })
+
+  it('renders docx with reference-style local images', async () => {
+    const fixture = await createProjectWithImageFixture()
+    const docx = await renderDocxBook([
+      {
+        path: 'book/Act-01/chapter-images.md',
+        title: 'Chapter Images',
+        content: [
+          'Texto',
+          '![][pixel]',
+          'Fin',
+          '',
+          `[pixel]: ${fixture.imageRelativeFromChapter}`,
+        ].join('\n'),
+      },
+    ], {
+      title: 'DOCX Ref Local Image Test',
+      author: 'QA Team',
+    }, fixture.projectRoot)
+
+    const docxBuffer = Buffer.from(docx)
+    expect(docxBuffer.includes(Buffer.from('word/media/'))).toBe(true)
+
+    const { default: JSZip } = await import('jszip')
+    const zip = await JSZip.loadAsync(docx)
+    const documentXml = await zip.file('word/document.xml')?.async('string')
+    expect(documentXml).toBeDefined()
+    expect(documentXml).not.toContain('[pixel]:')
   })
 
   it('renders epub file to disk', async () => {
