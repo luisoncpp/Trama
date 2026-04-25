@@ -2,7 +2,13 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'preact/hooks'
 import type Quill from 'quill'
 import { FindOverlay, type FindMatchBounds } from './rich-markdown-editor-find-overlay'
 import { getActiveMatchBounds, useActiveMatchOverlayEffect } from './rich-markdown-editor-find-visual'
-import { mapPlainTextIndexToQuillIndex } from './rich-markdown-editor-tag-overlay'
+import {
+  isModF,
+  isModH,
+  formatMatchLabel,
+  useSearchState,
+  useReplaceActions,
+} from './rich-markdown-editor-find-state'
 
 interface UseRichEditorFindParams {
   documentId: string | null
@@ -10,103 +16,19 @@ interface UseRichEditorFindParams {
   editorRef: { current: Quill | null }
 }
 
-interface SearchState {
-  query: string
-  matches: number[]
-  activeMatch: number
-}
-
-function getDocumentText(editor: Quill): string {
-  const length = Math.max(0, editor.getLength() - 1)
-  return editor.getText(0, length)
-}
-
-function findAllMatches(text: string, query: string): number[] {
-  const normalizedQuery = query.trim().toLocaleLowerCase()
-  if (!normalizedQuery) {
-    return []
-  }
-
-  const normalizedText = text.toLocaleLowerCase()
-  const matches: number[] = []
-  let from = 0
-
-  while (from < normalizedText.length) {
-    const index = normalizedText.indexOf(normalizedQuery, from)
-    if (index < 0) {
-      break
-    }
-
-    matches.push(index)
-    from = index + normalizedQuery.length
-  }
-
-  return matches
-}
-
-function isModF(event: KeyboardEvent): boolean {
-  return (event.ctrlKey || event.metaKey) && !event.altKey && !event.shiftKey && event.key.toLowerCase() === 'f'
-}
-
-function useSearchState(editorRef: { current: Quill | null }) {
-  const [state, setState] = useState<SearchState>({ query: '', matches: [], activeMatch: 0 })
-
-  const selectMatch = (matches: number[], activeMatch: number, queryLength: number) => {
-    const editor = editorRef.current
-    if (!editor || matches.length === 0 || queryLength <= 0) {
-      return
-    }
-
-    const boundedIndex = Math.max(0, Math.min(activeMatch, matches.length - 1))
-    const plainStart = matches[boundedIndex]
-    const quillStart = mapPlainTextIndexToQuillIndex(editor, plainStart)
-    const quillEnd = mapPlainTextIndexToQuillIndex(editor, plainStart + queryLength)
-    editor.setSelection(quillStart, Math.max(0, quillEnd - quillStart), 'silent')
-  }
-
-  const updateMatches = (nextQuery: string) => {
-    const editor = editorRef.current
-    if (!editor) {
-      return
-    }
-
-    const matches = findAllMatches(getDocumentText(editor), nextQuery)
-    setState({ query: nextQuery, matches, activeMatch: 0 })
-  }
-
-  const jumpMatch = (direction: 1 | -1) => {
-    const queryLength = state.query.trim().length
-    if (state.matches.length === 0 || queryLength === 0) {
-      return
-    }
-
-    const next = (state.activeMatch + direction + state.matches.length) % state.matches.length
-    setState((previous) => ({ ...previous, activeMatch: next }))
-    selectMatch(state.matches, next, queryLength)
-  }
-
-  const reset = () => {
-    setState({ query: '', matches: [], activeMatch: 0 })
-  }
-
-  return { state, updateMatches, jumpMatch, reset }
-}
-
 function useFindShortcutEffect({
   hostRef,
   editorRef,
-  onOpen,
+  onOpenFind,
+  onOpenReplace,
 }: {
   hostRef: { current: HTMLDivElement | null }
   editorRef: { current: Quill | null }
-  onOpen: () => void
+  onOpenFind: () => void
+  onOpenReplace: () => void
 }) {
-  useEffect(() => {
+  useEffect(/* listenFindReplaceShortcuts */ () => {
     const onWindowKeyDown = (event: KeyboardEvent) => {
-      if (!isModF(event)) {
-        return
-      }
-
       const host = hostRef.current
       const target = event.target
       const insideEditor = host != null && target instanceof Node && host.contains(target)
@@ -114,60 +36,50 @@ function useFindShortcutEffect({
         return
       }
 
-      event.preventDefault()
-      onOpen()
+      if (isModF(event)) {
+        event.preventDefault()
+        onOpenFind()
+        return
+      }
+
+      if (isModH(event)) {
+        event.preventDefault()
+        onOpenReplace()
+        return
+      }
     }
 
     window.addEventListener('keydown', onWindowKeyDown)
     return () => {
       window.removeEventListener('keydown', onWindowKeyDown)
     }
-  }, [editorRef, hostRef, onOpen])
+  }, [editorRef, hostRef, onOpenFind, onOpenReplace] /*Inputs for listenFindReplaceShortcuts*/)
 }
 
-function formatMatchLabel(state: SearchState): string {
-  if (!state.query.trim() || state.matches.length === 0) {
-    return '0/0'
-  }
+function useFindLifecycle({
+  hostRef,
+  editorRef,
+  isOpen,
+  state,
+  keepFindFocus,
+}: {
+  hostRef: { current: HTMLDivElement | null }
+  editorRef: { current: Quill | null }
+  isOpen: boolean
+  state: ReturnType<typeof useSearchState>['state']
+  keepFindFocus: () => void
+}) {
+  const [, setScrollTick] = useState(0)
 
-  return `${state.activeMatch + 1}/${state.matches.length}`
-}
-
-export function useRichEditorFind({ documentId, hostRef, editorRef }: UseRichEditorFindParams) {
-  const [isOpen, setIsOpen] = useState(false)
-  const [scrollTick, setScrollTick] = useState(0)
-  const { state, updateMatches, jumpMatch, reset } = useSearchState(editorRef)
-  const inputRef = useRef<HTMLInputElement | null>(null)
-  const matchLabel = useMemo(() => formatMatchLabel(state), [state])
-
-  const openFind = () => {
-    setIsOpen(true)
-    window.setTimeout(() => { inputRef.current?.focus(); inputRef.current?.select() }, 0)
-  }
-
-  const closeFind = () => { setIsOpen(false) }
-  const keepFindFocus = useCallback(() => window.setTimeout(() => inputRef.current?.focus(), 0), [])
-  const jumpPrevious = useCallback(() => {
-    jumpMatch(-1)
-    keepFindFocus()
-  }, [jumpMatch, keepFindFocus])
-  const jumpNext = useCallback(() => {
-    jumpMatch(1)
-    keepFindFocus()
-  }, [jumpMatch, keepFindFocus])
-
-  useEffect(() => { setIsOpen(false); reset() }, [documentId])
-
-  useEffect(() => {
+  useEffect(/* trackEditorScrollForBounds */ () => {
     if (!isOpen) return
     const container = hostRef.current?.querySelector('.ql-container')
     if (!container) return
     const onScroll = () => setScrollTick((t) => t + 1)
     container.addEventListener('scroll', onScroll, { passive: true })
     return () => { container.removeEventListener('scroll', onScroll) }
-  }, [isOpen, hostRef])
+  }, [isOpen, hostRef] /*Inputs for trackEditorScrollForBounds*/)
 
-  useFindShortcutEffect({ hostRef, editorRef, onOpen: openFind })
   useActiveMatchOverlayEffect({
     isOpen,
     state,
@@ -175,21 +87,76 @@ export function useRichEditorFind({ documentId, hostRef, editorRef }: UseRichEdi
     editorRef,
     keepFindFocus,
   })
+}
+
+function useFindBarActions({
+  inputRef,
+  jumpMatch,
+  keepFindFocus,
+}: {
+  inputRef: { current: HTMLInputElement | null }
+  jumpMatch: (direction: 1 | -1) => void
+  keepFindFocus: () => void
+}) {
+  const [isOpen, setIsOpen] = useState(false)
+  const [replaceMode, setReplaceMode] = useState(false)
+
+  const openFindWithMode = useCallback(/* openFindWithMode */ (withReplace: boolean) => {
+    setIsOpen(true)
+    setReplaceMode(withReplace)
+    window.setTimeout(() => { inputRef.current?.focus(); inputRef.current?.select() }, 0)
+  }, [/*Inputs for openFindWithMode — stable*/])
+
+  const openFind = useCallback(/* openFind */ () => openFindWithMode(false), [openFindWithMode] /*Inputs for openFind*/)
+  const openReplace = useCallback(/* openReplace */ () => openFindWithMode(true), [openFindWithMode] /*Inputs for openReplace*/)
+  const closeFind = useCallback(/* closeFind */ () => { setIsOpen(false); setReplaceMode(false) }, [/*Inputs for closeFind — stable*/])
+
+  const toggleReplaceMode = useCallback(/* toggleReplaceMode */ () => {
+    setReplaceMode((prev) => !prev)
+    keepFindFocus()
+  }, [keepFindFocus] /*Inputs for toggleReplaceMode*/)
+
+  const jumpPrevious = useCallback(/* jumpPrevious */ () => {
+    jumpMatch(-1)
+    keepFindFocus()
+  }, [jumpMatch, keepFindFocus] /*Inputs for jumpPrevious*/)
+  const jumpNext = useCallback(/* jumpNext */ () => {
+    jumpMatch(1)
+    keepFindFocus()
+  }, [jumpMatch, keepFindFocus] /*Inputs for jumpNext*/)
+
+  return { isOpen, replaceMode, openFind, openReplace, closeFind, toggleReplaceMode, jumpPrevious, jumpNext }
+}
+
+export function useRichEditorFind({ documentId, hostRef, editorRef }: UseRichEditorFindParams) {
+  const [replaceValue, setReplaceValue] = useState('')
+  const { state, updateMatches, setMatches, jumpMatch, selectMatch, stateRef } = useSearchState(editorRef)
+  const inputRef = useRef<HTMLInputElement | null>(null)
+  const matchLabel = useMemo(/* formatMatchLabel */ () => formatMatchLabel(state), [state] /*Inputs for formatMatchLabel*/)
+  const keepFindFocus = useCallback(/* keepFindFocus */ () => window.setTimeout(() => inputRef.current?.focus(), 0), [/*Inputs for keepFindFocus — stable*/])
+
+  const { isOpen, replaceMode, openFind, openReplace, closeFind, toggleReplaceMode, jumpPrevious, jumpNext } =
+    useFindBarActions({ inputRef, jumpMatch, keepFindFocus })
+
+  const { replaceCurrent, replaceAll } = useReplaceActions({
+    editorRef, stateRef, replaceValue, keepFindFocus, setMatches, selectMatch,
+  })
+
+  useEffect(/* resetFindOnDocumentChange */ () => { closeFind(); setReplaceValue('') }, [documentId] /*Inputs for resetFindOnDocumentChange*/)
+
+  useFindShortcutEffect({ hostRef, editorRef, onOpenFind: openFind, onOpenReplace: openReplace })
+  useFindLifecycle({ hostRef, editorRef, isOpen, state, keepFindFocus })
 
   let activeBounds: FindMatchBounds | null = null
   if (isOpen && state.matches.length > 0 && state.query.trim()) {
     const host = hostRef.current
     const editor = editorRef.current
     if (host && editor) {
-      const index = state.matches[state.activeMatch]
-      const queryLength = state.query.trim().length
-      activeBounds = getActiveMatchBounds(host, editor, index, queryLength)
+      activeBounds = getActiveMatchBounds(host, editor, state.matches[state.activeMatch], state.query.trim().length)
     }
   }
 
-  if (!isOpen) {
-    return null
-  }
+  if (!isOpen) return null
 
   return (
     <FindOverlay
@@ -197,10 +164,16 @@ export function useRichEditorFind({ documentId, hostRef, editorRef }: UseRichEdi
       matchLabel={matchLabel}
       inputRef={inputRef}
       activeBounds={activeBounds}
+      replaceMode={replaceMode}
+      replaceValue={replaceValue}
       onQueryChange={updateMatches}
+      onReplaceValueChange={setReplaceValue}
       onClose={closeFind}
       onJumpPrevious={jumpPrevious}
       onJumpNext={jumpNext}
+      onReplace={replaceCurrent}
+      onReplaceAll={replaceAll}
+      onToggleReplaceMode={toggleReplaceMode}
     />
   )
 }

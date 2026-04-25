@@ -114,6 +114,23 @@ Before writing any code that interacts with Quill's API (coordinates, bounds, se
 - Keep `electron/ipc.ts` thin; move logic into handlers/services.
 - lint limits are meant to encourage to break down long files and long functions, and avoid code repetition, NOT to compact white spaces/indentation.
 
+## Hook naming convention (mandatory)
+
+Every `useEffect`, `useCallback`, `useMemo`, and similar hook must include a descriptive name comment and dependency documentation:
+
+```ts
+// useEffect pattern
+useEffect(/* descriptiveEffectName */ () => { ... }, [dep1, dep2] /*Inputs for descriptiveEffectName*/)
+
+// useCallback pattern
+const fn = useCallback(/* descriptiveFnName */ () => { ... }, [dep1, dep2] /*Inputs for descriptiveFnName*/)
+
+// useMemo pattern
+const value = useMemo(/* descriptiveMemoName */ () => { ... }, [dep1, dep2] /*Inputs for descriptiveMemoName*/)
+```
+
+When there are no dependencies, use `/*Inputs for name — stable*/` to make the intent explicit.
+
 ## Dev script behavior to remember
 
 - `npm run dev` uses `concurrently --kill-others --success command-electron`.

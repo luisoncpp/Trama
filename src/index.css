@@ -1642,6 +1642,32 @@ select {
   color: var(--text-muted);
 }
 
+.editor-findbar__button--toggle-replace {
+  color: var(--text-muted);
+  padding: 4px 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 2px;
+}
+
+.editor-findbar__button--toggle-replace:hover {
+  color: var(--accent);
+  border-color: var(--accent-border);
+  background: var(--surface-hover-bg);
+}
+
+.editor-findbar--replace {
+  flex-direction: column;
+  gap: 4px;
+}
+
+.editor-findbar__row {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
 .rich-editor .ql-toolbar.ql-snow {
   background: var(--toolbar-bg);
   border: 0;

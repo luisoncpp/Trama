@@ -226,9 +226,11 @@ Mandatory doc navigation for new chats: start with `docs/START-HERE.md` — it p
 - `src/features/project-editor/components/rich-markdown-editor-commands.ts`
   - Handles workspace context-menu commands (`paste-markdown`, `copy-as-markdown`) and clipboard serialization/paste flow for the rich editor.
 - `src/features/project-editor/components/rich-markdown-editor-find.tsx`
-  - In-document find hook: Ctrl/Cmd+F activation, query/match state, and integration between floating UI and editor selection.
+  - In-document find hook: Ctrl/Cmd+F (find) and Ctrl/Cmd+H (find+replace) activation, query/match state, replace actions, and integration between floating UI and editor selection.
+- `src/features/project-editor/components/rich-markdown-editor-find-state.ts`
+  - Shared find/replace state helpers: search state hook (`useSearchState`), replace actions hook (`useReplaceActions`), Quill text helpers, and keyboard modifier detection.
 - `src/features/project-editor/components/rich-markdown-editor-find-overlay.tsx`
-  - Floating find bar UI (input, counter, prev/next, close) plus active-match overlay rendering.
+  - Floating find bar UI (find input, replace input, counter, prev/next, replace, replace all, close, toggle-replace) plus active-match overlay rendering.
 - `src/features/project-editor/components/rich-markdown-editor-find-visual.ts`
   - Active-match visual sync helpers: computes Quill bounds and keeps highlighted match visible while preserving input focus.
   - Includes focus-mode-aware centering via `handleFocusModeMatch()`.
