@@ -5,7 +5,7 @@ import path from 'node:path'
 import { createRequire } from 'node:module'
 import type { BookExportChapter, BookExportMetadata } from './book-export-renderers.js'
 import { renderChapterHtmlFragment } from './book-export-renderers.js'
-import { parseDataUrl, resolveImagePath } from './book-export-image-utils.js'
+import { parseDataUrl, resolveImagePath, extractImageReferences, extractImageInfo } from './book-export-image-utils.js'
 
 const require = createRequire(import.meta.url)
 
@@ -29,8 +29,6 @@ type EpubInstance = {
 
 type EpubConstructor = new (options: EpubOptions) => EpubInstance
 
-const IMAGE_MARKDOWN_PATTERN = /!\[([^\]]*)\]\(([^)]+)\)/g
-
 function escapeRegex(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 }
@@ -50,12 +48,13 @@ async function convertChapterImagesToEpubSources(
 ): Promise<string> {
   const chapterDir = path.dirname(chapter.path)
   let content = chapter.content
-  const imageMatches = Array.from(chapter.content.matchAll(IMAGE_MARKDOWN_PATTERN))
+  const references = extractImageReferences(content)
 
-  for (const match of imageMatches) {
-    const altText = match[1]
-    const source = match[2]
+  for (const line of content.split('\n')) {
+    const imageInfo = extractImageInfo(line, references)
+    if (!imageInfo) continue
 
+    const { alt, source } = imageInfo
     if (source.startsWith('http://') || source.startsWith('https://') || source.startsWith('file://')) {
       continue
     }
@@ -77,9 +76,9 @@ async function convertChapterImagesToEpubSources(
       }
 
       const fileUrl = toEpubFileUrl(imageFilePath)
-      const replacement = `![${altText}](${fileUrl})`
-      const exactPattern = new RegExp(escapeRegex(match[0]), 'g')
-      content = content.replace(exactPattern, () => replacement)
+      const inlineImage = `![${alt}](${fileUrl})`
+      const exactPattern = new RegExp(escapeRegex(line.trim()), 'g')
+      content = content.replace(exactPattern, () => inlineImage)
     } catch (error) {
       console.warn(
         `Failed to prepare image source for EPUB: ${source}`,
