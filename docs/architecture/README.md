@@ -27,6 +27,7 @@ Canonical technical guides — the single source of truth for each subsystem's d
 | `tree-building-and-implicit-folders.md` | Implicit folder derivation, path normalization, ordering rules | |
 | `wiki-tag-links-architecture.md` | Tag index service, matching model, overlay rendering, IPC contract | |
 | `window-close-architecture.md` | Window close flow: `close` handler, dirty-state IPC cache, `__tramaSaveAll` bridge, promise-chain cancel pattern | |
+| `zulu-import-architecture.md` | ZuluPad file import pipeline: parser, encoding detection, tag generation, line ending normalization, IPC contract, UI flow | |
 
 ## Historical context
 

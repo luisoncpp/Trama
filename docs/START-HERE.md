@@ -63,6 +63,7 @@ Open these only when relevant:
 - AI import/export architecture (clipboard pipeline, format grammar, path validation): `docs/architecture/ai-import-export-architecture.md`
 - Sidebar path scoping model (section-relative ↔ project-relative conversion): `docs/architecture/sidebar-path-scoping-model.md`
 - Project index data model and reconciliation: `docs/architecture/project-index-architecture.md`
+- ZuluPad import pipeline (parser, encoding, tags, line endings): `docs/architecture/zulu-import-architecture.md`
 
 ## Fast routing by task
 

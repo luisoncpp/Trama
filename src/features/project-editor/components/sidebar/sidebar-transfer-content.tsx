@@ -14,6 +14,7 @@ interface SidebarTransferContentProps {
   onImport: () => void
   onExport: () => void
   onExportBook: (format: BookExportFormat) => void
+  onImportZulu: () => void
 }
 
 function SidebarInterchangeActions({ disabled, onImport, onExport }: Pick<SidebarTransferContentProps, 'disabled' | 'onImport' | 'onExport'>) {
@@ -70,7 +71,7 @@ function SidebarBookExportActions({ disabled, onExportBook }: Pick<SidebarTransf
   )
 }
 
-export function SidebarTransferContent({ disabled, onImport, onExport, onExportBook }: SidebarTransferContentProps) {
+export function SidebarTransferContent({ disabled, onImport, onExport, onExportBook, onImportZulu }: SidebarTransferContentProps) {
   return (
     <div class="sidebar-panel-content">
       <aside class="workspace-panel workspace-panel--sidebar">
@@ -79,6 +80,25 @@ export function SidebarTransferContent({ disabled, onImport, onExport, onExportB
             <p class="workspace-panel__eyebrow">Import / Export</p>
           </div>
         </div>
+        <div class="project-menu">
+          <label class="project-menu__field">
+            <span>ZuluPad import</span>
+            <span class="project-menu__field-note">
+              Import pages from a .zulu file exported from ZuluPad.
+            </span>
+          </label>
+          <div class="project-menu__actions">
+            <button
+              type="button"
+              class="editor-button editor-button--secondary"
+              disabled={disabled}
+              onClick={onImportZulu}
+            >
+              Import ZuluPad File
+            </button>
+          </div>
+        </div>
+
         <div class="project-menu">
           <label class="project-menu__field">
             <span>Project interchange</span>

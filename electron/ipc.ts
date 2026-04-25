@@ -23,6 +23,8 @@ import {
   type AiImportRequest,
   type AiExportRequest,
   type BookExportRequest,
+  type ZuluImportPreviewRequest,
+  type ZuluImportRequest,
 } from '../src/shared/ipc.js'
 import {
   buildPingResponse,
@@ -48,6 +50,9 @@ import {
   handleTagResolve,
   handleReorderFiles,
   handleMoveFile,
+  handleZuluSelectFile,
+  handleZuluImportPreview,
+  handleZuluImport,
 } from './ipc/handlers/index.js'
 import { registerSpellcheckHandler } from './ipc/spellcheck.js'
 
@@ -159,6 +164,20 @@ function registerTagHandlers(ipcMain: IpcMain): void {
   ipcMain.handle(IPC_CHANNELS.tagResolve, (_event, payload) => handleTagResolve(payload))
 }
 
+function registerZuluHandlers(ipcMain: IpcMain): void {
+  ipcMain.handle(IPC_CHANNELS.zuluSelectFile, () => {
+    return handleZuluSelectFile()
+  })
+
+  ipcMain.handle(IPC_CHANNELS.zuluImportPreview, (_event, payload: ZuluImportPreviewRequest) => {
+    return handleZuluImportPreview(_event, payload)
+  })
+
+  ipcMain.handle(IPC_CHANNELS.zuluImport, (_event, payload: ZuluImportRequest) => {
+    return handleZuluImport(_event, payload)
+  })
+}
+
 export function registerIpcHandlers(ipcMain: IpcMain, getMainWindow: () => BrowserWindow | null): void {
   configureMainWindowResolver(getMainWindow)
   registerCoreHandlers(ipcMain)
@@ -166,6 +185,7 @@ export function registerIpcHandlers(ipcMain: IpcMain, getMainWindow: () => Brows
   registerSpellcheckHandler(ipcMain, getMainWindow)
   registerAiHandlers(ipcMain)
   registerTagHandlers(ipcMain)
+  registerZuluHandlers(ipcMain)
 
   ipcMain.handle(IPC_CHANNELS.notifyCloseState, (_event, payload: unknown) => {
     if (typeof payload === 'object' && payload !== null && 'hasUnsavedChanges' in payload) {

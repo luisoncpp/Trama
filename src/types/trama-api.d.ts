@@ -43,6 +43,11 @@ import type {
   MoveFolderRequest,
   MoveFolderResponse,
   NotifyCloseState,
+  ZuluImportPreviewRequest,
+  ZuluImportPreviewResponse,
+  ZuluImportRequest,
+  ZuluImportResponse,
+  ZuluSelectFileResponse,
 } from '../shared/ipc'
 import type { TagGetIndexResponse, TagResolveRequest, TagResolveResponse } from '../shared/ipc-tag'
 
@@ -77,6 +82,9 @@ declare global {
       moveFile(payload: MoveFileRequest): Promise<IpcEnvelope<MoveFileResponse>>
       moveFolder(payload: MoveFolderRequest): Promise<IpcEnvelope<MoveFolderResponse>>
       notifyCloseState(payload: NotifyCloseState): Promise<void>
+      zuluSelectFile(): Promise<IpcEnvelope<ZuluSelectFileResponse>>
+      zuluImportPreview(payload: ZuluImportPreviewRequest): Promise<IpcEnvelope<ZuluImportPreviewResponse>>
+      zuluImport(payload: ZuluImportRequest): Promise<IpcEnvelope<ZuluImportResponse>>
     }
   }
 }

@@ -22,4 +22,5 @@ export {
 } from './ai-handlers.js'
 export { handleBookExport } from './book-export-handler.js'
 export { handleTagGetIndex, handleTagResolve } from './tag-handlers.js'
+export { handleZuluSelectFile, handleZuluImportPreview, handleZuluImport } from './zulu-handlers.js'
 export { configureMainWindowResolver, shutdownIpcServices, getActiveTagIndexService } from '../../ipc-runtime.js'

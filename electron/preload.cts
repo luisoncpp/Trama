@@ -46,6 +46,11 @@ import {
   type SetFullscreenRequest,
   type SetFullscreenResponse,
   type SpellcheckSettingsResponse,
+  type ZuluImportPreviewRequest,
+  type ZuluImportPreviewResponse,
+  type ZuluImportRequest,
+  type ZuluImportResponse,
+  type ZuluSelectFileResponse,
 } from '../src/shared/ipc'
 import { type TagGetIndexResponse, type TagResolveRequest, type TagResolveResponse, tagGetIndexResponseSchema, tagResolveRequestSchema } from '../src/shared/ipc-tag'
 
@@ -163,6 +168,15 @@ const tramaApi = {
   },
   notifyCloseState(payload: NotifyCloseState): Promise<void> {
     return ipcRenderer.invoke(IPC_CHANNELS.notifyCloseState, payload)
+  },
+  zuluSelectFile(): Promise<IpcEnvelope<ZuluSelectFileResponse>> {
+    return ipcRenderer.invoke(IPC_CHANNELS.zuluSelectFile)
+  },
+  zuluImportPreview(payload: ZuluImportPreviewRequest): Promise<IpcEnvelope<ZuluImportPreviewResponse>> {
+    return ipcRenderer.invoke(IPC_CHANNELS.zuluImportPreview, payload)
+  },
+  zuluImport(payload: ZuluImportRequest): Promise<IpcEnvelope<ZuluImportResponse>> {
+    return ipcRenderer.invoke(IPC_CHANNELS.zuluImport, payload)
   },
 }
 

@@ -44,6 +44,7 @@ export interface SidebarPanelBodyProps {
   onDeleteFile: SidebarFileActions['onDeleteFile']
   onEditFileTags: SidebarFileActions['onEditFileTags']
   onImport: () => void
+  onImportZulu: () => void
   onExportBook: SidebarProjectContextProps['onExportBook']
   onExport: () => void
   onReorderFiles?: (folderPath: string, orderedIds: string[]) => Promise<void>
@@ -163,6 +164,7 @@ export function SidebarPanelBody(props: SidebarPanelBodyProps) {
       <SidebarTransferContent
         disabled={props.contentProps.loadingProject || !props.contentProps.apiAvailable}
         onImport={props.onImport}
+        onImportZulu={props.onImportZulu}
         onExportBook={props.onExportBook}
         onExport={props.onExport}
       />

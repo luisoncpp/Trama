@@ -1,9 +1,11 @@
 import { AiImportDialog } from './components/ai-import-dialog'
 import { AiExportDialog } from './components/ai-export-dialog'
 import { BookExportDialog } from './components/book-export-dialog'
+import { ZuluImportDialog } from './components/zulu-import-dialog'
 import { useAiImport } from './use-ai-import'
 import { useAiExport } from './use-ai-export'
 import { useBookExport } from './use-book-export'
+import { useZuluImport } from './use-zulu-import'
 
 interface ExportToastProps {
   message: string
@@ -28,9 +30,10 @@ interface ProjectEditorDialogsProps {
   aiImport: ReturnType<typeof useAiImport>
   bookExport: ReturnType<typeof useBookExport>
   aiExport: ReturnType<typeof useAiExport>
+  zuluImport: ReturnType<typeof useZuluImport>
 }
 
-function ProjectEditorDialogPortals({ rootPath, visibleFiles, aiImport, bookExport, aiExport }: ProjectEditorDialogsProps) {
+function ProjectEditorDialogPortals({ rootPath, visibleFiles, aiImport, bookExport, aiExport, zuluImport }: ProjectEditorDialogsProps) {
   const exportableFiles = visibleFiles.filter((path) => !path.endsWith('/'))
 
   return (
@@ -40,6 +43,14 @@ function ProjectEditorDialogPortals({ rootPath, visibleFiles, aiImport, bookExpo
         onClose={() => aiImport.setOpen(false)}
         onPreview={aiImport.handlePreview}
         onExecute={aiImport.handleExecute}
+        projectRoot={rootPath}
+      />
+      <ZuluImportDialog
+        open={zuluImport.open}
+        onClose={() => zuluImport.setOpen(false)}
+        onSelectFile={zuluImport.handleSelectFile}
+        onPreview={zuluImport.handlePreview}
+        onExecute={zuluImport.handleExecute}
         projectRoot={rootPath}
       />
       <AiExportDialog

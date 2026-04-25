@@ -736,6 +736,188 @@ select {
   color: var(--warning-text);
 }
 
+.zulu-import-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: var(--modal-overlay);
+}
+
+.zulu-import-dialog {
+  width: min(560px, calc(100vw - 32px));
+  max-height: 80vh;
+  padding: 16px;
+  border: 1px solid var(--border-strong);
+  border-radius: 12px;
+  background: var(--dialog-bg);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  overflow-y: auto;
+}
+
+.zulu-import-dialog__title {
+  margin: 0;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text-main);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.zulu-import-dialog__hint {
+  margin: 0;
+  font-size: 0.72rem;
+  color: var(--text-dim);
+}
+
+.zulu-import-dialog__hint code {
+  background: var(--surface-input-bg);
+  padding: 2px 6px;
+  border-radius: 6px;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+}
+
+.zulu-import-dialog__select-area {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.zulu-import-dialog__file-info {
+  display: flex;
+  gap: 8px;
+  font-size: 0.74rem;
+  color: var(--text-muted);
+}
+
+.zulu-import-dialog__file-info-label {
+  font-weight: 600;
+  min-width: 40px;
+}
+
+.zulu-import-dialog__file-info-value {
+  color: var(--text-main);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.zulu-import-dialog__field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 0.76rem;
+  color: var(--text-muted);
+}
+
+.zulu-import-dialog__input {
+  border: 1px solid var(--border-strong);
+  border-radius: 9px;
+  background: var(--surface-input-bg);
+  color: var(--text-main);
+  padding: 9px 10px;
+  font-size: 0.78rem;
+}
+
+.zulu-import-dialog__input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.zulu-import-dialog__select {
+  border: 1px solid var(--border-strong);
+  border-radius: 9px;
+  background: var(--surface-input-bg);
+  color: var(--text-main);
+  padding: 9px 10px;
+  font-size: 0.78rem;
+}
+
+.zulu-import-dialog__select option {
+  background-color: Field;
+  color: FieldText;
+}
+
+.zulu-import-dialog__actions {
+  display: flex;
+  gap: 8px;
+}
+
+.zulu-import-dialog__actions .editor-button {
+  flex: 1 1 auto;
+}
+
+.zulu-import-dialog__preview {
+  border-top: 1px solid var(--border);
+  padding-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.zulu-import-dialog__summary {
+  margin: 0;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.zulu-import-dialog__file-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  max-height: 180px;
+  overflow-y: auto;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: var(--surface-input-bg);
+}
+
+.zulu-import-dialog__file-list li {
+  padding: 6px 10px;
+  font-size: 0.72rem;
+  font-family: var(--font-mono);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  gap: 12px;
+}
+
+.zulu-import-dialog__file-list li:last-child {
+  border-bottom: none;
+}
+
+.zulu-import-dialog__file-list li.new {
+  color: var(--text-main);
+}
+
+.zulu-import-dialog__file-list li.exists {
+  color: var(--warning-text);
+}
+
+.zulu-import-dialog__file-path {
+  flex-shrink: 0;
+}
+
+.zulu-import-dialog__file-title {
+  color: var(--text-dim);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.zulu-import-dialog__file-tags {
+  margin-left: auto;
+  flex-shrink: 0;
+  color: var(--text-muted);
+  font-size: 0.68rem;
+}
+
 .ai-export-modal {
   position: fixed;
   inset: 0;

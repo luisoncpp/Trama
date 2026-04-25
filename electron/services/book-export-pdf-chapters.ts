@@ -12,8 +12,10 @@ export async function renderPdfChapter(
 ): Promise<boolean> {
   const chapterDir = path.dirname(chapter.path)
   let lastWasPagebreak = false
-
+  let lineIndex = 0
   for (const sourceLine of chapter.content.split('\n')) {
+    lineIndex++;
+    console.log(`Processing line ${lineIndex}:`, sourceLine)
     const directive = parseDirectiveLine(sourceLine)
     if (directive) {
       if (directive.kind === 'centerStart') {
@@ -31,18 +33,21 @@ export async function renderPdfChapter(
       }
       continue
     }
+    console.log(`Rendering line ${lineIndex} with centered=${state.centered}:`, sourceLine);
 
     const IMAGE_LINE_PATTERN = /^!\[([^\]]*)\]\(([^)]+)\)$/
     const imageMatch = sourceLine.trim().match(IMAGE_LINE_PATTERN)
     if (imageMatch) {
       const imagePath = imageMatch[2]
       const resolvedPath = await resolveImagePath(imagePath, projectRoot, chapterDir)
+      console.log(`Rendering image line ${lineIndex}:`, resolvedPath)
       await writer.drawImage(resolvedPath)
       lastWasPagebreak = false
       continue
     }
-
+    console.log(`Rendering text line ${lineIndex}:`, sourceLine)
     const headingMatch = sourceLine.match(/^(#{1,6})\s+(.+)$/)
+    console.log(`Heading match for line ${lineIndex}:`, headingMatch ? `Found heading level ${headingMatch[1].length}` : 'No heading')
     if (headingMatch) {
       writer.drawHeading(headingMatch[2], state.centered)
       lastWasPagebreak = false
@@ -50,6 +55,7 @@ export async function renderPdfChapter(
       writer.drawParagraphLine(sourceLine, state.centered)
       lastWasPagebreak = false
     }
+    console.log(`Finished rendering line ${lineIndex}`) 
   }
 
   return lastWasPagebreak

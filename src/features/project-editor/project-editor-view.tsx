@@ -7,6 +7,7 @@ import { ProjectEditorDialogs } from './project-editor-dialogs'
 import { useAiImport } from './use-ai-import'
 import { useAiExport } from './use-ai-export'
 import { useBookExport } from './use-book-export'
+import { useZuluImport } from './use-zulu-import'
 import type { ResolvedTheme, ThemePreference } from '../../theme/theme-types'
 import type { BookExportFormat } from '../../shared/ipc'
 
@@ -25,6 +26,7 @@ interface ProjectEditorViewProps {
 
 interface SidebarExtraProps extends Omit<ProjectEditorViewProps, 'model'> {
   onImportClick: () => void
+  onImportZuluClick: () => void
   onBookExportClick: (format: BookExportFormat) => void
   onExportClick: () => void
 }
@@ -104,6 +106,7 @@ function buildSidebarSectionProps(model: ProjectEditorModel, props: SidebarExtra
     rootPath: state.rootPath,
     onPickFolder: () => void actions.pickProjectFolder(),
     onImport: props.onImportClick,
+    onImportZulu: props.onImportZuluClick,
     onExportBook: props.onBookExportClick,
     onExport: props.onExportClick,
     themePreference: props.themePreference,
@@ -133,10 +136,12 @@ function SidebarSection({
   onSpellcheckEnabledChange,
   onSpellcheckLanguageChange,
   onImportClick,
+  onImportZuluClick,
   onBookExportClick,
   onExportClick,
 }: Pick<ProjectEditorViewProps, 'model' | 'themePreference' | 'resolvedTheme' | 'onThemePreferenceChange' | 'spellcheckEnabled' | 'spellcheckLanguage' | 'spellcheckLanguageOptions' | 'spellcheckLanguageSelectionSupported' | 'onSpellcheckEnabledChange' | 'onSpellcheckLanguageChange'> & {
   onImportClick: () => void
+  onImportZuluClick: () => void
   onBookExportClick: (format: BookExportFormat) => void
   onExportClick: () => void
 }) {
@@ -144,7 +149,7 @@ function SidebarSection({
     themePreference, resolvedTheme, onThemePreferenceChange,
     spellcheckEnabled, spellcheckLanguage, spellcheckLanguageOptions,
     spellcheckLanguageSelectionSupported, onSpellcheckEnabledChange,
-    onSpellcheckLanguageChange, onImportClick, onBookExportClick, onExportClick,
+    onSpellcheckLanguageChange, onImportClick, onImportZuluClick, onBookExportClick, onExportClick,
   })
   return <SidebarPanel {...sidebarProps} />
 }
@@ -165,14 +170,13 @@ export function ProjectEditorView({
   const aiImport = useAiImport(state.rootPath)
   const aiExport = useAiExport(state.rootPath)
   const bookExport = useBookExport(state.rootPath)
+  const zuluImport = useZuluImport(state.rootPath)
+  const sidebarStyle = { '--sidebar-width': state.workspaceLayout.focusModeEnabled ? '0px' : `${state.sidebarPanelCollapsed ? 72 : state.sidebarPanelWidth}px` }
 
   return (
     <main class={buildShellClassName(model)}>
       <div class="editor-app">
-        <section
-          class="editor-workspace"
-          style={{ '--sidebar-width': state.workspaceLayout.focusModeEnabled ? '0px' : `${state.sidebarPanelCollapsed ? 72 : state.sidebarPanelWidth}px` }}
-        >
+        <section class="editor-workspace" style={sidebarStyle}>
           <SidebarSection
             model={model}
             themePreference={themePreference}
@@ -185,17 +189,14 @@ export function ProjectEditorView({
             onSpellcheckEnabledChange={onSpellcheckEnabledChange}
             onSpellcheckLanguageChange={onSpellcheckLanguageChange}
             onImportClick={() => aiImport.setOpen(true)}
-            onBookExportClick={(format) => {
-              bookExport.setFormat(format)
-              bookExport.setOutputPath('')
-              bookExport.setOpen(true)
-            }}
+            onImportZuluClick={() => zuluImport.setOpen(true)}
+            onBookExportClick={(format) => { bookExport.setFormat(format); bookExport.setOutputPath(''); bookExport.setOpen(true) }}
             onExportClick={() => aiExport.setOpen(true)}
           />
           <ProjectEditorMainPane model={model} spellcheckEnabled={spellcheckEnabled} />
         </section>
       </div>
-      <ProjectEditorDialogs rootPath={state.rootPath} visibleFiles={state.visibleFiles} aiImport={aiImport} bookExport={bookExport} aiExport={aiExport} />
+      <ProjectEditorDialogs rootPath={state.rootPath} visibleFiles={state.visibleFiles} aiImport={aiImport} bookExport={bookExport} aiExport={aiExport} zuluImport={zuluImport} />
     </main>
   )
 }

@@ -65,6 +65,8 @@ Mandatory doc navigation for new chats: start with `docs/START-HERE.md` — it p
   - AI import/export handlers: preview import, execute import, and backend export formatting endpoint.
 - `electron/ipc/handlers/book-export-handler.ts`
   - Book export handler: validates request payload and delegates multi-format book export to service with consistent error envelopes.
+- `electron/ipc/handlers/zulu-handlers.ts`
+  - ZuluPad import handlers: opens native file picker for `.zulu` files, previews parsed pages, and executes multi-file import with configurable tag generation.
 
 ### Services
 
@@ -83,6 +85,8 @@ Mandatory doc navigation for new chats: start with `docs/START-HERE.md` — it p
   - Parses AI clipboard blocks, builds preview metadata, and executes multi-file import writes.
 - `electron/services/ai-export-service.ts`
   - Formats selected files into `=== ARCHIVO: ... ===` blocks, validates relative paths against project root, and supports frontmatter include/exclude mode.
+- `electron/services/zulu-import-service.ts`
+  - ZuluPad import service: parses `.zulu` XML content into pages, generates frontmatter with optional tags, and writes markdown files to the target folder.
 - `electron/services/book-export-service.ts`
   - Book export orchestrator: scans `book/`, builds ordered chapter models, sanitizes per format, dispatches renderer (`md/html/docx/epub/pdf`), and writes output artifact.
 - `electron/services/book-export-order.ts`
@@ -156,6 +160,8 @@ Mandatory doc navigation for new chats: start with `docs/START-HERE.md` — it p
   - Renderer hook for AI export dialog state, IPC export call, and clipboard copy flow.
 - `src/features/project-editor/use-book-export.ts`
   - Renderer hook for book export dialog state: selected format, optional metadata (title/author), default output path handling, IPC export call, and success toast flow.
+- `src/features/project-editor/use-zulu-import.ts`
+  - Renderer hook for ZuluPad import dialog state: file selection, preview, and execution via IPC.
 
 ### Project editor hooks (detailed)
 
@@ -208,6 +214,10 @@ Mandatory doc navigation for new chats: start with `docs/START-HERE.md` — it p
   - Markdown book export modal controller (portal, close behavior, keyboard handling).
 - `src/features/project-editor/components/book-export-dialog-body.tsx`
   - Book export dialog body with project root display, optional metadata inputs, output path input, and export/cancel actions.
+- `src/features/project-editor/components/zulu-import-dialog.tsx`
+  - Modal dialog for ZuluPad file import: file selection trigger, target folder input, tag mode selector, preview state, and import execution portal.
+- `src/features/project-editor/components/zulu-import-dialog-body.tsx`
+  - ZuluPad import dialog body: file info display, folder/tag configuration form, actions row, and preview/execute sub-components.
 - `src/features/project-editor/components/rich-markdown-editor.tsx`
   - Quill-based rich Markdown editor component (lifecycle, toolbar integration, focus-mode hookup).
 - `src/features/project-editor/components/rich-markdown-editor-core.ts`
@@ -340,6 +350,8 @@ Mandatory doc navigation for new chats: start with `docs/START-HERE.md` — it p
   - Artifact-node serializer for converting directive blot/artifact DOM nodes back into canonical markdown comments.
 - `src/shared/markdown-layout-directives-spacing.ts`
   - Markdown post-serialization normalization that converts repeated blank-line runs into canonical `trama:spacer` directives.
+- `src/shared/zulu-parser.ts`
+  - `.zulu` XML parser: extracts page titles and content from ZuluPad document format.
 - `src/types/trama-api.d.ts`
   - Global declaration for `window.tramaApi`.
 
@@ -415,6 +427,8 @@ Core and regression suites:
 
 - `docs/architecture/window-close-architecture.md`
   - Documents the window close architecture: main-process close handler, renderer dirty-state notification via IPC, `__tramaSaveAll` bridge, promise-chain cancel pattern, and key files.
+- `docs/architecture/zulu-import-architecture.md`
+  - Canonical reference for the ZuluPad import pipeline. Explains parser logic, encoding detection, tag generation, line ending normalization, IPC contract, file map, and UI flow.
 
 ## Build outputs
 

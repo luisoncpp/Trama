@@ -24,6 +24,7 @@ export interface SidebarProjectContextProps {
   rootPath: string
   onPickFolder: () => void
   onImport: () => void
+  onImportZulu: () => void
   onExportBook: (format: BookExportFormat) => void
   onExport: () => void
 }
