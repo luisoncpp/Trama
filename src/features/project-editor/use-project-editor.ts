@@ -39,6 +39,14 @@ function buildShortcutsEffectParams(
       actions.setWorkspaceActivePane(workspaceLayout.activePane === 'primary' ? 'secondary' : 'primary')
     },
     onSaveNow: () => actions.saveNow(),
+    onEscapePressed: () => {
+      if (isFullscreen) {
+        void actions.setFullscreenEnabled(false)
+      }
+      if (workspaceLayout.focusModeEnabled) {
+        actions.toggleFocusMode()
+      }
+    },
   }
 }
 

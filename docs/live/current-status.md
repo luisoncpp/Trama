@@ -54,7 +54,7 @@ Implemented now:
 - Settings panel now includes spellcheck controls: enable/disable on all platforms, plus language selection on Windows/Linux through Electron session spellchecker APIs. Preference persists locally, syncs on startup against the active Electron session, and updates the renderer state immediately when toggled.
 - Theme visual polish completed: all 5 light-mode colors audited and updated for WCAG AA contrast compliance (4.5:1 for text, 3:1 for UI components).
 - Theme visual polish completed: all 5 light-mode colors audited and updated for WCAG AA contrast compliance (4.5:1 for text, 3:1 for UI components).
-- Fullscreen/Focus Mode (WS3) complete: native fullscreen via IPC with BrowserWindow event sync, focus mode with line/sentence/paragraph scope dimming, and keyboard shortcuts (Ctrl/Cmd+Shift+F = fullscreen, Ctrl/Cmd+Shift+M = focus mode). Focus state persisted in `trama.workspace.layout.v1`. Focus mode always starts disabled at launch.
+- Fullscreen/Focus Mode (WS3) complete: native fullscreen via IPC with BrowserWindow event sync, focus mode with line/sentence/paragraph scope dimming, and keyboard shortcuts (Ctrl/Cmd+Shift+F = fullscreen, Ctrl/Cmd+Shift+M = focus mode). ESC deactivates whichever mode(s) are active (both if both are on). Focus state persisted in `trama.workspace.layout.v1`. Focus mode always starts disabled at launch.
 - Workspace toolbar removed; all workspace controls (split, fullscreen, focus) moved to native right-click context menu via event bridge (`src/shared/workspace-context-menu.ts`).
 - Focus Scope selector (line/sentence/paragraph) moved to sidebar Settings tab.
 - Sidebar auto-collapses when focus mode activates and is locked closed while focus is active.

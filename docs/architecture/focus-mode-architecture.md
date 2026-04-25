@@ -198,9 +198,15 @@ The sidebar cannot be reopened while focus mode is active (`use-project-editor-s
 
 ---
 
-## Keyboard Shortcut
+## Keyboard Shortcuts
 
-`Ctrl+Shift+M` (or `Cmd+Shift+M` on macOS) toggles focus mode (`use-project-editor-shortcuts-effect.ts:43`, `electron/main-process/context-menu.ts:30`).
+| Shortcut | Action |
+|----------|--------|
+| `Ctrl+Shift+M` (`Cmd+Shift+M` on macOS) | Toggle focus mode |
+| `Ctrl+Shift+F` (`Cmd+Shift+F` on macOS) | Toggle fullscreen |
+| `ESC` | Deactivate focus mode and/or fullscreen (both if both active) |
+
+The ESC handler lives in `use-project-editor-shortcuts-effect.ts`. It checks for open modal dialogs (`[aria-modal="true"]`) before firing, so ESC in a dialog closes only the dialog, not workspace modes.
 
 ---
 
