@@ -458,4 +458,210 @@ describe('useProjectEditor', () => {
 
     expect(model?.state.sidebarPanelCollapsed).toBe(false)
   })
+
+  it('ESC exits focus mode when focus mode is active', async () => {
+    window.localStorage.removeItem('trama.sidebar.ui.v1')
+    window.localStorage.removeItem(WORKSPACE_LAYOUT_STORAGE_KEY)
+    setupTramaApiMock()
+
+    let model: ProjectEditorModel | undefined
+
+    function Harness() {
+      model = useProjectEditor()
+      return null
+    }
+
+    const container = document.createElement('div')
+    act(() => {
+      render(h(Harness, {}), container)
+    })
+
+    await act(async () => {
+      model?.actions.toggleFocusMode()
+      await Promise.resolve()
+    })
+
+    expect(model?.state.workspaceLayout.focusModeEnabled).toBe(true)
+
+    await act(async () => {
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))
+      await Promise.resolve()
+    })
+
+    expect(model?.state.workspaceLayout.focusModeEnabled).toBe(false)
+    expect(model?.state.isFullscreen).toBe(false)
+  })
+
+  it('ESC exits fullscreen when fullscreen is active', async () => {
+    window.localStorage.removeItem('trama.sidebar.ui.v1')
+    window.localStorage.removeItem(WORKSPACE_LAYOUT_STORAGE_KEY)
+    setupTramaApiMock()
+
+    let model: ProjectEditorModel | undefined
+
+    function Harness() {
+      model = useProjectEditor()
+      return null
+    }
+
+    const container = document.createElement('div')
+    act(() => {
+      render(h(Harness, {}), container)
+    })
+
+    await act(async () => {
+      window.dispatchEvent(new CustomEvent(WORKSPACE_CONTEXT_MENU_EVENT, { detail: { type: 'toggle-fullscreen' } }))
+      await Promise.resolve()
+    })
+
+    expect(model?.state.isFullscreen).toBe(true)
+
+    await act(async () => {
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))
+      await Promise.resolve()
+    })
+
+    expect(model?.state.isFullscreen).toBe(false)
+    expect(model?.state.workspaceLayout.focusModeEnabled).toBe(false)
+  })
+
+  it('ESC exits both fullscreen and focus mode when both are active', async () => {
+    window.localStorage.removeItem('trama.sidebar.ui.v1')
+    window.localStorage.removeItem(WORKSPACE_LAYOUT_STORAGE_KEY)
+    setupTramaApiMock()
+
+    let model: ProjectEditorModel | undefined
+
+    function Harness() {
+      model = useProjectEditor()
+      return null
+    }
+
+    const container = document.createElement('div')
+    act(() => {
+      render(h(Harness, {}), container)
+    })
+
+    await act(async () => {
+      model?.actions.toggleFocusMode()
+      window.dispatchEvent(new CustomEvent(WORKSPACE_CONTEXT_MENU_EVENT, { detail: { type: 'toggle-fullscreen' } }))
+      await Promise.resolve()
+    })
+
+    expect(model?.state.workspaceLayout.focusModeEnabled).toBe(true)
+    expect(model?.state.isFullscreen).toBe(true)
+
+    await act(async () => {
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))
+      await Promise.resolve()
+    })
+
+    expect(model?.state.workspaceLayout.focusModeEnabled).toBe(false)
+    expect(model?.state.isFullscreen).toBe(false)
+  })
+
+  it('ESC does nothing when neither fullscreen nor focus mode is active', async () => {
+    window.localStorage.removeItem('trama.sidebar.ui.v1')
+    window.localStorage.removeItem(WORKSPACE_LAYOUT_STORAGE_KEY)
+    setupTramaApiMock()
+
+    let model: ProjectEditorModel | undefined
+
+    function Harness() {
+      model = useProjectEditor()
+      return null
+    }
+
+    const container = document.createElement('div')
+    act(() => {
+      render(h(Harness, {}), container)
+    })
+
+    expect(model?.state.isFullscreen).toBe(false)
+    expect(model?.state.workspaceLayout.focusModeEnabled).toBe(false)
+
+    await act(async () => {
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))
+      await Promise.resolve()
+    })
+
+    expect(model?.state.isFullscreen).toBe(false)
+    expect(model?.state.workspaceLayout.focusModeEnabled).toBe(false)
+  })
+
+  it('ESC ignores fullscreen/focus exit when focus is in a form field', async () => {
+    window.localStorage.removeItem('trama.sidebar.ui.v1')
+    window.localStorage.removeItem(WORKSPACE_LAYOUT_STORAGE_KEY)
+    setupTramaApiMock()
+
+    let model: ProjectEditorModel | undefined
+
+    function Harness() {
+      model = useProjectEditor()
+      return null
+    }
+
+    const container = document.createElement('div')
+    act(() => {
+      render(h(Harness, {}), container)
+    })
+
+    await act(async () => {
+      model?.actions.toggleFocusMode()
+      await Promise.resolve()
+    })
+
+    expect(model?.state.workspaceLayout.focusModeEnabled).toBe(true)
+
+    const input = document.createElement('input')
+    document.body.appendChild(input)
+    input.focus()
+
+    await act(async () => {
+      input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))
+      await Promise.resolve()
+    })
+
+    expect(model?.state.workspaceLayout.focusModeEnabled).toBe(true)
+
+    document.body.removeChild(input)
+  })
+
+  it('ESC ignores fullscreen/focus exit when a modal dialog is open', async () => {
+    window.localStorage.removeItem('trama.sidebar.ui.v1')
+    window.localStorage.removeItem(WORKSPACE_LAYOUT_STORAGE_KEY)
+    setupTramaApiMock()
+
+    let model: ProjectEditorModel | undefined
+
+    function Harness() {
+      model = useProjectEditor()
+      return null
+    }
+
+    const container = document.createElement('div')
+    act(() => {
+      render(h(Harness, {}), container)
+    })
+
+    await act(async () => {
+      model?.actions.toggleFocusMode()
+      await Promise.resolve()
+    })
+
+    expect(model?.state.workspaceLayout.focusModeEnabled).toBe(true)
+
+    const modal = document.createElement('div')
+    modal.setAttribute('aria-modal', 'true')
+    document.body.appendChild(modal)
+
+    await act(async () => {
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))
+      await Promise.resolve()
+    })
+
+    expect(model?.state.workspaceLayout.focusModeEnabled).toBe(true)
+
+    document.body.removeChild(modal)
+  })
 })
