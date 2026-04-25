@@ -129,7 +129,7 @@ async function drawPdfImage(
     const { type, bytes } = await loadImageBytes(imagePath)
     if (!bytes || !type) return
     const image = type === 'png' ? await pdf.embedPng(bytes) : await pdf.embedJpg(bytes)
-    const scale = Math.min((PAGE_WIDTH - MARGIN * 2) / image.width, 300 / image.height, 1)
+    const scale = Math.min((PAGE_WIDTH - MARGIN * 2) / image.width, (PAGE_HEIGHT - MARGIN * 2) / image.height, 1)
     const drawWidth = image.width * scale
     const drawHeight = image.height * scale
     if (state.cursorY - drawHeight < MARGIN) {
