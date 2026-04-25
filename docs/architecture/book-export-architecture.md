@@ -228,7 +228,7 @@ Línea nueva cuando cursorY < MARGIN → addPage() automático (ensureLineCapaci
 - Center directives en headings y párrafos
 - Heading levels en DOCX
 - Imágenes reference-style en DOCX (data URL y local path)
-- Imágenes en EPUB (data URL + local path con materialización a temp)
+- Imágenes reference-style en EPUB (data URL y local path)
 
 `tests/book-export-image-utils.test.ts` cubre:
 - Lectura de dimensiones PNG/JPEG desde bytes
@@ -245,7 +245,7 @@ Línea nueva cuando cursorY < MARGIN → addPage() automático (ensureLineCapaci
 | `markdown` | concatenación | Directivas removidas del output |
 | `html` | marked + template | Directivas convertidas a CSS classes |
 | `docx` | `docx` package | Heading styles, pagebreak como 2 líneas en blanco, imágenes reference-style + inline via `ImageRun` con dimensiones reales (píxeles, no EMU) |
-| `epub` | `epub-gen` | Data URLs materializadas a archivos temporales con path `file://` |
+| `epub` | `epub-gen` | Data URLs materializadas a archivos temporales con path `file://`; imágenes reference-style + inline |
 | `pdf` | `pdf-lib` | Renderer dedicado, fuente Unicode embebida, layout state-driven; imágenes reference-style + inline; **no recibe metadata aún** (ver sección Metadata) |
 
 ---

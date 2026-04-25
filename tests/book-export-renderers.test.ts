@@ -386,4 +386,56 @@ describe('book export renderers', () => {
     expect(epubBytes.subarray(0, 2).toString()).toBe('PK')
     expect(epubBytes.includes(Buffer.from('OEBPS/images/'))).toBe(true)
   })
+
+  it('renders epub when chapter contains reference-style data-url images', async () => {
+    const tempDir = await mkdtemp(path.join(os.tmpdir(), 'trama-epub-ref-image-'))
+    const outputPath = path.join(tempDir, 'book-ref-images.epub')
+
+    await renderEpubBook([
+      {
+        path: 'book/chapter-images.md',
+        title: 'Chapter Images',
+        content: [
+          'Texto inicial',
+          '![][ref1]',
+          'Texto final',
+          '',
+          '[ref1]: <data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==>',
+        ].join('\n'),
+      },
+    ], { title: 'EPUB Ref Image Test', author: 'QA Team' }, outputPath)
+
+    const fileStats = await stat(outputPath)
+    expect(fileStats.size).toBeGreaterThan(0)
+
+    const epubBytes = await readFile(outputPath)
+    expect(epubBytes.subarray(0, 2).toString()).toBe('PK')
+    expect(epubBytes.includes(Buffer.from('OEBPS/images/'))).toBe(true)
+  })
+
+  it('renders epub when chapter contains reference-style local images', async () => {
+    const fixture = await createProjectWithImageFixture()
+    const outputPath = path.join(fixture.projectRoot, 'book-ref-local-images.epub')
+
+    await renderEpubBook([
+      {
+        path: 'book/Act-01/chapter-images.md',
+        title: 'Chapter Images',
+        content: [
+          'Texto inicial',
+          '![][pixel]',
+          'Texto final',
+          '',
+          `[pixel]: ${fixture.imageRelativeFromChapter}`,
+        ].join('\n'),
+      },
+    ], { title: 'EPUB Ref Local Image Test', author: 'QA Team' }, outputPath, fixture.projectRoot)
+
+    const fileStats = await stat(outputPath)
+    expect(fileStats.size).toBeGreaterThan(0)
+
+    const epubBytes = await readFile(outputPath)
+    expect(epubBytes.subarray(0, 2).toString()).toBe('PK')
+    expect(epubBytes.includes(Buffer.from('OEBPS/images/'))).toBe(true)
+  })
 })
