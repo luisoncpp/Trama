@@ -70,3 +70,5 @@ Avoid: "bug description + fix". Prefer: "what I learned that applies to future w
 | `focus-mode-quill-selection-desync.md` | Programmatic scroll (`container.scrollTop`) desynchronizes Quill's internal selection; preserve selection before scroll and restore after with `'silent'` flag | 2026-04-23 |
 | `global-esc-shortcut-modal-guard.md` | Global `window` ESC listener must query `[aria-modal="true"]` before acting; `stopPropagation()` won't block sibling listeners on same element | 2026-04-24 |
 | `find-replace-quill-range.md` | Replace in Quill requires plain-text-to-Quill-index conversion via `mapPlainTextIndexToQuillIndex`; `replaceAll` must process matches from end to start to avoid index drift | 2026-04-24 |
+| `focus-mode-css-grid-display-none-auto-place.md` | `display:none` removes grid items from the grid, causing remaining items to auto-place into the first cell; always recalculate `grid-template-columns` when hiding grid children | 2026-04-25 |
+| `focus-mode-scrollbar-dimming.md` | Scrollbar in focus mode stands out; dim via `::-webkit-scrollbar-thumb` with `color-mix` on `.ql-container.ql-snow` | 2026-04-25 |

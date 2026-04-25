@@ -171,7 +171,7 @@ export function ProjectEditorView({
       <div class="editor-app">
         <section
           class="editor-workspace"
-          style={{ '--sidebar-width': `${state.sidebarPanelCollapsed ? 72 : state.sidebarPanelWidth}px` }}
+          style={{ '--sidebar-width': state.workspaceLayout.focusModeEnabled ? '0px' : `${state.sidebarPanelCollapsed ? 72 : state.sidebarPanelWidth}px` }}
         >
           <SidebarSection
             model={model}

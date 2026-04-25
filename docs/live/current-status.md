@@ -57,7 +57,7 @@ Implemented now:
 - Fullscreen/Focus Mode (WS3) complete: native fullscreen via IPC with BrowserWindow event sync, focus mode with line/sentence/paragraph scope dimming, and keyboard shortcuts (Ctrl/Cmd+Shift+F = fullscreen, Ctrl/Cmd+Shift+M = focus mode). ESC deactivates whichever mode(s) are active (both if both are on). Focus state persisted in `trama.workspace.layout.v1`. Focus mode always starts disabled at launch.
 - Workspace toolbar removed; all workspace controls (split, fullscreen, focus) moved to native right-click context menu via event bridge (`src/shared/workspace-context-menu.ts`).
 - Focus Scope selector (line/sentence/paragraph) moved to sidebar Settings tab.
-- Sidebar auto-collapses when focus mode activates and is locked closed while focus is active.
+- Sidebar is completely hidden (not just collapsed) when focus mode activates and is locked while focus is active. Grid switches to single column (`1fr`) to remove empty space. Editor scrollbar is dimmed to 45% opacity during focus mode.
 - Typography auto-replacement in the rich editor: typing `--` inserts `—`, `<<` inserts `«`, `>>` inserts `»`. Each replacement is a discrete Ctrl+Z undo entry.
 - Rich editor spellcheck sync hardened: toggling `spellcheckEnabled` no longer recreates Quill; spellcheck now updates through the dedicated sync effect only, preserving editor instance continuity.
 - `npm run dev` automatically builds the Electron main process before starting the dev server (`build:electron && dev:desktop`).

@@ -216,7 +216,38 @@ select {
 }
 
 .editor-shell.is-focus-mode .sidebar-shell {
-  width: 72px !important;
+  display: none;
+}
+
+.editor-shell.is-focus-mode .editor-workspace {
+  grid-template-columns: 1fr;
+  gap: 0;
+}
+
+.rich-editor .ql-container.ql-snow::-webkit-scrollbar {
+  width: 8px;
+}
+
+.rich-editor .ql-container.ql-snow::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.rich-editor .ql-container.ql-snow::-webkit-scrollbar-thumb {
+  background-color: var(--border-strong);
+  border-radius: 4px;
+}
+
+.rich-editor .ql-container.ql-snow {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-strong) transparent;
+}
+
+.editor-shell.is-focus-mode .rich-editor .ql-container.ql-snow::-webkit-scrollbar-thumb {
+  background-color: color-mix(in oklab, var(--border-strong) 45%, transparent);
+}
+
+.editor-shell.is-focus-mode .rich-editor .ql-container.ql-snow {
+  scrollbar-color: color-mix(in oklab, var(--border-strong) 45%, transparent) transparent;
 }
 
 .editor-shell.is-focus-mode .sidebar-panel-content {
