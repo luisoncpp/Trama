@@ -4,6 +4,7 @@ import path from 'node:path'
 import { registerIpcHandlers, shutdownIpcServices } from './ipc.js'
 import { setupContextMenu } from './main-process/context-menu.js'
 import { setupSmokeTestHooks } from './main-process/smoke-hooks.js'
+import { configureWindowCloseBehavior } from './main-process/window-close.js'
 import { createMainWindowOptions } from './window-config.js'
 import { IPC_CHANNELS } from '../src/shared/ipc.js'
 
@@ -152,6 +153,7 @@ async function createMainWindow(): Promise<void> {
   }
 
   configureFullscreenEvents(win)
+  configureWindowCloseBehavior(win)
 
   const renderer = getRendererEntry()
   await loadRendererEntry(win, renderer)

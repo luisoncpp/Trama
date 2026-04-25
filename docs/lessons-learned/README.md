@@ -65,3 +65,6 @@ Avoid: "bug description + fix". Prefer: "what I learned that applies to future w
 | `index-reorder-payload-id-vs-path.md` | Reorder payloads for `.trama.index.json` must use same key/value identity model as reconciliation and downstream readers | 2026-04-19 |
 | `corkboard-order-path-scoping.md` | `corkboardOrder` keys are project-relative; sidebar tree uses section-relative paths — conversion must happen at the boundary (`sidebar-panel-body.tsx`) | 2026-04-21 |
 | `tag-overlay-stale-bounds-on-layout-change.md` | Quill `getBounds()` results are layout-dependent; never cache them across renders — compute fresh at render or event time | 2026-04-21 |
+| `find-overlay-scroll-stale-bounds.md` | Find overlay highlight must recompute bounds on every scroll; same stale-bounds pattern as tags, plus `getBoundingClientRect()` over `offsetTop/offsetLeft` | 2026-04-22 |
+| `cross-folder-drag-drop-two-ipcs.md` | For cross-folder file drop + reorder, calling two existing IPCs sequentially (`moveFile` then `reorderFiles`) is simpler than creating a combined IPC; avoids touching backend contracts and keeps frontend logic testable in pure helpers | 2026-04-22 |
+| `focus-mode-quill-selection-desync.md` | Programmatic scroll (`container.scrollTop`) desynchronizes Quill's internal selection; preserve selection before scroll and restore after with `'silent'` flag | 2026-04-23 |

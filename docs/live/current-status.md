@@ -40,7 +40,8 @@ Implemented now:
 - Drag-and-drop file move between folders (Slice 2): IPC channel `trama:file:move`, `handleMoveFile` handler, `documentRepository.moveDocument()`, renderer `moveFile` action wired to folder drop targets. Moves file on disk and reconciles index.
 - Folder move IPC + repository (Slice 2): IPC channel `trama:folder:move`, `handleMoveFolder` handler, `documentRepository.moveFolder()`, renderer `moveFolder` action with dirty-subtree guard and split-pane path remapping. Moves folder subtree on disk and reconciles index.
 - Folder drag-drop UI wiring (Slice 3): Folder rows are now draggable. `use-sidebar-tree-drag-handlers.ts` routes folder drops to `onMoveFolder` (folder-on-folder and section-root drops). Path scoping via `withRoot` in `sidebar-panel-body.tsx`. Split-pane path remapping on folder move.
-- Folder move regression tests: `tests/folder-move-repository.test.ts` (7 tests), `tests/folder-move-ipc-handler.test.ts` (5 tests), `tests/drag-drop-sidebar.test.ts` folder drag-drop coverage (4 tests), `tests/sidebar-panel-body.test.ts` path scoping coverage (4 tests).
+- Cross-folder file drag-drop fix: dropping a file between two files in another folder now correctly moves the file to the target folder and reorders it into the destination `corkboardOrder`. Uses sequential `moveFile` + `reorderFiles` IPC calls via `sidebar-file-drop-logic.ts` pure helpers.
+- Folder move regression tests: `tests/folder-move-repository.test.ts` (7 tests), `tests/folder-move-ipc-handler.test.ts` (5 tests), `tests/drag-drop-sidebar.test.ts` folder drag-drop coverage (4 tests), `tests/sidebar-panel-body.test.ts` path scoping coverage (4 tests). Cross-folder drop tests: 5 new tests in `tests/drag-drop-sidebar.test.ts`.
 - Workspace split-layout foundation: single/split mode toggle, ratio control, active pane switching, pane document assignment, and local persistence (`trama.workspace.layout.v1`).
 - Layout reconciliation hardening: preferred-document restores now respect active pane intent during project reopen flows.
 - Per-pane editor state model: independent `primaryPane`/`secondaryPane` document content, metadata, and dirty flags.
@@ -74,7 +75,7 @@ Implemented now:
 - Book export regression expansion: `tests/book-export-renderers.test.ts` now covers image flows across HTML (local -> data URL conversion), PDF (data URL + local), DOCX (embedded `word/media` artifacts), and EPUB (data URL + local path materialization).
 
 Not implemented yet (planned in later phases):
-- Wiki links, templates, corkboard DnD.
+- Templates (WS3).
 
 WS2 next step:
 - Reintroduce folder move/reparent in a dedicated slice after merge, with focused tests for sidebar DnD and path remap behavior.
@@ -127,7 +128,7 @@ Additional regression checks in suite include:
 - `npm run test` ✅ passes (21 suites, 97 tests)
 - `npm run test:smoke` ✅ passes
 
-**Next phase**: Phase 4 — Wiki tag links, folder operations, templates, corkboard, and closing WS5 (AI export UX + tests). See `docs/plan/phase-4-detailed-plan.md` for full plan.
+**Next phase**: Phase 4 — Wiki tag links (WS1 ✅), folder operations (WS2 ✅), templates (WS3), AI import/export (WS5 ✅). See `docs/plan/phase-4-detailed-plan.md` for full plan.
 
 ## Phase 4 planned work
 
@@ -138,5 +139,5 @@ See `docs/plan/phase-4-detailed-plan.md` for the complete plan with 5 workstream
 | **WS1** | Wiki Tag Links | TagIndexService, implicit tag matching, Ctrl+click navigation | ✅ Complete |
 | **WS2** | Folder Operations | Rename, delete, move with conflict safety | In progress (rename + delete V1 complete; drag-drop file reorder Slice 1 done; corkboardOrder integration Slice 1 done; drag-drop file move Slice 2 done; folder move IPC + repository Slice 2 done; folder DnD UI wiring Slice 3 done) |
 | **WS3** | Templates | Create from schema, placeholder system, default templates | Pending |
-| **WS4** | Corkboard | Drag-and-drop card view, persistence | Pending |
+| **WS4** | Corkboard | ~~Drag-and-drop card view, persistence~~ | ❌ Cancelled (reorder via index is sufficient) |
 | **WS5** | AI Import/Export | Import/export implemented end-to-end, including export hardening and regression tests | ✅ Complete |

@@ -17,10 +17,12 @@ book-export-service.ts          — Orquestador: compila capítulos, sanitiza, d
 │
 ├── book-export-renderers.ts    — Modelo común BookExportChapter + renderer HTML/Markdown
 │
-├── book-export-pdf-font-utils.ts      — normalizeForFont, safeTextForFont, normalizeRunsForFonts
+├── book-export-pdf-fonts.ts           — Carga fuentes del sistema (Times New Roman, etc.) vía @pdf-lib/fontkit; fallback a StandardFonts
+├── book-export-pdf-font-utils.ts      — Normalización Unicode: normalizeForFont, safeTextForFont, normalizeRunsForFonts
+├── book-export-pdf-inline.ts          — Tokeniza inline bold (**text**) y word-wrap para layout PDF
 ├── book-export-pdf-utils.ts            — createPdfWriter, PdfWriter, PdfLayoutState, drawRuns, drawHeading, drawPdfImage, drawWrappedParagraph
-├── book-export-pdf-chapters.ts         — renderPdfChapter: parsea contenido, emite al writer
-├── book-export-pdf-renderer.ts         — BARRIL (3 líneas): re-exporta desde pdf-utils.ts
+├── book-export-pdf-chapters.ts         — renderPdfChapter: parsea contenido (directivas, imágenes, headings, párrafos), emite al writer
+├── book-export-pdf-renderer.ts         — BARRIL (2 líneas): re-exporta desde pdf-utils.ts
 │
 ├── book-export-docx-renderer.ts — DOCX via `docx` package
 ├── book-export-epub-renderer.ts — EPUB via `epub-gen`
@@ -28,7 +30,7 @@ book-export-service.ts          — Orquestador: compila capítulos, sanitiza, d
 
 ### Archivo barrel (`book-export-pdf-renderer.ts`)
 
-Este archivo tiene 3 líneas. Existe para que los importers (`book-export-service.ts`) puedan importar desde `book-export-pdf-renderer.ts` sin conocer la split internamente. Si necesitas editar la implementación del PDF, edita `book-export-pdf-utils.ts`.
+Este archivo tiene 2 líneas. Existe para que los importers (`book-export-service.ts`) puedan importar desde `book-export-pdf-renderer.ts` sin conocer la split internamente. Si necesitas editar la implementación del PDF, edita `book-export-pdf-utils.ts`.
 
 ---
 
@@ -45,19 +47,20 @@ renderPdfBook()   [book-export-pdf-utils.ts]
          ├── Itera capítulos:
          │      │
          │      ▼
-         │   renderPdfChapter()  [book-export-pdf-chapters.ts]
-         │      │
-         │      ├── Limpia content (directivas parseadas en paso 1)
-         │      ├── Por cada línea del contenido:
-         │      │    ├── Detecta center/spacer/pagebreak
-         │      │    ├── Si center-start → set state.centered = true
-         │      │    ├── Si spacer → writer.addSpacer(n)
-         │      │    ├── Si pagebreak → addPage() forzado
-         │      │    ├── Si heading → writer.drawHeading(text, centered)
-         │      │    └── Si párrafo → writer.drawParagraphLine(text, centered)
-         │      │         └── drawParagraphLine usa wrapTokens + drawRuns
-         │      │
-         │      └── Retorna si último elemento fue pagebreak
+          │   renderPdfChapter()  [book-export-pdf-chapters.ts]
+          │      │
+          │      ├── Limpia content (directivas ya parseadas en sanitize)
+          │      ├── Por cada línea del contenido:
+          │      │    ├── Detecta directivas: center/spacer/pagebreak
+          │      │    ├── Si center-start → set state.centered = true
+          │      │    ├── Si spacer → writer.addSpacer(n)
+          │      │    ├── Si pagebreak → addPage() forzado
+          │      │    ├── Si línea de imagen (![alt](path)) → writer.drawImage(resolvedPath)
+          │      │    ├── Si heading → writer.drawHeading(text, centered)
+          │      │    └── Si párrafo → writer.drawParagraphLine(text, centered)
+          │      │         └── drawParagraphLine usa inlineTokens → wrapTokens → drawRuns
+          │      │
+          │      └── Retorna si último elemento fue pagebreak
          │
          └── pdf.save() → Uint8Array
 ```
@@ -117,19 +120,27 @@ El renderer PDF NO usa HTML comentarios como output intermediario — las direct
 
 ## Fuentes PDF
 
+Hay **dos archivos** relacionados con fuentes; no confundir:
+
+### `book-export-pdf-fonts.ts` — Carga de fuentes del sistema
 ```
 Sistema: Busca fuentes serif Unicode del sistema (Times New Roman / Nimbus Roman No 9 L)
          Si encuentra → Embed con @pdf-lib/fontkit (soporta Unicode completo)
          
 Fallback: StandardFonts.TimesRoman (WinAnsi, no soporta Unicode extendido)
 
-Lógica en book-export-pdf-fonts.ts:
-  1. Intenta cargar fuente del sistema via fontkit
-  2. Si falla → usa StandardFonts
-  3. Ambos casos: crea objeto { regular, bold }
+Pasos:
+  1. Itera candidatos de sistema por plataforma (Windows, macOS, Linux)
+  2. Intenta cargar vía fontkit; si falla → usa StandardFonts
+  3. Retorna objeto { regular: PDFFont, bold: PDFFont }
 ```
 
-El fallback a `StandardFonts` puede fallar con caracteres no-WinAnsi (ej. acentos, eñe, caracteres cirílicos). Si el documento los usa y no hay fuente de sistema, el `safeTextForFont()` hace encoding fallbacks progresivos.
+### `book-export-pdf-font-utils.ts` — Normalización de texto para encoding
+- `normalizeForFont()`: elimina diacríticos (NFKD), reemplaza comillas tipográficas, etc.
+- `safeTextForFont()`: prueba `font.encodeText()`; si falla, aplica normalización progresiva hasta `[^\x20-\x7E]` → `?`
+- `normalizeRunsForFonts()`: aplica `safeTextForFont()` a cada token de un run (regular/bold)
+
+El fallback a `StandardFonts` puede fallar con caracteres no-WinAnsi (ej. acentos, eñe, caracteres cirílicos). Si el documento los usa y no hay fuente de sistema, `safeTextForFont()` hace encoding fallbacks progresivos.
 
 ---
 
@@ -172,6 +183,18 @@ Línea nueva cuando cursorY < MARGIN → addPage() automático (ensureLineCapaci
 
 ---
 
+## Metadata (title / author) por formato
+
+| Formato | ¿Recibe metadata? | Uso |
+|---------|-------------------|-----|
+| `html` | Sí | `<title>`, `<meta name="author">`, header con byline |
+| `docx` | Sí | `Document.title`, `Document.creator` |
+| `epub` | Sí | `EpubOptions.title`, `EpubOptions.author` |
+| `pdf` | **No** | `renderPdfBook(chapters, projectRoot)` no recibe `BookExportMetadata`. La firma del orquestador (`book-export-service.ts`) pasa `projectRoot` pero no `metadata`. Generación de portada / metadatos XMP pendiente. |
+| `markdown` | No | Concatenación simple, sin metadatos de libro |
+
+---
+
 ## Tests de Regresión
 
 `tests/book-export-renderers.test.ts` cubre:
@@ -193,7 +216,7 @@ Línea nueva cuando cursorY < MARGIN → addPage() automático (ensureLineCapaci
 | `html` | marked + template | Directivas convertidas a CSS classes |
 | `docx` | `docx` package | Heading styles, pagebreak como 2 líneas en blanco, imágenes via ImageRun |
 | `epub` | `epub-gen` | Data URLs materializadas a archivos temporales con path `file://` |
-| `pdf` | `pdf-lib` | Renderer dedicado, fuente Unicode embebida, layout state-driven |
+| `pdf` | `pdf-lib` | Renderer dedicado, fuente Unicode embebida, layout state-driven; **no recibe metadata aún** (ver sección Metadata) |
 
 ---
 

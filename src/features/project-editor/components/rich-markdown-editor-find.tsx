@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'preact/hooks'
 import type Quill from 'quill'
 import { FindOverlay, type FindMatchBounds } from './rich-markdown-editor-find-overlay'
-import { useActiveMatchOverlayEffect } from './rich-markdown-editor-find-visual'
+import { getActiveMatchBounds, useActiveMatchOverlayEffect } from './rich-markdown-editor-find-visual'
+import { mapPlainTextIndexToQuillIndex } from './rich-markdown-editor-tag-overlay'
 
 interface UseRichEditorFindParams {
   documentId: string | null
@@ -57,8 +58,10 @@ function useSearchState(editorRef: { current: Quill | null }) {
     }
 
     const boundedIndex = Math.max(0, Math.min(activeMatch, matches.length - 1))
-    // Keep focus in the floating find input while still tracking the active match.
-    editor.setSelection(matches[boundedIndex], queryLength, 'silent')
+    const plainStart = matches[boundedIndex]
+    const quillStart = mapPlainTextIndexToQuillIndex(editor, plainStart)
+    const quillEnd = mapPlainTextIndexToQuillIndex(editor, plainStart + queryLength)
+    editor.setSelection(quillStart, Math.max(0, quillEnd - quillStart), 'silent')
   }
 
   const updateMatches = (nextQuery: string) => {
@@ -132,7 +135,7 @@ function formatMatchLabel(state: SearchState): string {
 
 export function useRichEditorFind({ documentId, hostRef, editorRef }: UseRichEditorFindParams) {
   const [isOpen, setIsOpen] = useState(false)
-  const [activeBounds, setActiveBounds] = useState<FindMatchBounds | null>(null)
+  const [scrollTick, setScrollTick] = useState(0)
   const { state, updateMatches, jumpMatch, reset } = useSearchState(editorRef)
   const inputRef = useRef<HTMLInputElement | null>(null)
   const matchLabel = useMemo(() => formatMatchLabel(state), [state])
@@ -142,7 +145,7 @@ export function useRichEditorFind({ documentId, hostRef, editorRef }: UseRichEdi
     window.setTimeout(() => { inputRef.current?.focus(); inputRef.current?.select() }, 0)
   }
 
-  const closeFind = () => { setIsOpen(false); setActiveBounds(null) }
+  const closeFind = () => { setIsOpen(false) }
   const keepFindFocus = useCallback(() => window.setTimeout(() => inputRef.current?.focus(), 0), [])
   const jumpPrevious = useCallback(() => {
     jumpMatch(-1)
@@ -153,7 +156,16 @@ export function useRichEditorFind({ documentId, hostRef, editorRef }: UseRichEdi
     keepFindFocus()
   }, [jumpMatch, keepFindFocus])
 
-  useEffect(() => { setIsOpen(false); setActiveBounds(null); reset() }, [documentId])
+  useEffect(() => { setIsOpen(false); reset() }, [documentId])
+
+  useEffect(() => {
+    if (!isOpen) return
+    const container = hostRef.current?.querySelector('.ql-container')
+    if (!container) return
+    const onScroll = () => setScrollTick((t) => t + 1)
+    container.addEventListener('scroll', onScroll, { passive: true })
+    return () => { container.removeEventListener('scroll', onScroll) }
+  }, [isOpen, hostRef])
 
   useFindShortcutEffect({ hostRef, editorRef, onOpen: openFind })
   useActiveMatchOverlayEffect({
@@ -162,8 +174,18 @@ export function useRichEditorFind({ documentId, hostRef, editorRef }: UseRichEdi
     hostRef,
     editorRef,
     keepFindFocus,
-    onBoundsChange: setActiveBounds,
   })
+
+  let activeBounds: FindMatchBounds | null = null
+  if (isOpen && state.matches.length > 0 && state.query.trim()) {
+    const host = hostRef.current
+    const editor = editorRef.current
+    if (host && editor) {
+      const index = state.matches[state.activeMatch]
+      const queryLength = state.query.trim().length
+      activeBounds = getActiveMatchBounds(host, editor, index, queryLength)
+    }
+  }
 
   if (!isOpen) {
     return null

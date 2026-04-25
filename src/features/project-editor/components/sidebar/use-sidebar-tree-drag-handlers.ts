@@ -1,5 +1,6 @@
 import type { DropIndicatorPosition } from './drop-indicator'
 import type { SidebarTreeRow } from './sidebar-tree-types'
+import { handleFileCrossFolderDrop, handleFileSameFolderReorder } from './sidebar-file-drop-logic'
 
 const FOLDER_ZONE_RATIO = 0.5
 const EDGE_ZONE_RATIO = 0.25
@@ -92,30 +93,23 @@ async function handleFileDrop(
     return
   }
 
-  const folderPath = sourceRow.path.includes('/') ? sourceRow.path.split('/').slice(0, -1).join('/') : ''
-  const siblingFiles = rows.filter(
-    (r) => r.type === 'file' && r.depth === sourceRow.depth && (folderPath === '' ? !r.path.includes('/') : r.path.startsWith(`${folderPath}/`)),
-  )
-  const reorderedIds = siblingFiles.map((r) => r.path)
-  const sourceIndex = reorderedIds.indexOf(draggingPath)
-  if (sourceIndex === -1) return
-  reorderedIds.splice(sourceIndex, 1)
+  const sourceFolder = sourceRow.path.includes('/') ? sourceRow.path.split('/').slice(0, -1).join('/') : ''
+  let targetFolder = sourceFolder
+  let targetRow: SidebarTreeRow | undefined
 
-  if (dropPosition.type === 'before' && dropPosition.targetIndex !== undefined) {
-    const targetRow = rows[dropPosition.targetIndex]
+  if ((dropPosition.type === 'before' || dropPosition.type === 'after') && dropPosition.targetIndex !== undefined) {
+    targetRow = rows[dropPosition.targetIndex]
     if (targetRow) {
-      const targetIndex = reorderedIds.indexOf(targetRow.path)
-      if (targetIndex !== -1) reorderedIds.splice(targetIndex, 0, draggingPath)
-    }
-  } else if (dropPosition.type === 'after' && dropPosition.targetIndex !== undefined) {
-    const targetRow = rows[dropPosition.targetIndex]
-    if (targetRow) {
-      const targetIndex = reorderedIds.indexOf(targetRow.path)
-      if (targetIndex !== -1) reorderedIds.splice(targetIndex + 1, 0, draggingPath)
+      targetFolder = targetRow.path.includes('/') ? targetRow.path.split('/').slice(0, -1).join('/') : ''
     }
   }
 
-  await onReorderFiles?.(folderPath, reorderedIds)
+  if (targetFolder !== sourceFolder) {
+    await handleFileCrossFolderDrop(rows, sourceRow, draggingPath, dropPosition, targetFolder, targetRow, onMoveFile, onReorderFiles)
+    return
+  }
+
+  await handleFileSameFolderReorder(rows, sourceRow, draggingPath, dropPosition, sourceFolder, onReorderFiles)
 }
 
 async function executeDrop(

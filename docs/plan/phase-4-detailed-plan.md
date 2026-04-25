@@ -1,7 +1,7 @@
 # Phase 4 Detailed Plan - Knowledge Graph & Authoring Tools
 
 Date: 2026-04-11
-Status: **In Progress** — WS1 ✅, WS2 ✅ (rename/delete/drag-reorder), WS5 ✅; WS3 Templates and WS4 Corkboard pending
+Status: **In Progress** — WS1 ✅, WS2 ✅ (rename/delete/drag-reorder), WS5 ✅; WS3 Templates pending; WS4 Corkboard cancelled
 Related: `docs/live/current-status.md`, `docs/dev-workflow.md`, `docs/spec/wiki-tag-links-spec.md`, `docs/plan/done/wiki-tag-links-implementation-plan.md`, `REQUIREMENTS.md`
 
 ## 1. Context and Starting Point
@@ -17,7 +17,7 @@ Phase 3 is complete and stable. The project has:
 - Green quality gates (`build`, `lint`, `test`, `test:smoke`).
 - Test runner script (`scripts/run-tests.ps1`) for reliable execution in all environments.
 
-This means Phase 4 can focus on knowledge graph features (wiki tag links), authoring tools (templates, corkboard), and operational improvements (folder operations, AI pipeline).
+This means Phase 4 can focus on knowledge graph features (wiki tag links), authoring tools (templates), and operational improvements (folder operations, AI pipeline).
 
 ## 2. Phase 4 Goal
 
@@ -25,14 +25,13 @@ Deliver a production-ready knowledge graph and authoring experience:
 - **Wiki tag links**: implicit tag-based lookup from Lore frontmatter, Ctrl+click navigation.
 - **Folder operations**: rename, delete, and move workflows.
 - **Templates**: create documents from predefined schemas (character, location, scene).
-- **Corkboard**: drag-and-drop card view for planning scenes/ideas.
+- **Templates**: create documents from predefined schemas (character, location, scene).
 - **AI import/export pipeline**: structured clipboard import from LLM output, structured export for AI context.
 
 Definition of Done target:
 - User can define tags in Lore frontmatter and click matching terms in any editor to open associated articles.
 - User can rename/delete/move folders in the sidebar with full safety checks.
 - User can create documents from templates with pre-filled frontmatter.
-- User can view and rearrange scenes on a corkboard via drag-and-drop.
 - User can import structured LLM output and export project content for AI context.
 - All Phase 3 behaviors remain intact (no regressions).
 - Feature set is covered by tests and quality gates pass.
@@ -44,7 +43,6 @@ Definition of Done target:
 - Wiki tag links: TagIndexService, IPC contracts, editor overlay, Ctrl+click navigation.
 - Folder rename/delete/move: IPC endpoints, sidebar UI, conflict safety.
 - Template system: template files, create-from-template dialog, frontmatter scaffolding.
-- Corkboard view: card rendering, drag-and-drop reordering, persistence.
 - AI import/export: structured clipboard parsing, multi-file creation, structured export format.
 
 ### Out of Scope (Phase 5+)
@@ -286,66 +284,9 @@ Detailed first implementation slice: `docs/plan/done/folder-rename-implementatio
 
 ## WS4 - Corkboard
 
-**Objective**: Provide a card-based drag-and-drop view for planning and reorganizing scenes/ideas.
+**Status**: ❌ **Cancelled** — File reorder via `corkboardOrder` in the index provides equivalent ordering capability without a separate card view. The sidebar already displays files in index order and supports drag-and-drop reorder, making a dedicated corkboard view redundant.
 
-**Status**: Not started.
-
-### Deliverables
-
-1. **Corkboard View**
-   - Toggle between sidebar tree and corkboard view.
-   - Cards represent markdown files (scenes, notes, lore).
-   - Cards show: title (from frontmatter `nombre` or filename), excerpt (first 100 chars), tags, status.
-
-2. **Drag-and-Drop Reordering**
-   - Drag cards to reorder within a section.
-   - Drag cards between sections/columns.
-   - Visual feedback during drag (drop zone indicators).
-
-3. **Persistence**
-   - Card order stored in `.trama.corkboard.json` per section.
-   - Restore order on project reopen.
-   - Sync with `.trama.index.json` (prune deleted files, add new ones).
-
-4. **Card Actions**
-   - Click card → open in editor primary pane.
-   - Right-click card → rename, delete, change status.
-   - Color-coded labels (user-settable per card).
-
-### Files to Create
-
-| File | Purpose |
-|------|---------|
-| `src/features/corkboard/corkboard-view.tsx` | Main corkboard layout |
-| `src/features/corkboard/corkboard-card.tsx` | Individual card component |
-| `src/features/corkboard/corkboard-column.tsx` | Column/section container |
-| `src/features/corkboard/corkboard-dnd.ts` | Drag-and-drop logic |
-| `src/features/corkboard/corkboard-state.ts` | Corkboard state management and persistence |
-| `electron/services/corkboard-service.ts` | Read/write `.trama.corkboard.json` |
-| `src/features/project-editor/components/corkboard-toggle.tsx` | Toggle between sidebar and corkboard |
-| `tests/corkboard-view.test.ts` | Corkboard rendering and card display tests |
-| `tests/corkboard-dnd.test.ts` | Drag-and-drop reordering tests |
-| `tests/corkboard-persistence.test.ts` | Order save/restore tests |
-
-### Files to Modify
-
-| File | Change |
-|------|--------|
-| `src/shared/ipc.ts` | Add `getCorkboard`, `saveCorkboardOrder` channels + Zod schemas |
-| `electron/ipc/handlers/corkboard-handlers.ts` | Corkboard IPC handlers |
-| `electron/preload.cts` | Expose corkboard operations to `window.tramaApi` |
-| `src/types/trama-api.d.ts` | Add corkboard type signatures |
-| `src/features/project-editor/project-editor-view.tsx` | Add corkboard toggle alongside sidebar |
-| `electron/services/index-service.ts` | Wire corkboard sync with index changes |
-
-### Acceptance Criteria
-
-1. User toggles to corkboard view → sees cards for all files in current section.
-2. User drags card to reorder → order persists after restart.
-3. User drags card between columns → file moves to new section.
-4. Clicking a card opens it in the editor.
-5. Deleted files are pruned from corkboard.
-6. All operations pass lint, test, and build.
+If reordering cards across sections is needed in the future, it can be implemented as a future enhancement without the full corkboard infrastructure.
 
 ---
 
@@ -437,7 +378,7 @@ All WS5 deliverables are implemented:
    - Editor overlay + Ctrl+click navigation.
    - Tests for matching, navigation, edge cases.
 
-2. **PR-2: WS2 - Folder Operations** (prerequisite for corkboard and templates)
+2. **PR-2: WS2 - Folder Operations** (prerequisite for templates)
    - Folder rename/delete IPC + sidebar context menus.
    - Drag-and-drop folder move.
    - Tests for all operations with conflict safety.
@@ -447,17 +388,7 @@ All WS5 deliverables are implemented:
    - Create-from-template dialog.
    - Default templates in example project.
 
-4. **PR-4: WS4 - Corkboard** (depends on folder operations for section management)
-   - Corkboard view + card rendering.
-   - Drag-and-drop reordering.
-   - Persistence and sync with index.
-
-5. **PR-5: WS5 - AI Import/Export** (standalone, can be done in parallel with corkboard)
-   - Import parser + conflict dialog.
-   - Export formatting + compilation.
-   - Tests for parsing and formatting.
-
-6. **PR-6: Phase 4 Closure and Docs**
+4. **PR-4: Phase 4 Closure and Docs**
    - Full regression run across all Phase 3 + Phase 4 features.
    - Docs update with final behavior and extension guidance.
    - Explicit Phase 4 completion evidence.
@@ -470,9 +401,6 @@ All WS5 deliverables are implemented:
 **Risk**: Quill editor decorator conflicts with existing focus mode overlays.
 - **Mitigation**: Tag overlay uses CSS Highlights API (same as focus mode); coordinate priority in `rich-markdown-editor-core.ts`; add combined focus+tag tests.
 
-**Risk**: Corkboard drag-and-drop complexity with existing sidebar DnD.
-- **Mitigation**: Use separate DnD implementation per view; corkboard uses its own state model; avoid reusing sidebar tree DnD logic.
-
 **Risk**: AI import creating files outside user intent.
 - **Mitigation**: Always show preview dialog before creating; require explicit confirmation; log all import actions.
 
@@ -480,7 +408,7 @@ All WS5 deliverables are implemented:
 - **Mitigation**: Bulk update index in single transaction; validate all paths post-move; add integrity check.
 
 **Risk**: Monolithic hook growth in `use-project-editor`.
-- **Mitigation**: Keep template, corkboard, and AI logic in isolated hooks/modules; enforce `max-lines` and `max-lines-per-function` rules.
+- **Mitigation**: Keep template and AI logic in isolated hooks/modules; enforce `max-lines` and `max-lines-per-function` rules.
 
 ## 8. Exit Criteria for Phase 4
 
@@ -488,7 +416,6 @@ Phase 4 is complete when all are true:
 - Wiki tag links work end-to-end: tags in frontmatter → implicit matching → Ctrl+click navigation → correct pane.
 - Folder rename/delete/move work with full conflict safety and index sync.
 - Templates allow creating documents with pre-filled frontmatter from built-in and custom templates.
-- Corkboard provides drag-and-drop card view with persistence.
 - AI import/export handles structured clipboard format with preview and conflict resolution.
 - All Phase 3 behaviors remain intact (split, themes, fullscreen/focus, conflict handling, sidebar).
 - Build/lint/test/smoke all pass.

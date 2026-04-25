@@ -51,18 +51,14 @@
       "lore/systems/politica.md",
       "lore/systems/magia.md"
     ],
-    "outline/AB": [
-      "outline/AB/a.md",
-      "outline/AB/d.md",
-      "outline/AB/b.md",
-      "outline/AB/c.md",
-      "outline/AB/e.md"
-    ],
     "outline/Act-01/Chapter-01": [
       "outline/Act-01/Chapter-01/chapter-beats.md"
     ],
     "outline/Act-01/Chapter-02": [
       "outline/Act-01/Chapter-02/chapter-beats.md"
+    ],
+    "outline/Act-01/Chapter-03": [
+      "outline/Act-01/Chapter-03/chapter-beats.md"
     ],
     "outline/Act-02/Chapter-01": [
       "outline/Act-02/Chapter-01/chapter-beats.md"
@@ -72,9 +68,6 @@
     ],
     "outline/Act-02/Chapter-03": [
       "outline/Act-02/Chapter-03/chapter-beats.md"
-    ],
-    "outline/Chapter-03": [
-      "outline/Chapter-03/chapter-beats.md"
     ],
     "outline/Misc": [
       "outline/Misc/arc-general.md"
@@ -170,17 +163,12 @@
       ]
     },
     "lore/systems/politica.md": {},
-    "outline/AB/a.md": {},
-    "outline/AB/b.md": {},
-    "outline/AB/c.md": {},
-    "outline/AB/d.md": {},
-    "outline/AB/e.md": {},
     "outline/Act-01/Chapter-01/chapter-beats.md": {},
     "outline/Act-01/Chapter-02/chapter-beats.md": {},
+    "outline/Act-01/Chapter-03/chapter-beats.md": {},
     "outline/Act-02/Chapter-01/chapter-beats.md": {},
     "outline/Act-02/Chapter-02/chapter-beats.md": {},
     "outline/Act-02/Chapter-03/chapter-beats.md": {},
-    "outline/Chapter-03/chapter-beats.md": {},
     "outline/Misc/arc-general.md": {},
     "README.md": {}
   }

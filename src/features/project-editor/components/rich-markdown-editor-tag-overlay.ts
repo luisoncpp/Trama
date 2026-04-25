@@ -27,7 +27,7 @@ export function mapPlainTextIndexToQuillIndex(editor: Quill, plainTextIndex: num
       const segment = op.insert
       const remaining = target - plainOffset
 
-      if (remaining <= segment.length) {
+      if (remaining < segment.length) {
         return quillOffset + remaining
       }
 

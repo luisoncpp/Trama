@@ -177,4 +177,27 @@ describe('tag overlay bounds recomputation (regression: stale bounds after layou
     expect(getBounds).toHaveBeenNthCalledWith(1, 1, 4)
     expect(getBounds).toHaveBeenNthCalledWith(2, 8, 5)
   })
+
+  it('skips intermediate embeds when plain offset falls exactly on a string-op boundary', () => {
+    // Document: "Satake\n" + embed(center-end) + embed(spacer) + "caminó\n"
+    // getText() returns "Satake\ncaminó\n" (embeds are invisible)
+    // Searching for "caminó" gives plain offset 7 (right after "Satake\n")
+    // The Quill index must skip both embeds and land at the start of "caminó": 10
+    const editor = {
+      getText: () => 'Satake\ncaminó\n',
+      getContents: () => ({
+        ops: [
+          { insert: 'Satake\n' },
+          { insert: { tramaDirective: 'center-end' } },
+          { insert: { tramaDirective: 'spacer' } },
+          { insert: 'caminó\n' },
+        ],
+      }),
+    } as any
+
+    // Offset 7 is the start of "caminó" in plain text.
+    // Without the fix (<=) this returns 7 (end of "Satake\n" / start of first embed).
+    // With the fix (<) it returns 9 (start of the "caminó" op, after both embeds).
+    expect(mapPlainTextIndexToQuillIndex(editor, 7)).toBe(9)
+  })
 })

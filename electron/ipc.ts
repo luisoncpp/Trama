@@ -1,4 +1,10 @@
 import type { BrowserWindow, IpcMain } from 'electron'
+
+let mainWindowHasUnsavedChanges = false
+
+export function getMainWindowHasUnsavedChanges(): boolean {
+  return mainWindowHasUnsavedChanges
+}
 import {
   type CreateDocumentRequest,
   type CreateFolderRequest,
@@ -160,4 +166,10 @@ export function registerIpcHandlers(ipcMain: IpcMain, getMainWindow: () => Brows
   registerSpellcheckHandler(ipcMain, getMainWindow)
   registerAiHandlers(ipcMain)
   registerTagHandlers(ipcMain)
+
+  ipcMain.handle(IPC_CHANNELS.notifyCloseState, (_event, payload: unknown) => {
+    if (typeof payload === 'object' && payload !== null && 'hasUnsavedChanges' in payload) {
+      mainWindowHasUnsavedChanges = Boolean((payload as Record<string, unknown>).hasUnsavedChanges)
+    }
+  })
 }

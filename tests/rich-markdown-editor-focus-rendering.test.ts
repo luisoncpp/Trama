@@ -268,4 +268,41 @@ describe('RichMarkdownEditor focus rendering regression', () => {
     expect(editorRoot.style.getPropertyValue('--focus-extra-top')).toBe('')
     expect(editorRoot.style.getPropertyValue('--focus-extra-bottom')).toBe('')
   })
+
+  it('mantiene foco en editor y seleccion valida tras repetidos cambios de seleccion en focus mode', async () => {
+    globalAny.CSS = { ...(globalAny.CSS ?? {}) }
+    delete (globalAny.CSS as { highlights?: unknown }).highlights
+    delete globalAny.Highlight
+
+    act(() => {
+      render(
+        h(RichMarkdownEditor, buildProps({
+          value: 'Linea uno.\nLinea dos.\nLinea tres para probar que el foco no se pierde.\nLinea cuatro.\nLinea cinco.',
+          focusScope: 'sentence',
+        })),
+        container,
+      )
+    })
+
+    await sleep(120)
+
+    const editor = getQuillInstance(container)
+    const editorRoot = container.querySelector('.ql-editor') as HTMLElement
+    const quillRoot = editor.root
+
+    for (let i = 0; i < 10; i += 1) {
+      const targetIndex = (i * 7) % Math.max(1, editor.getLength() - 1)
+      act(() => {
+        editor.setSelection(targetIndex, 0, 'silent')
+      })
+      await sleep(20)
+    }
+
+    const selection = editor.getSelection()
+    expect(selection).not.toBeNull()
+    expect(selection!.index).toBeGreaterThanOrEqual(0)
+    expect(selection!.index).toBeLessThan(editor.getLength())
+
+    expect(quillRoot.contains(document.activeElement)).toBe(true)
+  })
 })

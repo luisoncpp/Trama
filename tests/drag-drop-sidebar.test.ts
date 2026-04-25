@@ -3,6 +3,7 @@ import { buildSidebarTree, getVisibleSidebarRows } from '../src/features/project
 import type { SidebarTreeRow } from '../src/features/project-editor/components/sidebar/sidebar-tree-types'
 import type { DropIndicatorPosition } from '../src/features/project-editor/components/sidebar/drop-indicator'
 import { calculateDropPosition } from '../src/features/project-editor/components/sidebar/use-sidebar-tree-drag-handlers'
+import { handleFileCrossFolderDrop, handleFileSameFolderReorder } from '../src/features/project-editor/components/sidebar/sidebar-file-drop-logic'
 
 describe('drag-drop-sidebar', () => {
   describe('calculateDropPosition', () => {
@@ -203,6 +204,107 @@ describe('drag-drop-sidebar', () => {
       reordered.splice(0, 0, 'outline/b.md')
 
       expect(reordered).toEqual(['outline/b.md', 'outline/a.md', 'outline/c.md'])
+    })
+  })
+
+  describe('handleFileCrossFolderDrop', () => {
+    it('moves file and reorders into target folder when dropped before a file in another folder', async () => {
+      const rows: SidebarTreeRow[] = [
+        { nodeId: 'a', name: 'a', path: 'folder-a/file-a.md', type: 'file', depth: 1, isExpanded: false },
+        { nodeId: 'b', name: 'b', path: 'folder-b/file-b.md', type: 'file', depth: 1, isExpanded: false },
+        { nodeId: 'c', name: 'c', path: 'folder-b/file-c.md', type: 'file', depth: 1, isExpanded: false },
+      ]
+      const sourceRow = rows[0]
+      const dropPosition: DropIndicatorPosition = { type: 'before', targetIndex: 1, targetPath: 'folder-b/file-b.md' }
+      const onMoveFile = vi.fn().mockResolvedValue(undefined)
+      const onReorderFiles = vi.fn().mockResolvedValue(undefined)
+
+      await handleFileCrossFolderDrop(rows, sourceRow, 'folder-a/file-a.md', dropPosition, 'folder-b', rows[1], onMoveFile, onReorderFiles)
+
+      expect(onMoveFile).toHaveBeenCalledWith('folder-a/file-a.md', 'folder-b')
+      expect(onReorderFiles).toHaveBeenCalledWith('folder-b', [
+        'folder-b/file-a.md',
+        'folder-b/file-b.md',
+        'folder-b/file-c.md',
+      ])
+    })
+
+    it('moves file and reorders into target folder when dropped after a file in another folder', async () => {
+      const rows: SidebarTreeRow[] = [
+        { nodeId: 'a', name: 'a', path: 'folder-a/file-a.md', type: 'file', depth: 1, isExpanded: false },
+        { nodeId: 'b', name: 'b', path: 'folder-b/file-b.md', type: 'file', depth: 1, isExpanded: false },
+        { nodeId: 'c', name: 'c', path: 'folder-b/file-c.md', type: 'file', depth: 1, isExpanded: false },
+      ]
+      const sourceRow = rows[0]
+      const dropPosition: DropIndicatorPosition = { type: 'after', targetIndex: 1, targetPath: 'folder-b/file-b.md' }
+      const onMoveFile = vi.fn().mockResolvedValue(undefined)
+      const onReorderFiles = vi.fn().mockResolvedValue(undefined)
+
+      await handleFileCrossFolderDrop(rows, sourceRow, 'folder-a/file-a.md', dropPosition, 'folder-b', rows[1], onMoveFile, onReorderFiles)
+
+      expect(onMoveFile).toHaveBeenCalledWith('folder-a/file-a.md', 'folder-b')
+      expect(onReorderFiles).toHaveBeenCalledWith('folder-b', [
+        'folder-b/file-b.md',
+        'folder-b/file-a.md',
+        'folder-b/file-c.md',
+      ])
+    })
+
+    it('appends moved file when target row is not in destination siblings list', async () => {
+      const rows: SidebarTreeRow[] = [
+        { nodeId: 'a', name: 'a', path: 'folder-a/file-a.md', type: 'file', depth: 1, isExpanded: false },
+        { nodeId: 'b', name: 'b', path: 'folder-b/file-b.md', type: 'file', depth: 1, isExpanded: false },
+      ]
+      const sourceRow = rows[0]
+      const dropPosition: DropIndicatorPosition = { type: 'before', targetIndex: 1, targetPath: 'folder-b/file-b.md' }
+      const onMoveFile = vi.fn().mockResolvedValue(undefined)
+      const onReorderFiles = vi.fn().mockResolvedValue(undefined)
+
+      // Simulate rows that don't contain the targetRow in destSiblings by filtering depth mismatch
+      const filteredRows = rows.filter((r) => r.depth === 1)
+      await handleFileCrossFolderDrop(filteredRows, sourceRow, 'folder-a/file-a.md', dropPosition, 'folder-b', rows[1], onMoveFile, onReorderFiles)
+
+      expect(onMoveFile).toHaveBeenCalledWith('folder-a/file-a.md', 'folder-b')
+      expect(onReorderFiles).toHaveBeenCalledWith('folder-b', [
+        'folder-b/file-a.md',
+        'folder-b/file-b.md',
+      ])
+    })
+  })
+
+  describe('handleFileSameFolderReorder', () => {
+    it('reorders files within the same folder', async () => {
+      const rows: SidebarTreeRow[] = [
+        { nodeId: 'a', name: 'a', path: 'folder/file-a.md', type: 'file', depth: 1, isExpanded: false },
+        { nodeId: 'b', name: 'b', path: 'folder/file-b.md', type: 'file', depth: 1, isExpanded: false },
+        { nodeId: 'c', name: 'c', path: 'folder/file-c.md', type: 'file', depth: 1, isExpanded: false },
+      ]
+      const sourceRow = rows[0]
+      const dropPosition: DropIndicatorPosition = { type: 'after', targetIndex: 1, targetPath: 'folder/file-b.md' }
+      const onReorderFiles = vi.fn().mockResolvedValue(undefined)
+
+      await handleFileSameFolderReorder(rows, sourceRow, 'folder/file-a.md', dropPosition, 'folder', onReorderFiles)
+
+      expect(onReorderFiles).toHaveBeenCalledWith('folder', [
+        'folder/file-b.md',
+        'folder/file-a.md',
+        'folder/file-c.md',
+      ])
+    })
+
+    it('returns early when dragging path is not in sibling list', async () => {
+      const rows: SidebarTreeRow[] = [
+        { nodeId: 'a', name: 'a', path: 'folder/file-a.md', type: 'file', depth: 1, isExpanded: false },
+        { nodeId: 'b', name: 'b', path: 'folder/file-b.md', type: 'file', depth: 1, isExpanded: false },
+      ]
+      const sourceRow = rows[0]
+      const dropPosition: DropIndicatorPosition = { type: 'after', targetIndex: 1, targetPath: 'folder/file-b.md' }
+      const onReorderFiles = vi.fn().mockResolvedValue(undefined)
+
+      // Pass a path that doesn't exist in the sibling list
+      await handleFileSameFolderReorder(rows, sourceRow, 'other/file-x.md', dropPosition, 'folder', onReorderFiles)
+
+      expect(onReorderFiles).not.toHaveBeenCalled()
     })
   })
 })

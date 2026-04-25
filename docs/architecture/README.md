@@ -26,9 +26,10 @@ Canonical technical guides — the single source of truth for each subsystem's d
 | `split-pane-coordination.md` | Per-pane state model, pane-targeted actions, layout persistence | |
 | `tree-building-and-implicit-folders.md` | Implicit folder derivation, path normalization, ordering rules | |
 | `wiki-tag-links-architecture.md` | Tag index service, matching model, overlay rendering, IPC contract | |
+| `window-close-architecture.md` | Window close flow: `close` handler, dirty-state IPC cache, `__tramaSaveAll` bridge, promise-chain cancel pattern | |
 
 ## Historical context
 
-This index was last rebuilt on 2026-04-19. At that time, lessons-learned were clustered around split-pane state (8 lessons), rich-editor/Quill (6 lessons), and book-export (4 lessons). These concentrations drove the initial documentation effort and remain useful indicators of subsystem complexity.
+This index was last rebuilt on 2026-04-23. At that time, lessons-learned were clustered around split-pane state (8 lessons), rich-editor/Quill (6 lessons), and book-export (4 lessons). These concentrations drove the initial documentation effort and remain useful indicators of subsystem complexity.
 
 `overview.md` was added 2026-04-19 to provide a cross-cutting summary for contributors who need to understand the system as a whole before diving into subsystem docs.

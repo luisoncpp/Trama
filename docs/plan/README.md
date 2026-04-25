@@ -6,7 +6,7 @@ Active implementation plans — work that is in progress or planned but not yet 
 
 | File | Scope |
 |------|-------|
-| `phase-4-detailed-plan.md` | Phase 4 master plan: Wiki Tag Links, folder operations, templates, corkboard, AI import/export |
+| `phase-4-detailed-plan.md` | Phase 4 master plan: Wiki Tag Links, folder operations, templates, AI import/export |
 | `implementation-overview.md` | Phase 3 closure summary |
 | `ai-import-export-implementation-map.md` | AI import/export feature mapping |
 | `drag-drop-file-reorder-plan.md` | Drag-and-drop file reorder Slice 1 and Slice 2 |

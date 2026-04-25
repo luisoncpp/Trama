@@ -40,6 +40,7 @@ import {
   type MoveFileResponse,
   type MoveFolderRequest,
   type MoveFolderResponse,
+  type NotifyCloseState,
   type SelectProjectFolderResponse,
   type SetSpellcheckSettingsRequest,
   type SetFullscreenRequest,
@@ -159,6 +160,9 @@ const tramaApi = {
   },
   moveFolder(payload: MoveFolderRequest): Promise<IpcEnvelope<MoveFolderResponse>> {
     return ipcRenderer.invoke(IPC_CHANNELS.moveFolder, payload)
+  },
+  notifyCloseState(payload: NotifyCloseState): Promise<void> {
+    return ipcRenderer.invoke(IPC_CHANNELS.notifyCloseState, payload)
   },
 }
 

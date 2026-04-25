@@ -42,6 +42,7 @@ import type {
   MoveFileResponse,
   MoveFolderRequest,
   MoveFolderResponse,
+  NotifyCloseState,
 } from '../shared/ipc'
 import type { TagGetIndexResponse, TagResolveRequest, TagResolveResponse } from '../shared/ipc-tag'
 
@@ -75,6 +76,7 @@ declare global {
       reorderFiles(payload: ReorderFilesRequest): Promise<IpcEnvelope<ReorderFilesResponse>>
       moveFile(payload: MoveFileRequest): Promise<IpcEnvelope<MoveFileResponse>>
       moveFolder(payload: MoveFolderRequest): Promise<IpcEnvelope<MoveFolderResponse>>
+      notifyCloseState(payload: NotifyCloseState): Promise<void>
     }
   }
 }

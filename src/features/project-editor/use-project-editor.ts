@@ -6,6 +6,7 @@ import { useProjectEditorAutosaveEffect } from './use-project-editor-autosave-ef
 import { useProjectEditorContextMenuEffect } from './use-project-editor-context-menu-effect'
 import { useProjectEditorExternalEventsEffect } from './use-project-editor-external-events-effect'
 import { useProjectEditorFullscreenEffect } from './use-project-editor-fullscreen-effect'
+import { useProjectEditorCloseEffect } from './use-project-editor-close-effect'
 import { useProjectEditorShortcutsEffect } from './use-project-editor-shortcuts-effect'
 import { useProjectEditorState } from './use-project-editor-state'
 
@@ -76,6 +77,12 @@ function useProjectEditorEffects(
   useProjectEditorFullscreenEffect({ setIsFullscreen: setters.setIsFullscreen })
 
   useProjectEditorShortcutsEffect(buildShortcutsEffectParams(actions, values.isFullscreen, values.workspaceLayout))
+
+  useProjectEditorCloseEffect({
+    primaryPane: values.primaryPane,
+    secondaryPane: values.secondaryPane,
+    saveDocumentNow: core.saveDocumentNow,
+  })
 
   useProjectEditorContextMenuEffect({
     isFullscreen: values.isFullscreen,

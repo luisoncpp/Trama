@@ -28,6 +28,7 @@ export const IPC_CHANNELS = {
   reorderFiles: 'trama:index:reorder',
   moveFile: 'trama:file:move',
   moveFolder: 'trama:folder:move',
+  notifyCloseState: 'trama:window:notify-close-state',
 } as const
 
 export const pingRequestSchema = z.object({ message: z.string().trim().min(1).max(120) })
@@ -181,5 +182,6 @@ export type MoveFileRequest = z.infer<typeof moveFileRequestSchema>
 export type MoveFileResponse = z.infer<typeof moveFileResponseSchema>
 export type MoveFolderRequest = z.infer<typeof moveFolderRequestSchema>
 export type MoveFolderResponse = z.infer<typeof moveFolderResponseSchema>
+export type NotifyCloseState = { hasUnsavedChanges: boolean }
 export type IpcError = z.infer<typeof ipcErrorSchema>
 export type IpcEnvelope<T> = { ok: true; data: T } | { ok: false; error: IpcError }

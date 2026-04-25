@@ -33,9 +33,21 @@ const quillEnd = mapPlainTextIndexToQuillIndex(editor, match.end)
 const bounds = editor.getBounds(quillStart, quillEnd - quillStart)
 ```
 
+### Edge case: boundary between string ops with intervening embeds
+
+When a plain-text offset falls exactly at the boundary between two string ops (e.g. right after `"Satake\n"`), the mapper must **skip intermediate embeds** to land on the next string op. Using `<=` causes the mapper to return the index at the end of the first string op (which may be an embed or a `\n` with block attributes), producing bounds for the wrong element.
+
+Use `<` so the mapper continues past the boundary and accumulates the Quill indexes of all intervening embeds:
+
+```ts
+if (remaining < segment.length) {
+  return quillOffset + remaining
+}
+```
+
 ## Rule
 
-Never pass raw offsets derived from `getText()` into Quill APIs that expect document indexes (`getBounds`, `setSelection`, etc.) without accounting for embed ops.
+Never pass raw offsets derived from `getText()` into Quill APIs that expect document indexes (`getBounds`, `setSelection`, etc.) without accounting for embed ops. When walking ops, use strict `<` for in-segment checks so boundary offsets skip past intermediate embeds.
 
 ## Regression Coverage
 

@@ -30,6 +30,8 @@ Mandatory doc navigation for new chats: start with `docs/START-HERE.md` — it p
   - Includes the `Paste Markdown` menu entry for editable contexts; the menu dispatches `{ type: 'paste-markdown' }` to the renderer when selected.
 - `electron/main-process/smoke-hooks.ts`
   - Startup smoke hooks.
+- `electron/main-process/window-close.ts`
+  - Window close handler: intercepts `close` event, checks cached dirty state, shows native save dialog, and calls `win.destroy()` to force close.
 - `electron/ipc.ts`
   - Thin IPC registration/orchestration.
 - `electron/ipc/spellcheck.ts`
@@ -140,6 +142,8 @@ Mandatory doc navigation for new chats: start with `docs/START-HERE.md` — it p
   - Renderer subscription to native fullscreen state changes.
 - `src/features/project-editor/use-project-editor-shortcuts-effect.ts`
   - Global workspace shortcuts (split/fullscreen/focus/pane switch).
+- `src/features/project-editor/use-project-editor-close-effect.ts`
+  - Notifies dirty state to main process via `notifyCloseState` IPC and exposes `window.__tramaSaveAll` for the close handler to invoke saves before closing.
 - `src/features/project-editor/use-workspace-layout-state.ts`
   - Persist workspace layout (`trama.workspace.layout.v1`).
 - `docs/architecture/split-pane-coordination.md`
@@ -274,6 +278,8 @@ Mandatory doc navigation for new chats: start with `docs/START-HERE.md` — it p
   - Expanded folder state management, including rename remap consumption via sidebar folder-rename events.
 - `src/features/project-editor/components/sidebar/use-sidebar-tree-drag-handlers.ts`
   - Drag-and-drop handler logic (dragStart, dragOver, drop) and drop position calculation, extracted from `sidebar-tree.tsx`.
+- `src/features/project-editor/components/sidebar/sidebar-file-drop-logic.ts`
+  - Pure helpers for file drop handling: cross-folder move + reorder (`handleFileCrossFolderDrop`) and same-folder reorder (`handleFileSameFolderReorder`).
 - `src/features/project-editor/components/sidebar/sidebar-folder-rename-events.ts`
   - One-shot folder rename event bridge used to remap expanded folder state after refresh.
 - `src/features/project-editor/components/sidebar/sidebar-filter.tsx`
@@ -400,6 +406,13 @@ Core and regression suites:
   - IPC handler coverage: rejects invalid `importMode` with `VALIDATION_ERROR`, append mode produces expected written content via IPC.
 - `tests/use-ai-import.test.ts`
   - Renderer import hook coverage: `importMode` forwarded to preview IPC call, `importMode` forwarded to execute IPC call, log message format matches created/appended/replaced/skipped/errors counts.
+- `tests/window-close.test.ts`
+  - Regression tests for window close behavior: dirty state IPC notification, `__tramaSaveAll` global function, parallel save of dirty panes.
+
+## Architecture docs
+
+- `docs/architecture/window-close-architecture.md`
+  - Documents the window close architecture: main-process close handler, renderer dirty-state notification via IPC, `__tramaSaveAll` bridge, promise-chain cancel pattern, and key files.
 
 ## Build outputs
 

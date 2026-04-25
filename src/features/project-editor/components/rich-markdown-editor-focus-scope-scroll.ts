@@ -27,7 +27,7 @@ export function createUpdateCenteredScroll(
 		editorRoot.style.setProperty('--focus-extra-bottom', `${basePad}px`)
 
 		requestAnimationFrame(() => {
-			updateScrollRAF1(container, editorRoot, selectionRect, basePad, getSelectionRect)
+			updateScrollRAF1(container, editorRoot, quill, selectionRect, basePad, getSelectionRect)
 		})
 	}
 }
@@ -35,6 +35,7 @@ export function createUpdateCenteredScroll(
 function updateScrollRAF1(
 	container: HTMLElement,
 	editorRoot: HTMLElement,
+	quill: Quill,
 	selectionRect: SelectionRect,
 	basePad: number,
 	getSelectionRect: () => SelectionRect | null,
@@ -58,12 +59,14 @@ function updateScrollRAF1(
 	}
 
 	requestAnimationFrame(() => {
-		updateScrollRAF2(container, refreshedRect, getSelectionRect)
+		updateScrollRAF2(container, editorRoot, quill, refreshedRect, getSelectionRect)
 	})
 }
 
 function updateScrollRAF2(
 	container: HTMLElement,
+	editorRoot: HTMLElement,
+	quill: Quill,
 	refreshedRect: SelectionRect,
 	getSelectionRect: () => SelectionRect | null,
 ): void {
@@ -76,6 +79,10 @@ function updateScrollRAF2(
 	const maxScroll = Math.max(0, container.scrollHeight - container.clientHeight)
 	const target = Math.max(0, Math.min(desired, maxScroll))
 	if (Math.abs(container.scrollTop - target) > 1) {
+		const selection = quill.getSelection()
 		container.scrollTop = Math.round(target)
+		if (selection) {
+			quill.setSelection(selection.index, selection.length, 'silent')
+		}
 	}
 }
