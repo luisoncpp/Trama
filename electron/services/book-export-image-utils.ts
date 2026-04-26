@@ -180,3 +180,7 @@ export function calculateDocxImageSize(
     height: Math.round(dimensions.height * scale),
   }
 }
+
+export function escapeRegex(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}

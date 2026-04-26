@@ -3,7 +3,7 @@ import { AlignmentType, Document, HeadingLevel, ImageRun, Packer, Paragraph, Tex
 import { type BookExportDirective } from './book-export-directives.js'
 import { getImageDimensions, calculateDocxImageSize } from './book-export-image-utils.js'
 import { resolveImagePath, loadImageBytes } from './book-export-image-utils.js'
-import { processChapterContent } from './book-export-line-processor.js'
+import { processChapterContent, type ExtractedImageInfo } from './book-export-line-processor.js'
 import type { BookExportChapter, BookExportMetadata } from './book-export-renderers.js'
 
 function stripInlineMarkdown(text: string): string {
@@ -55,6 +55,54 @@ function addSpacing(paragraphs: Paragraph[], count: number): void {
   }
 }
 
+function buildDocxHandlers(
+  paragraphs: Paragraph[],
+  projectRoot: string,
+  dir: string,
+  state: { centered: boolean; lastWasPagebreak: boolean },
+) {
+  return {
+    onDirective: (directive: BookExportDirective) => {
+      if (directive.kind === 'pagebreak') {
+        paragraphs.push(new Paragraph({ pageBreakBefore: true }))
+        state.lastWasPagebreak = true
+      } else if (directive.kind === 'spacer') {
+        for (let i = 0; i < directive.lines; i += 1) {
+          paragraphs.push(new Paragraph({ text: '' }))
+        }
+      } else if (directive.kind === 'centerStart') {
+        state.centered = true
+      } else if (directive.kind === 'centerEnd') {
+        state.centered = false
+      }
+    },
+    onImage: async (imageInfo: ExtractedImageInfo) => {
+      if (!imageInfo) return
+      const resolvedPath = await resolveImagePath(imageInfo.source, projectRoot, dir)
+      const { bytes, type } = await loadImageBytes(resolvedPath)
+      if (bytes && type) {
+        try {
+          paragraphs.push(createImageParagraph(bytes, type))
+        } catch (err) {
+          console.warn(`Failed to embed image in DOCX`, err instanceof Error ? err.message : String(err))
+        }
+      }
+    },
+    onHeading: (level: number, text: string) => {
+      paragraphs.push(createHeadingParagraph(text, level as 1 | 2 | 3 | 4 | 5 | 6, state.centered))
+    },
+    onParagraph: (text: string) => {
+      const stripped = stripInlineMarkdown(text)
+      if (!stripped) {
+        paragraphs.push(new Paragraph({ text: '' }))
+        return
+      }
+      paragraphs.push(createTextParagraph(stripped, state.centered))
+    },
+    onReferenceDefinition: () => {},
+  }
+}
+
 async function chapterParagraphs(
   chapter: BookExportChapter,
   isLast: boolean,
@@ -62,55 +110,15 @@ async function chapterParagraphs(
 ): Promise<Paragraph[]> {
   const paragraphs: Paragraph[] = []
   const chapterDir = path.dirname(chapter.path)
-  let centered = false
-  let lastWasPagebreak = false
+  const state = { centered: false, lastWasPagebreak: false }
 
   await processChapterContent(
     chapter.content,
     chapterDir,
-    {
-      onDirective: (directive: BookExportDirective) => {
-        if (directive.kind === 'pagebreak') {
-          paragraphs.push(new Paragraph({ pageBreakBefore: true }))
-          lastWasPagebreak = true
-        } else if (directive.kind === 'spacer') {
-          for (let i = 0; i < directive.lines; i += 1) {
-            paragraphs.push(new Paragraph({ text: '' }))
-          }
-        } else if (directive.kind === 'centerStart') {
-          centered = true
-        } else if (directive.kind === 'centerEnd') {
-          centered = false
-        }
-      },
-      onImage: async (imageInfo, chapterDir) => {
-        if (!imageInfo) return
-        const resolvedPath = await resolveImagePath(imageInfo.source, projectRoot, chapterDir)
-        const { bytes, type } = await loadImageBytes(resolvedPath)
-        if (bytes && type) {
-          try {
-            paragraphs.push(createImageParagraph(bytes, type))
-          } catch (err) {
-            console.warn(`Failed to embed image in DOCX`, err instanceof Error ? err.message : String(err))
-          }
-        }
-      },
-      onHeading: (level: number, text: string) => {
-        paragraphs.push(createHeadingParagraph(text, level as 1 | 2 | 3 | 4 | 5 | 6, centered))
-      },
-      onParagraph: (text: string) => {
-        const stripped = stripInlineMarkdown(text)
-        if (!stripped) {
-          paragraphs.push(new Paragraph({ text: '' }))
-          return
-        }
-        paragraphs.push(createTextParagraph(stripped, centered))
-      },
-      onReferenceDefinition: () => {},
-    },
+    buildDocxHandlers(paragraphs, projectRoot, chapterDir, state),
   )
 
-  if (!isLast && !lastWasPagebreak) {
+  if (!isLast && !state.lastWasPagebreak) {
     addSpacing(paragraphs, 2)
   }
 

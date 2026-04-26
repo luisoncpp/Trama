@@ -4,6 +4,7 @@ import { act } from 'preact/test-utils'
 import { useState } from 'preact/hooks'
 import Quill from 'quill'
 import { RichMarkdownEditor } from '../src/features/project-editor/components/rich-markdown-editor'
+import { hydrateMarkdownImages, getImageMap } from '../src/shared/markdown-image-placeholder'
 
 describe('RichMarkdownEditor', () => {
   let container: HTMLDivElement
@@ -967,5 +968,175 @@ describe('RichMarkdownEditor', () => {
     await sleep(40)
 
     expect(lastMarkdown).toMatch(/<!-- trama:spacer lines=\d+ -->/)
+  })
+
+  describe('IMAGE_PLACEHOLDER round-trip regression', () => {
+    const TINY_PNG_1X1 = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8DwDwAFBQIAX8jx0gAAAABJRU5ErkJggg=='
+    const TINY_PNG_1X1_ALT = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAACCAYAAABhuykZAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=='
+
+    it('preserva imagen en markdown tras pegar imagen base64', async () => {
+      let lastMarkdown = ''
+      const docId = 'img-roundtrip-doc'
+
+      act(() => {
+        render(
+          h(RichMarkdownEditor, buildEditorProps({
+            documentId: docId,
+            value: 'Inicio',
+            onChange: (markdown) => {
+              lastMarkdown = markdown
+            },
+          })),
+          container,
+        )
+      })
+
+      await sleep(80)
+      const editor = getQuillInstance(container)
+
+      act(() => {
+        editor.focus()
+        editor.setSelection(editor.getLength() - 1, 0, 'silent')
+      })
+
+      await sleep(20)
+
+      const imgHTML = `<img src="${TINY_PNG_1X1}">`
+      editor.clipboard.dangerouslyPasteHTML(imgHTML, 'user')
+
+      await sleep(80)
+
+      // In-memory markdown uses short placeholders for editing speed
+      expect(lastMarkdown).toContain('<!-- IMAGE_PLACEHOLDER:img_0 -->')
+
+      // Image data is cached and can be hydrated before save
+      const imageMap = getImageMap(docId)
+      expect(imageMap).toBeDefined()
+      expect(imageMap?.get('img_0')).toContain(TINY_PNG_1X1.substring(0, 20))
+
+      const hydrated = hydrateMarkdownImages(lastMarkdown, docId)
+      expect(hydrated).toContain('![img_0](')
+      expect(hydrated).toContain(TINY_PNG_1X1.substring(0, 20))
+    })
+
+    it('tras recargar markdown estandar con imagen base64, imagen vuelve al editor', async () => {
+      const markdownWithImage = [
+        'Texto antes',
+        `![img_0](${TINY_PNG_1X1_ALT})`,
+        'Texto despues',
+      ].join('\n')
+
+      act(() => {
+        render(
+          h(RichMarkdownEditor, buildEditorProps({
+            documentId: 'img-reload-doc',
+            value: markdownWithImage,
+          })),
+          container,
+        )
+      })
+
+      await sleep(80)
+
+      const editor = getQuillInstance(container)
+      const editorHTML = editor.root.innerHTML
+
+      expect(editorHTML).toContain('data:image/png')
+      expect(editorHTML).toContain(TINY_PNG_1X1_ALT.substring(0, 20))
+    })
+
+    it('tras recargar markdown con comentario HTML antiguo, imagen vuelve al editor (retrocompatibilidad)', async () => {
+      const markdownWithLegacyPlaceholder = [
+        'Texto antes',
+        `<!-- IMAGE_PLACEHOLDER:img_0:${TINY_PNG_1X1_ALT} -->`,
+        'Texto despues',
+      ].join('\n')
+
+      act(() => {
+        render(
+          h(RichMarkdownEditor, buildEditorProps({
+            documentId: 'img-reload-legacy-doc',
+            value: markdownWithLegacyPlaceholder,
+          })),
+          container,
+        )
+      })
+
+      await sleep(80)
+
+      const editor = getQuillInstance(container)
+      const editorHTML = editor.root.innerHTML
+
+      expect(editorHTML).toContain('data:image/png')
+      expect(editorHTML).toContain(TINY_PNG_1X1_ALT.substring(0, 20))
+    })
+
+    it('vuelve a editar documento con imagen y preserva la imagen en output', async () => {
+      let lastMarkdown = ''
+      const docId = 'img-edit-doc'
+
+      act(() => {
+        render(
+          h(RichMarkdownEditor, buildEditorProps({
+            documentId: docId,
+            value: `Texto inicial\n\n![img_0](${TINY_PNG_1X1})\n\nTexto final`,
+            onChange: (markdown) => {
+              lastMarkdown = markdown
+            },
+          })),
+          container,
+        )
+      })
+
+      await sleep(80)
+      const editor = getQuillInstance(container)
+
+      act(() => {
+        editor.insertText(editor.getLength() - 1, ' agregado', 'user')
+      })
+
+      await sleep(60)
+
+      // In-memory markdown uses short placeholders for editing speed
+      expect(lastMarkdown).toContain('<!-- IMAGE_PLACEHOLDER:img_0 -->')
+      expect(lastMarkdown).not.toContain('data:image/png')
+
+      // Image data is cached and can be hydrated before save
+      const imageMap = getImageMap(docId)
+      expect(imageMap).toBeDefined()
+      expect(imageMap?.get('img_0')).toContain(TINY_PNG_1X1.substring(0, 20))
+
+      const hydrated = hydrateMarkdownImages(lastMarkdown, docId)
+      expect(hydrated).toContain('![img_0](')
+      expect(hydrated).toContain(TINY_PNG_1X1.substring(0, 20))
+    })
+
+    it('no incluye IMAGE_PLACEHOLDER en output si no hay imagenes', async () => {
+      let lastMarkdown = ''
+
+      act(() => {
+        render(
+          h(RichMarkdownEditor, buildEditorProps({
+            documentId: 'no-img-doc',
+            value: '# Sin imagenes',
+            onChange: (markdown) => {
+              lastMarkdown = markdown
+            },
+          })),
+          container,
+        )
+      })
+
+      await sleep(80)
+      const editor = getQuillInstance(container)
+
+      act(() => {
+        editor.insertText(editor.getLength() - 1, ' text', 'user')
+      })
+
+      await sleep(40)
+
+      expect(lastMarkdown).not.toContain('IMAGE_PLACEHOLDER')
+    })
   })
 })

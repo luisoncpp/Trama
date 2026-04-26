@@ -24,12 +24,14 @@ interface UseRichEditorLifecycleParams {
 
 function registerEditorTextChangeHandler({
   editor,
+  documentId,
   isApplyingExternalValueRef,
   turndownRef,
   lastEditorValueRef,
   onChangeRef,
 }: {
   editor: Quill
+  documentId: string
   isApplyingExternalValueRef: { current: boolean }
   turndownRef: { current: TurndownService }
   lastEditorValueRef: { current: string }
@@ -38,7 +40,7 @@ function registerEditorTextChangeHandler({
   editor.on('text-change', () => {
     if (isApplyingExternalValueRef.current) return
     syncCenteredLayoutArtifacts(editor)
-    const markdown = serializeEditorMarkdownFromRef(turndownRef, editor.root.innerHTML)
+    const markdown = serializeEditorMarkdownFromRef(turndownRef, editor.root.innerHTML, documentId)
     lastEditorValueRef.current = markdown
     onChangeRef.current(markdown)
   })
@@ -66,6 +68,7 @@ function useInitializeEditor({
     lastEditorValueRef.current = normalizeMarkdown(value)
     registerEditorTextChangeHandler({
       editor,
+      documentId: documentId ?? '',
       isApplyingExternalValueRef,
       turndownRef,
       lastEditorValueRef,

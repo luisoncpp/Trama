@@ -73,3 +73,4 @@ Avoid: "bug description + fix". Prefer: "what I learned that applies to future w
 | `find-replace-quill-range.md` | Replace in Quill requires plain-text-to-Quill-index conversion via `mapPlainTextIndexToQuillIndex`; `replaceAll` must process matches from end to start to avoid index drift | 2026-04-24 |
 | `focus-mode-css-grid-display-none-auto-place.md` | `display:none` removes grid items from the grid, causing remaining items to auto-place into the first cell; always recalculate `grid-template-columns` when hiding grid children | 2026-04-25 |
 | `focus-mode-scrollbar-dimming.md` | Scrollbar in focus mode stands out; dim via `::-webkit-scrollbar-thumb` with `color-mix` on `.ql-container.ql-snow` | 2026-04-25 |
+| `turndown-base64-replacement-performance.md` | Turndown `replacement` callbacks must return small strings; returning multi-megabyte base64 causes 25+ s per keystroke | 2026-04-25 |

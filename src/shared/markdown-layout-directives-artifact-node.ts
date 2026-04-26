@@ -7,7 +7,7 @@ interface DirectiveArtifactClassList {
   forEach: (callback: (token: string) => void) => void
 }
 
-interface DirectiveArtifactNode {
+export interface DirectiveArtifactNode {
   getAttribute: (name: string) => string | null
   classList: DirectiveArtifactClassList
 }

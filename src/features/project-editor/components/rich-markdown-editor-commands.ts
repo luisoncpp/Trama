@@ -32,7 +32,7 @@ export function registerWorkspaceCommandListener(
         const { markdownWithArtifacts } = renderDirectiveArtifactsToMarkdown(clipboardText)
         editor.clipboard.dangerouslyPasteHTML(index, marked.parse(markdownWithArtifacts) as string, 'user')
       } else {
-        const markdown = serializeEditorMarkdownFromRef(turndownRef, getCopySourceHtml(editor))
+        const markdown = serializeEditorMarkdownFromRef(turndownRef, getCopySourceHtml(editor), '')
         await navigator.clipboard.writeText(markdown)
       }
     } catch {

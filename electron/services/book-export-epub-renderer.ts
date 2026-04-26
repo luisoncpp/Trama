@@ -5,7 +5,7 @@ import path from 'node:path'
 import { createRequire } from 'node:module'
 import type { BookExportChapter, BookExportMetadata } from './book-export-renderers.js'
 import { renderChapterHtmlFragment } from './book-export-renderers.js'
-import { parseDataUrl, resolveImagePath, extractImageReferences, extractImageInfo } from './book-export-image-utils.js'
+import { parseDataUrl, resolveImagePath, extractImageReferences, extractImageInfo, escapeRegex } from './book-export-image-utils.js'
 
 const require = createRequire(import.meta.url)
 
@@ -28,10 +28,6 @@ type EpubInstance = {
 }
 
 type EpubConstructor = new (options: EpubOptions) => EpubInstance
-
-function escapeRegex(value: string): string {
-  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-}
 
 function toEpubFileUrl(absolutePath: string): string {
   const normalized = absolutePath.replace(/\\/g, '/')

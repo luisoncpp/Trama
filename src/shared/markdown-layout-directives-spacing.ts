@@ -1,4 +1,5 @@
 const MAX_SPACER_LINES = 12
+const IMAGE_PLACEHOLDER_PREFIX = '<!-- IMAGE_PLACEHOLDER:'
 
 function isBlankLine(line: string): boolean {
   return line.trim().length === 0
@@ -29,6 +30,11 @@ export function normalizeBlankLinesToSpacerDirectives(markdown: string): string 
 
   while (index < lines.length) {
     const currentLine = lines[index] ?? ''
+    if (currentLine.startsWith(IMAGE_PLACEHOLDER_PREFIX)) {
+      output.push(currentLine)
+      index += 1
+      continue
+    }
     output.push(currentLine)
 
     if (isBlankLine(currentLine)) {

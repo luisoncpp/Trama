@@ -66,8 +66,9 @@ This document describes how **Trama** uses **Quill** to implement its rich text 
 |------|-----------------|
 | `rich-markdown-editor.tsx` | Main React component, hook orchestration |
 | `rich-markdown-editor-core.ts` | Editor lifecycle (init, sync, disable, spellcheck) |
-| `rich-markdown-editor-quill.ts` | Quill creation, markdown parse/serialize |
+| `rich-markdown-editor-quill.ts` | Quill creation, markdown parse/serialize (see `image-handling-architecture.md`) |
 | `rich-markdown-editor-toolbar.ts` | Toolbar controls: save button, sync state, layout buttons (center/pagebreak) |
+| `../../shared/markdown-image-placeholder.ts` | Image extraction, placeholder generation, hydration, in-memory cache |
 | `rich-markdown-editor-commands.ts` | Command bridge via CustomEvent (`paste-markdown`, `copy-as-markdown`) |
 | `rich-markdown-editor-typography.ts` | Typography replacements (`--` → `—`) |
 | `rich-markdown-editor-ctrl-key.ts` | Ctrl/Meta key state for tag overlay activation |
@@ -141,6 +142,9 @@ renderDirectiveArtifactsToMarkdown()  // Converts markdown directives to placeho
 marked.parse()                        // Markdown → HTML
     │
     ▼
+restoreImagesAfterMarkedparsing()     // Restore <img> from standard markdown ![](data:...)
+    │
+    ▼
 editor.setContents([], source)        // Clear editor before inserting
     │
     ▼
@@ -152,10 +156,15 @@ syncCenteredLayoutArtifacts()          // Sync centered content CSS artifacts
 
 > **Note:** `syncCenteredLayoutArtifacts()` is also called on every `text-change` event (not just on load) to keep centered content CSS classes in sync during editing.
 
+> **Images:** If the markdown contains inline base64 images (`![uuid](data:image/...)`), `marked.parse()` produces `<img src="data:...">` tags directly. `restoreImagesAfterMarkedparsing()` also handles legacy HTML comment placeholders for backward compatibility. See `docs/architecture/image-handling-architecture.md` for the full image handling spec.
+
 ### Quill → Markdown (Save)
 
 ```
 editor.root.innerHTML
+    │
+    ▼
+stripBase64ImagesFromHtml()            // Replace <img src="data:..."> with placeholders
     │
     ▼
 turndownService.turndown()             // HTML → Markdown (with custom rule)
@@ -169,6 +178,8 @@ normalizeBlankLinesToSpacerDirectives() // Blank lines → spacer directives
     ▼
 onChange(markdown)                     // Trigger IPC save
 ```
+
+> **Images:** `stripBase64ImagesFromHtml()` extracts base64 `data:image/...` URLs from `<img>` tags and stores them in an in-memory cache keyed by `documentId`. This keeps Turndown fast. See `docs/architecture/image-handling-architecture.md`.
 
 ### Serialization (`serializeEditorMarkdown`)
 
@@ -416,3 +427,5 @@ Verify that `updateEditorValue(value, pane)` targets the correct pane. `syncStat
 - Quill docs: https://quilljs.com/docs/
 - Layout directives spec: `docs/spec/markdown-layout-directives-spec.md`
 - Wiki tags system guide: `docs/plan/done/wiki-tag-links-system-guide.md`
+- Image handling architecture: `docs/architecture/image-handling-architecture.md`
+- Turndown performance lesson: `docs/lessons-learned/turndown-base64-replacement-performance.md`

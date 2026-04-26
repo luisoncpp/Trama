@@ -4,6 +4,7 @@ import type { PaneDocumentState, ProjectEditorActions, WorkspacePane } from './p
 import type { UseProjectEditorStateResult } from './use-project-editor-state'
 import { useOpenProject } from './use-project-editor-open-project'
 import { useProjectEditorUiActions } from './use-project-editor-ui-actions'
+import { hydrateMarkdownImages } from '../../shared/markdown-image-placeholder'
 
 interface CoreProjectEditorActions {
   clearEditor: () => void
@@ -78,7 +79,8 @@ function useSaveDocumentNow(
       setters.setSaving(true)
 
       try {
-        const response = await window.tramaApi.saveDocument({ path, content, meta })
+        const hydratedContent = hydrateMarkdownImages(content, path)
+        const response = await window.tramaApi.saveDocument({ path, content: hydratedContent, meta })
         if (!response.ok) {
           setters.setStatusMessage(`Error saving ${path}: ${response.error.message}`)
           return
