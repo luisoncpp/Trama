@@ -118,14 +118,18 @@ Before writing any code that interacts with Quill's API (coordinates, bounds, se
 
 Every `useEffect`, `useCallback`, `useMemo`, and similar hook must include a descriptive name comment and dependency documentation:
 
+**🤢🤮❌ BAD, TERRIBLE, AWFUL, ABOMINATION**
+
 ```ts
-// useEffect pattern
+useEffect(() => { ... }, [dep1, dep2])
+const fn = useCallback(() => { ... }, [dep1, dep2])
+const value = useMemo(() => { ... }, [dep1, dep2])
+```
+
+**GOOD**
+```ts
 useEffect(/* descriptiveEffectName */ () => { ... }, [dep1, dep2] /*Inputs for descriptiveEffectName*/)
-
-// useCallback pattern
 const fn = useCallback(/* descriptiveFnName */ () => { ... }, [dep1, dep2] /*Inputs for descriptiveFnName*/)
-
-// useMemo pattern
 const value = useMemo(/* descriptiveMemoName */ () => { ... }, [dep1, dep2] /*Inputs for descriptiveMemoName*/)
 ```
 

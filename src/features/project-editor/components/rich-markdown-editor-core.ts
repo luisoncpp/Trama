@@ -92,7 +92,7 @@ function useInitializeEditor({
   serializationRef,
   onDirtyRef,
 }: Omit<UseRichEditorLifecycleParams, 'disabled'>): void {
-  useEffect(() => {
+  useEffect(/* initializeEditor */ () => {
     const host = hostRef.current
     if (!host) return
     const editor = createQuillEditor(host)
@@ -117,7 +117,7 @@ function useInitializeEditor({
     window.removeEventListener(WORKSPACE_CONTEXT_MENU_EVENT, workspaceHandler as EventListener)
     editorRef.current = null
   }
-  }, [documentId, editorRef, hostRef, isApplyingExternalValueRef, lastEditorValueRef, onChangeRef, turndownRef, serializationRef, onDirtyRef])
+  }, [documentId, editorRef, hostRef, isApplyingExternalValueRef, lastEditorValueRef, onChangeRef, turndownRef, serializationRef, onDirtyRef] /*Inputs for initializeEditor*/)
 }
 
 function useSyncExternalValue({
@@ -143,7 +143,7 @@ function useSyncExternalValue({
     if (selection) { editor.setSelection(selection) }
     lastEditorValueRef.current = nextNormalized
     window.setTimeout(() => { isApplyingExternalValueRef.current = false }, 0)
-  }, [editorRef, isApplyingExternalValueRef, lastEditorValueRef, value])
+  }, [editorRef, isApplyingExternalValueRef, lastEditorValueRef, value] /*Inputs for syncExternalValue*/)
 }
 
 function useToggleDisabled({
@@ -155,7 +155,7 @@ function useToggleDisabled({
     const editor = editorRef.current
     if (!editor) return
     editor.enable(!disabled)
-  }, [disabled, documentId, editorRef])
+  }, [disabled, documentId, editorRef] /*Inputs for toggleDisabled*/)
 }
 
 function useSyncSpellcheckEnabled({
@@ -167,7 +167,7 @@ function useSyncSpellcheckEnabled({
     const editor = editorRef.current
     if (!editor) return
     syncEditorSpellcheck(editor, spellcheckEnabled)
-  }, [documentId, editorRef, spellcheckEnabled])
+  }, [documentId, editorRef, spellcheckEnabled] /*Inputs for syncSpellcheckEnabled*/)
 }
 
 export function useRichEditorLifecycle(params: UseRichEditorLifecycleParams): void {

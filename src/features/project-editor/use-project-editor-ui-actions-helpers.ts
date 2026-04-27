@@ -29,7 +29,7 @@ export function usePickProjectFolderAction({
   openProject: (projectRoot: string, preferredFilePath?: string) => Promise<void>
   setters: UseProjectEditorStateResult['setters']
 }): ProjectEditorActions['pickProjectFolder'] {
-  return useCallback(async (): Promise<void> => {
+  return useCallback(/* pickProjectFolderAction */ async (): Promise<void> => {
     const selected = await window.tramaApi.selectProjectFolder()
     if (!selected.ok) {
       setters.setStatusMessage(`Could not open folder picker: ${selected.error.message}`)
@@ -42,7 +42,7 @@ export function usePickProjectFolderAction({
     }
 
     await openProject(selected.data.rootPath)
-  }, [openProject, setters])
+  }, [openProject, setters] /*Inputs for pickProjectFolderAction*/)
 }
 
 export function useSelectFileAction({
@@ -60,8 +60,7 @@ export function useSelectFileAction({
   primarySerializationRef: { current: EditorSerializationRefs }
   secondarySerializationRef: { current: EditorSerializationRefs }
 }): ProjectEditorActions['selectFile'] {
-  return useCallback(
-    async (filePath: string): Promise<void> => {
+  return useCallback(/* selectFileAction */ async (filePath: string): Promise<void> => {
       // Flush pending edits for the active pane so dirty-check sees latest content
       const activePane = values.workspaceLayout.activePane
       const ref = activePane === 'secondary' ? secondarySerializationRef : primarySerializationRef
@@ -77,9 +76,12 @@ export function useSelectFileAction({
       if (filePath !== activePaneState.path) {
         void loadDocument(filePath, activePane)
       }
-    },
-    [assignFileToActivePane, loadDocument, saveDocumentNow, values.editorMeta, values.editorValue, values.isDirty, values.selectedPath, primarySerializationRef, secondarySerializationRef],
-  )
+    }, [
+      assignFileToActivePane, loadDocument, saveDocumentNow,
+      values.editorMeta, values.editorValue, values.isDirty,
+      values.selectedPath,
+      primarySerializationRef, secondarySerializationRef,
+    ] /*Inputs for selectFileAction*/)
 }
 
 export function useReorderFilesAction({
@@ -91,8 +93,7 @@ export function useReorderFilesAction({
   openProject: (projectRoot: string) => Promise<void>
   rootPath: string
 }): ProjectEditorActions['reorderFiles'] {
-  return useCallback(
-    async (folderPath: string, orderedIds: string[]): Promise<void> => {
+  return useCallback(/* reorderFilesAction */ async (folderPath: string, orderedIds: string[]): Promise<void> => {
       try {
         const response = await window.tramaApi.reorderFiles({ folderPath, orderedIds })
         if (!response.ok) {
@@ -105,8 +106,7 @@ export function useReorderFilesAction({
         setters.setStatusMessage(`Error reordering files: ${error instanceof Error ? error.message : 'Unknown error'}`)
       }
     },
-    [openProject, rootPath, setters],
-  )
+    [openProject, rootPath, setters] /*Inputs for reorderFilesAction*/)
 }
 
 export function useMoveFileAction({
@@ -118,8 +118,7 @@ export function useMoveFileAction({
   setters: UseProjectEditorStateResult['setters']
   openProject: (projectRoot: string, preferredFilePath?: string) => Promise<void>
 }): ProjectEditorActions['moveFile'] {
-  return useCallback(
-    async (sourcePath: string, targetFolder: string): Promise<void> => {
+  return useCallback(/* moveFileAction */ async (sourcePath: string, targetFolder: string): Promise<void> => {
       if (!values.rootPath) {
         setters.setStatusMessage('No project is open')
         return
@@ -146,8 +145,7 @@ export function useMoveFileAction({
         setters.setStatusMessage(`Error moving file: ${error instanceof Error ? error.message : 'Unknown error'}`)
       }
     },
-    [openProject, setters, values.primaryPane.isDirty, values.primaryPane.path, values.rootPath, values.secondaryPane.isDirty, values.secondaryPane.path],
-  )
+    [openProject, setters, values.primaryPane.isDirty, values.primaryPane.path, values.rootPath, values.secondaryPane.isDirty, values.secondaryPane.path] /*Inputs for moveFileAction*/)
 }
 
 export function useSidebarActions(values: UseProjectEditorStateResult['values'], setters: UseProjectEditorStateResult['setters']) {

@@ -17,14 +17,14 @@ export function useProjectEditorCloseEffect({
   primarySerializationRef,
   secondarySerializationRef,
 }: UseProjectEditorCloseEffectParams): void {
-  useEffect(() => {
+  useEffect(/* notifyCloseStateDirtyFlag */ () => {
     const hasUnsavedChanges = primaryPane.isDirty || secondaryPane.isDirty
     if (window.tramaApi?.notifyCloseState) {
       void window.tramaApi.notifyCloseState({ hasUnsavedChanges })
     }
-  }, [primaryPane.isDirty, secondaryPane.isDirty])
+  }, [primaryPane.isDirty, secondaryPane.isDirty] /*Inputs for notifyCloseStateDirtyFlag*/)
 
-  useEffect(() => {
+  useEffect(/* registerSaveAllGlobalHandler */ () => {
     const w = window as unknown as Record<string, unknown>
 
     w.__tramaSaveAll = async (): Promise<void> => {
@@ -46,5 +46,5 @@ export function useProjectEditorCloseEffect({
     return () => {
       delete w.__tramaSaveAll
     }
-  }, [primaryPane, secondaryPane, saveDocumentNow, primarySerializationRef, secondarySerializationRef])
+  }, [primaryPane, secondaryPane, saveDocumentNow, primarySerializationRef, secondarySerializationRef] /*Inputs for registerSaveAllGlobalHandler*/)
 }

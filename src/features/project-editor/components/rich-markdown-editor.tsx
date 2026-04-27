@@ -57,8 +57,8 @@ function useRichEditorRefs(value: string, onChange: (value: string) => void, onM
   const serializationRef = useRef<EditorSerializationRefs>({ flush: () => null })
   const onDirtyRef = useRef<() => void>(onMarkDirty ?? (() => {}))
 
-  useEffect(() => { onChangeRef.current = onChange }, [onChange])
-  useEffect(() => { onDirtyRef.current = onMarkDirty ?? (() => {}) }, [onMarkDirty])
+  useEffect(() => { onChangeRef.current = onChange }, [onChange] /*Inputs for syncOnChangeRef*/)
+  useEffect(() => { onDirtyRef.current = onMarkDirty ?? (() => {}) }, [onMarkDirty] /*Inputs for syncOnDirtyRef*/)
 
   return { shellRef, hostRef, editorRef, onChangeRef, lastEditorValueRef, isApplyingExternalValueRef, turndownRef, onDirtyRef, serializationRef }
 }

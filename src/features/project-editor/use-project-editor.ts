@@ -17,12 +17,12 @@ function useAutoPickProjectFolderEffect(
   rootPath: string | null,
 ): void {
   const hasRequestedProjectFolderRef = useRef(false)
-  useEffect(() => {
+  useEffect(/* autoPickProjectFolderOnStartup */ () => {
     if (!autoPickProjectFolderOnStart || hasRequestedProjectFolderRef.current) return
     if (!apiAvailable || rootPath) return
     hasRequestedProjectFolderRef.current = true
     void pickProjectFolder()
-  }, [pickProjectFolder, autoPickProjectFolderOnStart, apiAvailable, rootPath])
+  }, [pickProjectFolder, autoPickProjectFolderOnStart, apiAvailable, rootPath] /*Inputs for autoPickProjectFolderOnStartup*/)
 }
 
 function buildShortcutsEffectParams(

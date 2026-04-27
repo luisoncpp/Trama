@@ -28,7 +28,7 @@ export interface SerializationRefsForActions {
 }
 
 function useClearEditor(setters: UseProjectEditorStateResult['setters']): () => void {
-  return useCallback(() => {
+  return useCallback(/* clearEditorAction */ () => {
     const emptyPane: PaneDocumentState = { path: null, content: '', meta: {}, isDirty: false }
     setters.setPrimaryPane(emptyPane)
     setters.setSecondaryPane(emptyPane)
@@ -41,12 +41,11 @@ function useClearEditor(setters: UseProjectEditorStateResult['setters']): () => 
       activePane: 'primary',
       mode: 'single',
     }))
-  }, [setters])
+  }, [setters] /*Inputs for clearEditorAction*/)
 }
 
 function useLoadDocument(setters: UseProjectEditorStateResult['setters']): (path: string, targetPane: WorkspacePane) => Promise<void> {
-  return useCallback(
-    async (filePath: string, targetPane: WorkspacePane): Promise<void> => {
+  return useCallback(/* loadDocumentAction */ async (filePath: string, targetPane: WorkspacePane): Promise<void> => {
       setters.setLoadingDocument(true)
 
       try {
@@ -72,15 +71,13 @@ function useLoadDocument(setters: UseProjectEditorStateResult['setters']): (path
         setters.setLoadingDocument(false)
       }
     },
-    [setters],
-  )
+    [setters] /*Inputs for loadDocumentAction*/)
 }
 
 function useSaveDocumentNow(
   setters: UseProjectEditorStateResult['setters'],
 ): (path: string, content: string, meta: DocumentMeta) => Promise<void> {
-  return useCallback(
-    async (path: string, content: string, meta: DocumentMeta): Promise<void> => {
+  return useCallback(/* saveDocumentNowAction */ async (path: string, content: string, meta: DocumentMeta): Promise<void> => {
       setters.setSaving(true)
 
       try {
@@ -99,8 +96,7 @@ function useSaveDocumentNow(
         setters.setSaving(false)
       }
     },
-    [setters],
-  )
+    [setters] /*Inputs for saveDocumentNowAction*/)
 }
 
 export function useProjectEditorActions(state: UseProjectEditorStateResult, refs: SerializationRefsForActions): UseProjectEditorActionsResult {
