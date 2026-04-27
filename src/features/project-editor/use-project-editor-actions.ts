@@ -1,6 +1,6 @@
 import { useCallback } from 'preact/hooks'
 import type { DocumentMeta } from '../../shared/ipc'
-import type { PaneDocumentState, ProjectEditorActions, WorkspacePane } from './project-editor-types'
+import type { EditorSerializationRefs, PaneDocumentState, ProjectEditorActions, WorkspacePane } from './project-editor-types'
 import type { UseProjectEditorStateResult } from './use-project-editor-state'
 import { useOpenProject } from './use-project-editor-open-project'
 import { useProjectEditorUiActions } from './use-project-editor-ui-actions'
@@ -20,6 +20,11 @@ interface CoreProjectEditorActions {
 export interface UseProjectEditorActionsResult {
   actions: ProjectEditorActions
   core: CoreProjectEditorActions
+}
+
+export interface SerializationRefsForActions {
+  primarySerializationRef: { current: EditorSerializationRefs }
+  secondarySerializationRef: { current: EditorSerializationRefs }
 }
 
 function useClearEditor(setters: UseProjectEditorStateResult['setters']): () => void {
@@ -98,7 +103,7 @@ function useSaveDocumentNow(
   )
 }
 
-export function useProjectEditorActions(state: UseProjectEditorStateResult): UseProjectEditorActionsResult {
+export function useProjectEditorActions(state: UseProjectEditorStateResult, refs: SerializationRefsForActions): UseProjectEditorActionsResult {
   const { values, setters } = state
   const clearEditor = useClearEditor(setters)
   const loadDocument = useLoadDocument(setters)
@@ -110,6 +115,8 @@ export function useProjectEditorActions(state: UseProjectEditorStateResult): Use
     openProject,
     loadDocument,
     saveDocumentNow,
+    primarySerializationRef: refs.primarySerializationRef,
+    secondarySerializationRef: refs.secondarySerializationRef,
   })
 
   return {

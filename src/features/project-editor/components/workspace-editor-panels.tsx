@@ -31,20 +31,14 @@ interface PaneEditorProps {
 }
 
 function PaneEditor({ model, spellcheckEnabled, pane, tagIndex, onTagClick }: PaneEditorProps) {
-  const { state, actions } = model
+  const { state, actions, serializationRefs } = model
   const paneState = pane === 'secondary' ? state.secondaryPane : state.primaryPane
   const isActive = state.workspaceLayout.activePane === pane
-  const onPaneEditorChange = (nextValue: string) => {
-    actions.updateEditorValue(nextValue, pane)
-  }
-  const onPaneSaveNow = () => {
-    actions.saveNow(pane)
-  }
-  const onActivate = () => {
-    if (!isActive) {
-      void actions.setWorkspaceActivePane(pane)
-    }
-  }
+  const serializationRef = pane === 'primary' ? serializationRefs.primary : serializationRefs.secondary
+  const onMarkDirty = () => { actions.updateEditorValue(paneState.content, pane) }
+  const onPaneEditorChange = (nextValue: string) => { actions.updateEditorValue(nextValue, pane) }
+  const onPaneSaveNow = () => { actions.saveNow(pane) }
+  const onActivate = () => { if (!isActive) { void actions.setWorkspaceActivePane(pane) } }
 
   return (
     <section class={`workspace-split-pane ${isActive ? 'is-active' : ''}`} onPointerDownCapture={onActivate}>
@@ -74,6 +68,8 @@ function PaneEditor({ model, spellcheckEnabled, pane, tagIndex, onTagClick }: Pa
           tagIndex={tagIndex}
           onTagClick={onTagClick}
           isActive={isActive}
+          editorSerializationRef={serializationRef}
+          onMarkDirty={onMarkDirty}
         />
       </div>
     </section>
@@ -88,7 +84,11 @@ interface ActiveEditorPanelProps {
 }
 
 function ActiveEditorPanel({ model, spellcheckEnabled, tagIndex, onTagClick }: ActiveEditorPanelProps) {
-  const { state, actions } = model
+  const { state, actions, serializationRefs } = model
+
+  const onMarkDirty = () => {
+    actions.updateEditorValue(state.editorValue)
+  }
 
   return (
     <EditorPanel
@@ -104,6 +104,8 @@ function ActiveEditorPanel({ model, spellcheckEnabled, tagIndex, onTagClick }: A
       focusScope={state.workspaceLayout.focusScope}
       tagIndex={tagIndex}
       onTagClick={onTagClick}
+      editorSerializationRef={serializationRefs.primary}
+      onMarkDirty={onMarkDirty}
     />
   )
 }

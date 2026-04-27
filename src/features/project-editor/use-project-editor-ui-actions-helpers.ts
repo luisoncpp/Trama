@@ -1,7 +1,7 @@
 import { useCallback } from 'preact/hooks'
 import type { DocumentMeta } from '../../shared/ipc'
 import { PROJECT_EDITOR_STRINGS } from './project-editor-strings'
-import type { ProjectEditorActions } from './project-editor-types'
+import type { EditorSerializationRefs, ProjectEditorActions } from './project-editor-types'
 import { useSetSidebarPanelWidthAction, useSetSidebarSectionAction, useToggleSidebarPanelCollapsedAction } from './use-project-editor-sidebar-actions'
 import { useSetFocusScopeAction, useSetFullscreenEnabledAction, useToggleFocusModeAction } from './use-project-editor-focus-actions'
 import {
@@ -18,6 +18,8 @@ export interface UseProjectEditorUiActionsParams {
   openProject: (projectRoot: string, preferredFilePath?: string, preferredPane?: 'primary' | 'secondary') => Promise<void>
   loadDocument: (path: string, pane: WorkspacePane) => Promise<void>
   saveDocumentNow: (path: string, content: string, meta: DocumentMeta) => Promise<void>
+  primarySerializationRef: { current: EditorSerializationRefs }
+  secondarySerializationRef: { current: EditorSerializationRefs }
 }
 
 export function usePickProjectFolderAction({
@@ -48,24 +50,35 @@ export function useSelectFileAction({
   loadDocument,
   assignFileToActivePane,
   saveDocumentNow,
+  primarySerializationRef,
+  secondarySerializationRef,
 }: {
   values: UseProjectEditorStateResult['values']
   loadDocument: (path: string, pane: WorkspacePane) => Promise<void>
   assignFileToActivePane: (filePath: string) => void
   saveDocumentNow: (path: string, content: string, meta: DocumentMeta) => Promise<void>
+  primarySerializationRef: { current: EditorSerializationRefs }
+  secondarySerializationRef: { current: EditorSerializationRefs }
 }): ProjectEditorActions['selectFile'] {
   return useCallback(
     async (filePath: string): Promise<void> => {
-      if (values.isDirty && values.selectedPath) {
-        await saveDocumentNow(values.selectedPath, values.editorValue, values.editorMeta)
+      // Flush pending edits for the active pane so dirty-check sees latest content
+      const activePane = values.workspaceLayout.activePane
+      const ref = activePane === 'secondary' ? secondarySerializationRef : primarySerializationRef
+      const flushedContent = ref.current.flush()
+
+      const activePaneState = activePane === 'secondary' ? values.secondaryPane : values.primaryPane
+      if (activePaneState.isDirty && activePaneState.path) {
+        const contentToSave = flushedContent ?? activePaneState.content
+        await saveDocumentNow(activePaneState.path, contentToSave, activePaneState.meta)
       }
 
       assignFileToActivePane(filePath)
-      if (filePath !== values.selectedPath) {
-        void loadDocument(filePath, values.workspaceLayout.activePane)
+      if (filePath !== activePaneState.path) {
+        void loadDocument(filePath, activePane)
       }
     },
-    [assignFileToActivePane, loadDocument, saveDocumentNow, values.editorMeta, values.editorValue, values.isDirty, values.selectedPath],
+    [assignFileToActivePane, loadDocument, saveDocumentNow, values.editorMeta, values.editorValue, values.isDirty, values.selectedPath, primarySerializationRef, secondarySerializationRef],
   )
 }
 
@@ -150,11 +163,13 @@ export function useWorkspaceLayoutActions(
   setters: UseProjectEditorStateResult['setters'],
   loadDocument: UseProjectEditorUiActionsParams['loadDocument'],
   saveDocumentNow: UseProjectEditorUiActionsParams['saveDocumentNow'],
+  primarySerializationRef: { current: EditorSerializationRefs },
+  secondarySerializationRef: { current: EditorSerializationRefs },
 ) {
   return {
     toggleWorkspaceLayoutMode: useToggleWorkspaceLayoutModeAction(values, setters),
     setWorkspaceLayoutRatio: useSetWorkspaceLayoutRatioAction(setters),
-    setWorkspaceActivePane: useSetWorkspaceActivePaneAction({ values, setters, loadDocument, saveDocumentNow }),
+    setWorkspaceActivePane: useSetWorkspaceActivePaneAction({ values, setters, loadDocument, saveDocumentNow, primarySerializationRef, secondarySerializationRef }),
   }
 }
 
@@ -162,6 +177,8 @@ export function useEditorViewActions(
   values: UseProjectEditorStateResult['values'],
   setters: UseProjectEditorStateResult['setters'],
   saveDocumentNow: UseProjectEditorUiActionsParams['saveDocumentNow'],
+  primarySerializationRef: { current: EditorSerializationRefs },
+  secondarySerializationRef: { current: EditorSerializationRefs },
 ) {
   return {
     updateEditorValue: (nextValue: string, pane?: WorkspacePane) => {
@@ -178,7 +195,11 @@ export function useEditorViewActions(
       if (!paneState.path || values.saving || !paneState.isDirty) {
         return
       }
-      void saveDocumentNow(paneState.path, paneState.content, paneState.meta)
+      // Flush and use the returned content directly — do NOT read paneState.content
+      // because React state updates are batched and the content is stale at this point.
+      const ref = targetPane === 'secondary' ? secondarySerializationRef : primarySerializationRef
+      const latestContent = ref.current.flush() ?? paneState.content
+      void saveDocumentNow(paneState.path, latestContent, paneState.meta)
     },
     setFullscreenEnabled: useSetFullscreenEnabledAction(setters),
     toggleFocusMode: useToggleFocusModeAction(values, setters),
@@ -193,7 +214,5 @@ export function useProjectPickerActions({
   openProject: (projectRoot: string, preferredFilePath?: string) => Promise<void>
   setters: UseProjectEditorStateResult['setters']
 }) {
-  return {
-    pickProjectFolder: usePickProjectFolderAction({ openProject, setters }),
-  }
+  return { pickProjectFolder: usePickProjectFolderAction({ openProject, setters }) }
 }

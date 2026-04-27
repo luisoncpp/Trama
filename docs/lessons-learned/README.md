@@ -74,3 +74,4 @@ Avoid: "bug description + fix". Prefer: "what I learned that applies to future w
 | `focus-mode-css-grid-display-none-auto-place.md` | `display:none` removes grid items from the grid, causing remaining items to auto-place into the first cell; always recalculate `grid-template-columns` when hiding grid children | 2026-04-25 |
 | `focus-mode-scrollbar-dimming.md` | Scrollbar in focus mode stands out; dim via `::-webkit-scrollbar-thumb` with `color-mix` on `.ql-container.ql-snow` | 2026-04-25 |
 | `turndown-base64-replacement-performance.md` | Turndown `replacement` callbacks must return small strings; returning multi-megabyte base64 causes 25+ s per keystroke | 2026-04-25 |
+| `editor-debounce-closure-capture.md` | Debounce timer must capture `editor`/`documentId` in closure, never read refs at fire time; cleanup cancels only; flush returns content; mutate ref object in-place; split dirty flag from serialization | 2026-04-26 |

@@ -87,7 +87,15 @@ export interface ProjectEditorActions {
   closeConflictCompare: () => void
 }
 
+export interface EditorSerializationRefs {
+  flush: () => string | null
+}
+
 export interface ProjectEditorModel {
   state: ProjectEditorState
   actions: ProjectEditorActions
+  serializationRefs: {
+    primary: { current: EditorSerializationRefs }
+    secondary: { current: EditorSerializationRefs }
+  }
 }

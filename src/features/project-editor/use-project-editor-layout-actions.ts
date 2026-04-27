@@ -2,7 +2,7 @@ import { useCallback } from 'preact/hooks'
 import type { DocumentMeta } from '../../shared/ipc'
 import { canSelectFile } from './project-editor-logic'
 import { PROJECT_EDITOR_STRINGS } from './project-editor-strings'
-import type { ProjectEditorActions, WorkspaceLayoutState, WorkspacePane } from './project-editor-types'
+import type { EditorSerializationRefs, ProjectEditorActions, WorkspaceLayoutState, WorkspacePane } from './project-editor-types'
 import type { UseProjectEditorStateResult } from './use-project-editor-state'
 
 function updatePathForPane(layout: WorkspaceLayoutState, pane: WorkspacePane, path: string): WorkspaceLayoutState {
@@ -19,6 +19,8 @@ interface UseWorkspaceLayoutActionParams {
 
 interface UseSetWorkspaceActivePaneActionParams extends UseWorkspaceLayoutActionParams {
   saveDocumentNow: (path: string, content: string, meta: DocumentMeta) => Promise<void>
+  primarySerializationRef: { current: EditorSerializationRefs }
+  secondarySerializationRef: { current: EditorSerializationRefs }
 }
 
 export function useAssignFileToActivePaneAction(
@@ -88,12 +90,18 @@ export function useSetWorkspaceActivePaneAction({
   setters,
   loadDocument,
   saveDocumentNow,
+  primarySerializationRef,
+  secondarySerializationRef,
 }: UseSetWorkspaceActivePaneActionParams): ProjectEditorActions['setWorkspaceActivePane'] {
   return useCallback(
     async (pane: WorkspacePane) => {
-      const activePaneState = values.workspaceLayout.activePane === 'secondary' ? values.secondaryPane : values.primaryPane
-      if (activePaneState.isDirty && activePaneState.path) {
-        await saveDocumentNow(activePaneState.path, activePaneState.content, activePaneState.meta)
+      const outgoingPane = values.workspaceLayout.activePane
+      const outgoingState = outgoingPane === 'secondary' ? values.secondaryPane : values.primaryPane
+      if (outgoingState.isDirty && outgoingState.path) {
+        // Flush the outgoing pane before saving
+        const ref = outgoingPane === 'secondary' ? secondarySerializationRef : primarySerializationRef
+        const latestContent = ref.current.flush() ?? outgoingState.content
+        await saveDocumentNow(outgoingState.path, latestContent, outgoingState.meta)
       }
 
       const nextPath = pane === 'secondary' ? values.workspaceLayout.secondaryPath : values.workspaceLayout.primaryPath
@@ -114,7 +122,14 @@ export function useSetWorkspaceActivePaneAction({
         void loadDocument(nextPath, pane)
       }
     },
-    [loadDocument, saveDocumentNow, setters, values.primaryPane, values.secondaryPane, values.workspaceLayout.activePane, values.workspaceLayout.primaryPath, values.workspaceLayout.secondaryPath],
+    [
+      loadDocument, saveDocumentNow, setters,
+      values.primaryPane, values.secondaryPane,
+      values.workspaceLayout.activePane,
+      values.workspaceLayout.primaryPath,
+      values.workspaceLayout.secondaryPath,
+      primarySerializationRef, secondarySerializationRef,
+    ],
   )
 }
 
