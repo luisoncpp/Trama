@@ -5,6 +5,7 @@ import { useState } from 'preact/hooks'
 import Quill from 'quill'
 import { RichMarkdownEditor } from '../src/features/project-editor/components/rich-markdown-editor'
 import { hydrateMarkdownImages, getImageMap } from '../src/shared/markdown-image-placeholder'
+import type { EditorSerializationRefs } from '../src/features/project-editor/project-editor-types'
 
 describe('RichMarkdownEditor', () => {
   let container: HTMLDivElement
@@ -551,6 +552,7 @@ describe('RichMarkdownEditor', () => {
 
   it('trata pagebreak como embed atomico de longitud 1 y lo elimina en un solo paso', async () => {
     let lastMarkdown = ''
+    const serializationRef = { current: { flush: () => null as string | null } }
     const source = [
       '# Capitulo',
       '<!-- trama:spacer lines=2 -->',
@@ -566,6 +568,7 @@ describe('RichMarkdownEditor', () => {
           onChange: (markdown) => {
             lastMarkdown = markdown
           },
+          editorSerializationRef: serializationRef,
         })),
         container,
       )
@@ -585,6 +588,7 @@ describe('RichMarkdownEditor', () => {
     })
 
     await sleep(40)
+    serializationRef.current.flush()
 
     const afterLength = editor.getLength()
     expect(afterLength).toBe(beforeLength - 1)
@@ -658,6 +662,7 @@ describe('RichMarkdownEditor', () => {
 
   it('preserva directivas en round-trip source-editor-source tras edicion de usuario', async () => {
     let lastMarkdown = ''
+    const serializationRef = { current: { flush: () => null as string | null } }
     const source = [
       '# Titulo',
       '<!-- trama:center:start -->',
@@ -676,6 +681,7 @@ describe('RichMarkdownEditor', () => {
           onChange: (markdown) => {
             lastMarkdown = markdown
           },
+          editorSerializationRef: serializationRef,
         })),
         container,
       )
@@ -690,6 +696,7 @@ describe('RichMarkdownEditor', () => {
     })
 
     await sleep(40)
+    serializationRef.current.flush()
 
     expect(lastMarkdown).toContain('Texto agregado')
     expect(lastMarkdown).toContain('<!-- trama:center:start -->')
@@ -701,6 +708,7 @@ describe('RichMarkdownEditor', () => {
 
   it('mantiene orden de directivas tras inserciones y borrados de varios parrafos', async () => {
     let lastMarkdown = ''
+    const serializationRef = { current: { flush: () => null as string | null } }
     const source = [
       '# Capitulo',
       'Bloque inicial',
@@ -719,6 +727,7 @@ describe('RichMarkdownEditor', () => {
           onChange: (markdown) => {
             lastMarkdown = markdown
           },
+          editorSerializationRef: serializationRef,
         })),
         container,
       )
@@ -759,6 +768,7 @@ describe('RichMarkdownEditor', () => {
     })
 
     await sleep(30)
+    serializationRef.current.flush()
 
     expect(lastMarkdown).toContain('Nuevo bloque A')
     expect(lastMarkdown).toContain('Nuevo bloque B')
@@ -801,6 +811,7 @@ describe('RichMarkdownEditor', () => {
 
   it('inserta directivas center desde boton de toolbar', async () => {
     let lastMarkdown = ''
+    const serializationRef = { current: { flush: () => null as string | null } }
 
     act(() => {
       render(
@@ -810,6 +821,7 @@ describe('RichMarkdownEditor', () => {
           onChange: (markdown) => {
             lastMarkdown = markdown
           },
+          editorSerializationRef: serializationRef,
         })),
         container,
       )
@@ -826,6 +838,7 @@ describe('RichMarkdownEditor', () => {
     })
 
     await sleep(40)
+    serializationRef.current.flush()
 
     expect(lastMarkdown).toContain('<!-- trama:center:start -->')
     expect(lastMarkdown).toContain('<!-- trama:center:end -->')
@@ -833,6 +846,7 @@ describe('RichMarkdownEditor', () => {
 
   it('inserta directiva pagebreak desde toolbar', async () => {
     let lastMarkdown = ''
+    const serializationRef = { current: { flush: () => null as string | null } }
 
     act(() => {
       render(
@@ -842,6 +856,7 @@ describe('RichMarkdownEditor', () => {
           onChange: (markdown) => {
             lastMarkdown = markdown
           },
+          editorSerializationRef: serializationRef,
         })),
         container,
       )
@@ -858,12 +873,14 @@ describe('RichMarkdownEditor', () => {
     })
 
     await sleep(40)
+    serializationRef.current.flush()
 
     expect(lastMarkdown).toContain('<!-- trama:pagebreak -->')
   })
 
   it('permite centrar e insertar pagebreak aunque saveDisabled sea true', async () => {
     let lastMarkdown = ''
+    const serializationRef = { current: { flush: () => null as string | null } }
 
     act(() => {
       render(
@@ -874,6 +891,7 @@ describe('RichMarkdownEditor', () => {
           onChange: (markdown) => {
             lastMarkdown = markdown
           },
+          editorSerializationRef: serializationRef,
         })),
         container,
       )
@@ -896,6 +914,7 @@ describe('RichMarkdownEditor', () => {
     })
 
     await sleep(50)
+    serializationRef.current.flush()
 
     expect(lastMarkdown).toContain('<!-- trama:center:start -->')
     expect(lastMarkdown).toContain('<!-- trama:center:end -->')
@@ -904,6 +923,7 @@ describe('RichMarkdownEditor', () => {
 
   it('inserta pagebreak exactamente en el indice del cursor', async () => {
     let lastMarkdown = ''
+    const serializationRef = { current: { flush: () => null as string | null } }
 
     act(() => {
       render(
@@ -913,6 +933,7 @@ describe('RichMarkdownEditor', () => {
           onChange: (markdown) => {
             lastMarkdown = markdown
           },
+          editorSerializationRef: serializationRef,
         })),
         container,
       )
@@ -930,6 +951,7 @@ describe('RichMarkdownEditor', () => {
     })
 
     await sleep(40)
+    serializationRef.current.flush()
 
     const prefixPos = lastMarkdown.indexOf('afda')
     const pagebreakPos = lastMarkdown.indexOf('<!-- trama:pagebreak -->')
@@ -943,6 +965,7 @@ describe('RichMarkdownEditor', () => {
 
   it('serializa saltos de linea repetidos como directiva spacer', async () => {
     let lastMarkdown = ''
+    const serializationRef = { current: { flush: () => null as string | null } }
 
     act(() => {
       render(
@@ -952,6 +975,7 @@ describe('RichMarkdownEditor', () => {
           onChange: (markdown) => {
             lastMarkdown = markdown
           },
+          editorSerializationRef: serializationRef,
         })),
         container,
       )
@@ -966,6 +990,7 @@ describe('RichMarkdownEditor', () => {
     })
 
     await sleep(40)
+    serializationRef.current.flush()
 
     expect(lastMarkdown).toMatch(/<!-- trama:spacer lines=\d+ -->/)
   })
@@ -976,6 +1001,7 @@ describe('RichMarkdownEditor', () => {
 
     it('preserva imagen en markdown tras pegar imagen base64', async () => {
       let lastMarkdown = ''
+      const serializationRef = { current: { flush: () => null as string | null } }
       const docId = 'img-roundtrip-doc'
 
       act(() => {
@@ -986,6 +1012,7 @@ describe('RichMarkdownEditor', () => {
             onChange: (markdown) => {
               lastMarkdown = markdown
             },
+            editorSerializationRef: serializationRef,
           })),
           container,
         )
@@ -1005,6 +1032,7 @@ describe('RichMarkdownEditor', () => {
       editor.clipboard.dangerouslyPasteHTML(imgHTML, 'user')
 
       await sleep(80)
+      serializationRef.current.flush()
 
       // In-memory markdown uses short placeholders for editing speed
       expect(lastMarkdown).toContain('<!-- IMAGE_PLACEHOLDER:img_0 -->')
@@ -1073,6 +1101,7 @@ describe('RichMarkdownEditor', () => {
 
     it('vuelve a editar documento con imagen y preserva la imagen en output', async () => {
       let lastMarkdown = ''
+      const serializationRef = { current: { flush: () => null as string | null } }
       const docId = 'img-edit-doc'
 
       act(() => {
@@ -1083,6 +1112,7 @@ describe('RichMarkdownEditor', () => {
             onChange: (markdown) => {
               lastMarkdown = markdown
             },
+            editorSerializationRef: serializationRef,
           })),
           container,
         )
@@ -1096,6 +1126,7 @@ describe('RichMarkdownEditor', () => {
       })
 
       await sleep(60)
+      serializationRef.current.flush()
 
       // In-memory markdown uses short placeholders for editing speed
       expect(lastMarkdown).toContain('<!-- IMAGE_PLACEHOLDER:img_0 -->')

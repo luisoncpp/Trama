@@ -33,7 +33,7 @@ export function useSyncExternalValue({
     window.setTimeout(() => {
       isApplyingExternalValueRef.current = false
     }, 0)
-  }, [editorRef, isApplyingExternalValueRef, lastEditorValueRef, value])
+  }, [editorRef, isApplyingExternalValueRef, lastEditorValueRef, value] /*Inputs for syncExternalValue*/)
 }
 
 interface UseToggleDisabledParams {
@@ -51,7 +51,7 @@ export function useToggleDisabled({
     const editor = editorRef.current
     if (!editor) return
     editor.enable(!disabled)
-  }, [disabled, documentId, editorRef])
+  }, [disabled, documentId, editorRef] /*Inputs for toggleDisabled*/)
 }
 
 interface UseSyncSpellcheckEnabledParams {
@@ -69,5 +69,5 @@ export function useSyncSpellcheckEnabled({
     const editor = editorRef.current
     if (!editor) return
     syncEditorSpellcheck(editor, spellcheckEnabled)
-  }, [documentId, editorRef, spellcheckEnabled])
+  }, [documentId, editorRef, spellcheckEnabled] /*Inputs for syncSpellcheckEnabled*/)
 }
