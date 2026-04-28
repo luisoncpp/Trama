@@ -2,7 +2,7 @@
 
 ## Status
 
-Planned. This document proposes a low-risk refactor of the rich editor and its split-pane persistence wiring without changing user-facing behavior in the first slices.
+Slice 1 implemented on 2026-04-27. The remaining slices are still planned. This document proposes a low-risk refactor of the rich editor and its split-pane persistence wiring without changing user-facing behavior in the first slices.
 
 ## Why this plan exists
 
@@ -143,6 +143,24 @@ Expected result:
 - the repeated `flush -> fallback content -> saveDocumentNow` sequence exists in one place
 - split-pane rules become easier to audit
 
+Implementation note:
+
+- Landed in `src/features/project-editor/use-project-editor-pane-persistence.ts`
+- Current migrated call sites:
+  - `use-project-editor-ui-actions-helpers.ts`
+  - `use-project-editor-layout-actions.ts`
+  - `use-project-editor-close-effect.ts`
+  - `use-project-editor-autosave-effect.ts`
+
+Manual verification:
+
+1. In split mode, open one file in `primary` and a different file in `secondary`.
+2. Edit only `secondary` and confirm only `secondary` shows dirty.
+3. Switch active pane with click or `Ctrl/Cmd+Shift+Tab` and confirm the outgoing pane saves and clears dirty.
+4. Edit `secondary`, click a different file in the sidebar, and confirm the previous file is persisted before the new one loads.
+5. With unsaved changes in the active pane, press the pane-local save button and confirm the correct pane is saved.
+6. Note: manual validation of "`Guardar y cerrar` saves both panes while both are dirty" is not realistic in the current UX, because switching panes saves the outgoing pane. Keep `window-close.test.ts` as the primary verification for `saveAllDirtyPanes()`.
+
 ### Slice 2: Extract canonical value normalization
 
 Move the canonical editor-value rule behind one named API.
@@ -166,6 +184,14 @@ Expected result:
 - the image-placeholder representation becomes a first-class concept
 - future changes stop re-embedding image normalization knowledge in multiple hooks
 
+Manual verification:
+
+1. Open a document that contains inline base64 images.
+2. Type a few characters near image-heavy sections and confirm images remain visible.
+3. Save, switch away, and switch back; confirm the text and images match what was just edited.
+4. Reopen the document from disk and confirm no text is lost and no image placeholders leak into visible content.
+5. If available, repeat once with a document that mixes text-only paragraphs and image blocks to catch canonicalization drift.
+
 ### Slice 3: Extract serialization session
 
 Move debounce and serialization-ref mutation out of `rich-markdown-editor-core.ts`.
@@ -183,6 +209,14 @@ Expected result:
 - one small module becomes the source of truth for debounce semantics
 - `rich-markdown-editor-core.ts` stops mixing Quill lifecycle with save/switch policy
 
+Manual verification:
+
+1. Type rapidly for a few seconds in a normal document and confirm the editor stays responsive.
+2. Type and immediately save; confirm the last typed characters are included in the saved result.
+3. Type and immediately switch pane or switch file; confirm the last typed characters are preserved.
+4. Open a large or image-heavy document and verify that typing does not cause visible text rollback or cursor-jump regressions.
+5. Repeat the same checks in both single-pane and split-pane mode.
+
 ### Slice 4: Extract external-value sync
 
 Move `useSyncExternalValue` into a dedicated file with a tighter API and explicit contract:
@@ -196,6 +230,15 @@ Expected result:
 
 - easier debugging of "why did Quill re-render?"
 - clearer boundary between inbound sync and outbound serialization
+
+Manual verification:
+
+1. Open a document, make an edit, and confirm the editor does not visibly re-render or wipe the new text.
+2. Switch to another file and back; confirm the editor reloads only real document changes.
+3. If possible, trigger an external file change and confirm:
+   - dirty document -> conflict path
+   - clean document -> auto reload
+4. Toggle runtime editor-affecting settings such as spellcheck and confirm the editor instance does not behave like a full remount unless document identity actually changed.
 
 ### Slice 5: Reduce projected active-pane coupling
 
@@ -214,6 +257,14 @@ Expected result:
 
 - pane-local actions depend less on global projection state
 - fewer regressions from timing between `activePane` and async pane load state
+
+Manual verification:
+
+1. In split mode, assign different files to each pane and switch active pane repeatedly.
+2. Confirm the sidebar highlight follows the layout-assigned active file immediately, even before async load completes.
+3. Edit the non-default pane and confirm save, dirty state, and selected file all stay attached to that pane.
+4. Open a file directly into `secondary` and confirm subsequent actions still target `secondary` explicitly.
+5. Watch for any regression where a UI alias such as `selectedPath` or `isDirty` appears to describe the wrong pane.
 
 ## Detailed file responsibilities after refactor
 

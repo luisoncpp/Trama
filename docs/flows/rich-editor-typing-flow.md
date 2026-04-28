@@ -68,6 +68,7 @@ This is the main path where several subtle rules meet:
 | `src/features/project-editor/components/rich-markdown-editor.tsx` | Ref creation and top-level editor orchestration |
 | `src/features/project-editor/components/rich-markdown-editor-core.ts` | Quill lifecycle, debounce handler, external-value sync |
 | `src/features/project-editor/components/rich-markdown-editor-quill.ts` | Markdown <-> HTML conversion and image placeholder logic |
+| `src/features/project-editor/use-project-editor-pane-persistence.ts` | Where later save/switch callers consume `flush()` safely by pane |
 | `src/features/project-editor/use-project-editor-ui-actions-helpers.ts` | Pane state updates through `updateEditorValue(...)` |
 | `docs/lessons-learned/editor-debounce-closure-capture.md` | Non-obvious debounce invariants |
 | `docs/lessons-learned/quill-render-keypress-image-loss.md` | Canonical image representation rule |

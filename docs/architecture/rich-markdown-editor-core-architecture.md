@@ -381,7 +381,7 @@ User clicks save button
 onSaveNow callback
     │
     ▼
-useProjectEditorUiActions.saveDocumentNow()
+use-project-editor-pane-persistence.savePaneIfDirty()
     │
     ▼
 IPC: 'trama:document:save' channel
@@ -393,7 +393,7 @@ document-handlers.ts → DocumentRepository.save()
 Updates .trama.index.json
 ```
 
-The editor doesn't know about IPC directly; it only exposes `syncState` (clean/dirty/saving) and callbacks.
+The editor doesn't know about IPC directly; it only exposes `syncState` (clean/dirty/saving) and callbacks. Pane-targeted flush/save policy is now centralized in `src/features/project-editor/use-project-editor-pane-persistence.ts`.
 
 ---
 

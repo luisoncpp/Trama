@@ -1,27 +1,19 @@
 import { useEffect } from 'preact/hooks'
-import type { DocumentMeta } from '../../shared/ipc'
-import type { EditorSerializationRefs, WorkspacePane } from './project-editor-types'
+import type { WorkspacePane } from './project-editor-types'
+import type { ProjectEditorPanePersistence } from './use-project-editor-pane-persistence'
 
 interface UseProjectEditorAutosaveEffectParams {
   selectedPath: string | null
   isDirty: boolean
-  editorValue: string
-  editorMeta: DocumentMeta
-  saveDocumentNow: (path: string, content: string, meta: DocumentMeta) => Promise<void>
   activePane: WorkspacePane
-  primarySerializationRef: { current: EditorSerializationRefs }
-  secondarySerializationRef: { current: EditorSerializationRefs }
+  panePersistence: ProjectEditorPanePersistence
 }
 
 export function useProjectEditorAutosaveEffect({
   selectedPath,
   isDirty,
-  editorValue,
-  editorMeta,
-  saveDocumentNow,
   activePane,
-  primarySerializationRef,
-  secondarySerializationRef,
+  panePersistence,
 }: UseProjectEditorAutosaveEffectParams): void {
   useEffect(/* autosaveOnDirty */ () => {
     if (!selectedPath || !isDirty) {
@@ -29,13 +21,11 @@ export function useProjectEditorAutosaveEffect({
     }
 
     const timer = window.setTimeout(() => {
-      const ref = activePane === 'secondary' ? secondarySerializationRef : primarySerializationRef
-      const latestContent = ref.current.flush() ?? editorValue
-      void saveDocumentNow(selectedPath, latestContent, editorMeta)
+      void panePersistence.savePaneIfDirty(activePane)
     }, /*timeout*/ 10 * 60 * 1000)
 
     return () => {
       window.clearTimeout(timer)
     }
-  }, [selectedPath, isDirty, editorValue, editorMeta, saveDocumentNow, activePane, primarySerializationRef, secondarySerializationRef] /*Inputs for autosaveOnDirty*/)
+  }, [selectedPath, isDirty, activePane, panePersistence] /*Inputs for autosaveOnDirty*/)
 }

@@ -4,6 +4,7 @@ import type { EditorSerializationRefs, PaneDocumentState, ProjectEditorActions, 
 import type { UseProjectEditorStateResult } from './use-project-editor-state'
 import { useOpenProject } from './use-project-editor-open-project'
 import { useProjectEditorUiActions } from './use-project-editor-ui-actions'
+import { useProjectEditorPanePersistence } from './use-project-editor-pane-persistence'
 import { hydrateMarkdownImages, stripBase64ImagesFromMarkdown } from '../../shared/markdown-image-placeholder'
 
 interface CoreProjectEditorActions {
@@ -107,14 +108,18 @@ export function useProjectEditorActions(state: UseProjectEditorStateResult, refs
   const loadDocument = useLoadDocument(setters)
   const openProject = useOpenProject(setters, clearEditor, loadDocument)
   const saveDocumentNow = useSaveDocumentNow(setters)
+  const panePersistence = useProjectEditorPanePersistence({
+    values,
+    saveDocumentNow,
+    primarySerializationRef: refs.primarySerializationRef,
+    secondarySerializationRef: refs.secondarySerializationRef,
+  })
   const actions = useProjectEditorUiActions({
     values,
     setters,
     openProject,
     loadDocument,
-    saveDocumentNow,
-    primarySerializationRef: refs.primarySerializationRef,
-    secondarySerializationRef: refs.secondarySerializationRef,
+    panePersistence,
   })
 
   return {

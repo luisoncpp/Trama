@@ -17,9 +17,10 @@ This flow mixes synchronous layout state with asynchronous document state. It is
 1. The user interacts with a split-pane editor.
 2. In `workspace-editor-panels.tsx`, `PaneEditor` calls `actions.setWorkspaceActivePane(pane)` when activating the pane.
 3. `useSetWorkspaceActivePaneAction(...)` reads the current outgoing pane from `values.workspaceLayout.activePane`.
-4. It reads the outgoing pane document state from `values.primaryPane` or `values.secondaryPane`.
+4. It reads the outgoing pane document state through `panePersistence.getPaneStateForPane(outgoingPane)`.
 5. If the outgoing pane is dirty and has a path:
-   - choose the matching serialization ref
+   - call `panePersistence.savePaneIfDirty(outgoingPane)`
+   - inside that helper, choose the matching serialization ref
    - call `flush()`
    - fall back to `outgoingState.content` only if `flush()` returns `null`
    - call `saveDocumentNow(...)`
@@ -63,7 +64,7 @@ This flow mixes synchronous layout state with asynchronous document state. It is
 
 | Side effect | File |
 |-------------|------|
-| Flush-before-switch | `use-project-editor-layout-actions.ts` |
+| Flush-before-switch | `use-project-editor-layout-actions.ts` + `use-project-editor-pane-persistence.ts` |
 | Renderer save through IPC | `use-project-editor-actions.ts` |
 | Async document load | `use-project-editor-actions.ts` |
 | Sidebar selected file projection | `use-project-editor-state.ts` |
@@ -73,6 +74,7 @@ This flow mixes synchronous layout state with asynchronous document state. It is
 | File | Why inspect it |
 |------|----------------|
 | `src/features/project-editor/components/workspace-editor-panels.tsx` | Pane activation wiring and explicit pane identity |
+| `src/features/project-editor/use-project-editor-pane-persistence.ts` | Centralized outgoing-pane flush/save policy |
 | `src/features/project-editor/use-project-editor-layout-actions.ts` | Switch-pane action and flush-before-switch |
 | `src/features/project-editor/use-project-editor-state.ts` | Active-pane UI projection layer |
 | `src/features/project-editor/use-project-editor-actions.ts` | `saveDocumentNow(...)` and `loadDocument(...)` |

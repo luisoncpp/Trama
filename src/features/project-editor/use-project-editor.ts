@@ -9,6 +9,7 @@ import { useProjectEditorFullscreenEffect } from './use-project-editor-fullscree
 import { useProjectEditorCloseEffect } from './use-project-editor-close-effect'
 import { useProjectEditorShortcutsEffect } from './use-project-editor-shortcuts-effect'
 import { useProjectEditorState } from './use-project-editor-state'
+import { useProjectEditorPanePersistence } from './use-project-editor-pane-persistence'
 
 function useAutoPickProjectFolderEffect(
   pickProjectFolder: () => Promise<void>,
@@ -56,16 +57,13 @@ function useProjectEditorEffects(
   actions: ReturnType<typeof useProjectEditorActions>['actions'],
   core: ReturnType<typeof useProjectEditorActions>['core'],
   autoPickProjectFolderOnStart: boolean,
-  primarySerializationRef: { current: EditorSerializationRefs },
-  secondarySerializationRef: { current: EditorSerializationRefs },
+  panePersistence: ReturnType<typeof useProjectEditorPanePersistence>,
 ): void {
   useAutoPickProjectFolderEffect(actions.pickProjectFolder, autoPickProjectFolderOnStart, values.apiAvailable, values.rootPath)
   useProjectEditorAutosaveEffect({
     selectedPath: values.selectedPath, isDirty: values.isDirty,
-    editorValue: values.editorValue, editorMeta: values.editorMeta,
-    saveDocumentNow: core.saveDocumentNow,
     activePane: values.workspaceLayout.activePane,
-    primarySerializationRef, secondarySerializationRef,
+    panePersistence,
   })
   useProjectEditorExternalEventsEffect({
     snapshotRootPath: values.snapshot?.rootPath ?? null,
@@ -81,8 +79,7 @@ function useProjectEditorEffects(
   useProjectEditorShortcutsEffect(buildShortcutsEffectParams(actions, values.isFullscreen, values.workspaceLayout))
   useProjectEditorCloseEffect({
     primaryPane: values.primaryPane, secondaryPane: values.secondaryPane,
-    saveDocumentNow: core.saveDocumentNow,
-    primarySerializationRef, secondarySerializationRef,
+    panePersistence,
   })
   useProjectEditorContextMenuEffect({
     isFullscreen: values.isFullscreen,
@@ -130,7 +127,13 @@ export function useProjectEditor(): ProjectEditorModel {
     primarySerializationRef,
     secondarySerializationRef,
   })
-  useProjectEditorEffects(values, setters, actions, core, autoPickProjectFolderOnStart, primarySerializationRef, secondarySerializationRef)
+  const panePersistence = useProjectEditorPanePersistence({
+    values,
+    saveDocumentNow: core.saveDocumentNow,
+    primarySerializationRef,
+    secondarySerializationRef,
+  })
+  useProjectEditorEffects(values, setters, actions, core, autoPickProjectFolderOnStart, panePersistence)
 
   return {
     state: buildProjectEditorModelState(values),

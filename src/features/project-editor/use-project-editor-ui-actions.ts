@@ -1,5 +1,4 @@
 import type { ProjectEditorActions } from './project-editor-types'
-import type { EditorSerializationRefs } from './project-editor-types'
 import {
   useCloseConflictCompareAction,
   useResolveConflictCompareAction,
@@ -35,19 +34,17 @@ export function usePrimaryProjectEditorActions(
   setters: UseProjectEditorStateResult['setters'],
   openProject: UseProjectEditorUiActionsParams['openProject'],
   loadDocument: UseProjectEditorUiActionsParams['loadDocument'],
-  saveDocumentNow: UseProjectEditorUiActionsParams['saveDocumentNow'],
-  primarySerializationRef: { current: EditorSerializationRefs },
-  secondarySerializationRef: { current: EditorSerializationRefs },
+  panePersistence: UseProjectEditorUiActionsParams['panePersistence'],
 ) {
   const assignFileToActivePane = useAssignFileToActivePaneAction(values, setters)
   const openFileInPane = useOpenFileInPaneAction({ values, setters, loadDocument })
-  const selectFile = useSelectFileAction({ values, loadDocument, assignFileToActivePane, saveDocumentNow, primarySerializationRef, secondarySerializationRef })
+  const selectFile = useSelectFileAction({ values, loadDocument, assignFileToActivePane, panePersistence })
   const { createArticle, createCategory } = useProjectEditorCreateActions({ values, setters, openProject })
   const { renameFile, deleteFile, editFileTags } = useProjectEditorFileActions({ values, setters, openProject })
   const { renameFolder, deleteFolder, moveFolder } = useProjectEditorFolderActions({ values, setters, openProject })
   const sidebarActions = useSidebarActions(values, setters)
-  const layoutActions = useWorkspaceLayoutActions(values, setters, loadDocument, saveDocumentNow, primarySerializationRef, secondarySerializationRef)
-  const editorViewActions = useEditorViewActions(values, setters, saveDocumentNow, primarySerializationRef, secondarySerializationRef)
+  const layoutActions = useWorkspaceLayoutActions(values, setters, loadDocument, panePersistence)
+  const editorViewActions = useEditorViewActions(values, setters, panePersistence)
   const projectPickerActions = useProjectPickerActions({ openProject, setters })
   const reorderFiles = useReorderFilesAction({ setters, openProject, rootPath: values.rootPath })
   const moveFile = useMoveFileAction({ values, setters, openProject })
@@ -98,11 +95,9 @@ export function useProjectEditorUiActions({
   setters,
   openProject,
   loadDocument,
-  saveDocumentNow,
-  primarySerializationRef,
-  secondarySerializationRef,
+  panePersistence,
 }: UseProjectEditorUiActionsParams): ProjectEditorActions {
-  const primaryActions = usePrimaryProjectEditorActions(values, setters, openProject, loadDocument, saveDocumentNow, primarySerializationRef, secondarySerializationRef)
+  const primaryActions = usePrimaryProjectEditorActions(values, setters, openProject, loadDocument, panePersistence)
   const conflictActions = useSecondaryProjectEditorActions(values, setters, openProject, loadDocument)
   return buildProjectEditorActions({ ...primaryActions, ...conflictActions })
 }

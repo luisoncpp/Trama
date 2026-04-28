@@ -134,13 +134,19 @@ interface EditorTextChangeHandlerParams {
 
 ## Where flush is called
 
+Slice 1 of the rich-editor refactor centralized pane-targeted persistence in:
+
+- `src/features/project-editor/use-project-editor-pane-persistence.ts`
+
+That helper owns serialization-ref lookup, pane-state lookup, `flushPane(pane)`, `savePaneIfDirty(pane)`, and `saveAllDirtyPanes()`.
+
 | Action | File | Target |
 |--------|------|--------|
-| `saveNow` | `use-project-editor-ui-actions-helpers.ts:editorViewActions` | Active pane's `flush()` |
-| `selectFile` | `use-project-editor-ui-actions-helpers.ts:selectFileAction` | Active pane's `flush()` |
-| `setWorkspaceActivePane` | `use-project-editor-layout-actions.ts` | Outgoing pane's `flush()` |
-| Autosave effect | `use-project-editor-autosave-effect.ts` | Active pane's `flush()` |
-| Close effect (`__tramaSaveAll`) | `use-project-editor-close-effect.ts` | Both panes' `flush()` |
+| `saveNow` | `use-project-editor-ui-actions-helpers.ts:editorViewActions` | Active pane via `savePaneIfDirty()` |
+| `selectFile` | `use-project-editor-ui-actions-helpers.ts:selectFileAction` | Active pane via `savePaneIfDirty()` |
+| `setWorkspaceActivePane` | `use-project-editor-layout-actions.ts` | Outgoing pane via `savePaneIfDirty()` |
+| Autosave effect | `use-project-editor-autosave-effect.ts` | Active pane via `savePaneIfDirty()` |
+| Close effect (`__tramaSaveAll`) | `use-project-editor-close-effect.ts` | Both panes via `saveAllDirtyPanes()` |
 
 ## Files involved
 
@@ -153,11 +159,12 @@ interface EditorTextChangeHandlerParams {
 | `src/features/project-editor/project-editor-types.ts` | `EditorSerializationRefs` type, `serializationRefs` in model |
 | `src/features/project-editor/use-project-editor.ts` | Creates refs, wires into actions and effects |
 | `src/features/project-editor/use-project-editor-actions.ts` | Accepts and forwards `SerializationRefsForActions` |
+| `src/features/project-editor/use-project-editor-pane-persistence.ts` | Centralized pane-targeted `flush/save` helper used by actions and effects |
 | `src/features/project-editor/use-project-editor-ui-actions.ts` | Passes refs to `usePrimaryProjectEditorActions` |
-| `src/features/project-editor/use-project-editor-ui-actions-helpers.ts` | `saveNow`, `selectFile`, `editorViewActions` |
-| `src/features/project-editor/use-project-editor-layout-actions.ts` | `setWorkspaceActivePane`, `openFileInPane` |
-| `src/features/project-editor/use-project-editor-autosave-effect.ts` | Flush before autosave |
-| `src/features/project-editor/use-project-editor-close-effect.ts` | Flush both panes on window close |
+| `src/features/project-editor/use-project-editor-ui-actions-helpers.ts` | `saveNow`, `selectFile`, `editorViewActions` routed through pane persistence |
+| `src/features/project-editor/use-project-editor-layout-actions.ts` | `setWorkspaceActivePane`, `openFileInPane`, switch-time save via pane persistence |
+| `src/features/project-editor/use-project-editor-autosave-effect.ts` | Autosave routed through pane persistence |
+| `src/features/project-editor/use-project-editor-close-effect.ts` | Close-time save-all routed through pane persistence |
 
 ## Related docs
 

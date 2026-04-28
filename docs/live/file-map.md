@@ -172,6 +172,8 @@ Mandatory doc navigation for new chats: start with `docs/START-HERE.md` — it p
   - Composes UI actions and core operations (load/save/open/clear) and wires them into the state.
 - `src/features/project-editor/use-project-editor-autosave-effect.ts`
   - Debounced autosave effect that persists edits after a short idle period.
+- `src/features/project-editor/use-project-editor-pane-persistence.ts`
+  - Shared pane-targeted persistence helper: serialization-ref lookup, pane-state lookup, `flushPane`, `savePaneIfDirty`, and `saveAllDirtyPanes`.
 - `src/features/project-editor/use-project-editor-external-events-effect.ts`
   - Subscribes to external file events (watcher) and handles reloads/conflicts/tree refresh.
 - `src/features/project-editor/use-project-editor-context-menu-effect.ts`
