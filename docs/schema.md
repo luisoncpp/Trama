@@ -12,6 +12,9 @@ docs/
 ├── update.md             Guide for updating the documentation.
 ├── README.md              Redirects to START-HERE.md (do not edit)
 │
+├── flows/                 Trigger-oriented execution guides (changes frequently)
+│   └── README.md         Index of end-to-end behavior flows
+│
 ├── live/                  Live state and project reference (changes frequently)
 │   ├── current-status.md  Feature status: implemented/pending
 │   ├── file-map.md        File ownership registry
@@ -86,6 +89,23 @@ docs/
 - Keep these files stable — they are reference documents, not status trackers.
 - If the implementation diverges from the architecture guide, update the guide first.
 - Do not put status bullets or "in progress" content here.
+
+---
+
+### `docs/flows/`
+
+**Purpose:** Trigger-oriented execution guides — what happens when a user or system action occurs.
+
+**What belongs here:**
+- End-to-end flow walkthroughs for concrete actions
+- Debug-oriented sequences such as "type in editor", "switch pane", "save document", "handle external file change"
+- Ordered mappings from trigger → entry point → state reads/writes → side effects
+
+**Rules:**
+- Flows describe behavior from the perspective of an action, not from the perspective of a subsystem.
+- Prefer concise operational structure over long design prose.
+- A flow can reference architecture docs for invariants, but should not restate the whole subsystem design.
+- If you are asking "when this happens, what runs next?", the answer belongs here.
 
 ---
 
@@ -187,6 +207,7 @@ docs/
 | Feature spec | `spec/` | Before implementation |
 | Implementation plan | `plan/` | During implementation |
 | Technical architecture | `architecture/` | When design is finalized |
+| Trigger-oriented flow guide | `flows/` | When a behavior path becomes hard to follow |
 | Counter-intuitive fact / effective strategy | `lessons-learned/` | After discovery |
 | Live status | `live/current-status.md` | When state changes |
 | Entry point | `START-HERE.md` | When docs structure changes |

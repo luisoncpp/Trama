@@ -33,6 +33,7 @@ NO te estoy pidiendo que leas un archivo por ahora, sólo establezco reglas.
 3. Read `docs/lessons-learned/README.md` and any relevant lesson files.
 4. Read `docs/dev-workflow.md` for build/test/checklist rules.
 5. Read `docs/architecture/README.md` to read any documents relevant to your current task before writing/reading any code.
+6. Read `docs/flows/README.md` when the hard part is following behavior end-to-end rather than understanding subsystem design.
 
 ## 90-second project summary
 
@@ -65,6 +66,8 @@ Open these only when relevant:
 - Project index data model and reconciliation: `docs/architecture/project-index-architecture.md`
 - ZuluPad import pipeline (parser, encoding, tags, line endings): `docs/architecture/zulu-import-architecture.md`
 - Editor serialization debounce (closure-capture, ref mutation, flush-before-switch): `docs/architecture/editor-serialization-debounce-architecture.md`
+- Rich editor refactor roadmap (Quill lifecycle, canonical value sync, pane persistence): `docs/plan/rich-editor-refactor-plan.md`
+- Trigger-oriented behavior walkthroughs: `docs/flows/README.md`
 
 ## Fast routing by task
 
@@ -76,6 +79,9 @@ Open these only when relevant:
 | Debug sidebar path scoping | `docs/architecture/sidebar-path-scoping-model.md` → `src/features/project-editor/components/sidebar/sidebar-panel-body.tsx` → `src/features/project-editor/components/sidebar/sidebar-panel-logic.ts` |
 | Change editor behavior | `src/features/project-editor/components/rich-markdown-editor*.ts*` + `docs/architecture/editor-serialization-debounce-architecture.md` |
 | Debug editor debounce / flush-before-switch | `docs/architecture/editor-serialization-debounce-architecture.md` → `src/features/project-editor/components/rich-markdown-editor-core.ts` → `tests/project-editor-debounce-regression.test.ts` |
+| Plan rich editor cleanup/refactor | `docs/plan/rich-editor-refactor-plan.md` → `docs/architecture/rich-markdown-editor-core-architecture.md` → `docs/architecture/image-handling-architecture.md` → `docs/architecture/split-pane-coordination.md` |
+| Follow editor typing behavior step-by-step | `docs/flows/rich-editor-typing-flow.md` → `src/features/project-editor/components/rich-markdown-editor-core.ts` → `src/features/project-editor/components/rich-markdown-editor-quill.ts` |
+| Follow split-pane activation behavior step-by-step | `docs/flows/switch-pane-flow.md` → `src/features/project-editor/use-project-editor-layout-actions.ts` → `src/features/project-editor/use-project-editor-state.ts` |
 | Change filesystem/repo layer | `electron/services/document-repository.ts` → `electron/ipc/handlers/project-handlers/document-handlers.ts` |
 | Add a test | `tests/` + `docs/dev-workflow.md` (checklist) |
 | Understand split pane coordination | `docs/architecture/split-pane-coordination.md` (canonical: per-pane state contracts, two-layer model, pane-targeted action rules) |

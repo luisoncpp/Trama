@@ -4,7 +4,9 @@
 
 Before searching the codebase, read `docs/START-HERE.md` first — it provides the full bootstrap sequence.
 
-If work touches AI import/export, also read:
+If the hard part of the task is following behavior end-to-end rather than understanding subsystem design, also read `docs/flows/README.md`.
+
+If work touches AI import/export, also read `docs/architecture/ai-import-export-architecture.md`.
 
 ## Current phase
 
@@ -51,16 +53,39 @@ For WS1 execution details, see `docs/spec/wiki-tag-links-spec.md` and `docs/plan
 1. Start with `npm run dev`.
 2. In app, pick folder and verify preload status is available.
 3. Validate core flow for touched area (editor/sidebar/IPC).
-4. Run `npm run lint` and focused tests while iterating.
-5. Run tests with `npm run test` before finishing.
-6. Run `npm run build` for final compile confidence.
-7. Run `npm run test:smoke` when touching preload/window/IPC startup paths.
-8. Update the documentation (see mandatory checklist below)
-9. If a whole md implementation plan is finished, move it to `docs/done`.
+4. If the behavior path is hard to follow, open the matching doc in `docs/flows/` before changing code.
+5. Run `npm run lint` and focused tests while iterating.
+6. Run tests with `npm run test` before finishing.
+7. Run `npm run build` for final compile confidence.
+8. Run `npm run test:smoke` when touching preload/window/IPC startup paths.
+9. Update the documentation (see mandatory checklist below)
+10. If a whole md implementation plan is finished, move it to `docs/plan/done`.
 
 ## Documentation requirements (mandatory)
 
 When a change affects behavior (not only formatting) or when detecting anything in the code that contradicts existing documentation, documentation updates are required in the same task. Read the requirements in `docs/update.md`.
+
+Use the doc types consistently:
+
+- `docs/architecture/` for subsystem design and invariants
+- `docs/flows/` for "when this happens, what runs next?"
+- `docs/lessons-learned/` for counter-intuitive facts
+- `docs/plan/` for active refactors or implementation slices
+
+Add or update a flow doc when:
+
+- the debugging path is easier to explain as a trigger sequence than as architecture
+- you had to trace several files to answer "what happens when I do X?"
+- a behavior hotspot keeps forcing repeated codebase searches
+
+Good candidates:
+
+- typing in the editor
+- switching file
+- switching pane
+- saving
+- external file change handling
+- window close flow
 
 ## Sidebar-specific manual checks
 
@@ -110,6 +135,7 @@ Before writing any code that interacts with Quill's API (coordinates, bounds, se
 - Quill owns its DOM (`quill.root` / `.ql-editor`). Never inject or mutate nodes inside it; overlays must be siblings outside `.ql-editor`.
 - Embedded markdown images must use a single canonical in-memory representation while editing. In Trama, editor state should keep short `<!-- IMAGE_PLACEHOLDER:... -->` markers plus the cached image map, and only hydrate back to `![...](data:image/...)` when rendering into Quill or saving to disk.
 - When syncing external editor values, compare canonicalized markdown, not raw source text. Base64 markdown and placeholder markdown may represent the same document; treating them as different will trigger destructive re-renders and can drop typed text or images.
+- If the issue is behavioral rather than API-specific, check `docs/flows/rich-editor-typing-flow.md` before changing editor lifecycle code.
 
 ## When you are getting stuck
 
