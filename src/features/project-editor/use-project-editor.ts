@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'preact/hooks'
-import type { ProjectEditorModel } from './project-editor-types'
+import type { EditorSerializationRefs, ProjectEditorModel } from './project-editor-types'
 import type { WorkspaceLayoutState } from './project-editor-types'
 import { useProjectEditorActions } from './use-project-editor-actions'
 import { useProjectEditorAutosaveEffect } from './use-project-editor-autosave-effect'
@@ -17,12 +17,12 @@ function useAutoPickProjectFolderEffect(
   rootPath: string | null,
 ): void {
   const hasRequestedProjectFolderRef = useRef(false)
-  useEffect(() => {
+  useEffect(/* autoPickProjectFolderOnStartup */ () => {
     if (!autoPickProjectFolderOnStart || hasRequestedProjectFolderRef.current) return
     if (!apiAvailable || rootPath) return
     hasRequestedProjectFolderRef.current = true
     void pickProjectFolder()
-  }, [pickProjectFolder, autoPickProjectFolderOnStart, apiAvailable, rootPath])
+  }, [pickProjectFolder, autoPickProjectFolderOnStart, apiAvailable, rootPath] /*Inputs for autoPickProjectFolderOnStartup*/)
 }
 
 function buildShortcutsEffectParams(
@@ -56,48 +56,39 @@ function useProjectEditorEffects(
   actions: ReturnType<typeof useProjectEditorActions>['actions'],
   core: ReturnType<typeof useProjectEditorActions>['core'],
   autoPickProjectFolderOnStart: boolean,
+  primarySerializationRef: { current: EditorSerializationRefs },
+  secondarySerializationRef: { current: EditorSerializationRefs },
 ): void {
-  useAutoPickProjectFolderEffect(
-    actions.pickProjectFolder, autoPickProjectFolderOnStart, values.apiAvailable, values.rootPath,
-  )
-
+  useAutoPickProjectFolderEffect(actions.pickProjectFolder, autoPickProjectFolderOnStart, values.apiAvailable, values.rootPath)
   useProjectEditorAutosaveEffect({
-    selectedPath: values.selectedPath,
-    isDirty: values.isDirty,
-    editorValue: values.editorValue,
-    editorMeta: values.editorMeta,
+    selectedPath: values.selectedPath, isDirty: values.isDirty,
+    editorValue: values.editorValue, editorMeta: values.editorMeta,
     saveDocumentNow: core.saveDocumentNow,
+    activePane: values.workspaceLayout.activePane,
+    primarySerializationRef, secondarySerializationRef,
   })
-
   useProjectEditorExternalEventsEffect({
     snapshotRootPath: values.snapshot?.rootPath ?? null,
-    selectedPath: values.selectedPath,
-    activePane: values.workspaceLayout.activePane,
+    selectedPath: values.selectedPath, activePane: values.workspaceLayout.activePane,
     isDirty: values.isDirty,
-    clearEditor: core.clearEditor,
-    loadDocument: core.loadDocument,
+    clearEditor: core.clearEditor, loadDocument: core.loadDocument,
     openProject: core.openProject,
     setExternalConflictPath: setters.setExternalConflictPath,
     setConflictComparisonContent: setters.setConflictComparisonContent,
     setStatusMessage: setters.setStatusMessage,
   })
-
   useProjectEditorFullscreenEffect({ setIsFullscreen: setters.setIsFullscreen })
-
   useProjectEditorShortcutsEffect(buildShortcutsEffectParams(actions, values.isFullscreen, values.workspaceLayout))
-
   useProjectEditorCloseEffect({
-    primaryPane: values.primaryPane,
-    secondaryPane: values.secondaryPane,
+    primaryPane: values.primaryPane, secondaryPane: values.secondaryPane,
     saveDocumentNow: core.saveDocumentNow,
+    primarySerializationRef, secondarySerializationRef,
   })
-
   useProjectEditorContextMenuEffect({
     isFullscreen: values.isFullscreen,
     toggleWorkspaceLayoutMode: actions.toggleWorkspaceLayoutMode,
     setFullscreenEnabled: actions.setFullscreenEnabled,
-    toggleFocusMode: actions.toggleFocusMode,
-    setFocusScope: actions.setFocusScope,
+    toggleFocusMode: actions.toggleFocusMode, setFocusScope: actions.setFocusScope,
     setWorkspaceLayoutRatio: actions.setWorkspaceLayoutRatio,
   })
 }
@@ -131,11 +122,22 @@ export function useProjectEditor(): ProjectEditorModel {
   const autoPickProjectFolderOnStart = import.meta.env.MODE !== 'test'
   const state = useProjectEditorState()
   const { values, setters } = state
-  const { actions, core } = useProjectEditorActions(state)
-  useProjectEditorEffects(values, setters, actions, core, autoPickProjectFolderOnStart)
+
+  const primarySerializationRef = useRef<EditorSerializationRefs>({ flush: () => null })
+  const secondarySerializationRef = useRef<EditorSerializationRefs>({ flush: () => null })
+
+  const { actions, core } = useProjectEditorActions(state, {
+    primarySerializationRef,
+    secondarySerializationRef,
+  })
+  useProjectEditorEffects(values, setters, actions, core, autoPickProjectFolderOnStart, primarySerializationRef, secondarySerializationRef)
 
   return {
     state: buildProjectEditorModelState(values),
     actions,
+    serializationRefs: {
+      primary: primarySerializationRef,
+      secondary: secondarySerializationRef,
+    },
   }
 }

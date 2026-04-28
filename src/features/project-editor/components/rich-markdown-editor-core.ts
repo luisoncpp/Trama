@@ -6,6 +6,8 @@ import { WORKSPACE_CONTEXT_MENU_EVENT } from '../../../shared/workspace-context-
 import { registerWorkspaceCommandListener } from './rich-markdown-editor-commands'
 import { syncCenteredLayoutArtifacts } from './rich-markdown-editor-layout-centering'
 import { createQuillEditor, normalizeMarkdown, applyMarkdownToEditor, syncEditorSpellcheck, serializeEditorMarkdownFromRef } from './rich-markdown-editor-quill'
+import { stripBase64ImagesFromMarkdown } from '../../../shared/markdown-image-placeholder'
+import type { EditorSerializationRefs } from '../project-editor-types'
 
 export { normalizeMarkdown }
 
@@ -20,165 +22,115 @@ interface UseRichEditorLifecycleParams {
   lastEditorValueRef: { current: string }
   isApplyingExternalValueRef: { current: boolean }
   turndownRef: { current: TurndownService }
+  serializationRef: { current: EditorSerializationRefs }
+  onDirtyRef: { current: () => void }
+}
+
+function normalizeEditorMarkdown(value: string, documentId: string | null): string {
+  const { markdownWithoutImages } = stripBase64ImagesFromMarkdown(value, documentId ?? undefined)
+  return normalizeMarkdown(markdownWithoutImages)
 }
 
 function registerEditorTextChangeHandler({
-  editor,
-  documentId,
-  isApplyingExternalValueRef,
-  turndownRef,
-  lastEditorValueRef,
-  onChangeRef,
+  editor, documentId, isApplyingExternalValueRef,
+  turndownRef, lastEditorValueRef, onChangeRef, onDirtyRef, serializationRef,
 }: {
-  editor: Quill
-  documentId: string
-  isApplyingExternalValueRef: { current: boolean }
+  editor: Quill; documentId: string; isApplyingExternalValueRef: { current: boolean }
   turndownRef: { current: TurndownService }
-  lastEditorValueRef: { current: string }
-  onChangeRef: { current: (value: string) => void }
-}): void {
-  editor.on('text-change', () => {
-    if (isApplyingExternalValueRef.current) return
-    syncCenteredLayoutArtifacts(editor)
+  lastEditorValueRef: { current: string }; onChangeRef: { current: (value: string) => void }
+  onDirtyRef: { current: () => void }; serializationRef: { current: EditorSerializationRefs }
+}): () => void {
+  let debounceTimer: number | null = null
+  const flush = (): string | null => {
+    if (debounceTimer) { clearTimeout(debounceTimer); debounceTimer = null }
+    if (isApplyingExternalValueRef.current) return null
     const markdown = serializeEditorMarkdownFromRef(turndownRef, editor.root.innerHTML, documentId)
     lastEditorValueRef.current = markdown
     onChangeRef.current(markdown)
+    return markdown
+  }
+  serializationRef.current.flush = flush
+  editor.on('text-change', () => {
+    if (isApplyingExternalValueRef.current) return
+    syncCenteredLayoutArtifacts(editor)
+    onDirtyRef.current()
+    if (debounceTimer) clearTimeout(debounceTimer)
+    debounceTimer = window.setTimeout(flush, 1000)
   })
+  return () => { if (debounceTimer) { clearTimeout(debounceTimer); debounceTimer = null } }
 }
 
 function useInitializeEditor({
-  documentId,
-  value,
-  spellcheckEnabled,
-  hostRef,
-  editorRef,
-  isApplyingExternalValueRef,
-  lastEditorValueRef,
-  turndownRef,
-  onChangeRef,
+  documentId, value, spellcheckEnabled, hostRef, editorRef,
+  isApplyingExternalValueRef, lastEditorValueRef,
+  turndownRef, onChangeRef, serializationRef, onDirtyRef,
 }: Omit<UseRichEditorLifecycleParams, 'disabled'>): void {
-  useEffect(() => {
+  useEffect(/* initializeEditor */ () => {
     const host = hostRef.current
     if (!host) return
-
     const editor = createQuillEditor(host)
     editorRef.current = editor
     syncEditorSpellcheck(editor, spellcheckEnabled)
-    applyMarkdownToEditor(editor, value, 'silent')
-    lastEditorValueRef.current = normalizeMarkdown(value)
-    registerEditorTextChangeHandler({
-      editor,
-      documentId: documentId ?? '',
-      isApplyingExternalValueRef,
-      turndownRef,
-      lastEditorValueRef,
-      onChangeRef,
+    applyMarkdownToEditor(editor, value, 'silent', documentId ?? undefined)
+    lastEditorValueRef.current = normalizeEditorMarkdown(value, documentId)
+    const cleanupHandler = registerEditorTextChangeHandler({
+      editor, documentId: documentId ?? '', isApplyingExternalValueRef,
+      turndownRef, lastEditorValueRef, onChangeRef, onDirtyRef, serializationRef,
     })
     const workspaceHandler = registerWorkspaceCommandListener(editor, turndownRef)
     registerTypographyHandler(editor)
-
     return () => {
+      cleanupHandler()
       window.removeEventListener(WORKSPACE_CONTEXT_MENU_EVENT, workspaceHandler as EventListener)
       editorRef.current = null
     }
-  }, [documentId, editorRef, hostRef, isApplyingExternalValueRef, lastEditorValueRef, onChangeRef, turndownRef])
+  }, [documentId, editorRef, hostRef, isApplyingExternalValueRef, lastEditorValueRef, onChangeRef, turndownRef, serializationRef, onDirtyRef] /*Inputs for initializeEditor*/)
 }
 
 function useSyncExternalValue({
-  value,
-  editorRef,
-  lastEditorValueRef,
-  isApplyingExternalValueRef,
-}: Omit<UseRichEditorLifecycleParams, 'documentId' | 'disabled' | 'spellcheckEnabled' | 'hostRef' | 'onChangeRef' | 'turndownRef'> & {
-  value: string
+  documentId, value, editorRef, lastEditorValueRef, isApplyingExternalValueRef,
+}: {
+  documentId: string | null
+  value: string; editorRef: { current: Quill | null }; lastEditorValueRef: { current: string }
+  isApplyingExternalValueRef: { current: boolean }
 }): void {
-  useEffect(() => {
+  useEffect(/* syncExternalValue */ () => {
     const editor = editorRef.current
     if (!editor) return
-
-    const nextNormalized = normalizeMarkdown(value)
+    const nextNormalized = normalizeEditorMarkdown(value, documentId)
     if (lastEditorValueRef.current === nextNormalized) return
-
     isApplyingExternalValueRef.current = true
     const selection = editor.getSelection()
-    applyMarkdownToEditor(editor, value, 'silent')
-    if (selection) {
-      editor.setSelection(selection)
-    }
-
+    applyMarkdownToEditor(editor, value, 'silent', documentId ?? undefined)
+    if (selection) { editor.setSelection(selection) }
     lastEditorValueRef.current = nextNormalized
-    window.setTimeout(() => {
-      isApplyingExternalValueRef.current = false
-    }, 0)
-  }, [editorRef, isApplyingExternalValueRef, lastEditorValueRef, value])
-}
-
-function useToggleDisabled({
-  documentId,
-  disabled,
-  editorRef,
-}: Pick<UseRichEditorLifecycleParams, 'documentId' | 'disabled' | 'editorRef'>): void {
-  useEffect(() => {
-    const editor = editorRef.current
-    if (!editor) return
-    editor.enable(!disabled)
-  }, [disabled, documentId, editorRef])
-}
-
-function useSyncSpellcheckEnabled({
-  documentId,
-  spellcheckEnabled,
-  editorRef,
-}: Pick<UseRichEditorLifecycleParams, 'documentId' | 'spellcheckEnabled' | 'editorRef'>): void {
-  useEffect(() => {
-    const editor = editorRef.current
-    if (!editor) return
-    syncEditorSpellcheck(editor, spellcheckEnabled)
-  }, [documentId, editorRef, spellcheckEnabled])
+    window.setTimeout(() => { isApplyingExternalValueRef.current = false }, 0)
+  }, [documentId, editorRef, isApplyingExternalValueRef, lastEditorValueRef, value] /*Inputs for syncExternalValue*/)
 }
 
 export function useRichEditorLifecycle(params: UseRichEditorLifecycleParams): void {
-  const {
-    documentId,
-    value,
-    disabled,
-    spellcheckEnabled,
-    hostRef,
-    editorRef,
-    onChangeRef,
-    lastEditorValueRef,
-    isApplyingExternalValueRef,
-    turndownRef,
-  } = params
-
+  const p = params
   useInitializeEditor({
-    documentId,
-    value,
-    spellcheckEnabled,
-    hostRef,
-    editorRef,
-    isApplyingExternalValueRef,
-    lastEditorValueRef,
-    turndownRef,
-    onChangeRef,
+    documentId: p.documentId, value: p.value, spellcheckEnabled: p.spellcheckEnabled,
+    hostRef: p.hostRef, editorRef: p.editorRef, isApplyingExternalValueRef: p.isApplyingExternalValueRef,
+    lastEditorValueRef: p.lastEditorValueRef, turndownRef: p.turndownRef, onChangeRef: p.onChangeRef,
+    serializationRef: p.serializationRef, onDirtyRef: p.onDirtyRef,
   })
 
   useSyncExternalValue({
-    value,
-    editorRef,
-    lastEditorValueRef,
-    isApplyingExternalValueRef,
+    documentId: p.documentId, value: p.value, editorRef: p.editorRef, lastEditorValueRef: p.lastEditorValueRef,
+    isApplyingExternalValueRef: p.isApplyingExternalValueRef,
   })
 
-  useToggleDisabled({
-    documentId,
-    disabled,
-    editorRef,
-  })
+  useEffect(/* toggleDisabled */ () => {
+    const editor = p.editorRef.current
+    if (!editor) return
+    editor.enable(!p.disabled)
+  }, [p.disabled, p.documentId, p.editorRef] /*Inputs for toggleDisabled*/)
 
-  useSyncSpellcheckEnabled({
-    documentId,
-    spellcheckEnabled,
-    editorRef,
-  })
+  useEffect(/* syncSpellcheckEnabled */ () => {
+    const editor = p.editorRef.current
+    if (!editor) return
+    syncEditorSpellcheck(editor, p.spellcheckEnabled)
+  }, [p.documentId, p.editorRef, p.spellcheckEnabled] /*Inputs for syncSpellcheckEnabled*/)
 }

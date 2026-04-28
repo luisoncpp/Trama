@@ -1,10 +1,10 @@
 import { useCallback } from 'preact/hooks'
 import type { DocumentMeta } from '../../shared/ipc'
-import type { PaneDocumentState, ProjectEditorActions, WorkspacePane } from './project-editor-types'
+import type { EditorSerializationRefs, PaneDocumentState, ProjectEditorActions, WorkspacePane } from './project-editor-types'
 import type { UseProjectEditorStateResult } from './use-project-editor-state'
 import { useOpenProject } from './use-project-editor-open-project'
 import { useProjectEditorUiActions } from './use-project-editor-ui-actions'
-import { hydrateMarkdownImages } from '../../shared/markdown-image-placeholder'
+import { hydrateMarkdownImages, stripBase64ImagesFromMarkdown } from '../../shared/markdown-image-placeholder'
 
 interface CoreProjectEditorActions {
   clearEditor: () => void
@@ -22,8 +22,13 @@ export interface UseProjectEditorActionsResult {
   core: CoreProjectEditorActions
 }
 
+export interface SerializationRefsForActions {
+  primarySerializationRef: { current: EditorSerializationRefs }
+  secondarySerializationRef: { current: EditorSerializationRefs }
+}
+
 function useClearEditor(setters: UseProjectEditorStateResult['setters']): () => void {
-  return useCallback(() => {
+  return useCallback(/* clearEditorAction */ () => {
     const emptyPane: PaneDocumentState = { path: null, content: '', meta: {}, isDirty: false }
     setters.setPrimaryPane(emptyPane)
     setters.setSecondaryPane(emptyPane)
@@ -36,12 +41,11 @@ function useClearEditor(setters: UseProjectEditorStateResult['setters']): () => 
       activePane: 'primary',
       mode: 'single',
     }))
-  }, [setters])
+  }, [setters] /*Inputs for clearEditorAction*/)
 }
 
 function useLoadDocument(setters: UseProjectEditorStateResult['setters']): (path: string, targetPane: WorkspacePane) => Promise<void> {
-  return useCallback(
-    async (filePath: string, targetPane: WorkspacePane): Promise<void> => {
+  return useCallback(/* loadDocumentAction */ async (filePath: string, targetPane: WorkspacePane): Promise<void> => {
       setters.setLoadingDocument(true)
 
       try {
@@ -51,9 +55,11 @@ function useLoadDocument(setters: UseProjectEditorStateResult['setters']): (path
           return
         }
 
+        const { markdownWithoutImages } = stripBase64ImagesFromMarkdown(response.data.content, response.data.path)
+
         const loadedPane: PaneDocumentState = {
           path: response.data.path,
-          content: response.data.content,
+          content: markdownWithoutImages,
           meta: response.data.meta,
           isDirty: false,
         }
@@ -67,15 +73,13 @@ function useLoadDocument(setters: UseProjectEditorStateResult['setters']): (path
         setters.setLoadingDocument(false)
       }
     },
-    [setters],
-  )
+    [setters] /*Inputs for loadDocumentAction*/)
 }
 
 function useSaveDocumentNow(
   setters: UseProjectEditorStateResult['setters'],
 ): (path: string, content: string, meta: DocumentMeta) => Promise<void> {
-  return useCallback(
-    async (path: string, content: string, meta: DocumentMeta): Promise<void> => {
+  return useCallback(/* saveDocumentNowAction */ async (path: string, content: string, meta: DocumentMeta): Promise<void> => {
       setters.setSaving(true)
 
       try {
@@ -94,11 +98,10 @@ function useSaveDocumentNow(
         setters.setSaving(false)
       }
     },
-    [setters],
-  )
+    [setters] /*Inputs for saveDocumentNowAction*/)
 }
 
-export function useProjectEditorActions(state: UseProjectEditorStateResult): UseProjectEditorActionsResult {
+export function useProjectEditorActions(state: UseProjectEditorStateResult, refs: SerializationRefsForActions): UseProjectEditorActionsResult {
   const { values, setters } = state
   const clearEditor = useClearEditor(setters)
   const loadDocument = useLoadDocument(setters)
@@ -110,6 +113,8 @@ export function useProjectEditorActions(state: UseProjectEditorStateResult): Use
     openProject,
     loadDocument,
     saveDocumentNow,
+    primarySerializationRef: refs.primarySerializationRef,
+    secondarySerializationRef: refs.secondarySerializationRef,
   })
 
   return {

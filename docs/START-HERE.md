@@ -64,6 +64,7 @@ Open these only when relevant:
 - Sidebar path scoping model (section-relative ↔ project-relative conversion): `docs/architecture/sidebar-path-scoping-model.md`
 - Project index data model and reconciliation: `docs/architecture/project-index-architecture.md`
 - ZuluPad import pipeline (parser, encoding, tags, line endings): `docs/architecture/zulu-import-architecture.md`
+- Editor serialization debounce (closure-capture, ref mutation, flush-before-switch): `docs/architecture/editor-serialization-debounce-architecture.md`
 
 ## Fast routing by task
 
@@ -73,7 +74,8 @@ Open these only when relevant:
 | Add/change IPC handler | `electron/ipc/handlers/` + `electron/ipc-handlers.ts` → `docs/ipc-architecture.md` |
 | Change sidebar UX | `src/features/project-editor/components/sidebar/sidebar-types.ts` → target component in `sidebar/` |
 | Debug sidebar path scoping | `docs/architecture/sidebar-path-scoping-model.md` → `src/features/project-editor/components/sidebar/sidebar-panel-body.tsx` → `src/features/project-editor/components/sidebar/sidebar-panel-logic.ts` |
-| Change editor behavior | `src/features/project-editor/components/rich-markdown-editor*.ts*` |
+| Change editor behavior | `src/features/project-editor/components/rich-markdown-editor*.ts*` + `docs/architecture/editor-serialization-debounce-architecture.md` |
+| Debug editor debounce / flush-before-switch | `docs/architecture/editor-serialization-debounce-architecture.md` → `src/features/project-editor/components/rich-markdown-editor-core.ts` → `tests/project-editor-debounce-regression.test.ts` |
 | Change filesystem/repo layer | `electron/services/document-repository.ts` → `electron/ipc/handlers/project-handlers/document-handlers.ts` |
 | Add a test | `tests/` + `docs/dev-workflow.md` (checklist) |
 | Understand split pane coordination | `docs/architecture/split-pane-coordination.md` (canonical: per-pane state contracts, two-layer model, pane-targeted action rules) |

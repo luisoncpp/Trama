@@ -1,5 +1,5 @@
 import { PROJECT_EDITOR_STRINGS } from '../project-editor-strings'
-import type { FocusScope } from '../project-editor-types'
+import type { EditorSerializationRefs, FocusScope } from '../project-editor-types'
 import { RichMarkdownEditor } from './rich-markdown-editor'
 import type { RichEditorSyncState } from './rich-markdown-editor-toolbar'
 
@@ -18,6 +18,8 @@ interface EditorPanelProps {
   tagIndex?: Record<string, string> | null
   onTagClick?: (filePath: string) => void
   isActive?: boolean
+  editorSerializationRef?: { current: EditorSerializationRefs }
+  onMarkDirty?: () => void
 }
 
 function computeSyncStateLabel(selectedPath: string | null, loadingDocument: boolean, saving: boolean, isDirty: boolean): string {
@@ -42,6 +44,8 @@ export function EditorPanel({
   tagIndex,
   onTagClick,
   isActive = true,
+  editorSerializationRef,
+  onMarkDirty,
 }: EditorPanelProps) {
   const saveDisabled = !selectedPath || saving || !isDirty
   const saveLabel = saving
@@ -57,21 +61,16 @@ export function EditorPanel({
     <article class="editor-panel-root" onPointerDownCapture={onInteract}>
       <div class={`editor-manuscript ${!selectedPath || loadingDocument ? 'is-muted' : ''}`}>
         <RichMarkdownEditor
-          documentId={selectedPath}
-          value={editorValue}
+          documentId={selectedPath} value={editorValue}
           disabled={!selectedPath || loadingDocument}
-          spellcheckEnabled={spellcheckEnabled}
-          onChange={onEditorChange}
-          saveDisabled={saveDisabled}
-          saveLabel={saveLabel}
-          onSaveNow={onSaveNow}
-          syncState={syncState}
+          spellcheckEnabled={spellcheckEnabled} onChange={onEditorChange}
+          saveDisabled={saveDisabled} saveLabel={saveLabel}
+          onSaveNow={onSaveNow} syncState={syncState}
           syncStateLabel={syncStateLabel}
-          focusModeEnabled={focusModeEnabled}
-          focusScope={focusScope}
-          tagIndex={tagIndex}
-          onTagClick={onTagClick}
-          isActive={isActive}
+          focusModeEnabled={focusModeEnabled} focusScope={focusScope}
+          tagIndex={tagIndex} onTagClick={onTagClick} isActive={isActive}
+          editorSerializationRef={editorSerializationRef}
+          onMarkDirty={onMarkDirty}
         />
       </div>
     </article>

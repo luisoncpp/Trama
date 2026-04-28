@@ -10,6 +10,7 @@ import { syncCenteredLayoutArtifacts } from './rich-markdown-editor-layout-cente
 import { serializeDirectiveArtifactNode } from '../../../shared/markdown-layout-directives'
 import type { DirectiveArtifactNode } from '../../../shared/markdown-layout-directives-artifact-node'
 import {
+  hydrateMarkdownImages,
   stripBase64ImagesFromHtml,
 } from '../../../shared/markdown-image-placeholder'
 
@@ -62,13 +63,21 @@ export function applyMarkdownToEditor(
   editor: Quill,
   markdown: string,
   source: QuillChangeSource = 'api',
+  documentId?: string,
 ): void {
-  const { markdownWithArtifacts } = renderDirectiveArtifactsToMarkdown(markdown)
-  const parsed = marked.parse(markdownWithArtifacts) as string
-  const withImages = restoreImagesAfterMarkedparsing(parsed, new Map())
-  editor.setContents([], source)
-  editor.clipboard.dangerouslyPasteHTML(withImages, source)
-  syncCenteredLayoutArtifacts(editor)
+  const root = editor.root as HTMLDivElement
+  const previousEditable = root.contentEditable
+  root.contentEditable = 'false'
+  try {
+    const hydratedMarkdown = documentId ? hydrateMarkdownImages(markdown, documentId) : markdown
+    const { markdownWithArtifacts } = renderDirectiveArtifactsToMarkdown(hydratedMarkdown)
+    const parsed = marked.parse(markdownWithArtifacts) as string
+    const withImages = restoreImagesAfterMarkedparsing(parsed, new Map())
+    editor.clipboard.dangerouslyPasteHTML(withImages, source)
+    syncCenteredLayoutArtifacts(editor)
+  } finally {
+    root.contentEditable = previousEditable
+  }
 }
 
 export function serializeEditorMarkdown(
