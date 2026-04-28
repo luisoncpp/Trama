@@ -97,7 +97,15 @@ This split prevents the "skipped save on switch" bug where `isDirty` was still `
 
 ## Feedback loop prevention
 
-`flush()` updates `lastEditorValueRef.current = markdown` **before** calling `onChangeRef.current(markdown)`. This ensures `useSyncExternalValue` sees `lastEditorValueRef.current === nextNormalized` and skips re-applying the value to the editor. Without this, the freshly-serialized value would look like an "external" change and get re-applied, wiping the text the user just typed.
+`flush()` updates `lastEditorValueRef.current = markdown` **before** calling `onChangeRef.current(markdown)`. This ensures `useSyncExternalValue` compares the incoming value against the latest canonical editor value and skips re-applying equivalent content. Without this, the freshly-serialized value would look like an "external" change and get re-applied, wiping the text the user just typed.
+
+After Slice 2 of the rich-editor refactor, the equivalence rule is explicit:
+
+- `src/features/project-editor/components/rich-markdown-editor-value-sync.ts`
+  - `normalizeEditorDocumentValue(value, documentId)`
+  - `areEquivalentEditorValues(a, b, documentId)`
+
+That module is now the only place that should know how base64 markdown images and `IMAGE_PLACEHOLDER` markdown collapse to the same in-memory editor value.
 
 ## Key interfaces
 
@@ -154,6 +162,7 @@ That helper owns serialization-ref lookup, pane-state lookup, `flushPane(pane)`,
 |------|------|
 | `src/features/project-editor/components/rich-markdown-editor-core.ts` | Handler registration, debounce logic, `flush()` closure |
 | `src/features/project-editor/components/rich-markdown-editor.tsx` | Props `editorSerializationRef` + `onMarkDirty`, ref mutation sync |
+| `src/features/project-editor/components/rich-markdown-editor-value-sync.ts` | Canonical editor-value normalization/equality used by `lastEditorValueRef` and external sync |
 | `src/features/project-editor/components/editor-panel.tsx` | Passes props through |
 | `src/features/project-editor/components/workspace-editor-panels.tsx` | Reads `serializationRefs` from model, routes per pane |
 | `src/features/project-editor/project-editor-types.ts` | `EditorSerializationRefs` type, `serializationRefs` in model |

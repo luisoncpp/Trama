@@ -49,6 +49,7 @@ The solution is to keep two representations:
 | File | Responsibility |
 |------|----------------|
 | `src/shared/markdown-image-placeholder.ts` | Image extraction, placeholder generation, hydration, in-memory cache |
+| `src/features/project-editor/components/rich-markdown-editor-value-sync.ts` | Canonical editor-value normalization/equality for placeholder-vs-base64 comparisons |
 | `src/features/project-editor/components/rich-markdown-editor-quill.ts` | `serializeEditorMarkdown()` (HTML → markdown with placeholders), `applyMarkdownToEditor()` (markdown → Quill with image restoration), `restoreImagesAfterMarkedparsing()` |
 | `src/features/project-editor/components/rich-markdown-editor-core.ts` | Passes `documentId` to `serializeEditorMarkdownFromRef` so the cache is populated |
 | `src/features/project-editor/use-project-editor-actions.ts` | `useSaveDocumentNow` hydrates placeholders before calling IPC `saveDocument` |
@@ -166,6 +167,15 @@ With 9 images (~1.7 MB each, total ~15 MB base64):
 | **Total** | **~1.5 s** (vs. 25 s before the fix) |
 
 The key insight: Turndown is fast on 850 KB of HTML. It is extremely slow when each `replacement` callback returns a 1.5 MB string that Turndown must then integrate into the output.
+
+## Canonical comparison during external sync
+
+The editor must also compare incoming values in the same placeholder-based representation used during editing. Otherwise, a base64 markdown string from disk and a placeholder markdown string from in-memory state look different even when they represent the same document.
+
+`rich-markdown-editor-value-sync.ts` is the named boundary for that rule:
+
+- `normalizeEditorDocumentValue(value, documentId)` converts image markdown to placeholder markdown and normalizes line endings.
+- `areEquivalentEditorValues(a, b, documentId)` prevents false external re-renders by comparing canonical placeholder values only.
 
 ---
 

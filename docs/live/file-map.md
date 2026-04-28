@@ -225,6 +225,8 @@ Mandatory doc navigation for new chats: start with `docs/START-HERE.md` — it p
 - `src/features/project-editor/components/rich-markdown-editor-core.ts`
   - Core editor lifecycle and sync logic (initialize Quill, apply markdown, sync external values, enable/disable, register typography handlers).
   - Also listens for workspace `paste-markdown` commands and handles reading/parsing clipboard Markdown and inserting HTML into Quill.
+- `src/features/project-editor/components/rich-markdown-editor-value-sync.ts`
+  - Canonical editor-value helpers: normalize image-bearing markdown into placeholder form and compare equivalent external/editor values without triggering destructive re-renders.
 - `src/features/project-editor/components/rich-markdown-editor-layout-blots.ts`
   - Registers Quill `BlockEmbed`-based layout directive blots (`center`, `spacer`, `pagebreak`, unknown) so directive objects survive Quill canonicalization.
 - `src/features/project-editor/components/rich-markdown-editor-layout-clipboard.ts`
@@ -426,6 +428,8 @@ Core and regression suites:
   - Renderer import hook coverage: `importMode` forwarded to preview IPC call, `importMode` forwarded to execute IPC call, log message format matches created/appended/replaced/skipped/errors counts.
 - `tests/window-close.test.ts`
   - Regression tests for window close behavior: dirty state IPC notification, `__tramaSaveAll` global function, parallel save of dirty panes.
+- `tests/rich-markdown-editor-value-sync.test.ts`
+  - Unit coverage for canonical editor-value normalization and equivalence between base64 markdown images and `IMAGE_PLACEHOLDER` markdown.
 
 ## Architecture docs
 

@@ -5,11 +5,9 @@ import { registerTypographyHandler } from './rich-markdown-editor-typography'
 import { WORKSPACE_CONTEXT_MENU_EVENT } from '../../../shared/workspace-context-menu'
 import { registerWorkspaceCommandListener } from './rich-markdown-editor-commands'
 import { syncCenteredLayoutArtifacts } from './rich-markdown-editor-layout-centering'
-import { createQuillEditor, normalizeMarkdown, applyMarkdownToEditor, syncEditorSpellcheck, serializeEditorMarkdownFromRef } from './rich-markdown-editor-quill'
-import { stripBase64ImagesFromMarkdown } from '../../../shared/markdown-image-placeholder'
+import { createQuillEditor, applyMarkdownToEditor, syncEditorSpellcheck, serializeEditorMarkdownFromRef } from './rich-markdown-editor-quill'
+import { areEquivalentEditorValues, normalizeEditorDocumentValue } from './rich-markdown-editor-value-sync'
 import type { EditorSerializationRefs } from '../project-editor-types'
-
-export { normalizeMarkdown }
 
 interface UseRichEditorLifecycleParams {
   documentId: string | null
@@ -24,11 +22,6 @@ interface UseRichEditorLifecycleParams {
   turndownRef: { current: TurndownService }
   serializationRef: { current: EditorSerializationRefs }
   onDirtyRef: { current: () => void }
-}
-
-function normalizeEditorMarkdown(value: string, documentId: string | null): string {
-  const { markdownWithoutImages } = stripBase64ImagesFromMarkdown(value, documentId ?? undefined)
-  return normalizeMarkdown(markdownWithoutImages)
 }
 
 function registerEditorTextChangeHandler({
@@ -72,7 +65,7 @@ function useInitializeEditor({
     editorRef.current = editor
     syncEditorSpellcheck(editor, spellcheckEnabled)
     applyMarkdownToEditor(editor, value, 'silent', documentId ?? undefined)
-    lastEditorValueRef.current = normalizeEditorMarkdown(value, documentId)
+    lastEditorValueRef.current = normalizeEditorDocumentValue(value, documentId)
     const cleanupHandler = registerEditorTextChangeHandler({
       editor, documentId: documentId ?? '', isApplyingExternalValueRef,
       turndownRef, lastEditorValueRef, onChangeRef, onDirtyRef, serializationRef,
@@ -97,8 +90,8 @@ function useSyncExternalValue({
   useEffect(/* syncExternalValue */ () => {
     const editor = editorRef.current
     if (!editor) return
-    const nextNormalized = normalizeEditorMarkdown(value, documentId)
-    if (lastEditorValueRef.current === nextNormalized) return
+    const nextNormalized = normalizeEditorDocumentValue(value, documentId)
+    if (areEquivalentEditorValues(lastEditorValueRef.current, value, documentId)) return
     isApplyingExternalValueRef.current = true
     const selection = editor.getSelection()
     applyMarkdownToEditor(editor, value, 'silent', documentId ?? undefined)

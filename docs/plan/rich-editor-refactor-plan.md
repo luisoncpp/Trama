@@ -2,7 +2,7 @@
 
 ## Status
 
-Slice 1 implemented on 2026-04-27. The remaining slices are still planned. This document proposes a low-risk refactor of the rich editor and its split-pane persistence wiring without changing user-facing behavior in the first slices.
+Slices 1 and 2 implemented on 2026-04-27 and 2026-04-28 respectively. The remaining slices are still planned. This document proposes a low-risk refactor of the rich editor and its split-pane persistence wiring without changing user-facing behavior in the first slices.
 
 ## Why this plan exists
 
@@ -183,6 +183,16 @@ Expected result:
 
 - the image-placeholder representation becomes a first-class concept
 - future changes stop re-embedding image normalization knowledge in multiple hooks
+
+Implementation note:
+
+- Landed in `src/features/project-editor/components/rich-markdown-editor-value-sync.ts`
+- Current adopted API:
+  - `normalizeEditorDocumentValue(value, documentId)`
+  - `areEquivalentEditorValues(a, b, documentId)`
+- Current migrated call sites:
+  - `rich-markdown-editor.tsx` for initial `lastEditorValueRef`
+  - `rich-markdown-editor-core.ts` for init-time sync state and external-value comparisons
 
 Manual verification:
 

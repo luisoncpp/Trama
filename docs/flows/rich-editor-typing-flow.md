@@ -17,6 +17,8 @@ This is the main path where several subtle rules meet:
 - image-bearing documents must stay in one canonical in-memory form
 - external-value sync must not re-apply equivalent content and wipe in-flight typing
 
+The canonical equivalence rule now lives in `src/features/project-editor/components/rich-markdown-editor-value-sync.ts`.
+
 ## Sequence
 
 1. `RichMarkdownEditor` mounts and creates refs in `useRichEditorRefs()`.
@@ -31,7 +33,8 @@ This is the main path where several subtle rules meet:
 10. `flush()` serializes `editor.root.innerHTML` to markdown through `serializeEditorMarkdownFromRef(...)`.
 11. `flush()` updates `lastEditorValueRef.current` before calling `onChangeRef.current(markdown)`.
 12. `onChangeRef.current(markdown)` updates pane content in renderer state through `updateEditorValue(...)`.
-13. Future `useSyncExternalValue()` checks compare the incoming value against `lastEditorValueRef.current` and skip re-applying if it is already the same canonical document value.
+13. Future `useSyncExternalValue()` checks compare the incoming value against `lastEditorValueRef.current` through `areEquivalentEditorValues(...)`.
+14. If the incoming value is only a different representation of the same image-bearing document, Quill is not re-applied.
 
 ## State reads
 
@@ -59,6 +62,7 @@ This is the main path where several subtle rules meet:
 | Centering artifact synchronization | `rich-markdown-editor-layout-centering.ts` |
 | Debounced serialization | `rich-markdown-editor-core.ts` |
 | Image placeholder extraction during serialization | `rich-markdown-editor-quill.ts` |
+| Canonical value equivalence for later external sync | `rich-markdown-editor-value-sync.ts` |
 | UI state update for the current pane | `use-project-editor-ui-actions-helpers.ts` |
 
 ## Files to inspect
@@ -67,11 +71,13 @@ This is the main path where several subtle rules meet:
 |------|----------------|
 | `src/features/project-editor/components/rich-markdown-editor.tsx` | Ref creation and top-level editor orchestration |
 | `src/features/project-editor/components/rich-markdown-editor-core.ts` | Quill lifecycle, debounce handler, external-value sync |
+| `src/features/project-editor/components/rich-markdown-editor-value-sync.ts` | Canonical placeholder-based normalization/equality used by external sync |
 | `src/features/project-editor/components/rich-markdown-editor-quill.ts` | Markdown <-> HTML conversion and image placeholder logic |
 | `src/features/project-editor/use-project-editor-pane-persistence.ts` | Where later save/switch callers consume `flush()` safely by pane |
 | `src/features/project-editor/use-project-editor-ui-actions-helpers.ts` | Pane state updates through `updateEditorValue(...)` |
 | `docs/lessons-learned/editor-debounce-closure-capture.md` | Non-obvious debounce invariants |
 | `docs/lessons-learned/quill-render-keypress-image-loss.md` | Canonical image representation rule |
+| `docs/flows/rich-editor-external-sync-flow.md` | Follow the later decision to re-apply or skip incoming values |
 
 ## Common failure modes
 

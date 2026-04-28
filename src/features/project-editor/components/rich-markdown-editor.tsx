@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'preact/hooks'
 import TurndownService from 'turndown'
 import Quill from 'quill'
-import { normalizeMarkdown, useRichEditorLifecycle } from './rich-markdown-editor-core'
+import { useRichEditorLifecycle } from './rich-markdown-editor-core'
 import { useRichEditorFind } from './rich-markdown-editor-find'
 import { useFocusModeScopeEffect } from './rich-markdown-editor-focus-scope'
 import { type RichEditorSyncState, useSyncToolbarControls } from './rich-markdown-editor-toolbar'
@@ -11,6 +11,7 @@ import { TagHighlights } from './rich-markdown-editor-tag-highlights'
 import type { FocusScope } from '../project-editor-types'
 import type { EditorSerializationRefs } from '../project-editor-types'
 import { serializeDirectiveArtifactNode } from '../../../shared/markdown-layout-directives'
+import { normalizeEditorDocumentValue } from './rich-markdown-editor-value-sync'
 
 interface RichMarkdownEditorProps {
   documentId: string | null
@@ -46,12 +47,17 @@ function createTurndownService(): TurndownService {
   return service
 }
 
-function useRichEditorRefs(value: string, onChange: (value: string) => void, onMarkDirty?: () => void) {
+function useRichEditorRefs(
+  documentId: string | null,
+  value: string,
+  onChange: (value: string) => void,
+  onMarkDirty?: () => void,
+) {
   const shellRef = useRef<HTMLDivElement | null>(null)
   const hostRef = useRef<HTMLDivElement | null>(null)
   const editorRef = useRef<Quill | null>(null)
   const onChangeRef = useRef(onChange)
-  const lastEditorValueRef = useRef(normalizeMarkdown(value))
+  const lastEditorValueRef = useRef(normalizeEditorDocumentValue(value, documentId))
   const isApplyingExternalValueRef = useRef(false)
   const turndownRef = useRef(createTurndownService())
   const serializationRef = useRef<EditorSerializationRefs>({ flush: () => null })
@@ -96,7 +102,7 @@ export function RichMarkdownEditor(props: RichMarkdownEditorProps) {
     focusModeEnabled = false, focusScope = 'paragraph', tagIndex,
     onTagClick, isActive = true, editorSerializationRef, onMarkDirty,
   } = props
-  const refs = useRichEditorRefs(value, onChange, onMarkDirty)
+  const refs = useRichEditorRefs(documentId, value, onChange, onMarkDirty)
   const {
     shellRef, hostRef, editorRef, onChangeRef, lastEditorValueRef,
     isApplyingExternalValueRef, turndownRef,

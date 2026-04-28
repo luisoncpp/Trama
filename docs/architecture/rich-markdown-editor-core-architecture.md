@@ -66,6 +66,7 @@ This document describes how **Trama** uses **Quill** to implement its rich text 
 |------|-----------------|
 | `rich-markdown-editor.tsx` | Main React component, hook orchestration |
 | `rich-markdown-editor-core.ts` | Editor lifecycle (init, sync, disable, spellcheck) |
+| `rich-markdown-editor-value-sync.ts` | Canonical editor-value normalization/equality for image-bearing markdown |
 | `rich-markdown-editor-quill.ts` | Quill creation, markdown parse/serialize (see `image-handling-architecture.md`) |
 | `rich-markdown-editor-toolbar.ts` | Toolbar controls: save button, sync state, layout buttons (center/pagebreak) |
 | `../../shared/markdown-image-placeholder.ts` | Image extraction, placeholder generation, hydration, in-memory cache |
@@ -355,7 +356,7 @@ const turndownRef    // Persistent TurndownService
 value prop changes
     │
     ▼
-useSyncExternalValue() detects diff with lastEditorValueRef
+useSyncExternalValue() compares canonical value through rich-markdown-editor-value-sync.ts
     │
     ▼
 isApplyingExternalValueRef = true   // Blocks text-change handler
@@ -369,6 +370,20 @@ text-change handler ignores (isApplyingExternalValueRef=true)
     ▼
 setTimeout(0) → isApplyingExternalValueRef = false
 ```
+
+### Canonical editor-value rule
+
+Image-bearing documents have one editor-side equivalence model:
+
+- Disk or hydrated form: `![img_0](data:image/...)`
+- In-memory editing form: `<!-- IMAGE_PLACEHOLDER:img_0 -->`
+
+`rich-markdown-editor-value-sync.ts` makes that rule explicit:
+
+- `normalizeEditorDocumentValue(value, documentId)` strips base64 markdown images into placeholder markdown and applies standard line-ending normalization.
+- `areEquivalentEditorValues(a, b, documentId)` compares two editor values using that canonical placeholder form.
+
+`lastEditorValueRef` must always store the canonical editor value, and external-value sync must compare through that API rather than raw strings.
 
 ---
 
