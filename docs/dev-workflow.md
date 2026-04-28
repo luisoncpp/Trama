@@ -95,6 +95,12 @@ When a change affects behavior (not only formatting) or when detecting anything 
 7. Add/update tests.
 8. When adding workspace context-menu commands, update `src/shared/workspace-context-menu.ts`, add the native menu entry in `electron/main-process/context-menu.ts`, and handle the command in the renderer (`use-project-editor-context-menu-effect.ts` and any editor listeners such as `rich-markdown-editor-core.ts`). Add focused tests for the command.
 
+## Bug fixing
+
+Every time you make a change to fix a bug, leave logs along the way to double check your assumptions.
+
+After the user confirms you that the bug is fixed, delete the logs.
+
 ## Working with Quill
 
 Before writing any code that interacts with Quill's API (coordinates, bounds, selection, events, DOM structure), consult the official docs first:
@@ -102,6 +108,8 @@ Before writing any code that interacts with Quill's API (coordinates, bounds, se
 - API reference: https://quilljs.com/docs/api
 - Key gotcha: `quill.getBounds()` returns coordinates **relative to `quill.container`**, not `quill.root`. See `docs/lessons-learned/quill-getbounds-container-reference.md`.
 - Quill owns its DOM (`quill.root` / `.ql-editor`). Never inject or mutate nodes inside it; overlays must be siblings outside `.ql-editor`.
+- Embedded markdown images must use a single canonical in-memory representation while editing. In Trama, editor state should keep short `<!-- IMAGE_PLACEHOLDER:... -->` markers plus the cached image map, and only hydrate back to `![...](data:image/...)` when rendering into Quill or saving to disk.
+- When syncing external editor values, compare canonicalized markdown, not raw source text. Base64 markdown and placeholder markdown may represent the same document; treating them as different will trigger destructive re-renders and can drop typed text or images.
 
 ## When you are getting stuck
 
@@ -113,6 +121,7 @@ Before writing any code that interacts with Quill's API (coordinates, bounds, se
 - Split UI into helper components/hooks before limits are hit.
 - Keep `electron/ipc.ts` thin; move logic into handlers/services.
 - lint limits are meant to encourage to break down long files and long functions, and avoid code repetition, NOT to compact white spaces/indentation.
+
 
 ## Hook naming convention (mandatory)
 

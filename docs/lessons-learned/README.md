@@ -75,3 +75,4 @@ Avoid: "bug description + fix". Prefer: "what I learned that applies to future w
 | `focus-mode-scrollbar-dimming.md` | Scrollbar in focus mode stands out; dim via `::-webkit-scrollbar-thumb` with `color-mix` on `.ql-container.ql-snow` | 2026-04-25 |
 | `turndown-base64-replacement-performance.md` | Turndown `replacement` callbacks must return small strings; returning multi-megabyte base64 causes 25+ s per keystroke | 2026-04-25 |
 | `editor-debounce-closure-capture.md` | Debounce timer must capture `editor`/`documentId` in closure, never read refs at fire time; cleanup cancels only; flush returns content; mutate ref object in-place; split dirty flag from serialization | 2026-04-26 |
+| `quill-render-keypress-image-loss.md` | Rich editor image documents need one canonical in-memory representation; base64 markdown and `IMAGE_PLACEHOLDER` markdown must normalize to the same value or Quill will re-render equivalent content destructively | 2026-04-26 |

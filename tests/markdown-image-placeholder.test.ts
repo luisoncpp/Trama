@@ -1,6 +1,7 @@
 import { describe, expect, it, beforeEach } from 'vitest'
 import {
   stripBase64ImagesFromHtml,
+  stripBase64ImagesFromMarkdown,
   imagePlaceholderToComment,
   hydrateMarkdownImages,
   storeImageMap,
@@ -77,6 +78,37 @@ describe('markdown-image-placeholder', () => {
     it('no guarda en cache cuando no hay imagenes', () => {
       stripBase64ImagesFromHtml('<p>sin imagenes</p>', 'test-doc')
       expect(getImageMap('test-doc')).toBeUndefined()
+    })
+  })
+
+  describe('stripBase64ImagesFromMarkdown', () => {
+    it('convierte markdown con imagen base64 en placeholder corto', () => {
+      const markdown = `Antes\n\n![img_0](${TINY_PNG})\n\nDespues`
+
+      const { markdownWithoutImages, imageMap } = stripBase64ImagesFromMarkdown(markdown)
+
+      expect(markdownWithoutImages).toContain('<!-- IMAGE_PLACEHOLDER:img_0 -->')
+      expect(markdownWithoutImages).not.toContain(TINY_PNG)
+      expect(imageMap.get('img_0')).toBe(TINY_PNG)
+    })
+
+    it('guarda el imageMap cuando se provee documentId', () => {
+      const markdown = `![img_0](${TINY_PNG})`
+
+      stripBase64ImagesFromMarkdown(markdown, 'test-doc')
+
+      expect(getImageMap('test-doc')?.get('img_0')).toBe(TINY_PNG)
+    })
+
+    it('genera uuid estable si el alt no sirve como placeholder', () => {
+      const markdown = `![imagen uno](${TINY_PNG})\n![imagen dos](${TINY_JPEG})`
+
+      const { markdownWithoutImages, imageMap } = stripBase64ImagesFromMarkdown(markdown)
+
+      expect(markdownWithoutImages).toContain('<!-- IMAGE_PLACEHOLDER:img_0 -->')
+      expect(markdownWithoutImages).toContain('<!-- IMAGE_PLACEHOLDER:img_1 -->')
+      expect(imageMap.get('img_0')).toBe(TINY_PNG)
+      expect(imageMap.get('img_1')).toBe(TINY_JPEG)
     })
   })
 

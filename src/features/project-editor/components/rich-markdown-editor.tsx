@@ -90,14 +90,29 @@ function useTagClickHandler(
 }
 
 export function RichMarkdownEditor(props: RichMarkdownEditorProps) {
-  const { documentId, value, disabled, spellcheckEnabled = true, onChange, saveDisabled, saveLabel, onSaveNow, syncState, syncStateLabel, focusModeEnabled = false, focusScope = 'paragraph', tagIndex, onTagClick, isActive = true, editorSerializationRef, onMarkDirty } = props
-  const { shellRef, hostRef, editorRef, onChangeRef, lastEditorValueRef, isApplyingExternalValueRef, turndownRef, onDirtyRef, serializationRef } = useRichEditorRefs(value, onChange, onMarkDirty)
+  const {
+    documentId, value, disabled, spellcheckEnabled = true, onChange,
+    saveDisabled, saveLabel, onSaveNow, syncState, syncStateLabel,
+    focusModeEnabled = false, focusScope = 'paragraph', tagIndex,
+    onTagClick, isActive = true, editorSerializationRef, onMarkDirty,
+  } = props
+  const refs = useRichEditorRefs(value, onChange, onMarkDirty)
+  const {
+    shellRef, hostRef, editorRef, onChangeRef, lastEditorValueRef,
+    isApplyingExternalValueRef, turndownRef,
+    onDirtyRef, serializationRef,
+  } = refs
   const ctrlPressed = useCtrlKeyState()
   const safeTagIndex = tagIndex ?? null
   const tagMatches = useTagOverlay({ editorRef, tagIndex: safeTagIndex })
   const handleEditorMouseDown = useTagClickHandler(editorRef, safeTagIndex, onTagClick)
 
-  useRichEditorLifecycle({ documentId, value, disabled, spellcheckEnabled, hostRef, editorRef, onChangeRef, isApplyingExternalValueRef, lastEditorValueRef, turndownRef, onDirtyRef, serializationRef })
+  const lifecycleParams = {
+    documentId, value, disabled, spellcheckEnabled, hostRef, editorRef,
+    onChangeRef, isApplyingExternalValueRef,
+    lastEditorValueRef, turndownRef, onDirtyRef, serializationRef,
+  }
+  useRichEditorLifecycle(lifecycleParams)
   useSyncToolbarControls({ documentId, hostRef, editorRef, saveDisabled, saveLabel, onSaveNow, syncState, syncStateLabel })
   useFocusModeScopeEffect(editorRef, hostRef, focusModeEnabled, focusScope, isActive)
 

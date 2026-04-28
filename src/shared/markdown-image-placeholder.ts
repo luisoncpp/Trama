@@ -57,6 +57,38 @@ export function stripBase64ImagesFromHtml(
   return { htmlWithoutImages: stripped, imageMap }
 }
 
+/**
+ * Replace every `![alt](data:image/...)` in markdown with a short
+ * `<!-- IMAGE_PLACEHOLDER:uuid -->` comment and cache the extracted image data.
+ *
+ * This gives the editor a stable, lightweight in-memory representation while
+ * still allowing save-time hydration back to standard markdown.
+ */
+export function stripBase64ImagesFromMarkdown(
+  markdown: string,
+  documentId?: string,
+): { markdownWithoutImages: string; imageMap: Map<string, string> } {
+  const imageMap = new Map<string, string>()
+  const usedUuids = new Set<string>()
+  let counter = 0
+
+  const markdownWithoutImages = markdown.replace(/!\[([^\]]*)\]\((data:image\/[^)\s]+)\)/gi, (_match, altText, dataUrl) => {
+    const candidate = typeof altText === 'string' ? altText.trim() : ''
+    const uuid = candidate.length > 0 && !candidate.includes(':') && !candidate.includes(' ') && !usedUuids.has(candidate)
+      ? candidate
+      : `img_${counter++}`
+    usedUuids.add(uuid)
+    imageMap.set(uuid, dataUrl)
+    return imagePlaceholderToComment(uuid)
+  })
+
+  if (documentId && imageMap.size > 0) {
+    storeImageMap(documentId, imageMap)
+  }
+
+  return { markdownWithoutImages, imageMap }
+}
+
 /** Create a short HTML comment placeholder used for in-memory markdown. */
 export function imagePlaceholderToComment(uuid: string): string {
   return `<!-- IMAGE_PLACEHOLDER:${uuid} -->`

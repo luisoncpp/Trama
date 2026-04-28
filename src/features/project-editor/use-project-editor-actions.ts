@@ -4,7 +4,7 @@ import type { EditorSerializationRefs, PaneDocumentState, ProjectEditorActions, 
 import type { UseProjectEditorStateResult } from './use-project-editor-state'
 import { useOpenProject } from './use-project-editor-open-project'
 import { useProjectEditorUiActions } from './use-project-editor-ui-actions'
-import { hydrateMarkdownImages } from '../../shared/markdown-image-placeholder'
+import { hydrateMarkdownImages, stripBase64ImagesFromMarkdown } from '../../shared/markdown-image-placeholder'
 
 interface CoreProjectEditorActions {
   clearEditor: () => void
@@ -55,9 +55,11 @@ function useLoadDocument(setters: UseProjectEditorStateResult['setters']): (path
           return
         }
 
+        const { markdownWithoutImages } = stripBase64ImagesFromMarkdown(response.data.content, response.data.path)
+
         const loadedPane: PaneDocumentState = {
           path: response.data.path,
-          content: response.data.content,
+          content: markdownWithoutImages,
           meta: response.data.meta,
           isDirty: false,
         }
