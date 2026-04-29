@@ -15,15 +15,16 @@ user keystroke
     → onDirtyRef.current()                       [immediate, sets isDirty]
     → setTimeout(flush, 1000)                  [debounced]
 
-flush()
+flush()                                         [in rich-markdown-editor-serialization.ts]
   → serializeEditorMarkdown(turndownRef, editor.root.innerHTML, documentId)
-  → lastEditorValueRef.current = markdown       [prevents feedback loop]
-  → onChangeRef.current(markdown)               [debounced onChange → pane state]
-  → return markdown                             [caller uses return value directly]
+  → lastEditorValueRef.current = markdown       [placeholder form, lightweight]
+  → hydration = hydrateMarkdownImages(markdown, documentId)
+  → onChangeRef.current(hydration)              [parent gets fully-hydrated markdown]
+  → return markdown                             [caller uses placeholder return value]
 
 saveNow / selectFile / setWorkspaceActivePane
   → ref.current.flush() → uses return value     [bypasses stale React state]
-  → saveDocumentNow(path, latestContent, meta)
+  → saveDocumentNow(path, latestContent, meta)  [re-hydrates for safety via useSaveDocumentNow]
 ```
 
 ## Per-pane isolation
@@ -46,8 +47,9 @@ const flush = (): string | null => {
   // editor and documentId here are the EXACT values passed at registration.
   // They are NOT read from any mutable ref at fire time.
   const markdown = serializeEditorMarkdownFromRef(turndownRef, editor.root.innerHTML, documentId)
-  lastEditorValueRef.current = markdown
-  onChangeRef.current(markdown)
+  lastEditorValueRef.current = markdown  // placeholders for lightweight internal comparison
+  const markdownForParent = hydrateMarkdownImages(markdown, documentId)  // hydrate only for parent
+  onChangeRef.current(markdownForParent)
   return markdown
 }
 ```
@@ -97,7 +99,7 @@ This split prevents the "skipped save on switch" bug where `isDirty` was still `
 
 ## Feedback loop prevention
 
-`flush()` updates `lastEditorValueRef.current = markdown` **before** calling `onChangeRef.current(markdown)`. This ensures `useSyncExternalValue` compares the incoming value against the latest canonical editor value and skips re-applying equivalent content. Without this, the freshly-serialized value would look like an "external" change and get re-applied, wiping the text the user just typed.
+`flush()` updates `lastEditorValueRef.current = markdown` (placeholder form) **before** calling `onChangeRef.current(markdownForParent)` (hydrated form). This ensures `useSyncExternalValue` compares the incoming value against the latest canonical editor value and skips re-applying equivalent content. The image hydration step ensures the parent state always receives standard markdown with embedded images, preventing cascading re-renders where placeholder-markdown corrupts the parent state.
 
 After Slice 2 of the rich-editor refactor, the equivalence rule is explicit:
 
@@ -160,7 +162,8 @@ That helper owns serialization-ref lookup, pane-state lookup, `flushPane(pane)`,
 
 | File | Role |
 |------|------|
-| `src/features/project-editor/components/rich-markdown-editor-core.ts` | Handler registration, debounce logic, `flush()` closure |
+| `src/features/project-editor/components/rich-markdown-editor-core.ts` | Lifecycle hooks: `useInitializeEditor`, `useSyncExternalValue`, enable/disable, spellcheck |
+| `src/features/project-editor/components/rich-markdown-editor-serialization.ts` | Handler registration, debounce logic, `flush()` closure with image hydration |
 | `src/features/project-editor/components/rich-markdown-editor.tsx` | Props `editorSerializationRef` + `onMarkDirty`, ref mutation sync |
 | `src/features/project-editor/components/rich-markdown-editor-value-sync.ts` | Canonical editor-value normalization/equality used by `lastEditorValueRef` and external sync |
 | `src/features/project-editor/components/editor-panel.tsx` | Passes props through |

@@ -2,7 +2,7 @@
 
 ## Status
 
-Slices 1 and 2 implemented on 2026-04-27 and 2026-04-28 respectively. The remaining slices are still planned. This document proposes a low-risk refactor of the rich editor and its split-pane persistence wiring without changing user-facing behavior in the first slices.
+Slices 1, 2, and 3 implemented on 2026-04-27 through 2026-04-28. The remaining slices are still planned. This document proposes a low-risk refactor of the rich editor and its split-pane persistence wiring without changing user-facing behavior in the first slices.
 
 ## Why this plan exists
 
@@ -218,6 +218,13 @@ Expected result:
 
 - one small module becomes the source of truth for debounce semantics
 - `rich-markdown-editor-core.ts` stops mixing Quill lifecycle with save/switch policy
+
+Implementation note:
+
+- Landed in `src/features/project-editor/components/rich-markdown-editor-serialization.ts`
+- Migrated `registerEditorTextChangeHandler` from `rich-markdown-editor-core.ts`
+- `core.ts` reduced from 131 to 100 lines
+- `flush()` now hydrates image placeholders to `![uuid](data:image/...)` before calling `onChangeRef.current`, while keeping `lastEditorValueRef` as placeholder-markdown for lightweight internal comparison
 
 Manual verification:
 

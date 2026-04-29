@@ -38,6 +38,18 @@ If you need the shortest path to the editor's risky seams instead of the full su
                               │
                               ▼
 ┌─────────────────────────────────────────────────────────────┐
+│          rich-markdown-editor-serialization.ts               │
+│              (Debounced serialization session)              │
+├─────────────────────────────────────────────────────────────┤
+│  registerEditorTextChangeHandler()                           │
+│    • text-change listener + immediate dirty mark             │
+│    • 1-second debounce timer lifecycle                       │
+│    • flush() → serialize + hydrate images for parent         │
+│    • serializationRef.current.flush = flush (in-place)       │
+└─────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
 │                rich-markdown-editor-quill.ts                │
 │                 (Quill init + parse/serialize)              │
 ├─────────────────────────────────────────────────────────────┤
@@ -47,16 +59,19 @@ If you need the shortest path to the editor's risky seams instead of the full su
 │    • Registers clipboard matchers + keyboard bindings       │
 │                                                             │
 │  applyMarkdownToEditor()  (markdown → Quill HTML)            │
-│    1. renderDirectiveArtifactsToMarkdown()                   │
-│    2. editor.setContents([])        // Clear editor first    │
+│    1. hydrateMarkdownImages() (if documentId provided)       │
+│    2. renderDirectiveArtifactsToMarkdown()                   │
 │    3. marked.parse()                                        │
-│    4. editor.clipboard.dangerouslyPasteHTML()               │
-│    5. syncCenteredLayoutArtifacts()                         │
+│    4. restoreImagesAfterMarkedparsing()                      │
+│    5. editor.clipboard.dangerouslyPasteHTML()               │
+│    6. syncCenteredLayoutArtifacts()                         │
+│    (Wrapped with contentEditable='false' guard)              │
 │                                                             │
 │  serializeEditorMarkdown()  (Quill HTML → markdown)            │
-│    1. editor.root.innerHTML → turndownService.turndown()       │
-│    2. normalizeMarkdown()               // \r\n → \n, trim end │
-│    3. normalizeBlankLinesToSpacerDirectives()                  │
+│    1. stripBase64ImagesFromHtml() → placeholders + cache       │
+│    2. turndownService.turndown() (with custom rules)           │
+│    3. normalizeMarkdown()               // \r\n → \n, trim end │
+│    4. normalizeBlankLinesToSpacerDirectives()                  │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -68,6 +83,7 @@ If you need the shortest path to the editor's risky seams instead of the full su
 |------|-----------------|
 | `rich-markdown-editor.tsx` | Main React component, hook orchestration |
 | `rich-markdown-editor-core.ts` | Editor lifecycle (init, sync, disable, spellcheck) |
+| `rich-markdown-editor-serialization.ts` | Debounced serialization session: text-change listener, debounce timer, flush with image hydration for parent |
 | `rich-markdown-editor-value-sync.ts` | Canonical editor-value normalization/equality for image-bearing markdown |
 | `rich-markdown-editor-quill.ts` | Quill creation, markdown parse/serialize (see `image-handling-architecture.md`) |
 | `rich-markdown-editor-toolbar.ts` | Toolbar controls: save button, sync state, layout buttons (center/pagebreak) |
@@ -136,7 +152,7 @@ export function createQuillEditor(host: HTMLDivElement): Quill {
 ### Markdown → Quill (Document Load)
 
 ```
-normalizeMarkdown(value)
+hydrateMarkdownImages(markdown, documentId)  // Expand placeholders if present
     │
     ▼
 renderDirectiveArtifactsToMarkdown()  // Converts markdown directives to placeholders
@@ -145,10 +161,7 @@ renderDirectiveArtifactsToMarkdown()  // Converts markdown directives to placeho
 marked.parse()                        // Markdown → HTML
     │
     ▼
-restoreImagesAfterMarkedparsing()     // Restore <img> from standard markdown ![](data:...)
-    │
-    ▼
-editor.setContents([], source)        // Clear editor before inserting
+restoreImagesAfterMarkedparsing()     // Restore <img> from legacy HTML comment placeholders
     │
     ▼
 editor.clipboard.dangerouslyPasteHTML()  // Insert into Quill (source='silent')
@@ -156,6 +169,8 @@ editor.clipboard.dangerouslyPasteHTML()  // Insert into Quill (source='silent')
     ▼
 syncCenteredLayoutArtifacts()          // Sync centered content CSS artifacts
 ```
+
+The entire operation is wrapped in a `contentEditable = 'false'` guard to prevent user keystrokes from corrupting the DOM during `dangerouslyPasteHTML`.
 
 > **Note:** `syncCenteredLayoutArtifacts()` is also called on every `text-change` event (not just on load) to keep centered content CSS classes in sync during editing.
 
@@ -179,14 +194,17 @@ normalizeMarkdown()                    // Normalize line endings (\r\n → \n) +
 normalizeBlankLinesToSpacerDirectives() // Blank lines → spacer directives
     │
     ▼
-onChange(markdown)                     // Trigger IPC save
+hydrateMarkdownImages()                // Expand placeholders to ![uuid](data:...) ONLY for onChange
+    │
+    ▼
+onChange(markdown)                     // Parent state receives hydrated markdown
 ```
 
-> **Images:** `stripBase64ImagesFromHtml()` extracts base64 `data:image/...` URLs from `<img>` tags and stores them in an in-memory cache keyed by `documentId`. This keeps Turndown fast. See `docs/architecture/image-handling-architecture.md`.
+> **Images:** `stripBase64ImagesFromHtml()` extracts base64 `data:image/...` URLs from `<img>` tags and stores them in an in-memory cache keyed by `documentId`. This keeps Turndown fast. The resulting placeholder-markdown is stored in `lastEditorValueRef` for lightweight internal comparison. Before calling `onChange` to update parent state, `hydrateMarkdownImages()` expands the placeholders so the parent always has portable, standard markdown. See `docs/architecture/image-handling-architecture.md`.
 
 ### Serialization (`serializeEditorMarkdown`)
 
-`serializeEditorMarkdown` lives in `rich-markdown-editor-quill.ts` as the canonical implementation. A `serializeEditorMarkdownFromRef` variant accepts `{ current: TurndownService }` (the ref pattern used across hooks). Both are used by `rich-markdown-editor-core.ts` and `rich-markdown-editor-commands.ts`.
+`serializeEditorMarkdown` lives in `rich-markdown-editor-quill.ts` and produces lightweight placeholder-markdown for internal use. The debounced flush wrapper, which hydrates images before forwarding to the parent, lives in `rich-markdown-editor-serialization.ts`. A `serializeEditorMarkdownFromRef` variant accepts `{ current: TurndownService }` (the ref pattern used across hooks). The serialization module owns the full lifecycle: text-change listener, debounce timer, immediate dirty mark, and `serializationRef` mutation.
 
 ### Turndown Custom Rule (`rich-markdown-editor.tsx:34-40`)
 
@@ -375,17 +393,17 @@ setTimeout(0) → isApplyingExternalValueRef = false
 
 ### Canonical editor-value rule
 
-Image-bearing documents have one editor-side equivalence model:
+Image-bearing documents have three representations:
 
-- Disk or hydrated form: `![img_0](data:image/...)`
-- In-memory editing form: `<!-- IMAGE_PLACEHOLDER:img_0 -->`
+- **On disk** (hydrated): `![img_0](data:image/png;base64,...)`
+- **In parent state** (hydrated): same as on disk — `onChange` delivers fully-hydrated markdown
+- **In-memory editing** (placeholders): `<!-- IMAGE_PLACEHOLDER:img_0 -->` — stored in `lastEditorValueRef` for lightweight comparison
 
-`rich-markdown-editor-value-sync.ts` makes that rule explicit:
+`rich-markdown-editor-value-sync.ts` and `rich-markdown-editor-serialization.ts` make that distinction explicit:
 
-- `normalizeEditorDocumentValue(value, documentId)` strips base64 markdown images into placeholder markdown and applies standard line-ending normalization.
-- `areEquivalentEditorValues(a, b, documentId)` compares two editor values using that canonical placeholder form.
-
-`lastEditorValueRef` must always store the canonical editor value, and external-value sync must compare through that API rather than raw strings.
+- `normalizeEditorDocumentValue(value, documentId)` strips base64 markdown images into placeholder markdown for equivalence checks.
+- `areEquivalentEditorValues(a, b, documentId)` compares two values using canonical placeholder form.
+- The `flush()` function in `rich-markdown-editor-serialization.ts` stores placeholder-markdown in `lastEditorValueRef` but hydrates before calling `onChangeRef.current` so the parent always receives full embedded images.
 
 ---
 

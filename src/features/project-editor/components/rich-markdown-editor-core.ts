@@ -4,8 +4,8 @@ import type TurndownService from 'turndown'
 import { registerTypographyHandler } from './rich-markdown-editor-typography'
 import { WORKSPACE_CONTEXT_MENU_EVENT } from '../../../shared/workspace-context-menu'
 import { registerWorkspaceCommandListener } from './rich-markdown-editor-commands'
-import { syncCenteredLayoutArtifacts } from './rich-markdown-editor-layout-centering'
-import { createQuillEditor, applyMarkdownToEditor, syncEditorSpellcheck, serializeEditorMarkdownFromRef } from './rich-markdown-editor-quill'
+import { createQuillEditor, applyMarkdownToEditor, syncEditorSpellcheck } from './rich-markdown-editor-quill'
+import { registerEditorTextChangeHandler } from './rich-markdown-editor-serialization'
 import { areEquivalentEditorValues, normalizeEditorDocumentValue } from './rich-markdown-editor-value-sync'
 import type { EditorSerializationRefs } from '../project-editor-types'
 
@@ -22,35 +22,6 @@ interface UseRichEditorLifecycleParams {
   turndownRef: { current: TurndownService }
   serializationRef: { current: EditorSerializationRefs }
   onDirtyRef: { current: () => void }
-}
-
-function registerEditorTextChangeHandler({
-  editor, documentId, isApplyingExternalValueRef,
-  turndownRef, lastEditorValueRef, onChangeRef, onDirtyRef, serializationRef,
-}: {
-  editor: Quill; documentId: string; isApplyingExternalValueRef: { current: boolean }
-  turndownRef: { current: TurndownService }
-  lastEditorValueRef: { current: string }; onChangeRef: { current: (value: string) => void }
-  onDirtyRef: { current: () => void }; serializationRef: { current: EditorSerializationRefs }
-}): () => void {
-  let debounceTimer: number | null = null
-  const flush = (): string | null => {
-    if (debounceTimer) { clearTimeout(debounceTimer); debounceTimer = null }
-    if (isApplyingExternalValueRef.current) return null
-    const markdown = serializeEditorMarkdownFromRef(turndownRef, editor.root.innerHTML, documentId)
-    lastEditorValueRef.current = markdown
-    onChangeRef.current(markdown)
-    return markdown
-  }
-  serializationRef.current.flush = flush
-  editor.on('text-change', () => {
-    if (isApplyingExternalValueRef.current) return
-    syncCenteredLayoutArtifacts(editor)
-    onDirtyRef.current()
-    if (debounceTimer) clearTimeout(debounceTimer)
-    debounceTimer = window.setTimeout(flush, 1000)
-  })
-  return () => { if (debounceTimer) { clearTimeout(debounceTimer); debounceTimer = null } }
 }
 
 function useInitializeEditor({

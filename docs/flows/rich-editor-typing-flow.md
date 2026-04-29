@@ -6,7 +6,7 @@ The user types in the rich editor.
 
 ## Entry point
 
-Quill `text-change` handler registered in `src/features/project-editor/components/rich-markdown-editor-core.ts`.
+Quill `text-change` handler registered in `src/features/project-editor/components/rich-markdown-editor-serialization.ts` (debounced serialization session).
 
 ## Why this flow matters
 
@@ -30,11 +30,12 @@ The canonical equivalence rule now lives in `src/features/project-editor/compone
 7. `onDirtyRef.current()` runs immediately.
 8. The pending serialization timer is cleared if one exists.
 9. A new 1-second timer is scheduled to call `flush()`.
-10. `flush()` serializes `editor.root.innerHTML` to markdown through `serializeEditorMarkdownFromRef(...)`.
-11. `flush()` updates `lastEditorValueRef.current` before calling `onChangeRef.current(markdown)`.
-12. `onChangeRef.current(markdown)` updates pane content in renderer state through `updateEditorValue(...)`.
-13. Future `useSyncExternalValue()` checks compare the incoming value against `lastEditorValueRef.current` through `areEquivalentEditorValues(...)`.
-14. If the incoming value is only a different representation of the same image-bearing document, Quill is not re-applied.
+10. `flush()` serializes `editor.root.innerHTML` to placeholder-markdown through `serializeEditorMarkdownFromRef(...)`.
+11. `flush()` stores placeholder-markdown in `lastEditorValueRef.current` (lightweight internal tracking).
+12. `flush()` hydrates the placeholder-markdown to `![uuid](data:image/...)` and calls `onChangeRef.current(hydratedMarkdown)`.
+13. `onChangeRef.current()` updates pane content in renderer state with fully-hydrated markdown.
+14. Future `useSyncExternalValue()` checks compare the incoming value against `lastEditorValueRef.current` through `areEquivalentEditorValues(...)`.
+15. If the incoming value is only a different representation of the same image-bearing document, Quill is not re-applied.
 
 ## State reads
 
@@ -51,17 +52,18 @@ The canonical equivalence rule now lives in `src/features/project-editor/compone
 
 | Target | File / layer | What changes |
 |--------|--------------|--------------|
-| `lastEditorValueRef.current` | editor component refs | Updated to the serialized canonical markdown |
+| `lastEditorValueRef.current` | editor component refs | Updated to the serialized placeholder-markdown (lightweight) |
 | Pane dirty flag | `use-project-editor-ui-actions-helpers.ts` | `isDirty` becomes `true` immediately |
-| Pane content | `use-project-editor-ui-actions-helpers.ts` | Debounced markdown replaces previous pane content |
+| Pane content | `use-project-editor-ui-actions-helpers.ts` | Debounced hydrated markdown replaces previous pane content |
 
 ## Side effects
 
 | Side effect | File |
 |-------------|------|
 | Centering artifact synchronization | `rich-markdown-editor-layout-centering.ts` |
-| Debounced serialization | `rich-markdown-editor-core.ts` |
-| Image placeholder extraction during serialization | `rich-markdown-editor-quill.ts` |
+| Debounced serialization | `rich-markdown-editor-serialization.ts` |
+| Image placeholder extraction + hydration before onChange | `rich-markdown-editor-serialization.ts` |
+| Markdown ↔ HTML conversion and image placeholder logic | `rich-markdown-editor-quill.ts` |
 | Canonical value equivalence for later external sync | `rich-markdown-editor-value-sync.ts` |
 | UI state update for the current pane | `use-project-editor-ui-actions-helpers.ts` |
 
@@ -70,7 +72,8 @@ The canonical equivalence rule now lives in `src/features/project-editor/compone
 | File | Why inspect it |
 |------|----------------|
 | `src/features/project-editor/components/rich-markdown-editor.tsx` | Ref creation and top-level editor orchestration |
-| `src/features/project-editor/components/rich-markdown-editor-core.ts` | Quill lifecycle, debounce handler, external-value sync |
+| `src/features/project-editor/components/rich-markdown-editor-core.ts` | Quill lifecycle, external-value sync, enable/disable, spellcheck |
+| `src/features/project-editor/components/rich-markdown-editor-serialization.ts` | Debounce handler, `flush()` with image hydration, `text-change` listener |
 | `src/features/project-editor/components/rich-markdown-editor-value-sync.ts` | Canonical placeholder-based normalization/equality used by external sync |
 | `src/features/project-editor/components/rich-markdown-editor-quill.ts` | Markdown <-> HTML conversion and image placeholder logic |
 | `src/features/project-editor/use-project-editor-pane-persistence.ts` | Where later save/switch callers consume `flush()` safely by pane |
@@ -84,16 +87,17 @@ The canonical equivalence rule now lives in `src/features/project-editor/compone
 
 | Symptom | Usual cause | First file to inspect |
 |---------|-------------|-----------------------|
-| Typed text disappears | Timer serialized the wrong editor/document or external sync re-applied equivalent content | `rich-markdown-editor-core.ts` |
-| Images disappear after typing | Canonical image-placeholder representation drifted | `rich-markdown-editor-quill.ts` |
+| Typed text disappears | Timer serialized the wrong editor/document or external sync re-applied equivalent content | `rich-markdown-editor-serialization.ts` |
+| Images disappear after typing | Placeholder markdown leaked into parent state without hydration, cascading re-renders destroyed images | `rich-markdown-editor-serialization.ts` |
 | Dirty badge appears on wrong pane | Change callback used inferred active pane instead of explicit pane identity | `workspace-editor-panels.tsx` and `use-project-editor-ui-actions-helpers.ts` |
 | Typing becomes very slow | Base64 image payloads leaked back into the hot serialization path | `rich-markdown-editor-quill.ts` |
 
 ## High-value notes
 
-- `flush()` must return markdown and callers must use that returned value directly.
+- `flush()` must return placeholder-markdown and callers must use that returned value directly. The parent receives hydrated markdown via `onChange`.
 - Debounce cleanup clears the timer only; it must not serialize during React cleanup.
 - The editor compares canonical placeholder-based markdown, not raw base64 image markdown, when deciding whether external sync should re-apply content.
+- Image hydration happens at the serialization boundary (`rich-markdown-editor-serialization.ts`) — `onChange` always delivers fully-hydrated markdown with `![uuid](data:image/...)` syntax, while `lastEditorValueRef` stays as lightweight `<!-- IMAGE_PLACEHOLDER -->` comments.
 
 ## Related hotspot
 

@@ -225,6 +225,8 @@ Mandatory doc navigation for new chats: start with `docs/START-HERE.md` — it p
 - `src/features/project-editor/components/rich-markdown-editor-core.ts`
   - Core editor lifecycle and sync logic (initialize Quill, apply markdown, sync external values, enable/disable, register typography handlers).
   - Also listens for workspace `paste-markdown` commands and handles reading/parsing clipboard Markdown and inserting HTML into Quill.
+- `src/features/project-editor/components/rich-markdown-editor-serialization.ts`
+  - Editor debounced serialization session: registers text-change listener, manages debounce timer and flush lifecycle, and hydrates image placeholders before forwarding to parent state via `onChange`.
 - `src/features/project-editor/components/rich-markdown-editor-value-sync.ts`
   - Canonical editor-value helpers: normalize image-bearing markdown into placeholder form and compare equivalent external/editor values without triggering destructive re-renders.
 - `src/features/project-editor/components/rich-markdown-editor-layout-blots.ts`

@@ -75,7 +75,7 @@ Implemented now:
 - Book export image handling refactor: extracted common image utilities into `book-export-image-utils.ts` (`resolveImagePath`, `loadImageBytes`, `parseDataUrl`, `bytesToDataUrl`) and added EPUB preprocessing that materializes data-url images to temporary files and rewrites markdown image sources to `file://` paths for `epub-gen` compatibility (including Windows drive-letter path handling).
 - Book export regression expansion: `tests/book-export-renderers.test.ts` now covers image flows across HTML (local -> data URL conversion), PDF (data URL + local), DOCX (embedded `word/media` artifacts + reference-style images), and EPUB (data URL + local + reference-style path materialization). `tests/book-export-image-utils.test.ts` covers PNG/JPEG dimension parsing and DOCX size calculation.
 - Editor serialization debounce implemented: 1-second debounce on `serializeEditorMarkdown`, immediate dirty flag, flush-before-save/switch via per-pane serialization refs. 9 regression tests in `tests/project-editor-debounce-regression.test.ts`.
-- Rich editor refactor Slice 2 implemented: canonical editor-value normalization now lives in `rich-markdown-editor-value-sync.ts`, so image-bearing documents compare base64 markdown and placeholder markdown through one named API before external re-apply.
+- Rich editor refactor Slice 3 implemented: debounced serialization session extracted from `rich-markdown-editor-core.ts` into new `rich-markdown-editor-serialization.ts`, which owns text-change listener registration, debounce timer lifecycle, and image-placeholder hydration before forwarding to parent state. `serializeEditorMarkdown` now hydrates placeholders before `onChange` fires, so parent state always receives fully-hydrated embedded image markdown.
 
 Not implemented yet (planned in later phases):
 - Templates (WS3).
@@ -88,7 +88,7 @@ WS2 next step:
 Current verification baseline:
 - `npm run build` passes.
 - `npm run lint` passes (pre-existing long-line/function-length issues in unrelated files).
-- `npm run test` passes (60 suites, 415 tests).
+- `npm run test` passes (61 suites, 443 tests).
 - `npm run test:smoke` passes.
 
 **Running tests**: In sandboxed agent environments, `npm test` may fail due to environment restrictions. Use the PowerShell script instead — see `docs/dev-workflow.md` for test execution details.

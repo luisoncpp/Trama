@@ -27,7 +27,7 @@ This is not the canonical full architecture guide. For the full subsystem design
 
 | Hotspot | Symptom | Open these first |
 |---------|---------|------------------|
-| Debounced serialization | Last typed text disappears, save misses final keystrokes, cross-document contamination | `docs/architecture/editor-serialization-debounce-architecture.md` -> `src/features/project-editor/components/rich-markdown-editor-core.ts` |
+| Debounced serialization | Last typed text disappears, save misses final keystrokes, cross-document contamination, images vanish after typing | `docs/architecture/editor-serialization-debounce-architecture.md` -> `src/features/project-editor/components/rich-markdown-editor-serialization.ts` |
 | Canonical external-value sync | Images blink or vanish after first edit, equivalent content gets re-applied | `src/features/project-editor/components/rich-markdown-editor-value-sync.ts` -> `docs/flows/rich-editor-external-sync-flow.md` |
 | Pane-targeted persistence | Save, switch, or close hits the wrong pane | `src/features/project-editor/use-project-editor-pane-persistence.ts` -> `src/features/project-editor/use-project-editor-layout-actions.ts` |
 | Layout path vs loaded pane path | Sidebar highlights wrong file or goes blank after pane changes | `docs/architecture/split-pane-coordination.md` -> `src/features/project-editor/use-project-editor-state.ts` |
@@ -43,16 +43,18 @@ The timer must serialize the exact editor/document captured at registration time
 
 ### Main files
 
-- `src/features/project-editor/components/rich-markdown-editor-core.ts`
+- `src/features/project-editor/components/rich-markdown-editor-serialization.ts`
 - `docs/architecture/editor-serialization-debounce-architecture.md`
 - `docs/lessons-learned/editor-debounce-closure-capture.md`
+- `docs/lessons-learned/editor-onchange-image-hydration.md`
 
 ### Invariants
 
 - debounce callback captures `editor` and `documentId` in closure
 - cleanup cancels only; it never flushes
-- `flush()` returns content and callers must use it directly
-- `lastEditorValueRef.current` must be updated before `onChangeRef.current(markdown)`
+- `flush()` returns placeholder-markdown and callers must use it directly
+- `lastEditorValueRef.current` stores placeholder-markdown (lightweight)
+- `onChangeRef.current()` receives hydrated markdown with `![uuid](data:image/...)`
 
 ### Follow this flow
 
@@ -190,7 +192,7 @@ Commands may be wired correctly in the native menu but not in the renderer, or v
 | Symptom | Start here |
 |---------|------------|
 | "I typed and lost text" | Debounced serialization |
-| "Images disappear after edit" | Canonical external-value sync |
+| "Images disappear after edit" | Canonical external-value sync or placeholder-markdown leaked into parent state → `docs/lessons-learned/editor-onchange-image-hydration.md` |
 | "Wrong pane saved" | Pane-targeted persistence |
 | "Sidebar shows wrong file after pane change" | Layout path vs loaded pane path |
 | "Spellcheck or some toggle remounted Quill" | Quill lifecycle and remount boundaries |

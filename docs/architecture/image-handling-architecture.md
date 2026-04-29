@@ -31,6 +31,8 @@ The solution is to keep two representations:
 │    <img src="trama-image-placeholder:img_0">                            │
 │  → Turndown emits <!-- IMAGE_PLACEHOLDER:img_0 -->                      │
 │  → base64 stored in imageMapCache[documentId]                           │
+│  → lastEditorValueRef = placeholder-markdown (lightweight internal)     │
+│  → hydrateMarkdownImages() before onChangeRef → parent gets full images │
 └─────────────────────────────────────────────────────────────────────────┘
                                     ↓
 ┌─────────────────────────────────────────────────────────────────────────┐
@@ -49,9 +51,10 @@ The solution is to keep two representations:
 | File | Responsibility |
 |------|----------------|
 | `src/shared/markdown-image-placeholder.ts` | Image extraction, placeholder generation, hydration, in-memory cache |
+| `src/features/project-editor/components/rich-markdown-editor-serialization.ts` | Debounced flush: holds `lastEditorValueRef` as placeholder-markdown, hydrates to `![...](data:...)` only before `onChangeRef.current` so parent state always receives portable markdown |
 | `src/features/project-editor/components/rich-markdown-editor-value-sync.ts` | Canonical editor-value normalization/equality for placeholder-vs-base64 comparisons |
-| `src/features/project-editor/components/rich-markdown-editor-quill.ts` | `serializeEditorMarkdown()` (HTML → markdown with placeholders), `applyMarkdownToEditor()` (markdown → Quill with image restoration), `restoreImagesAfterMarkedparsing()` |
-| `src/features/project-editor/components/rich-markdown-editor-core.ts` | Passes `documentId` to `serializeEditorMarkdownFromRef` so the cache is populated |
+| `src/features/project-editor/components/rich-markdown-editor-quill.ts` | `serializeEditorMarkdown()` (HTML → placeholder-markdown), `applyMarkdownToEditor()` (markdown → Quill with image hydration + contentEditable guard), `restoreImagesAfterMarkedparsing()` |
+| `src/features/project-editor/components/rich-markdown-editor-core.ts` | Passes `documentId` through lifecycle hooks; no longer owns debounce serialization |
 | `src/features/project-editor/use-project-editor-actions.ts` | `useSaveDocumentNow` hydrates placeholders before calling IPC `saveDocument` |
 
 ---
@@ -85,11 +88,14 @@ clearImageMap(documentId: string): void
 
 `applyMarkdownToEditor()` in `rich-markdown-editor-quill.ts`
 
-1. `renderDirectiveArtifactsToMarkdown()` converts layout directives to HTML placeholders.
-2. `marked.parse()` converts markdown → HTML.
-3. `restoreImagesAfterMarkedparsing()` scans the HTML for image placeholders and restores `<img>` tags.
-4. `editor.clipboard.dangerouslyPasteHTML()` inserts into Quill.
-5. `syncCenteredLayoutArtifacts()` syncs CSS classes.
+1. `hydrateMarkdownImages(markdown, documentId)` expands any `<!-- IMAGE_PLACEHOLDER -->` comments to `![uuid](data:image/...)` if placeholders are present.
+2. `renderDirectiveArtifactsToMarkdown()` converts layout directives to HTML placeholders.
+3. `marked.parse()` converts markdown → HTML.
+4. `restoreImagesAfterMarkedparsing()` scans the HTML for legacy image placeholders and restores `<img>` tags.
+5. `editor.clipboard.dangerouslyPasteHTML()` inserts into Quill.
+6. `syncCenteredLayoutArtifacts()` syncs CSS classes.
+
+The entire operation is wrapped in `contentEditable = 'false'` to prevent user keystrokes from corrupting the DOM during `dangerouslyPasteHTML`.
 
 ### Image restoration
 

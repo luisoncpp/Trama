@@ -1034,8 +1034,9 @@ describe('RichMarkdownEditor', () => {
       await sleep(80)
       serializationRef.current.flush()
 
-      // In-memory markdown uses short placeholders for editing speed
-      expect(lastMarkdown).toContain('<!-- IMAGE_PLACEHOLDER:img_0 -->')
+      // onChange receives hydrated markdown with embedded images
+      expect(lastMarkdown).toContain('![img_0](data:image/png')
+      expect(lastMarkdown).not.toContain('<!-- IMAGE_PLACEHOLDER:')
 
       // Image data is cached and can be hydrated before save
       const imageMap = getImageMap(docId)
@@ -1128,9 +1129,9 @@ describe('RichMarkdownEditor', () => {
       await sleep(60)
       serializationRef.current.flush()
 
-      // In-memory markdown uses short placeholders for editing speed
-      expect(lastMarkdown).toContain('<!-- IMAGE_PLACEHOLDER:img_0 -->')
-      expect(lastMarkdown).not.toContain('data:image/png')
+      // onChange receives hydrated markdown with embedded images
+      expect(lastMarkdown).toContain('![img_0](data:image/png')
+      expect(lastMarkdown).not.toContain('<!-- IMAGE_PLACEHOLDER:')
 
       // Image data is cached and can be hydrated before save
       const imageMap = getImageMap(docId)

@@ -93,8 +93,8 @@ These must be treated as the same editor document value.
 
 | Symptom | Usual cause | First file to inspect |
 |---------|-------------|-----------------------|
-| Typed text disappears after state update | External sync re-applied an equivalent value | `rich-markdown-editor-core.ts` |
-| Images blink or disappear after first keystroke | Raw-string comparison bypassed canonical placeholder comparison | `rich-markdown-editor-value-sync.ts` |
+| Typed text disappears after state update | External sync re-applied an equivalent value or debounce flushed placeholder-markdown to parent state | `rich-markdown-editor-serialization.ts` and `rich-markdown-editor-core.ts` |
+| Images blink or disappear after first keystroke | Placeholder-markdown corrupted parent state, cascading re-render destroyed images | `rich-markdown-editor-serialization.ts` → `docs/lessons-learned/editor-onchange-image-hydration.md` |
 | Cursor jumps on reload | Selection was not preserved around a real re-apply | `rich-markdown-editor-core.ts` |
 | Placeholder comments become visible content | Hydration/re-apply boundary drifted | `rich-markdown-editor-quill.ts` and `markdown-image-placeholder.ts` |
 
