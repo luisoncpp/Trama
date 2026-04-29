@@ -6,7 +6,7 @@ Renderer state provides a new `value` prop to `RichMarkdownEditor` after a docum
 
 ## Entry point
 
-`useSyncExternalValue()` in `src/features/project-editor/components/rich-markdown-editor-core.ts`.
+`useSyncExternalValue()` in `src/features/project-editor/components/rich-markdown-editor-external-sync.ts`.
 
 ## Why this flow matters
 
@@ -75,15 +75,16 @@ These must be treated as the same editor document value.
 |-------------|------|
 | Canonical normalization and equality check | `rich-markdown-editor-value-sync.ts` |
 | Markdown -> Quill re-apply | `rich-markdown-editor-quill.ts` |
-| Selection preservation | `rich-markdown-editor-core.ts` |
+| Selection preservation | `rich-markdown-editor-external-sync.ts` |
 
 ## Files to inspect
 
 | File | Why inspect it |
 |------|----------------|
-| `src/features/project-editor/components/rich-markdown-editor-core.ts` | External sync effect and apply/skip decision |
+| `src/features/project-editor/components/rich-markdown-editor-external-sync.ts` | External sync effect and apply/skip decision |
 | `src/features/project-editor/components/rich-markdown-editor-value-sync.ts` | Canonical normalization and equivalence API |
 | `src/features/project-editor/components/rich-markdown-editor-quill.ts` | Real document re-apply into Quill |
+| `src/features/project-editor/components/rich-markdown-editor-core.ts` | Lifecycle orchestration and selection preservation |
 | `src/shared/markdown-image-placeholder.ts` | Base64 <-> placeholder conversion and image cache |
 | `docs/architecture/image-handling-architecture.md` | Canonical image representation and hydration model |
 | `docs/lessons-learned/quill-render-keypress-image-loss.md` | Root cause behind the equivalence rule |
@@ -93,9 +94,9 @@ These must be treated as the same editor document value.
 
 | Symptom | Usual cause | First file to inspect |
 |---------|-------------|-----------------------|
-| Typed text disappears after state update | External sync re-applied an equivalent value or debounce flushed placeholder-markdown to parent state | `rich-markdown-editor-serialization.ts` and `rich-markdown-editor-core.ts` |
+| Typed text disappears after state update | External sync re-applied an equivalent value or debounce flushed placeholder-markdown to parent state | `rich-markdown-editor-serialization.ts` and `rich-markdown-editor-external-sync.ts` |
 | Images blink or disappear after first keystroke | Placeholder-markdown corrupted parent state, cascading re-render destroyed images | `rich-markdown-editor-serialization.ts` → `docs/lessons-learned/editor-onchange-image-hydration.md` |
-| Cursor jumps on reload | Selection was not preserved around a real re-apply | `rich-markdown-editor-core.ts` |
+| Cursor jumps on reload | Selection was not preserved around a real re-apply | `rich-markdown-editor-external-sync.ts` |
 | Placeholder comments become visible content | Hydration/re-apply boundary drifted | `rich-markdown-editor-quill.ts` and `markdown-image-placeholder.ts` |
 
 ## High-value notes

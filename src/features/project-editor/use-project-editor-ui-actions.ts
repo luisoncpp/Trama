@@ -37,7 +37,7 @@ export function usePrimaryProjectEditorActions(
   panePersistence: UseProjectEditorUiActionsParams['panePersistence'],
 ) {
   const assignFileToActivePane = useAssignFileToActivePaneAction(values, setters)
-  const openFileInPane = useOpenFileInPaneAction({ values, setters, loadDocument })
+  const openFileInPane = useOpenFileInPaneAction({ values, setters, loadDocument, panePersistence })
   const selectFile = useSelectFileAction({ values, loadDocument, assignFileToActivePane, panePersistence })
   const { createArticle, createCategory } = useProjectEditorCreateActions({ values, setters, openProject })
   const { renameFile, deleteFile, editFileTags } = useProjectEditorFileActions({ values, setters, openProject })

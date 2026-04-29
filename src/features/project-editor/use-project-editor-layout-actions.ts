@@ -15,6 +15,7 @@ interface UseWorkspaceLayoutActionParams {
   values: UseProjectEditorStateResult['values']
   setters: UseProjectEditorStateResult['setters']
   loadDocument: (path: string, pane: WorkspacePane) => Promise<void>
+  panePersistence: ProjectEditorPanePersistence
 }
 
 interface UseSetWorkspaceActivePaneActionParams extends UseWorkspaceLayoutActionParams {
@@ -121,11 +122,11 @@ export function useOpenFileInPaneAction({
   values,
   setters,
   loadDocument,
+  panePersistence,
 }: UseWorkspaceLayoutActionParams): (filePath: string, pane: WorkspacePane) => void {
   return useCallback(/* openFileInPaneAction */ (filePath: string, pane: WorkspacePane) => {
       if (pane === 'secondary') {
-        const currentSecondaryPath = values.workspaceLayout.secondaryPath
-        const shouldLoad = currentSecondaryPath !== filePath
+        const shouldLoad = values.secondaryPane.path !== filePath
 
         setters.setWorkspaceLayout((previous) => ({
           ...previous,
@@ -138,7 +139,9 @@ export function useOpenFileInPaneAction({
           void loadDocument(filePath, 'secondary')
         }
       } else {
-        if (!canSelectFile(values.isDirty, values.selectedPath, filePath)) {
+        const primaryPaneState = panePersistence.getPaneStateForPane('primary')
+        const primaryPanePath = values.workspaceLayout.primaryPath
+        if (!canSelectFile(primaryPaneState.isDirty, primaryPanePath, filePath)) {
           setters.setStatusMessage(PROJECT_EDITOR_STRINGS.statusNeedSaveBeforeSwitch)
           return
         }
@@ -149,10 +152,10 @@ export function useOpenFileInPaneAction({
           primaryPath: filePath,
         }))
 
-        if (values.primaryPane.path !== filePath) {
+        if (primaryPanePath !== filePath) {
           void loadDocument(filePath, 'primary')
         }
       }
     },
-    [loadDocument, setters, values.isDirty, values.selectedPath, values.primaryPane.path, values.workspaceLayout.secondaryPath] /*Inputs for openFileInPaneAction*/)
+    [loadDocument, panePersistence, setters, values.secondaryPane.path, values.primaryPane.path, values.workspaceLayout.primaryPath] /*Inputs for openFileInPaneAction*/)
 }

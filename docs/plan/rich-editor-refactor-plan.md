@@ -1,8 +1,6 @@
 # Rich Editor Refactor Plan
 
-## Status
-
-Slices 1, 2, and 3 implemented on 2026-04-27 through 2026-04-28. The remaining slices are still planned. This document proposes a low-risk refactor of the rich editor and its split-pane persistence wiring without changing user-facing behavior in the first slices.
+**Status:** All slices implemented — moved to `docs/plan/done/rich-editor-refactor-plan.md`
 
 ## Why this plan exists
 
@@ -257,6 +255,14 @@ Manual verification:
    - clean document -> auto reload
 4. Toggle runtime editor-affecting settings such as spellcheck and confirm the editor instance does not behave like a full remount unless document identity actually changed.
 
+Implementation (2026-04-28):
+
+- Extracted `useSyncExternalValue` from `rich-markdown-editor-core.ts` into `src/features/project-editor/components/rich-markdown-editor-external-sync.ts`.
+- `core.ts` now imports `useSyncExternalValue` from the new file.
+- `rich-markdown-editor-core.ts` reduced from 101 to 80 lines.
+- The hook compares canonical values via `normalizeEditorDocumentValue` + `areEquivalentEditorValues` (both from `rich-markdown-editor-value-sync.ts`), preserves Quill selection, and sets/resets `isApplyingExternalValueRef`.
+- Manual verification: all 72 tests pass, lint clean.
+
 ### Slice 5: Reduce projected active-pane coupling
 
 Follow-up refactor on the project editor side:
@@ -282,6 +288,16 @@ Manual verification:
 3. Edit the non-default pane and confirm save, dirty state, and selected file all stay attached to that pane.
 4. Open a file directly into `secondary` and confirm subsequent actions still target `secondary` explicitly.
 5. Watch for any regression where a UI alias such as `selectedPath` or `isDirty` appears to describe the wrong pane.
+
+Implementation (2026-04-28):
+
+Fixed `useOpenFileInPaneAction` in `use-project-editor-layout-actions.ts`:
+
+1. **Primary pane case**: Changed `canSelectFile(values.isDirty, values.selectedPath, filePath)` to use `panePersistence.getPaneStateForPane('primary')` for the target pane's dirty state and `values.workspaceLayout.primaryPath` for the path. This ensures opening a file in the primary pane checks the primary pane's own dirty state, not the active pane's projected state.
+
+2. **Secondary pane case**: Changed `shouldLoad` from `values.workspaceLayout.secondaryPath !== filePath` to `values.secondaryPane.path !== filePath`. This uses the actual pane document state rather than the potentially stale layout path for determining if loading is needed.
+
+3. Added `panePersistence` parameter to `UseWorkspaceLayoutActionParams` and updated the call site in `use-project-editor-ui-actions.ts`.
 
 ## Detailed file responsibilities after refactor
 
@@ -377,7 +393,7 @@ These are non-negotiable and any slice that breaks them should be rolled back or
 3. Implement Slice 2 and re-run editor/image regressions.
 4. Implement Slice 3 and re-run debounce tests.
 5. Implement Slice 4 only after Slice 3 stabilizes.
-6. Treat Slice 5 as optional cleanup, not a prerequisite.
+6. Slice 5 is independent and can be done at any time (implemented 2026-04-28).
 
 ## Focused test playbook
 

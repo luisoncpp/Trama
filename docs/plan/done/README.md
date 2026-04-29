@@ -7,6 +7,7 @@ Current archived plans:
 - `phase-2-closure-checklist.md`
 - `phase-3-detailed-plan.md`
 - `phase-3-sidebar-requirements.md`
+- `rich-editor-refactor-plan.md`
 - `sidebar-technical-design-and-implementation-plan.md`
 - `wiki-tag-links-implementation-plan.md`
 - `wiki-tag-links-system-guide.md`

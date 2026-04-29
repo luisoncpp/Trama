@@ -6,7 +6,8 @@ import { WORKSPACE_CONTEXT_MENU_EVENT } from '../../../shared/workspace-context-
 import { registerWorkspaceCommandListener } from './rich-markdown-editor-commands'
 import { createQuillEditor, applyMarkdownToEditor, syncEditorSpellcheck } from './rich-markdown-editor-quill'
 import { registerEditorTextChangeHandler } from './rich-markdown-editor-serialization'
-import { areEquivalentEditorValues, normalizeEditorDocumentValue } from './rich-markdown-editor-value-sync'
+import { useSyncExternalValue } from './rich-markdown-editor-external-sync'
+import { normalizeEditorDocumentValue } from './rich-markdown-editor-value-sync'
 import type { EditorSerializationRefs } from '../project-editor-types'
 
 interface UseRichEditorLifecycleParams {
@@ -49,27 +50,6 @@ function useInitializeEditor({
       editorRef.current = null
     }
   }, [documentId, editorRef, hostRef, isApplyingExternalValueRef, lastEditorValueRef, onChangeRef, turndownRef, serializationRef, onDirtyRef] /*Inputs for initializeEditor*/)
-}
-
-function useSyncExternalValue({
-  documentId, value, editorRef, lastEditorValueRef, isApplyingExternalValueRef,
-}: {
-  documentId: string | null
-  value: string; editorRef: { current: Quill | null }; lastEditorValueRef: { current: string }
-  isApplyingExternalValueRef: { current: boolean }
-}): void {
-  useEffect(/* syncExternalValue */ () => {
-    const editor = editorRef.current
-    if (!editor) return
-    const nextNormalized = normalizeEditorDocumentValue(value, documentId)
-    if (areEquivalentEditorValues(lastEditorValueRef.current, value, documentId)) return
-    isApplyingExternalValueRef.current = true
-    const selection = editor.getSelection()
-    applyMarkdownToEditor(editor, value, 'silent', documentId ?? undefined)
-    if (selection) { editor.setSelection(selection) }
-    lastEditorValueRef.current = nextNormalized
-    window.setTimeout(() => { isApplyingExternalValueRef.current = false }, 0)
-  }, [documentId, editorRef, isApplyingExternalValueRef, lastEditorValueRef, value] /*Inputs for syncExternalValue*/)
 }
 
 export function useRichEditorLifecycle(params: UseRichEditorLifecycleParams): void {

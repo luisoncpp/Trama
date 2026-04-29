@@ -16,11 +16,48 @@ If you need the shortest path to the editor's risky seams instead of the full su
 │                      (React Component)                      │
 ├─────────────────────────────────────────────────────────────┤
 │  useRichEditorRefs() ───► refs: hostRef, editorRef, etc.  │
-│  useRichEditorLifecycle() ──► Quill initialization          │
+│  useRichEditorLifecycle() ──► Quill initialization + sync  │
 │  useSyncToolbarControls() ──► toolbar + layout buttons + save │
 │  useFocusModeScopeEffect() ──► focus mode (CSS Highlights)  │
 │  useRichEditorFind() ─────► Ctrl+F find bar               │
 │  useTagOverlay() ─────────► wiki tag overlays              │
+└─────────────────────────────────────────────────────────────┘
+                               │
+                               ▼
+┌─────────────────────────────────────────────────────────────┐
+│               rich-markdown-editor-core.ts                  │
+│                   (Lifecycle Orchestration)                 │
+├─────────────────────────────────────────────────────────────┤
+│  useInitializeEditor()    → createQuillEditor()             │
+│  useSyncExternalValue()   → (delegated to external-sync)    │
+│  useToggleDisabled()      → editor.enable()                │
+│  useSyncSpellcheckEnabled() → spellcheck attr              │
+│  registerTypographyHandler() → ──► ──► ──► ──►             │
+│  registerWorkspaceCommandListener() → CustomEvent bridge    │
+└─────────────────────────────────────────────────────────────┘
+                               │
+                               ▼
+┌─────────────────────────────────────────────────────────────┐
+│         rich-markdown-editor-external-sync.ts               │
+│              (External Value Sync Hook)                     │
+├─────────────────────────────────────────────────────────────┤
+│  useSyncExternalValue()                                     │
+│    • canonical comparison via normalizeEditorDocumentValue   │
+│    • applyMarkdownToEditor on real changes                  │
+│    • selection preservation                                │
+│    • isApplyingExternalValueRef management                  │
+└─────────────────────────────────────────────────────────────┘
+                               │
+                               ▼
+┌─────────────────────────────────────────────────────────────┐
+│          rich-markdown-editor-serialization.ts               │
+│              (Debounced serialization session)              │
+├─────────────────────────────────────────────────────────────┤
+│  registerEditorTextChangeHandler()                           │
+│    • text-change listener + immediate dirty mark             │
+│    • 1-second debounce timer lifecycle                       │
+│    • flush() → serialize + hydrate images for parent         │
+│    • serializationRef.current.flush = flush (in-place)       │
 └─────────────────────────────────────────────────────────────┘
                               │
                               ▼
@@ -28,9 +65,8 @@ If you need the shortest path to the editor's risky seams instead of the full su
 │               rich-markdown-editor-core.ts                  │
 │                   (Lifecycle Hooks)                        │
 ├─────────────────────────────────────────────────────────────┤
-│  useInitializeEditor()    → createQuillEditor()             │
-│  useSyncExternalValue()   → applyMarkdownToEditor()         │
-│  useToggleDisabled()      → editor.enable()               │
+│  useSyncExternalValue()   → applyMarkdownToEditor()        │
+│  useToggleDisabled()       → editor.enable()                │
 │  useSyncSpellcheckEnabled() → spellcheck attr               │
 │  registerTypographyHandler() → ──► ──► ──► ──►            │
 │  registerWorkspaceCommandListener() → CustomEvent bridge    │
@@ -80,9 +116,10 @@ If you need the shortest path to the editor's risky seams instead of the full su
 ## Key Files
 
 | File | Responsibility |
-|------|-----------------|
+|------|----------------|
 | `rich-markdown-editor.tsx` | Main React component, hook orchestration |
-| `rich-markdown-editor-core.ts` | Editor lifecycle (init, sync, disable, spellcheck) |
+| `rich-markdown-editor-core.ts` | Editor lifecycle orchestration (init, sync delegation, disable, spellcheck) |
+| `rich-markdown-editor-external-sync.ts` | External-value sync: canonical comparison, Quill re-apply, selection preservation |
 | `rich-markdown-editor-serialization.ts` | Debounced serialization session: text-change listener, debounce timer, flush with image hydration for parent |
 | `rich-markdown-editor-value-sync.ts` | Canonical editor-value normalization/equality for image-bearing markdown |
 | `rich-markdown-editor-quill.ts` | Quill creation, markdown parse/serialize (see `image-handling-architecture.md`) |
@@ -374,20 +411,23 @@ const turndownRef    // Persistent TurndownService
 
 ```
 value prop changes
-    │
-    ▼
-useSyncExternalValue() compares canonical value through rich-markdown-editor-value-sync.ts
-    │
-    ▼
+     │
+     ▼
+useSyncExternalValue() in rich-markdown-editor-external-sync.ts
+     │
+     ▼
+normalizeEditorDocumentValue(value, documentId) + areEquivalentEditorValues()
+     │
+     ▼
 isApplyingExternalValueRef = true   // Blocks text-change handler
-    │
-    ▼
+     │
+     ▼
 applyMarkdownToEditor()
-    │
-    ▼
+     │
+     ▼
 text-change handler ignores (isApplyingExternalValueRef=true)
-    │
-    ▼
+     │
+     ▼
 setTimeout(0) → isApplyingExternalValueRef = false
 ```
 
