@@ -433,6 +433,8 @@ Core and regression suites:
 
 ## Architecture docs
 
+- `docs/architecture/rich-editor-hotspots.md`
+  - Fast routing document for the editor's fragile seams: debounce, external sync, pane persistence, layout-vs-document state, focus geometry, and command bridge.
 - `docs/architecture/window-close-architecture.md`
   - Documents the window close architecture: main-process close handler, renderer dirty-state notification via IPC, `__tramaSaveAll` bridge, promise-chain cancel pattern, and key files.
 - `docs/architecture/zulu-import-architecture.md`

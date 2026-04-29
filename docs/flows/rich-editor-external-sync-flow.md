@@ -87,6 +87,7 @@ These must be treated as the same editor document value.
 | `src/shared/markdown-image-placeholder.ts` | Base64 <-> placeholder conversion and image cache |
 | `docs/architecture/image-handling-architecture.md` | Canonical image representation and hydration model |
 | `docs/lessons-learned/quill-render-keypress-image-loss.md` | Root cause behind the equivalence rule |
+| `docs/architecture/rich-editor-hotspots.md` | Fast routing for equivalence, re-apply, and lifecycle seams |
 
 ## Common failure modes
 
@@ -102,3 +103,8 @@ These must be treated as the same editor document value.
 - `lastEditorValueRef.current` is an editor-canonical value, not a guaranteed copy of on-disk markdown.
 - External sync should compare through the named API, never by raw string equality.
 - A real apply uses `'silent'` so Quill history does not treat external reloads as user edits.
+
+## Related hotspot
+
+- `docs/architecture/rich-editor-hotspots.md` -> `Canonical external-value sync`
+- `docs/architecture/rich-editor-hotspots.md` -> `Quill lifecycle and remount boundaries`

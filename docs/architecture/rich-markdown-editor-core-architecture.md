@@ -4,6 +4,8 @@
 
 This document describes how **Trama** uses **Quill** to implement its rich text editor. It does not document Quill itself (see [Quill API docs](https://quilljs.com/docs/)), but the integration decisions, custom extensions, and data flow within this project.
 
+If you need the shortest path to the editor's risky seams instead of the full subsystem guide, open `docs/architecture/rich-editor-hotspots.md` first.
+
 ---
 
 ## Overview
@@ -443,4 +445,5 @@ Verify that `updateEditorValue(value, pane)` targets the correct pane. `syncStat
 - Layout directives spec: `docs/spec/markdown-layout-directives-spec.md`
 - Wiki tags system guide: `docs/plan/done/wiki-tag-links-system-guide.md`
 - Image handling architecture: `docs/architecture/image-handling-architecture.md`
+- Editor hotspots map: `docs/architecture/rich-editor-hotspots.md`
 - Turndown performance lesson: `docs/lessons-learned/turndown-base64-replacement-performance.md`

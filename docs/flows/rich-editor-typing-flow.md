@@ -77,6 +77,7 @@ The canonical equivalence rule now lives in `src/features/project-editor/compone
 | `src/features/project-editor/use-project-editor-ui-actions-helpers.ts` | Pane state updates through `updateEditorValue(...)` |
 | `docs/lessons-learned/editor-debounce-closure-capture.md` | Non-obvious debounce invariants |
 | `docs/lessons-learned/quill-render-keypress-image-loss.md` | Canonical image representation rule |
+| `docs/architecture/rich-editor-hotspots.md` | Fast routing if the symptom maps better to a known fragile seam |
 | `docs/flows/rich-editor-external-sync-flow.md` | Follow the later decision to re-apply or skip incoming values |
 
 ## Common failure modes
@@ -93,3 +94,8 @@ The canonical equivalence rule now lives in `src/features/project-editor/compone
 - `flush()` must return markdown and callers must use that returned value directly.
 - Debounce cleanup clears the timer only; it must not serialize during React cleanup.
 - The editor compares canonical placeholder-based markdown, not raw base64 image markdown, when deciding whether external sync should re-apply content.
+
+## Related hotspot
+
+- `docs/architecture/rich-editor-hotspots.md` -> `Debounced serialization`
+- `docs/architecture/rich-editor-hotspots.md` -> `Canonical external-value sync`

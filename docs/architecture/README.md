@@ -21,6 +21,7 @@ Canonical technical guides — the single source of truth for each subsystem's d
 | `image-handling-architecture.md` | Inline base64 image workflow: dual-representation strategy, image cache, load-edit-save lifecycle | |
 | `ipc-architecture.md` | IPC channel taxonomy, extension workflow, envelope pattern, cache invalidation | |
 | `project-index-architecture.md` | `.trama.index.json` model, reconciliation, scanner coordination | |
+| `rich-editor-hotspots.md` | Fast map of fragile editor seams: debounce, external sync, pane persistence, layout-vs-document state, focus scroll | Open this first when you need the shortest debug path rather than the full editor architecture |
 | `rich-markdown-editor-core-architecture.md` | Quill integration, Delta vs text, bounds, effect deps, data attrs | |
 | `sidebar-architecture.md` | Section model, path scoping, tree building, dialogs, drag-and-drop | |
 | `sidebar-path-scoping-model.md` | Section-relative vs project-relative path conversion | |

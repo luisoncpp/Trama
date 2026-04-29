@@ -81,6 +81,7 @@ This flow mixes synchronous layout state with asynchronous document state. It is
 | `docs/architecture/split-pane-coordination.md` | Canonical split-pane contracts |
 | `docs/lessons-learned/split-pane-sidebar-layout-vs-pane-path.md` | Layout-path vs loaded-pane-path distinction |
 | `docs/lessons-learned/split-pane-pane-targeted-save.md` | Explicit pane identity for save actions |
+| `docs/architecture/rich-editor-hotspots.md` | Fast routing for pane persistence and layout/document state seams |
 
 ## Common failure modes
 
@@ -96,3 +97,8 @@ This flow mixes synchronous layout state with asynchronous document state. It is
 - `workspaceLayout.primaryPath` and `workspaceLayout.secondaryPath` are layout decisions.
 - `primaryPane.path` and `secondaryPane.path` are loaded document state.
 - For split-pane UI, layout state often needs to drive immediate UI decisions before async document loading finishes.
+
+## Related hotspot
+
+- `docs/architecture/rich-editor-hotspots.md` -> `Pane-targeted persistence`
+- `docs/architecture/rich-editor-hotspots.md` -> `Layout path vs loaded pane path`
