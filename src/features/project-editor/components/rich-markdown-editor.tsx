@@ -60,7 +60,18 @@ function useRichEditorRefs(
   const lastEditorValueRef = useRef(normalizeEditorDocumentValue(value, documentId))
   const isApplyingExternalValueRef = useRef(false)
   const turndownRef = useRef(createTurndownService())
-  const serializationRef = useRef<EditorSerializationRefs>({ flush: () => null })
+  const serializationRef = useRef<EditorSerializationRefs>({
+    flush: () => null,
+    tagOverlayRecalcRef: { current: false },
+    tagOverlayMatchesRef: { current: [] as Array<{ tag: string; start: number; end: number; filePath: string }> },
+  })
+
+  useEffect(/* resetTagOverlayOnDocChange */ () => {
+    if (documentId) {
+      serializationRef.current.tagOverlayMatchesRef.current = []
+      serializationRef.current.tagOverlayRecalcRef.current = false
+    }
+  }, [documentId] /*Inputs for resetTagOverlayOnDocChange*/)
   const onDirtyRef = useRef<() => void>(onMarkDirty ?? (() => {}))
 
   useEffect(() => { onChangeRef.current = onChange }, [onChange] /*Inputs for syncOnChangeRef*/)
@@ -110,7 +121,13 @@ export function RichMarkdownEditor(props: RichMarkdownEditorProps) {
   } = refs
   const ctrlPressed = useCtrlKeyState()
   const safeTagIndex = tagIndex ?? null
-  const tagMatches = useTagOverlay({ editorRef, tagIndex: safeTagIndex })
+  const tagMatches = useTagOverlay({
+    editorRef,
+    tagIndex: safeTagIndex,
+    ctrlPressed,
+    tagOverlayRecalcRef: serializationRef.current.tagOverlayRecalcRef,
+    tagOverlayMatchesRef: serializationRef.current.tagOverlayMatchesRef,
+  })
   const handleEditorMouseDown = useTagClickHandler(editorRef, safeTagIndex, onTagClick)
 
   const lifecycleParams = {

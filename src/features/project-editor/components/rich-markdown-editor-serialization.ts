@@ -29,6 +29,7 @@ export function registerEditorTextChangeHandler({
     if (isApplyingExternalValueRef.current) return
     syncCenteredLayoutArtifacts(editor)
     onDirtyRef.current()
+    serializationRef.current.tagOverlayRecalcRef.current = true
     if (debounceTimer) clearTimeout(debounceTimer)
     debounceTimer = window.setTimeout(flush, 1000)
   })

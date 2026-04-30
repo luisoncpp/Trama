@@ -552,7 +552,7 @@ describe('RichMarkdownEditor', () => {
 
   it('trata pagebreak como embed atomico de longitud 1 y lo elimina en un solo paso', async () => {
     let lastMarkdown = ''
-    const serializationRef = { current: { flush: () => null as string | null } }
+    const serializationRef = { current: { flush: () => null as string | null, tagOverlayRecalcRef: { current: false }, tagOverlayMatchesRef: { current: [] as Array<{ tag: string; start: number; end: number; filePath: string }> } } }
     const source = [
       '# Capitulo',
       '<!-- trama:spacer lines=2 -->',
@@ -662,7 +662,7 @@ describe('RichMarkdownEditor', () => {
 
   it('preserva directivas en round-trip source-editor-source tras edicion de usuario', async () => {
     let lastMarkdown = ''
-    const serializationRef = { current: { flush: () => null as string | null } }
+    const serializationRef = { current: { flush: () => null as string | null, tagOverlayRecalcRef: { current: false }, tagOverlayMatchesRef: { current: [] as Array<{ tag: string; start: number; end: number; filePath: string }> } } }
     const source = [
       '# Titulo',
       '<!-- trama:center:start -->',
@@ -708,7 +708,7 @@ describe('RichMarkdownEditor', () => {
 
   it('mantiene orden de directivas tras inserciones y borrados de varios parrafos', async () => {
     let lastMarkdown = ''
-    const serializationRef = { current: { flush: () => null as string | null } }
+    const serializationRef = { current: { flush: () => null as string | null, tagOverlayRecalcRef: { current: false }, tagOverlayMatchesRef: { current: [] as Array<{ tag: string; start: number; end: number; filePath: string }> } } }
     const source = [
       '# Capitulo',
       'Bloque inicial',
@@ -811,7 +811,7 @@ describe('RichMarkdownEditor', () => {
 
   it('inserta directivas center desde boton de toolbar', async () => {
     let lastMarkdown = ''
-    const serializationRef = { current: { flush: () => null as string | null } }
+    const serializationRef = { current: { flush: () => null as string | null, tagOverlayRecalcRef: { current: false }, tagOverlayMatchesRef: { current: [] as Array<{ tag: string; start: number; end: number; filePath: string }> } } }
 
     act(() => {
       render(
@@ -846,7 +846,7 @@ describe('RichMarkdownEditor', () => {
 
   it('inserta directiva pagebreak desde toolbar', async () => {
     let lastMarkdown = ''
-    const serializationRef = { current: { flush: () => null as string | null } }
+    const serializationRef = { current: { flush: () => null as string | null, tagOverlayRecalcRef: { current: false }, tagOverlayMatchesRef: { current: [] as Array<{ tag: string; start: number; end: number; filePath: string }> } } }
 
     act(() => {
       render(
@@ -880,7 +880,7 @@ describe('RichMarkdownEditor', () => {
 
   it('permite centrar e insertar pagebreak aunque saveDisabled sea true', async () => {
     let lastMarkdown = ''
-    const serializationRef = { current: { flush: () => null as string | null } }
+    const serializationRef = { current: { flush: () => null as string | null, tagOverlayRecalcRef: { current: false }, tagOverlayMatchesRef: { current: [] as Array<{ tag: string; start: number; end: number; filePath: string }> } } }
 
     act(() => {
       render(
@@ -923,7 +923,7 @@ describe('RichMarkdownEditor', () => {
 
   it('inserta pagebreak exactamente en el indice del cursor', async () => {
     let lastMarkdown = ''
-    const serializationRef = { current: { flush: () => null as string | null } }
+    const serializationRef = { current: { flush: () => null as string | null, tagOverlayRecalcRef: { current: false }, tagOverlayMatchesRef: { current: [] as Array<{ tag: string; start: number; end: number; filePath: string }> } } }
 
     act(() => {
       render(
@@ -965,7 +965,7 @@ describe('RichMarkdownEditor', () => {
 
   it('serializa saltos de linea repetidos como directiva spacer', async () => {
     let lastMarkdown = ''
-    const serializationRef = { current: { flush: () => null as string | null } }
+    const serializationRef = { current: { flush: () => null as string | null, tagOverlayRecalcRef: { current: false }, tagOverlayMatchesRef: { current: [] as Array<{ tag: string; start: number; end: number; filePath: string }> } } }
 
     act(() => {
       render(
@@ -1001,7 +1001,7 @@ describe('RichMarkdownEditor', () => {
 
     it('preserva imagen en markdown tras pegar imagen base64', async () => {
       let lastMarkdown = ''
-      const serializationRef = { current: { flush: () => null as string | null } }
+      const serializationRef = { current: { flush: () => null as string | null, tagOverlayRecalcRef: { current: false }, tagOverlayMatchesRef: { current: [] as Array<{ tag: string; start: number; end: number; filePath: string }> } } }
       const docId = 'img-roundtrip-doc'
 
       act(() => {
@@ -1102,7 +1102,7 @@ describe('RichMarkdownEditor', () => {
 
     it('vuelve a editar documento con imagen y preserva la imagen en output', async () => {
       let lastMarkdown = ''
-      const serializationRef = { current: { flush: () => null as string | null } }
+      const serializationRef = { current: { flush: () => null as string | null, tagOverlayRecalcRef: { current: false }, tagOverlayMatchesRef: { current: [] as Array<{ tag: string; start: number; end: number; filePath: string }> } } }
       const docId = 'img-edit-doc'
 
       act(() => {

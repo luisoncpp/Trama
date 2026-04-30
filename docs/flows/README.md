@@ -39,12 +39,13 @@ Each flow doc should try to include:
 
 Keep these docs operational. Prefer short tables, explicit file names, and sequence lists over long essays.
 
-## Index
+| `tag-overlay-flow.md` | What happens when Ctrl is held to show wiki tag underlines, including text matching, index mapping, and fresh bounds computation on each render |
 
 | File | Scope |
 |------|-------|
 | `rich-editor-typing-flow.md` | What happens from a Quill keystroke through dirty marking, debounce, serialization, and state sync |
 | `rich-editor-external-sync-flow.md` | What happens when the editor receives a new external value and must decide whether to re-apply it into Quill |
+| `tag-overlay-flow.md` | What happens when Ctrl is held to show wiki tag underlines, including text matching, index mapping, and fresh bounds computation on each render |
 | `switch-pane-flow.md` | What happens when the active workspace pane changes in split mode |
 | `folder-delete-flow.md` | What happens from right-click Delete through IPC, snapshot refresh, and sidebar tree re-render |
 | `visible-files-computation-flow.md` | How `visibleFiles` is derived from `coreState.snapshot`, scoped, and propagated through 7+ component layers to the tree renderer |

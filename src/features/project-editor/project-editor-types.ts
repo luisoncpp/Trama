@@ -89,6 +89,8 @@ export interface ProjectEditorActions {
 
 export interface EditorSerializationRefs {
   flush: () => string | null
+  tagOverlayRecalcRef: { current: boolean }
+  tagOverlayMatchesRef: { current: Array<{ tag: string; start: number; end: number; filePath: string }> }
 }
 
 export interface ProjectEditorModel {

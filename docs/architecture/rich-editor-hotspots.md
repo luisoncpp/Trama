@@ -198,6 +198,7 @@ Commands may be wired correctly in the native menu but not in the renderer, or v
 | "Sidebar shows wrong file after pane change" | Layout path vs loaded pane path |
 | "Spellcheck or some toggle remounted Quill" | Quill lifecycle and remount boundaries |
 | "Focus mode scroll feels haunted" | Focus-mode geometry and scroll |
+| "Tag underlines distort on typing" | Tag overlay positions → `useTagOverlay` memoization bug → remove `useMemo` |
 | "Context menu command does nothing" | Workspace command bridge |
 
 ## Related docs

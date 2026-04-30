@@ -5,6 +5,10 @@ export interface TagMatch {
   filePath: string
 }
 
+export function removeAccents(str: string): string {
+  return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+}
+
 export function escapeRegExp(string: string): string {
   return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 }
@@ -17,16 +21,18 @@ export function findTagMatchesInText(
     return []
   }
 
+  const textWithoutAccents = removeAccents(text)
   const matches: TagMatch[] = []
   const sortedTags = Object.keys(tagIndex).sort((a, b) => b.length - a.length)
 
   for (const tag of sortedTags) {
     const filePath = tagIndex[tag]
-    const escapedTag = escapeRegExp(tag)
+    const tagWithoutAccents = removeAccents(tag)
+    const escapedTag = escapeRegExp(tagWithoutAccents)
     const regex = new RegExp(`\\b${escapedTag}\\b`, 'gi')
     let match: RegExpExecArray | null
 
-    while ((match = regex.exec(text)) !== null) {
+    while ((match = regex.exec(textWithoutAccents)) !== null) {
       const start = match.index
       const end = regex.lastIndex
 

@@ -1,4 +1,3 @@
-import { useMemo } from 'preact/hooks'
 import type Quill from 'quill'
 import { findTagMatchesInText, filterMatchesOutsideCode, type TagMatch } from './rich-markdown-editor-tag-helpers'
 
@@ -9,6 +8,29 @@ export interface TagOverlayMatch extends TagMatch {
 export interface UseTagOverlayParams {
   editorRef: { current: Quill | null }
   tagIndex: Record<string, string> | null
+  ctrlPressed: boolean
+  tagOverlayRecalcRef: { current: boolean }
+  tagOverlayMatchesRef: { current: TagMatch[] }
+}
+
+export function useTagOverlay({ editorRef, tagIndex, ctrlPressed, tagOverlayRecalcRef, tagOverlayMatchesRef }: UseTagOverlayParams): TagMatch[] {
+  const editor = editorRef.current
+  if (!editor || !tagIndex || Object.keys(tagIndex).length === 0) {
+    return []
+  }
+
+  if (ctrlPressed) {
+    // Only recalculate if dirty or first time (empty matches and no dirty flag set yet)
+    const needsRecalc = tagOverlayRecalcRef.current || tagOverlayMatchesRef.current.length === 0
+    if (needsRecalc) {
+      const text = editor.getText()
+      const allMatches = findTagMatchesInText(text, tagIndex)
+      tagOverlayMatchesRef.current = filterMatchesOutsideCode(text, allMatches)
+      tagOverlayRecalcRef.current = false
+    }
+  }
+
+  return tagOverlayMatchesRef.current
 }
 
 interface DeltaOp {
@@ -64,25 +86,6 @@ export function buildTagOverlayMatches(editor: Quill, tagIndex: Record<string, s
   }
 
   return matchesWithBounds
-}
-
-export function useTagOverlay({ editorRef, tagIndex }: UseTagOverlayParams): TagMatch[] {
-  const matches = useMemo(() => {
-    if (!tagIndex || Object.keys(tagIndex).length === 0) {
-      return []
-    }
-
-    const editor = editorRef.current
-    if (!editor) {
-      return []
-    }
-
-    const text = editor.getText()
-    const allMatches = findTagMatchesInText(text, tagIndex)
-    return filterMatchesOutsideCode(text, allMatches)
-  }, [editorRef.current, tagIndex])
-
-  return matches
 }
 
 export function resolveTagBounds(editor: Quill, matches: TagMatch[]): TagOverlayMatch[] {

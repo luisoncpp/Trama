@@ -123,8 +123,16 @@ export function useProjectEditor(): ProjectEditorModel {
   const state = useProjectEditorState()
   const { values, setters } = state
 
-  const primarySerializationRef = useRef<EditorSerializationRefs>({ flush: () => null })
-  const secondarySerializationRef = useRef<EditorSerializationRefs>({ flush: () => null })
+  const primarySerializationRef = useRef<EditorSerializationRefs>({
+    flush: () => null,
+    tagOverlayRecalcRef: { current: false },
+    tagOverlayMatchesRef: { current: [] as Array<{ tag: string; start: number; end: number; filePath: string }> },
+  })
+  const secondarySerializationRef = useRef<EditorSerializationRefs>({
+    flush: () => null,
+    tagOverlayRecalcRef: { current: false },
+    tagOverlayMatchesRef: { current: [] as Array<{ tag: string; start: number; end: number; filePath: string }> },
+  })
 
   const { actions, core } = useProjectEditorActions(state, {
     primarySerializationRef,

@@ -89,6 +89,10 @@ When text at cursor could match multiple tags:
 
 `Magia`, `MAGIA`, `magia` all resolve to the same tag.
 
+### Accent Insensitivity
+
+`canción`, `cancion`, and `canción` all resolve to the same tag. Matching uses NFD normalization with diacritic removal (U+0300-U+036F). Both the document text and the tag are normalized before matching.
+
 ### Code Block Exclusion
 
 Tags inside `` `code` `` or ` ```code blocks``` ` are excluded from matching.
@@ -103,8 +107,10 @@ Tags inside **bold**, *italic*, or # headers **are** matched — they represent 
 
 Does not mutate document content. Uses absolute-positioned `<div>` elements rendered below matched text:
 
-1. On each content change, scan editor text for tag matches (case-insensitive, word boundaries).
+1. On Ctrl held, scan editor text for tag matches (case and accent insensitive, word boundaries).
 2. Compute geometric bounds for each match via `quill.getBounds()`.
+3. Render `<div class="tag-link-highlight">` overlays at computed positions.
+4. On `Ctrl` + mousedown on a matched tag, hit-test resolved match via click coordinates.
 3. Render `<div class="tag-link-highlight">` overlays at computed positions **only while Ctrl is held**.
 4. On `Ctrl` + mousedown on a matched tag, hit-test resolved match via click coordinates and invoke `onTagClick(filePath)` prop.
 
@@ -210,9 +216,9 @@ Fixed by mapping text offsets to Quill indexes via Delta ops.
 
 Lesson: `docs/lessons-learned/quill-text-vs-delta-index-mismatch.md`
 
-### Stale underline positions after layout change (resize, split toggle)
+### Stale underline positions after layout change or typing
 
-Fixed by separating text matching (cacheable) from bounds computation (layout-dependent). `useTagOverlay` now returns `TagMatch[]` without bounds; `TagHighlights` computes `getBounds()` fresh on every render.
+Fixed by separating text matching (cacheable) from bounds computation (layout-dependent). `useTagOverlay` returns `TagMatch[]` without bounds; `TagHighlights` computes `getBounds()` fresh on every render. `useMemo` removed from `useTagOverlay` to ensure positions recompute on every render — Quill instance reference is stable so typing content changes would not invalidate a memoized result.
 
 Lesson: `docs/lessons-learned/tag-overlay-stale-bounds-on-layout-change.md`
 
