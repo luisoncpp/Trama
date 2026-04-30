@@ -28,8 +28,10 @@ function useAutoPickProjectFolderEffect(
 
 function buildShortcutsEffectParams(
   actions: ReturnType<typeof useProjectEditorActions>['actions'],
+  core: ReturnType<typeof useProjectEditorActions>['core'],
   isFullscreen: boolean,
   workspaceLayout: WorkspaceLayoutState,
+  rootPath: string,
 ) {
   return {
     onToggleSplitLayout: actions.toggleWorkspaceLayoutMode,
@@ -40,6 +42,7 @@ function buildShortcutsEffectParams(
       actions.setWorkspaceActivePane(workspaceLayout.activePane === 'primary' ? 'secondary' : 'primary')
     },
     onSaveNow: () => actions.saveNow(),
+    onRefreshTree: () => { if (rootPath) void core.openProject(rootPath) },
     onEscapePressed: () => {
       if (isFullscreen) {
         void actions.setFullscreenEnabled(false)
@@ -76,7 +79,7 @@ function useProjectEditorEffects(
     setStatusMessage: setters.setStatusMessage,
   })
   useProjectEditorFullscreenEffect({ setIsFullscreen: setters.setIsFullscreen })
-  useProjectEditorShortcutsEffect(buildShortcutsEffectParams(actions, values.isFullscreen, values.workspaceLayout))
+  useProjectEditorShortcutsEffect(buildShortcutsEffectParams(actions, core, values.isFullscreen, values.workspaceLayout, values.rootPath))
   useProjectEditorCloseEffect({
     primaryPane: values.primaryPane, secondaryPane: values.secondaryPane,
     panePersistence,

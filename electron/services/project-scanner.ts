@@ -56,7 +56,6 @@ async function scanDirectory(
       type: 'file',
     })
   }
-
   return result
 }
 

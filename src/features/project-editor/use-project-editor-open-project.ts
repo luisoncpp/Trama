@@ -92,8 +92,9 @@ export function useOpenProject(
           return
         }
 
+        const snapshot = response.data
         await applyOpenedProject({
-          snapshot: response.data,
+          snapshot,
           setters,
           clearEditor,
           loadDocument,

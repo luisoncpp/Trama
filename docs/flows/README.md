@@ -46,3 +46,8 @@ Keep these docs operational. Prefer short tables, explicit file names, and seque
 | `rich-editor-typing-flow.md` | What happens from a Quill keystroke through dirty marking, debounce, serialization, and state sync |
 | `rich-editor-external-sync-flow.md` | What happens when the editor receives a new external value and must decide whether to re-apply it into Quill |
 | `switch-pane-flow.md` | What happens when the active workspace pane changes in split mode |
+| `folder-delete-flow.md` | What happens from right-click Delete through IPC, snapshot refresh, and sidebar tree re-render |
+| `visible-files-computation-flow.md` | How `visibleFiles` is derived from `coreState.snapshot`, scoped, and propagated through 7+ component layers to the tree renderer |
+| `project-state-propagation-flow.md` | How state flows from `useProjectEditorCoreState` through `values`/`setters` to actions and back; why every callback is recreated every render |
+| `sidebar-render-chain-flow.md` | The full component render chain from `App` through 10 layers down to `SidebarTreeRowButton` |
+| `external-file-watcher-flow.md` | How chokidar events are classified internal/external, filtered, and forwarded to the renderer to trigger tree refreshes |

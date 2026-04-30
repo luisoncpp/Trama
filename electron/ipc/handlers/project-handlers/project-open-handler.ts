@@ -13,16 +13,15 @@ export async function handleOpenProject(rawPayload: unknown): Promise<IpcEnvelop
   if (!payload.success) {
     return errorEnvelope('VALIDATION_ERROR', 'Invalid payload for project open', payload.error.flatten())
   }
-
   try {
     const projectRoot = await resolveProjectRoot(payload.data.rootPath)
+    await startWatcher(projectRoot)
     const { tree, markdownFiles } = await scanProject(projectRoot)
     const metaByPath = await readMetaByPath(projectRoot, markdownFiles)
 
     const indexService = new IndexService(projectRoot)
     const index = await indexService.reconcileIndex(markdownFiles, metaByPath)
 
-    await startWatcher(projectRoot)
     setActiveProject(projectRoot, indexService, markdownFiles, metaByPath)
 
     return {

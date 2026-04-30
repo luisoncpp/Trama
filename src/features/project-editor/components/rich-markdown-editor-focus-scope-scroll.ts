@@ -59,13 +59,12 @@ function updateScrollRAF1(
 	}
 
 	requestAnimationFrame(() => {
-		updateScrollRAF2(container, editorRoot, quill, refreshedRect, getSelectionRect)
+		updateScrollRAF2(container, quill, refreshedRect, getSelectionRect)
 	})
 }
 
 function updateScrollRAF2(
 	container: HTMLElement,
-	editorRoot: HTMLElement,
 	quill: Quill,
 	refreshedRect: SelectionRect,
 	getSelectionRect: () => SelectionRect | null,
