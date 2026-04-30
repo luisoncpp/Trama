@@ -6,6 +6,7 @@ Active implementation plans — work that is in progress or planned but not yet 
 
 | File | Scope |
 |------|-------|
+| `tag-overlay-deepening-plan.md` | Tag overlay index types, state seam, hook interface, and helper tests |
 | `phase-4-detailed-plan.md` | Phase 4 master plan: Wiki Tag Links, folder operations, templates, AI import/export |
 | `implementation-overview.md` | Phase 3 closure summary |
 | `ai-import-export-implementation-map.md` | AI import/export feature mapping |
