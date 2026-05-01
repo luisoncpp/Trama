@@ -1,34 +1,11 @@
 import { useMemo } from 'preact/hooks'
-import type { DocumentMeta, ProjectSnapshot } from '../../shared/ipc'
-import type { PaneDocumentState, SidebarSection, WorkspaceLayoutState } from './project-editor-types'
+import type { ProjectSnapshot } from '../../shared/ipc'
+import type { PaneDocumentState, ProjectEditorStateValues, SidebarSection, WorkspaceLayoutState } from './project-editor-types'
 import { useSidebarUiState } from './use-sidebar-ui-state'
 import { useWorkspaceLayoutState } from './use-workspace-layout-state'
 import { useProjectEditorCoreState } from './use-project-editor-core-state'
 
-export interface ProjectEditorStateValues {
-  apiAvailable: boolean
-  rootPath: string
-  snapshot: ProjectSnapshot | null
-  primaryPane: PaneDocumentState
-  secondaryPane: PaneDocumentState
-  selectedPath: string | null
-  editorValue: string
-  editorMeta: DocumentMeta
-  isDirty: boolean
-  loadingProject: boolean
-  loadingDocument: boolean
-  saving: boolean
-  isFullscreen: boolean
-  externalConflictPath: string | null
-  conflictComparisonContent: string | null
-  statusMessage: string
-  visibleFiles: string[]
-  corkboardOrder: Record<string, string[]>
-  sidebarActiveSection: SidebarSection
-  sidebarPanelCollapsed: boolean
-  sidebarPanelWidth: number
-  workspaceLayout: WorkspaceLayoutState
-}
+export { type ProjectEditorStateValues } from './project-editor-types'
 
 export interface ProjectEditorStateSetters {
   setRootPath: (value: string) => void

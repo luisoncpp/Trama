@@ -1,10 +1,10 @@
 import { useCallback } from 'preact/hooks'
 import type { DocumentMeta } from '../../shared/ipc'
-import type { EditorSerializationRefs, PaneDocumentState, ProjectEditorActions, WorkspacePane } from './project-editor-types'
+import type { PaneDocumentState, ProjectEditorActions, WorkspacePane } from './project-editor-types'
 import type { UseProjectEditorStateResult } from './use-project-editor-state'
+import type { ProjectEditorPanePersistence } from './use-project-editor-pane-persistence'
 import { useOpenProject } from './use-project-editor-open-project'
 import { useProjectEditorUiActions } from './use-project-editor-ui-actions'
-import { useProjectEditorPanePersistence } from './use-project-editor-pane-persistence'
 import { hydrateMarkdownImages, stripBase64ImagesFromMarkdown } from '../../shared/markdown-image-placeholder'
 
 interface CoreProjectEditorActions {
@@ -23,9 +23,9 @@ export interface UseProjectEditorActionsResult {
   core: CoreProjectEditorActions
 }
 
-export interface SerializationRefsForActions {
-  primarySerializationRef: { current: EditorSerializationRefs }
-  secondarySerializationRef: { current: EditorSerializationRefs }
+export interface UseProjectEditorActionsParams {
+  state: UseProjectEditorStateResult
+  panePersistence: ProjectEditorPanePersistence
 }
 
 function useClearEditor(setters: UseProjectEditorStateResult['setters']): () => void {
@@ -102,18 +102,15 @@ function useSaveDocumentNow(
     [setters] /*Inputs for saveDocumentNowAction*/)
 }
 
-export function useProjectEditorActions(state: UseProjectEditorStateResult, refs: SerializationRefsForActions): UseProjectEditorActionsResult {
+export function useProjectEditorActions({
+  state,
+  panePersistence,
+}: UseProjectEditorActionsParams): UseProjectEditorActionsResult {
   const { values, setters } = state
   const clearEditor = useClearEditor(setters)
   const loadDocument = useLoadDocument(setters)
   const openProject = useOpenProject(setters, clearEditor, loadDocument)
   const saveDocumentNow = useSaveDocumentNow(setters)
-  const panePersistence = useProjectEditorPanePersistence({
-    values,
-    saveDocumentNow,
-    primarySerializationRef: refs.primarySerializationRef,
-    secondarySerializationRef: refs.secondarySerializationRef,
-  })
   const actions = useProjectEditorUiActions({
     values,
     setters,

@@ -170,6 +170,7 @@ Mandatory doc navigation for new chats: start with `docs/START-HERE.md` — it p
   - Derives active editor state (`selectedPath` / `editorValue` / `isDirty`) from `workspaceLayout.activePane`.
 - `src/features/project-editor/use-project-editor-actions.ts`
   - Composes UI actions and core operations (load/save/open/clear) and wires them into the state.
+  - Receives `panePersistence` from `useProjectEditor`; does not instantiate it.
 - `src/features/project-editor/use-project-editor-autosave-effect.ts`
   - Debounced autosave effect that persists edits after a short idle period.
 - `src/features/project-editor/use-project-editor-pane-persistence.ts`

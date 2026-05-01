@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'preact/hooks'
+import type { DocumentMeta } from '../../shared/ipc'
 import type { EditorSerializationRefs, ProjectEditorModel } from './project-editor-types'
 import type { WorkspaceLayoutState } from './project-editor-types'
 import { useProjectEditorActions } from './use-project-editor-actions'
@@ -93,31 +94,6 @@ function useProjectEditorEffects(
   })
 }
 
-function buildProjectEditorModelState(values: ReturnType<typeof useProjectEditorState>['values']): ProjectEditorModel['state'] {
-  return {
-    apiAvailable: values.apiAvailable,
-    rootPath: values.rootPath,
-    statusMessage: values.statusMessage,
-    sidebarActiveSection: values.sidebarActiveSection,
-    sidebarPanelCollapsed: values.sidebarPanelCollapsed,
-    sidebarPanelWidth: values.sidebarPanelWidth,
-    workspaceLayout: values.workspaceLayout,
-    externalConflictPath: values.externalConflictPath,
-    conflictComparisonContent: values.conflictComparisonContent,
-    visibleFiles: values.visibleFiles,
-    corkboardOrder: values.corkboardOrder,
-    primaryPane: values.primaryPane,
-    secondaryPane: values.secondaryPane,
-    selectedPath: values.selectedPath,
-    editorValue: values.editorValue,
-    isDirty: values.isDirty,
-    loadingProject: values.loadingProject,
-    loadingDocument: values.loadingDocument,
-    saving: values.saving,
-    isFullscreen: values.isFullscreen,
-  }
-}
-
 export function useProjectEditor(): ProjectEditorModel {
   const autoPickProjectFolderOnStart = import.meta.env.MODE !== 'test'
   const state = useProjectEditorState()
@@ -134,20 +110,24 @@ export function useProjectEditor(): ProjectEditorModel {
     tagOverlayMatchesRef: { current: [] as Array<{ tag: string; start: number; end: number; filePath: string }> },
   })
 
-  const { actions, core } = useProjectEditorActions(state, {
-    primarySerializationRef,
-    secondarySerializationRef,
-  })
+  const saveDocumentNowRef = useRef<((path: string, content: string, meta: DocumentMeta) => Promise<void>) | null>(null)
   const panePersistence = useProjectEditorPanePersistence({
     values,
-    saveDocumentNow: core.saveDocumentNow,
+    saveDocumentNow: (path, content, meta) => saveDocumentNowRef.current?.(path, content, meta) ?? Promise.resolve(),
     primarySerializationRef,
     secondarySerializationRef,
   })
+
+  const { actions, core } = useProjectEditorActions({
+    state,
+    panePersistence,
+  })
+  saveDocumentNowRef.current = core.saveDocumentNow
+
   useProjectEditorEffects(values, setters, actions, core, autoPickProjectFolderOnStart, panePersistence)
 
   return {
-    state: buildProjectEditorModelState(values),
+    state: (({ snapshot, editorMeta, ...state }) => state)(values),
     actions,
     serializationRefs: {
       primary: primarySerializationRef,

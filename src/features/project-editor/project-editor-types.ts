@@ -1,4 +1,4 @@
-import type { DocumentMeta } from '../../shared/ipc.js'
+import type { DocumentMeta, ProjectSnapshot } from '../../shared/ipc.js'
 
 export type SidebarSection = 'explorer' | 'outline' | 'lore' | 'transfer' | 'settings'
 export type WorkspaceLayoutMode = 'single' | 'split'
@@ -32,27 +32,31 @@ export interface SidebarRenameInput {
   newName: string
 }
 
-export interface ProjectEditorState {
+export type ProjectEditorState = Omit<ProjectEditorStateValues, 'snapshot' | 'editorMeta'>
+
+export interface ProjectEditorStateValues {
   apiAvailable: boolean
   rootPath: string
-  statusMessage: string
-  sidebarActiveSection: SidebarSection
-  sidebarPanelCollapsed: boolean
-  sidebarPanelWidth: number
-  workspaceLayout: WorkspaceLayoutState
-  externalConflictPath: string | null
-  conflictComparisonContent: string | null
-  visibleFiles: string[]
-  corkboardOrder: Record<string, string[]>
+  snapshot: ProjectSnapshot | null
   primaryPane: PaneDocumentState
   secondaryPane: PaneDocumentState
   selectedPath: string | null
   editorValue: string
+  editorMeta: DocumentMeta
   isDirty: boolean
   loadingProject: boolean
   loadingDocument: boolean
   saving: boolean
   isFullscreen: boolean
+  externalConflictPath: string | null
+  conflictComparisonContent: string | null
+  statusMessage: string
+  visibleFiles: string[]
+  corkboardOrder: Record<string, string[]>
+  sidebarActiveSection: SidebarSection
+  sidebarPanelCollapsed: boolean
+  sidebarPanelWidth: number
+  workspaceLayout: WorkspaceLayoutState
 }
 
 export interface ProjectEditorActions {
