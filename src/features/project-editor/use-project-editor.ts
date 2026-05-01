@@ -56,23 +56,27 @@ function buildShortcutsEffectParams(
 }
 
 function useProjectEditorEffects(
-  values: ReturnType<typeof useProjectEditorState>['values'],
+  uiState: ReturnType<typeof useProjectEditorState>['uiState'],
+  projectState: ReturnType<typeof useProjectEditorState>['projectState'],
+  documentState: ReturnType<typeof useProjectEditorState>['documentState'],
+  layoutState: ReturnType<typeof useProjectEditorState>['layoutState'],
+  paneState: ReturnType<typeof useProjectEditorState>['paneState'],
   setters: ReturnType<typeof useProjectEditorState>['setters'],
   actions: ReturnType<typeof useProjectEditorActions>['actions'],
   core: ReturnType<typeof useProjectEditorActions>['core'],
   autoPickProjectFolderOnStart: boolean,
   panePersistence: ReturnType<typeof useProjectEditorPanePersistence>,
 ): void {
-  useAutoPickProjectFolderEffect(actions.pickProjectFolder, autoPickProjectFolderOnStart, values.apiAvailable, values.rootPath)
+  useAutoPickProjectFolderEffect(actions.pickProjectFolder, autoPickProjectFolderOnStart, uiState.apiAvailable, projectState.rootPath)
   useProjectEditorAutosaveEffect({
-    selectedPath: values.selectedPath, isDirty: values.isDirty,
-    activePane: values.workspaceLayout.activePane,
+    selectedPath: documentState.selectedPath, isDirty: documentState.isDirty,
+    activePane: layoutState.workspaceLayout.activePane,
     panePersistence,
   })
   useProjectEditorExternalEventsEffect({
-    snapshotRootPath: values.snapshot?.rootPath ?? null,
-    selectedPath: values.selectedPath, activePane: values.workspaceLayout.activePane,
-    isDirty: values.isDirty,
+    snapshotRootPath: projectState.snapshot?.rootPath ?? null,
+    selectedPath: documentState.selectedPath, activePane: layoutState.workspaceLayout.activePane,
+    isDirty: documentState.isDirty,
     clearEditor: core.clearEditor, loadDocument: core.loadDocument,
     openProject: core.openProject,
     setExternalConflictPath: setters.setExternalConflictPath,
@@ -80,13 +84,13 @@ function useProjectEditorEffects(
     setStatusMessage: setters.setStatusMessage,
   })
   useProjectEditorFullscreenEffect({ setIsFullscreen: setters.setIsFullscreen })
-  useProjectEditorShortcutsEffect(buildShortcutsEffectParams(actions, core, values.isFullscreen, values.workspaceLayout, values.rootPath))
+  useProjectEditorShortcutsEffect(buildShortcutsEffectParams(actions, core, uiState.isFullscreen, layoutState.workspaceLayout, projectState.rootPath))
   useProjectEditorCloseEffect({
-    primaryPane: values.primaryPane, secondaryPane: values.secondaryPane,
+    paneState,
     panePersistence,
   })
   useProjectEditorContextMenuEffect({
-    isFullscreen: values.isFullscreen,
+    isFullscreen: uiState.isFullscreen,
     toggleWorkspaceLayoutMode: actions.toggleWorkspaceLayoutMode,
     setFullscreenEnabled: actions.setFullscreenEnabled,
     toggleFocusMode: actions.toggleFocusMode, setFocusScope: actions.setFocusScope,
@@ -97,7 +101,7 @@ function useProjectEditorEffects(
 export function useProjectEditor(): ProjectEditorModel {
   const autoPickProjectFolderOnStart = import.meta.env.MODE !== 'test'
   const state = useProjectEditorState()
-  const { values, setters } = state
+  const { values, setters, documentState, paneState, layoutState, sidebarState, projectState, uiState } = state
 
   const primarySerializationRef = useRef<EditorSerializationRefs>({
     flush: () => null,
@@ -112,19 +116,24 @@ export function useProjectEditor(): ProjectEditorModel {
 
   const saveDocumentNowRef = useRef<((path: string, content: string, meta: DocumentMeta) => Promise<void>) | null>(null)
   const panePersistence = useProjectEditorPanePersistence({
-    values,
+    paneState,
     saveDocumentNow: (path, content, meta) => saveDocumentNowRef.current?.(path, content, meta) ?? Promise.resolve(),
     primarySerializationRef,
     secondarySerializationRef,
   })
 
   const { actions, core } = useProjectEditorActions({
-    state,
+    layoutState,
+    paneState,
+    projectState,
+    uiState,
+    sidebarState,
+    setters,
     panePersistence,
   })
   saveDocumentNowRef.current = core.saveDocumentNow
 
-  useProjectEditorEffects(values, setters, actions, core, autoPickProjectFolderOnStart, panePersistence)
+  useProjectEditorEffects(uiState, projectState, documentState, layoutState, paneState, setters, actions, core, autoPickProjectFolderOnStart, panePersistence)
 
   return {
     state: (({ snapshot, editorMeta, ...state }) => state)(values),

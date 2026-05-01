@@ -184,14 +184,32 @@ From `buildValues()` in `use-project-editor-state.ts`:
 
 The active pane is determined by `workspaceLayout.activePane` and then used to select which `PaneDocumentState` feeds the projection.
 
+## Sub-State Decomposition (Memoized)
+
+To prevent false re-render cascades caused by a single `values` object changing on every render, `useProjectEditorState` now returns six stable sub-state objects via `use-project-editor-sub-state-hooks.ts`:
+
+| Sub-state | Type | Contains | Consumed by |
+|---|---|---|---|
+| `documentState` | `ProjectEditorDocumentState` | `selectedPath`, `editorValue`, `editorMeta`, `isDirty` | Conflict actions, editor view actions |
+| `paneState` | `ProjectEditorPaneState` | `primaryPane`, `secondaryPane` | Persistence, file/folder actions, layout actions |
+| `layoutState` | `ProjectEditorLayoutState` | `workspaceLayout` | Layout actions, sidebar actions, focus actions |
+| `sidebarState` | `ProjectEditorSidebarState` | `sidebarActiveSection`, `sidebarPanelCollapsed`, `sidebarPanelWidth`, `focusModeEnabled` | Sidebar actions, focus actions, create actions |
+| `projectState` | `ProjectEditorProjectState` | `rootPath`, `snapshot`, `visibleFiles`, `corkboardOrder` | File/folder/create actions, layout actions |
+| `uiState` | `ProjectEditorUiState` | `apiAvailable`, `loadingProject`, `loadingDocument`, `saving`, `isFullscreen`, `externalConflictPath`, `conflictComparisonContent`, `statusMessage` | Conflict actions, editor view actions |
+
+**Rule:** Action hooks must consume only the sub-states they need, not the monolithic `values` object. This keeps `useCallback`/`useEffect` dependency arrays stable and prevents unrelated state changes from re-creating callbacks.
+
+**Source:** `src/features/project-editor/use-project-editor-sub-state-hooks.ts` + `src/features/project-editor/use-project-editor-state.ts`
+
 ## Key Implementation Files
 
 | File | Role |
 |---|---|
-| `src/features/project-editor/project-editor-types.ts` | `WorkspaceLayoutState`, `PaneDocumentState`, `WorkspacePane` type definitions |
-| `src/features/project-editor/use-project-editor-state.ts` | `buildValues()` — projection from layout+document layers to shared state |
+| `src/features/project-editor/project-editor-types.ts` | `WorkspaceLayoutState`, `PaneDocumentState`, `WorkspacePane`, and 6 sub-state type definitions |
+| `src/features/project-editor/use-project-editor-state.ts` | `buildValues()` — projection from layout+document layers to shared state; returns 6 memoized sub-states |
+| `src/features/project-editor/use-project-editor-sub-state-hooks.ts` | Memoized sub-state builders (`useDocumentState`, `usePaneState`, `useLayoutState`, `useSidebarSt`, `useProjectSt`, `useUiSt`) |
 | `src/features/project-editor/use-project-editor-layout-actions.ts` | `openFileInPane`, `setWorkspaceActivePane`, `toggleWorkspaceLayoutMode` |
-| `src/features/project-editor/use-project-editor-ui-actions.ts` | `updateEditorValue(pane?)`, `saveNow(pane?)` with explicit pane routing |
+| `src/features/project-editor/use-project-editor-ui-actions.ts` | `updateEditorValue(pane?)`, `saveNow(pane?)` with explicit pane routing; composes primary + secondary (conflict) action sets |
 | `src/features/project-editor/use-project-editor-open-project.ts` | `applyOpenedProject` with `preferredPane` handling |
 | `src/features/project-editor/project-editor-logic.ts` | `reconcileWorkspaceLayout`, `canSelectFile` |
 | `src/features/project-editor/components/workspace-editor-panels.tsx` | Split UI with explicit pane routing in `PaneEditor` |

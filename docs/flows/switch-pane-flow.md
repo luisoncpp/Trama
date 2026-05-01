@@ -16,7 +16,7 @@ This flow mixes synchronous layout state with asynchronous document state. It is
 
 1. The user interacts with a split-pane editor.
 2. In `workspace-editor-panels.tsx`, `PaneEditor` calls `actions.setWorkspaceActivePane(pane)` when activating the pane.
-3. `useSetWorkspaceActivePaneAction(...)` reads the current outgoing pane from `values.workspaceLayout.activePane`.
+3. `useSetWorkspaceActivePaneAction(...)` reads the current outgoing pane from `layoutState.workspaceLayout.activePane`.
 4. It reads the outgoing pane document state through `panePersistence.getPaneStateForPane(outgoingPane)`.
 5. If the outgoing pane is dirty and has a path:
    - call `panePersistence.savePaneIfDirty(outgoingPane)`
@@ -25,30 +25,30 @@ This flow mixes synchronous layout state with asynchronous document state. It is
    - fall back to `outgoingState.content` only if `flush()` returns `null`
    - call `saveDocumentNow(...)`
 6. The action computes the next assigned path from layout state:
-   - `workspaceLayout.primaryPath`
-   - `workspaceLayout.secondaryPath`
+    - `layoutState.workspaceLayout.primaryPath`
+    - `layoutState.workspaceLayout.secondaryPath`
 7. It updates `workspaceLayout.activePane` immediately.
 8. If the next pane has no assigned path:
-   - clear compare state
-   - set the "no file selected" status
-   - stop
+    - clear compare state
+    - set the "no file selected" status
+    - stop
 9. If the pane has an assigned path but the document state is not already loaded for that pane:
-   - call `loadDocument(nextPath, pane)`
-10. `use-project-editor-state.ts` projects UI-facing aliases:
-   - `selectedPath`
-   - `editorValue`
-   - `editorMeta`
-   - `isDirty`
-   from the new active pane.
+    - call `loadDocument(nextPath, pane)`
+10. `use-project-editor-state.ts` projects UI-facing aliases into `documentState`:
+    - `selectedPath`
+    - `editorValue`
+    - `editorMeta`
+    - `isDirty`
+    from the new active pane.
 
 ## Reads
 
 | Kind | Source | Why |
 |------|--------|-----|
-| Outgoing pane identity | `workspaceLayout.activePane` | Determines which pane may need flushing/saving |
-| Outgoing pane state | `primaryPane` / `secondaryPane` | Determines dirty/path/meta/content |
-| Next pane assigned path | `workspaceLayout.primaryPath` / `secondaryPath` | Layout layer is the immediate source of truth for pane assignment |
-| Target pane document state | `primaryPane.path` / `secondaryPane.path` | Decides whether async load is still needed |
+| Outgoing pane identity | `layoutState.workspaceLayout.activePane` | Determines which pane may need flushing/saving |
+| Outgoing pane state | `paneState.primaryPane` / `paneState.secondaryPane` | Determines dirty/path/meta/content |
+| Next pane assigned path | `layoutState.workspaceLayout.primaryPath` / `layoutState.workspaceLayout.secondaryPath` | Layout layer is the immediate source of truth for pane assignment |
+| Target pane document state | `paneState.primaryPane.path` / `paneState.secondaryPane.path` | Decides whether async load is still needed |
 
 ## Writes
 
@@ -58,7 +58,7 @@ This flow mixes synchronous layout state with asynchronous document state. It is
 | `workspaceLayout.activePane` | `use-project-editor-layout-actions.ts` | Active pane changes immediately |
 | Status / compare state | `use-project-editor-layout-actions.ts` | Updated when pane has no file |
 | Target pane document state | `use-project-editor-actions.ts` + IPC read | Loaded asynchronously if needed |
-| UI aliases | `use-project-editor-state.ts` | Reprojected from the newly active pane |
+| UI aliases (`documentState`) | `use-project-editor-state.ts` | Reprojected from the newly active pane into memoized sub-state |
 
 ## Side effects
 
@@ -76,7 +76,8 @@ This flow mixes synchronous layout state with asynchronous document state. It is
 | `src/features/project-editor/components/workspace-editor-panels.tsx` | Pane activation wiring and explicit pane identity |
 | `src/features/project-editor/use-project-editor-pane-persistence.ts` | Centralized outgoing-pane flush/save policy |
 | `src/features/project-editor/use-project-editor-layout-actions.ts` | Switch-pane action and flush-before-switch |
-| `src/features/project-editor/use-project-editor-state.ts` | Active-pane UI projection layer |
+| `src/features/project-editor/use-project-editor-state.ts` | Active-pane UI projection layer (produces `documentState`) |
+| `src/features/project-editor/use-project-editor-sub-state-hooks.ts` | Memoized sub-state builders consumed by action hooks |
 | `src/features/project-editor/use-project-editor-actions.ts` | `saveDocumentNow(...)` and `loadDocument(...)` |
 | `docs/architecture/split-pane-coordination.md` | Canonical split-pane contracts |
 | `docs/lessons-learned/split-pane-sidebar-layout-vs-pane-path.md` | Layout-path vs loaded-pane-path distinction |
@@ -87,10 +88,11 @@ This flow mixes synchronous layout state with asynchronous document state. It is
 
 | Symptom | Usual cause | First file to inspect |
 |---------|-------------|-----------------------|
-| Sidebar highlights the wrong file after switch | Used loaded pane path instead of layout path for UI projection | `use-project-editor-state.ts` |
+| Sidebar highlights the wrong file after switch | Used loaded pane path instead of layout path for UI projection | `use-project-editor-state.ts` (`documentState`) |
 | Save happens on the wrong pane during switch | A code path fell back to inferred active pane instead of explicit pane identity | `use-project-editor-layout-actions.ts` |
 | Pane switch loses edits | Flush-before-switch path did not run or used stale content after flush | `use-project-editor-layout-actions.ts` |
-| Pane activates but shows blank until load completes | Expected if layout path updated before async load, but check projection rules if sidebar also goes blank | `use-project-editor-state.ts` |
+| Pane activates but shows blank until load completes | Expected if layout path updated before async load, but check projection rules if sidebar also goes blank | `use-project-editor-state.ts` (`documentState`) |
+| Conflict action does nothing after switch | `documentState` passed to conflict actions was a stub with `selectedPath: null` instead of real active pane | `use-project-editor-ui-actions.ts` |
 
 ## High-value notes
 

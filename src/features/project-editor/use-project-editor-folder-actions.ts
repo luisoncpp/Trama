@@ -8,11 +8,18 @@ import {
 import { noteSidebarFolderRenamed } from './components/sidebar/sidebar-folder-rename-events'
 import { normalizeName, isInvalidRenameInput } from '../../shared/sidebar-utils'
 import type { ProjectEditorActions, SidebarRenameInput, WorkspaceLayoutState } from './project-editor-types'
-import type { UseProjectEditorStateResult } from './use-project-editor-state'
+import type { ProjectEditorLayoutState, ProjectEditorPaneState, ProjectEditorProjectState } from './project-editor-types'
 
 interface UseProjectEditorFolderActionsParams {
-  values: UseProjectEditorStateResult['values']
-  setters: UseProjectEditorStateResult['setters']
+  layoutState: ProjectEditorLayoutState
+  paneState: ProjectEditorPaneState
+  projectState: ProjectEditorProjectState
+  setters: {
+    setStatusMessage: (value: string) => void
+    setWorkspaceLayout: (value: WorkspaceLayoutState | ((previous: WorkspaceLayoutState) => WorkspaceLayoutState)) => void
+    setPrimaryPane: (value: any) => void
+    setSecondaryPane: (value: any) => void
+  }
   openProject: (projectRoot: string, preferredFilePath?: string, preferredPane?: 'primary' | 'secondary') => Promise<void>
 }
 
@@ -21,12 +28,14 @@ function preferredPathFromLayout(layout: WorkspaceLayoutState): string | null {
 }
 
 async function executeFolderRename(
-  values: UseProjectEditorFolderActionsParams['values'],
+  layoutState: ProjectEditorLayoutState,
+  paneState: ProjectEditorPaneState,
+  projectState: ProjectEditorProjectState,
   setters: UseProjectEditorFolderActionsParams['setters'],
   openProject: UseProjectEditorFolderActionsParams['openProject'],
   input: SidebarRenameInput,
 ): Promise<void> {
-  if (!values.rootPath) {
+  if (!projectState.rootPath) {
     setters.setStatusMessage(PROJECT_EDITOR_STRINGS.initialStatus)
     return
   }
@@ -36,7 +45,7 @@ async function executeFolderRename(
     return
   }
 
-  if (hasDirtyPathInsideFolder(values, input.path)) {
+  if (hasDirtyPathInsideFolder(paneState, input.path)) {
     setters.setStatusMessage('Save or wait for autosave before renaming a folder that contains open unsaved files.')
     return
   }
@@ -51,23 +60,25 @@ async function executeFolderRename(
   }
 
   const remappedLayout = remapWorkspaceLayoutPathsForFolderRename(
-    values.workspaceLayout,
+    layoutState.workspaceLayout,
     response.data.path,
     response.data.renamedTo,
   )
   noteSidebarFolderRenamed(response.data.path, response.data.renamedTo)
   setters.setWorkspaceLayout(remappedLayout)
   setters.setStatusMessage(`Renamed folder: ${response.data.renamedTo}`)
-  await openProject(values.rootPath, preferredPathFromLayout(remappedLayout) ?? undefined, remappedLayout.activePane)
+  await openProject(projectState.rootPath, preferredPathFromLayout(remappedLayout) ?? undefined, remappedLayout.activePane)
 }
 
 async function executeFolderDelete(
-  values: UseProjectEditorFolderActionsParams['values'],
+  layoutState: ProjectEditorLayoutState,
+  paneState: ProjectEditorPaneState,
+  projectState: ProjectEditorProjectState,
   setters: UseProjectEditorFolderActionsParams['setters'],
   openProject: UseProjectEditorFolderActionsParams['openProject'],
   path: string,
 ): Promise<void> {
-  if (!values.rootPath) {
+  if (!projectState.rootPath) {
     setters.setStatusMessage(PROJECT_EDITOR_STRINGS.initialStatus)
     return
   }
@@ -77,7 +88,7 @@ async function executeFolderDelete(
     return
   }
 
-  if (hasDirtyPathInsideFolder(values, path)) {
+  if (hasDirtyPathInsideFolder(paneState, path)) {
     setters.setStatusMessage('Save or wait for autosave before deleting a folder that contains open unsaved files.')
     return
   }
@@ -88,25 +99,27 @@ async function executeFolderDelete(
     return
   }
 
-  const nextLayout = pruneWorkspaceLayoutPathsForFolderDelete(values.workspaceLayout, response.data.path)
+  const nextLayout = pruneWorkspaceLayoutPathsForFolderDelete(layoutState.workspaceLayout, response.data.path)
   setters.setWorkspaceLayout(nextLayout)
   setters.setStatusMessage(`Deleted folder: ${response.data.path}`)
-  await openProject(values.rootPath, preferredPathFromLayout(nextLayout) ?? undefined, nextLayout.activePane)
+  await openProject(projectState.rootPath, preferredPathFromLayout(nextLayout) ?? undefined, nextLayout.activePane)
 }
 
 async function executeFolderMove(
-  values: UseProjectEditorFolderActionsParams['values'],
+  layoutState: ProjectEditorLayoutState,
+  paneState: ProjectEditorPaneState,
+  projectState: ProjectEditorProjectState,
   setters: UseProjectEditorFolderActionsParams['setters'],
   openProject: UseProjectEditorFolderActionsParams['openProject'],
   sourcePath: string,
   targetParent: string,
 ): Promise<void> {
-  if (!values.rootPath) {
+  if (!projectState.rootPath) {
     setters.setStatusMessage('No project is open')
     return
   }
 
-  if (hasDirtyPathInsideFolder(values, sourcePath)) {
+  if (hasDirtyPathInsideFolder(paneState, sourcePath)) {
     setters.setStatusMessage('Save or wait for autosave before moving a folder that contains open unsaved files.')
     return
   }
@@ -118,21 +131,23 @@ async function executeFolderMove(
   }
 
   const remappedLayout = remapWorkspaceLayoutPathsForFolderRename(
-    values.workspaceLayout,
+    layoutState.workspaceLayout,
     response.data.sourcePath,
     response.data.renamedTo,
   )
   setters.setWorkspaceLayout(remappedLayout)
   setters.setStatusMessage(`Moved folder to: ${response.data.renamedTo}`)
   await openProject(
-    values.rootPath,
+    projectState.rootPath,
     preferredPathFromLayout(remappedLayout) ?? undefined,
     remappedLayout.activePane,
   )
 }
 
 export function useProjectEditorFolderActions({
-  values,
+  layoutState,
+  paneState,
+  projectState,
   setters,
   openProject,
 }: UseProjectEditorFolderActionsParams): {
@@ -141,16 +156,16 @@ export function useProjectEditorFolderActions({
   moveFolder: ProjectEditorActions['moveFolder']
 } {
   const renameFolder = useCallback(
-    (input: SidebarRenameInput) => executeFolderRename(values, setters, openProject, input),
-    [openProject, setters, values],
+    (input: SidebarRenameInput) => executeFolderRename(layoutState, paneState, projectState, setters, openProject, input),
+    [layoutState, paneState, projectState, openProject, setters],
   )
   const deleteFolder = useCallback(
-    (path: string) => executeFolderDelete(values, setters, openProject, path),
-    [openProject, setters, values],
+    (path: string) => executeFolderDelete(layoutState, paneState, projectState, setters, openProject, path),
+    [layoutState, paneState, projectState, openProject, setters],
   )
   const moveFolder = useCallback(
-    (sourcePath: string, targetParent: string) => executeFolderMove(values, setters, openProject, sourcePath, targetParent),
-    [openProject, setters, values],
+    (sourcePath: string, targetParent: string) => executeFolderMove(layoutState, paneState, projectState, setters, openProject, sourcePath, targetParent),
+    [layoutState, paneState, projectState, openProject, setters],
   )
   return { renameFolder, deleteFolder, moveFolder }
 }

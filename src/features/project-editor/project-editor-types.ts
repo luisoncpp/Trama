@@ -59,6 +59,47 @@ export interface ProjectEditorStateValues {
   workspaceLayout: WorkspaceLayoutState
 }
 
+export interface ProjectEditorDocumentState {
+  selectedPath: string | null
+  editorValue: string
+  editorMeta: DocumentMeta
+  isDirty: boolean
+}
+
+export interface ProjectEditorPaneState {
+  primaryPane: PaneDocumentState
+  secondaryPane: PaneDocumentState
+}
+
+export interface ProjectEditorLayoutState {
+  workspaceLayout: WorkspaceLayoutState
+}
+
+export interface ProjectEditorSidebarState {
+  sidebarActiveSection: SidebarSection
+  sidebarPanelCollapsed: boolean
+  sidebarPanelWidth: number
+  focusModeEnabled: boolean
+}
+
+export interface ProjectEditorProjectState {
+  rootPath: string
+  snapshot: ProjectSnapshot | null
+  visibleFiles: string[]
+  corkboardOrder: Record<string, string[]>
+}
+
+export interface ProjectEditorUiState {
+  apiAvailable: boolean
+  loadingProject: boolean
+  loadingDocument: boolean
+  saving: boolean
+  isFullscreen: boolean
+  externalConflictPath: string | null
+  conflictComparisonContent: string | null
+  statusMessage: string
+}
+
 export interface ProjectEditorActions {
   pickProjectFolder: () => Promise<void>
   selectFile: (filePath: string) => Promise<void>

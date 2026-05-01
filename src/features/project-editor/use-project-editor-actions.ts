@@ -1,7 +1,7 @@
 import { useCallback } from 'preact/hooks'
 import type { DocumentMeta } from '../../shared/ipc'
-import type { PaneDocumentState, ProjectEditorActions, WorkspacePane } from './project-editor-types'
-import type { UseProjectEditorStateResult } from './use-project-editor-state'
+import type { PaneDocumentState, ProjectEditorActions, ProjectEditorUiState, WorkspacePane } from './project-editor-types'
+import type { ProjectEditorLayoutState, ProjectEditorPaneState, ProjectEditorProjectState, ProjectEditorSidebarState } from './project-editor-types'
 import type { ProjectEditorPanePersistence } from './use-project-editor-pane-persistence'
 import { useOpenProject } from './use-project-editor-open-project'
 import { useProjectEditorUiActions } from './use-project-editor-ui-actions'
@@ -24,18 +24,36 @@ export interface UseProjectEditorActionsResult {
 }
 
 export interface UseProjectEditorActionsParams {
-  state: UseProjectEditorStateResult
+  layoutState: ProjectEditorLayoutState
+  paneState: ProjectEditorPaneState
+  projectState: ProjectEditorProjectState
+  uiState: ProjectEditorUiState
+  sidebarState: ProjectEditorSidebarState
+  setters: {
+    setPrimaryPane: (value: PaneDocumentState | ((prev: PaneDocumentState) => PaneDocumentState)) => void
+    setSecondaryPane: (value: PaneDocumentState | ((prev: PaneDocumentState) => PaneDocumentState)) => void
+    setLoadingDocument: (value: boolean) => void
+    setLoadingProject: (value: boolean) => void
+    setSaving: (value: boolean) => void
+    setStatusMessage: (value: string) => void
+    setExternalConflictPath: (value: string | null) => void
+    setConflictComparisonContent: (value: string | null) => void
+    setWorkspaceLayout: (value: any) => void
+    setSidebarPanelCollapsed: (value: boolean) => void
+    setSidebarActiveSection: (value: import('./project-editor-types').SidebarSection) => void
+    setSidebarPanelWidth: (value: number) => void
+  }
   panePersistence: ProjectEditorPanePersistence
 }
 
-function useClearEditor(setters: UseProjectEditorStateResult['setters']): () => void {
+function useClearEditor(setters: UseProjectEditorActionsParams['setters']): () => void {
   return useCallback(/* clearEditorAction */ () => {
     const emptyPane: PaneDocumentState = { path: null, content: '', meta: {}, isDirty: false }
     setters.setPrimaryPane(emptyPane)
     setters.setSecondaryPane(emptyPane)
     setters.setExternalConflictPath(null)
     setters.setConflictComparisonContent(null)
-    setters.setWorkspaceLayout((previous) => ({
+    setters.setWorkspaceLayout((previous: any) => ({
       ...previous,
       primaryPath: null,
       secondaryPath: null,
@@ -45,7 +63,7 @@ function useClearEditor(setters: UseProjectEditorStateResult['setters']): () => 
   }, [setters] /*Inputs for clearEditorAction*/)
 }
 
-function useLoadDocument(setters: UseProjectEditorStateResult['setters']): (path: string, targetPane: WorkspacePane) => Promise<void> {
+function useLoadDocument(setters: UseProjectEditorActionsParams['setters']): (path: string, targetPane: WorkspacePane) => Promise<void> {
   return useCallback(/* loadDocumentAction */ async (filePath: string, targetPane: WorkspacePane): Promise<void> => {
       setters.setLoadingDocument(true)
 
@@ -78,7 +96,7 @@ function useLoadDocument(setters: UseProjectEditorStateResult['setters']): (path
 }
 
 function useSaveDocumentNow(
-  setters: UseProjectEditorStateResult['setters'],
+  setters: UseProjectEditorActionsParams['setters'],
 ): (path: string, content: string, meta: DocumentMeta) => Promise<void> {
   return useCallback(/* saveDocumentNowAction */ async (path: string, content: string, meta: DocumentMeta): Promise<void> => {
       setters.setSaving(true)
@@ -103,16 +121,24 @@ function useSaveDocumentNow(
 }
 
 export function useProjectEditorActions({
-  state,
+  layoutState,
+  paneState,
+  projectState,
+  uiState,
+  sidebarState,
+  setters,
   panePersistence,
 }: UseProjectEditorActionsParams): UseProjectEditorActionsResult {
-  const { values, setters } = state
   const clearEditor = useClearEditor(setters)
   const loadDocument = useLoadDocument(setters)
   const openProject = useOpenProject(setters, clearEditor, loadDocument)
   const saveDocumentNow = useSaveDocumentNow(setters)
   const actions = useProjectEditorUiActions({
-    values,
+    layoutState,
+    paneState,
+    projectState,
+    uiState,
+    sidebarState,
     setters,
     openProject,
     loadDocument,

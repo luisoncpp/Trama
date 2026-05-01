@@ -1,8 +1,7 @@
 import { useCallback } from 'preact/hooks'
 import { canSelectFile } from './project-editor-logic'
 import { PROJECT_EDITOR_STRINGS } from './project-editor-strings'
-import type { ProjectEditorActions, WorkspaceLayoutState, WorkspacePane } from './project-editor-types'
-import type { UseProjectEditorStateResult } from './use-project-editor-state'
+import type { ProjectEditorActions, ProjectEditorLayoutState, ProjectEditorPaneState, ProjectEditorProjectState, WorkspaceLayoutState, WorkspacePane } from './project-editor-types'
 import type { ProjectEditorPanePersistence } from './use-project-editor-pane-persistence'
 
 function updatePathForPane(layout: WorkspaceLayoutState, pane: WorkspacePane, path: string): WorkspaceLayoutState {
@@ -12,8 +11,14 @@ function updatePathForPane(layout: WorkspaceLayoutState, pane: WorkspacePane, pa
 }
 
 interface UseWorkspaceLayoutActionParams {
-  values: UseProjectEditorStateResult['values']
-  setters: UseProjectEditorStateResult['setters']
+  layoutState: ProjectEditorLayoutState
+  paneState: ProjectEditorPaneState
+  projectState: ProjectEditorProjectState
+  setters: {
+    setWorkspaceLayout: (value: any) => void
+    setConflictComparisonContent: (value: string | null) => void
+    setStatusMessage: (value: string) => void
+  }
   loadDocument: (path: string, pane: WorkspacePane) => Promise<void>
   panePersistence: ProjectEditorPanePersistence
 }
@@ -23,32 +28,33 @@ interface UseSetWorkspaceActivePaneActionParams extends UseWorkspaceLayoutAction
 }
 
 export function useAssignFileToActivePaneAction(
-  values: UseProjectEditorStateResult['values'],
-  setters: UseProjectEditorStateResult['setters'],
+  layoutState: ProjectEditorLayoutState,
+  setters: { setWorkspaceLayout: (value: any) => void },
 ): (filePath: string) => void {
   return useCallback(/* assignFileToActivePaneAction */ (filePath: string) => {
-      setters.setWorkspaceLayout((previous) => updatePathForPane(previous, values.workspaceLayout.activePane, filePath))
+      setters.setWorkspaceLayout((previous: WorkspaceLayoutState) => updatePathForPane(previous, layoutState.workspaceLayout.activePane, filePath))
     },
-    [setters, values.workspaceLayout.activePane] /*Inputs for assignFileToActivePaneAction*/)
+    [setters, layoutState.workspaceLayout.activePane] /*Inputs for assignFileToActivePaneAction*/)
 }
 
 export function useAssignFileToPaneAction(
-  setters: UseProjectEditorStateResult['setters'],
+  setters: { setWorkspaceLayout: (value: any) => void },
 ): (filePath: string, pane: WorkspacePane) => void {
   return useCallback(/* assignFileToPaneAction */ (filePath: string, pane: WorkspacePane) => {
-      setters.setWorkspaceLayout((previous) => updatePathForPane(previous, pane, filePath))
+      setters.setWorkspaceLayout((previous: WorkspaceLayoutState) => updatePathForPane(previous, pane, filePath))
     },
     [setters] /*Inputs for assignFileToPaneAction*/)
 }
 
 export function useToggleWorkspaceLayoutModeAction(
-  values: UseProjectEditorStateResult['values'],
-  setters: UseProjectEditorStateResult['setters'],
+  layoutState: ProjectEditorLayoutState,
+  projectState: ProjectEditorProjectState,
+  setters: { setWorkspaceLayout: (value: any) => void },
 ): ProjectEditorActions['toggleWorkspaceLayoutMode'] {
   return useCallback(/* toggleWorkspaceLayoutModeAction */ () => {
-    setters.setWorkspaceLayout((previous) => {
+    setters.setWorkspaceLayout((previous: WorkspaceLayoutState) => {
       if (previous.mode === 'single') {
-        const secondaryPath = previous.secondaryPath ?? values.snapshot?.markdownFiles.find((path) => path !== previous.primaryPath) ?? null
+        const secondaryPath = previous.secondaryPath ?? projectState.snapshot?.markdownFiles.find((path) => path !== previous.primaryPath) ?? null
         return {
           ...previous,
           mode: secondaryPath ? 'split' : 'single',
@@ -63,14 +69,14 @@ export function useToggleWorkspaceLayoutModeAction(
         activePane: 'primary',
       }
     })
-  }, [setters, values.snapshot?.markdownFiles] /*Inputs for toggleWorkspaceLayoutModeAction*/)
+  }, [setters, projectState.snapshot?.markdownFiles] /*Inputs for toggleWorkspaceLayoutModeAction*/)
 }
 
 export function useSetWorkspaceLayoutRatioAction(
-  setters: UseProjectEditorStateResult['setters'],
+  setters: { setWorkspaceLayout: (value: any) => void },
 ): ProjectEditorActions['setWorkspaceLayoutRatio'] {
   return useCallback(/* setWorkspaceLayoutRatioAction */ (ratio: number) => {
-      setters.setWorkspaceLayout((previous) => ({
+      setters.setWorkspaceLayout((previous: WorkspaceLayoutState) => ({
         ...previous,
         ratio,
       }))
@@ -79,21 +85,22 @@ export function useSetWorkspaceLayoutRatioAction(
 }
 
 export function useSetWorkspaceActivePaneAction({
-  values,
+  layoutState,
+  paneState,
   setters,
   loadDocument,
   panePersistence,
 }: UseSetWorkspaceActivePaneActionParams): ProjectEditorActions['setWorkspaceActivePane'] {
   return useCallback(/* setWorkspaceActivePaneAction */ async (pane: WorkspacePane) => {
-      const outgoingPane = values.workspaceLayout.activePane
+      const outgoingPane = layoutState.workspaceLayout.activePane
       const outgoingState = panePersistence.getPaneStateForPane(outgoingPane)
       if (outgoingState.isDirty && outgoingState.path) {
         await panePersistence.savePaneIfDirty(outgoingPane)
       }
 
-      const nextPath = pane === 'secondary' ? values.workspaceLayout.secondaryPath : values.workspaceLayout.primaryPath
+      const nextPath = pane === 'secondary' ? layoutState.workspaceLayout.secondaryPath : layoutState.workspaceLayout.primaryPath
 
-      setters.setWorkspaceLayout((previous) => ({
+      setters.setWorkspaceLayout((previous: WorkspaceLayoutState) => ({
         ...previous,
         activePane: pane,
       }))
@@ -104,31 +111,32 @@ export function useSetWorkspaceActivePaneAction({
         return
       }
 
-      const targetPaneState = pane === 'secondary' ? values.secondaryPane : values.primaryPane
+      const targetPaneState = pane === 'secondary' ? paneState.secondaryPane : paneState.primaryPane
       if (targetPaneState.path !== nextPath) {
         void loadDocument(nextPath, pane)
       }
     },
     [
       loadDocument, panePersistence, setters,
-      values.primaryPane, values.secondaryPane,
-      values.workspaceLayout.activePane,
-      values.workspaceLayout.primaryPath,
-      values.workspaceLayout.secondaryPath,
+      paneState.primaryPane, paneState.secondaryPane,
+      layoutState.workspaceLayout.activePane,
+      layoutState.workspaceLayout.primaryPath,
+      layoutState.workspaceLayout.secondaryPath,
     ] /*Inputs for setWorkspaceActivePaneAction*/)
 }
 
 export function useOpenFileInPaneAction({
-  values,
+  layoutState,
+  paneState,
   setters,
   loadDocument,
   panePersistence,
 }: UseWorkspaceLayoutActionParams): (filePath: string, pane: WorkspacePane) => void {
   return useCallback(/* openFileInPaneAction */ (filePath: string, pane: WorkspacePane) => {
       if (pane === 'secondary') {
-        const shouldLoad = values.secondaryPane.path !== filePath
+        const shouldLoad = paneState.secondaryPane.path !== filePath
 
-        setters.setWorkspaceLayout((previous) => ({
+        setters.setWorkspaceLayout((previous: WorkspaceLayoutState) => ({
           ...previous,
           mode: previous.mode === 'single' ? 'split' : previous.mode,
           activePane: 'secondary',
@@ -140,13 +148,13 @@ export function useOpenFileInPaneAction({
         }
       } else {
         const primaryPaneState = panePersistence.getPaneStateForPane('primary')
-        const primaryPanePath = values.workspaceLayout.primaryPath
+        const primaryPanePath = layoutState.workspaceLayout.primaryPath
         if (!canSelectFile(primaryPaneState.isDirty, primaryPanePath, filePath)) {
           setters.setStatusMessage(PROJECT_EDITOR_STRINGS.statusNeedSaveBeforeSwitch)
           return
         }
 
-        setters.setWorkspaceLayout((previous) => ({
+        setters.setWorkspaceLayout((previous: WorkspaceLayoutState) => ({
           ...previous,
           activePane: 'primary',
           primaryPath: filePath,
@@ -157,5 +165,5 @@ export function useOpenFileInPaneAction({
         }
       }
     },
-    [loadDocument, panePersistence, setters, values.secondaryPane.path, values.primaryPane.path, values.workspaceLayout.primaryPath] /*Inputs for openFileInPaneAction*/)
+    [loadDocument, panePersistence, setters, paneState.secondaryPane.path, paneState.primaryPane.path, layoutState.workspaceLayout.primaryPath] /*Inputs for openFileInPaneAction*/)
 }

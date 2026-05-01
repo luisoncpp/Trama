@@ -2,6 +2,15 @@ import { useCallback } from 'preact/hooks'
 import { PROJECT_EDITOR_STRINGS } from './project-editor-strings'
 import type { ProjectEditorActions } from './project-editor-types'
 import type { ProjectEditorPanePersistence } from './use-project-editor-pane-persistence'
+import type {
+  ProjectEditorLayoutState,
+  ProjectEditorPaneState,
+  ProjectEditorProjectState,
+  ProjectEditorSidebarState,
+  ProjectEditorUiState,
+} from './project-editor-types'
+import type { SidebarSection } from './project-editor-types'
+import type { WorkspacePane } from './project-editor-types'
 import { useSetSidebarPanelWidthAction, useSetSidebarSectionAction, useToggleSidebarPanelCollapsedAction } from './use-project-editor-sidebar-actions'
 import { useSetFocusScopeAction, useSetFullscreenEnabledAction, useToggleFocusModeAction } from './use-project-editor-focus-actions'
 import {
@@ -9,54 +18,46 @@ import {
   useSetWorkspaceLayoutRatioAction,
   useToggleWorkspaceLayoutModeAction,
 } from './use-project-editor-layout-actions'
-import type { UseProjectEditorStateResult } from './use-project-editor-state'
-import type { WorkspacePane } from './project-editor-types'
+import { useProjectPickerActions } from './use-project-editor-picker-actions'
 
 export interface UseProjectEditorUiActionsParams {
-  values: UseProjectEditorStateResult['values']
-  setters: UseProjectEditorStateResult['setters']
+  layoutState: ProjectEditorLayoutState
+  paneState: ProjectEditorPaneState
+  projectState: ProjectEditorProjectState
+  uiState: ProjectEditorUiState
+  sidebarState: ProjectEditorSidebarState
+  setters: {
+    setStatusMessage: (value: string) => void
+    setWorkspaceLayout: (value: any) => void
+    setSidebarPanelCollapsed: (value: boolean) => void
+    setSidebarActiveSection: (value: SidebarSection) => void
+    setSidebarPanelWidth: (value: number) => void
+    setSecondaryPane: (value: any) => void
+    setPrimaryPane: (value: any) => void
+    setConflictComparisonContent: (value: string | null) => void
+    setExternalConflictPath: (value: string | null) => void
+    setIsFullscreen?: (value: boolean) => void
+  }
   openProject: (projectRoot: string, preferredFilePath?: string, preferredPane?: 'primary' | 'secondary') => Promise<void>
   loadDocument: (path: string, pane: WorkspacePane) => Promise<void>
   panePersistence: ProjectEditorPanePersistence
 }
 
-export function usePickProjectFolderAction({
-  openProject,
-  setters,
-}: {
-  openProject: (projectRoot: string, preferredFilePath?: string) => Promise<void>
-  setters: UseProjectEditorStateResult['setters']
-}): ProjectEditorActions['pickProjectFolder'] {
-  return useCallback(/* pickProjectFolderAction */ async (): Promise<void> => {
-    const selected = await window.tramaApi.selectProjectFolder()
-    if (!selected.ok) {
-      setters.setStatusMessage(`Could not open folder picker: ${selected.error.message}`)
-      return
-    }
-
-    if (!selected.data.rootPath) {
-      setters.setStatusMessage(PROJECT_EDITOR_STRINGS.folderSelectionCanceled)
-      return
-    }
-
-    await openProject(selected.data.rootPath)
-  }, [openProject, setters] /*Inputs for pickProjectFolderAction*/)
-}
+export { useProjectPickerActions }
 
 export function useSelectFileAction({
-  values,
+  layoutState,
   loadDocument,
   assignFileToActivePane,
   panePersistence,
 }: {
-  values: UseProjectEditorStateResult['values']
+  layoutState: ProjectEditorLayoutState
   loadDocument: (path: string, pane: WorkspacePane) => Promise<void>
   assignFileToActivePane: (filePath: string) => void
   panePersistence: ProjectEditorPanePersistence
 }): ProjectEditorActions['selectFile'] {
   return useCallback(/* selectFileAction */ async (filePath: string): Promise<void> => {
-      // Flush pending edits for the active pane so dirty-check sees latest content
-      const activePane = values.workspaceLayout.activePane
+      const activePane = layoutState.workspaceLayout.activePane
       const activePaneState = panePersistence.getPaneStateForPane(activePane)
       await panePersistence.savePaneIfDirty(activePane)
 
@@ -66,7 +67,7 @@ export function useSelectFileAction({
       }
     }, [
       assignFileToActivePane, loadDocument, panePersistence,
-      values.workspaceLayout.activePane,
+      layoutState.workspaceLayout.activePane,
     ] /*Inputs for selectFileAction*/)
 }
 
@@ -75,7 +76,7 @@ export function useReorderFilesAction({
   openProject,
   rootPath,
 }: {
-  setters: UseProjectEditorStateResult['setters']
+  setters: UseProjectEditorUiActionsParams['setters']
   openProject: (projectRoot: string) => Promise<void>
   rootPath: string
 }): ProjectEditorActions['reorderFiles'] {
@@ -96,23 +97,25 @@ export function useReorderFilesAction({
 }
 
 export function useMoveFileAction({
-  values,
+  paneState,
+  projectState,
   setters,
   openProject,
 }: {
-  values: UseProjectEditorStateResult['values']
-  setters: UseProjectEditorStateResult['setters']
+  paneState: ProjectEditorPaneState
+  projectState: ProjectEditorProjectState
+  setters: UseProjectEditorUiActionsParams['setters']
   openProject: (projectRoot: string, preferredFilePath?: string) => Promise<void>
 }): ProjectEditorActions['moveFile'] {
   return useCallback(/* moveFileAction */ async (sourcePath: string, targetFolder: string): Promise<void> => {
-      if (!values.rootPath) {
+      if (!projectState.rootPath) {
         setters.setStatusMessage('No project is open')
         return
       }
 
       const isSourceDirty =
-        (values.primaryPane.path === sourcePath && values.primaryPane.isDirty) ||
-        (values.secondaryPane.path === sourcePath && values.secondaryPane.isDirty)
+        (paneState.primaryPane.path === sourcePath && paneState.primaryPane.isDirty) ||
+        (paneState.secondaryPane.path === sourcePath && paneState.secondaryPane.isDirty)
       if (isSourceDirty) {
         setters.setStatusMessage('Save the file before moving it.')
         return
@@ -126,71 +129,70 @@ export function useMoveFileAction({
         }
 
         setters.setStatusMessage(`Moved file to: ${response.data.renamedTo}`)
-        await openProject(values.rootPath, response.data.renamedTo)
+        await openProject(projectState.rootPath, response.data.renamedTo)
       } catch (error) {
         setters.setStatusMessage(`Error moving file: ${error instanceof Error ? error.message : 'Unknown error'}`)
       }
     },
-    [openProject, setters, values.primaryPane.isDirty, values.primaryPane.path, values.rootPath, values.secondaryPane.isDirty, values.secondaryPane.path] /*Inputs for moveFileAction*/)
+    [openProject, setters,
+      paneState.primaryPane.isDirty, paneState.primaryPane.path,
+      paneState.secondaryPane.isDirty, paneState.secondaryPane.path,
+      projectState.rootPath] /*Inputs for moveFileAction*/)
 }
 
-export function useSidebarActions(values: UseProjectEditorStateResult['values'], setters: UseProjectEditorStateResult['setters']) {
+export function useSidebarActions(
+  layoutState: ProjectEditorLayoutState,
+  sidebarState: ProjectEditorSidebarState,
+  setters: UseProjectEditorUiActionsParams['setters'],
+) {
   return {
     setSidebarSection: useSetSidebarSectionAction(setters),
-    toggleSidebarPanelCollapsed: useToggleSidebarPanelCollapsedAction(values, setters),
+    toggleSidebarPanelCollapsed: useToggleSidebarPanelCollapsedAction(layoutState, sidebarState, setters),
     setSidebarPanelWidth: useSetSidebarPanelWidthAction(setters),
   }
 }
 
 export function useWorkspaceLayoutActions(
-  values: UseProjectEditorStateResult['values'],
-  setters: UseProjectEditorStateResult['setters'],
-  loadDocument: UseProjectEditorUiActionsParams['loadDocument'],
+  layoutState: ProjectEditorLayoutState,
+  paneState: ProjectEditorPaneState,
+  projectState: ProjectEditorProjectState,
+  setters: UseProjectEditorUiActionsParams['setters'],
+  loadDocument: (path: string, pane: WorkspacePane) => Promise<void>,
   panePersistence: ProjectEditorPanePersistence,
 ) {
   return {
-    toggleWorkspaceLayoutMode: useToggleWorkspaceLayoutModeAction(values, setters),
+    toggleWorkspaceLayoutMode: useToggleWorkspaceLayoutModeAction(layoutState, projectState, setters),
     setWorkspaceLayoutRatio: useSetWorkspaceLayoutRatioAction(setters),
-    setWorkspaceActivePane: useSetWorkspaceActivePaneAction({ values, setters, loadDocument, panePersistence }),
+    setWorkspaceActivePane: useSetWorkspaceActivePaneAction({ layoutState, paneState, projectState, setters, loadDocument, panePersistence }),
   }
 }
 
 export function useEditorViewActions(
-  values: UseProjectEditorStateResult['values'],
-  setters: UseProjectEditorStateResult['setters'],
+  layoutState: ProjectEditorLayoutState,
+  sidebarState: ProjectEditorSidebarState,
+  uiState: ProjectEditorUiState,
+  setters: UseProjectEditorUiActionsParams['setters'],
   panePersistence: ProjectEditorPanePersistence,
 ) {
   return {
     updateEditorValue: (nextValue: string, pane?: WorkspacePane) => {
-      const targetPane = pane ?? values.workspaceLayout.activePane
+      const targetPane = pane ?? layoutState.workspaceLayout.activePane
       if (targetPane === 'secondary') {
-        setters.setSecondaryPane((prev) => ({ ...prev, content: nextValue, isDirty: true }))
+        setters.setSecondaryPane((prev: any) => ({ ...prev, content: nextValue, isDirty: true }))
       } else {
-        setters.setPrimaryPane((prev) => ({ ...prev, content: nextValue, isDirty: true }))
+        setters.setPrimaryPane((prev: any) => ({ ...prev, content: nextValue, isDirty: true }))
       }
     },
     saveNow: (pane?: WorkspacePane) => {
-      const targetPane = pane ?? values.workspaceLayout.activePane
-      const paneState = panePersistence.getPaneStateForPane(targetPane)
-      if (!paneState.path || values.saving || !paneState.isDirty) {
+      const targetPane = pane ?? layoutState.workspaceLayout.activePane
+      const paneStateLocal = panePersistence.getPaneStateForPane(targetPane)
+      if (!paneStateLocal.path || uiState.saving || !paneStateLocal.isDirty) {
         return
       }
-      // Flush and use the returned content directly — do NOT read paneState.content
-      // because React state updates are batched and the content is stale at this point.
       void panePersistence.savePaneIfDirty(targetPane)
     },
     setFullscreenEnabled: useSetFullscreenEnabledAction(setters),
-    toggleFocusMode: useToggleFocusModeAction(values, setters),
+    toggleFocusMode: useToggleFocusModeAction(layoutState, sidebarState, setters),
     setFocusScope: useSetFocusScopeAction(setters),
   }
-}
-
-export function useProjectPickerActions({
-  openProject,
-  setters,
-}: {
-  openProject: (projectRoot: string, preferredFilePath?: string) => Promise<void>
-  setters: UseProjectEditorStateResult['setters']
-}) {
-  return { pickProjectFolder: usePickProjectFolderAction({ openProject, setters }) }
 }

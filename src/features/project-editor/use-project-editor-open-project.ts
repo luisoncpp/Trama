@@ -2,14 +2,21 @@ import { useCallback } from 'preact/hooks'
 import type { ProjectSnapshot } from '../../shared/ipc'
 import { reconcileWorkspaceLayout, resolvePreferredFile } from './project-editor-logic'
 import { PROJECT_EDITOR_STRINGS } from './project-editor-strings'
-import type { WorkspacePane } from './project-editor-types'
-import type { UseProjectEditorStateResult } from './use-project-editor-state'
+import type { WorkspaceLayoutState, WorkspacePane } from './project-editor-types'
 
 export type PreferredPane = 'primary' | 'secondary'
 
+interface OpenProjectSetters {
+  setRootPath?: (value: string) => void
+  setSnapshot?: (value: ProjectSnapshot | null) => void
+  setLoadingProject: (value: boolean) => void
+  setStatusMessage: (value: string) => void
+  setWorkspaceLayout: (value: WorkspaceLayoutState | ((previous: WorkspaceLayoutState) => WorkspaceLayoutState)) => void
+}
+
 interface ApplyOpenedProjectParams {
   snapshot: ProjectSnapshot
-  setters: UseProjectEditorStateResult['setters']
+  setters: OpenProjectSetters
   clearEditor: () => void
   loadDocument: (path: string, targetPane: WorkspacePane) => Promise<void>
   preferredFilePath?: string
@@ -40,8 +47,8 @@ async function applyOpenedProject({
   preferredFilePath,
   preferredPane,
 }: ApplyOpenedProjectParams): Promise<void> {
-  setters.setRootPath(snapshot.rootPath)
-  setters.setSnapshot(snapshot)
+  setters.setRootPath!(snapshot.rootPath)
+  setters.setSnapshot!(snapshot)
   setters.setStatusMessage(`Project opened: ${snapshot.rootPath}`)
 
   let nextLayout = null as ReturnType<typeof reconcileWorkspaceLayout> | null
@@ -72,7 +79,7 @@ async function applyOpenedProject({
 }
 
 export function useOpenProject(
-  setters: UseProjectEditorStateResult['setters'],
+  setters: OpenProjectSetters,
   clearEditor: () => void,
   loadDocument: (path: string, targetPane: WorkspacePane) => Promise<void>,
 ): (

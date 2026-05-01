@@ -3,12 +3,15 @@ import { PROJECT_EDITOR_STRINGS } from './project-editor-strings'
 import { normalizeName } from '../../shared/sidebar-utils'
 import type { ProjectEditorActions } from './project-editor-types'
 import type { SidebarCreateInput } from './project-editor-types'
-import type { UseProjectEditorStateResult } from './use-project-editor-state'
+import type { ProjectEditorProjectState, ProjectEditorSidebarState } from './project-editor-types'
 import { SIDEBAR_SECTION_CONFIG } from './components/sidebar/sidebar-section-roots'
 
 interface UseProjectEditorCreateActionsParams {
-  values: UseProjectEditorStateResult['values']
-  setters: UseProjectEditorStateResult['setters']
+  projectState: ProjectEditorProjectState
+  sidebarState: ProjectEditorSidebarState
+  setters: {
+    setStatusMessage: (value: string) => void
+  }
   openProject: (projectRoot: string, preferredFilePath?: string) => Promise<void>
 }
 
@@ -38,11 +41,11 @@ function isInvalidCreateInput(input: SidebarCreateInput): boolean {
   return normalizedName.length === 0 || normalizedName.includes('/')
 }
 
-function isContentSection(value: UseProjectEditorStateResult['values']['sidebarActiveSection']): value is keyof typeof SIDEBAR_SECTION_CONFIG {
+function isContentSection(value: ProjectEditorSidebarState['sidebarActiveSection']): value is keyof typeof SIDEBAR_SECTION_CONFIG {
   return Object.hasOwn(SIDEBAR_SECTION_CONFIG, value)
 }
 
-function getSectionRoot(activeSection: UseProjectEditorStateResult['values']['sidebarActiveSection']): string | null {
+function getSectionRoot(activeSection: ProjectEditorSidebarState['sidebarActiveSection']): string | null {
   if (!isContentSection(activeSection)) {
     return null
   }
@@ -51,17 +54,18 @@ function getSectionRoot(activeSection: UseProjectEditorStateResult['values']['si
 }
 
 function useCreateArticleAction({
-  values,
+  projectState,
+  sidebarState,
   setters,
   openProject,
 }: UseProjectEditorCreateActionsParams): ProjectEditorActions['createArticle'] {
-  return useCallback(async (input: SidebarCreateInput): Promise<void> => {
-    if (!values.rootPath) {
+  return useCallback(/* createArticleAction */ async (input: SidebarCreateInput): Promise<void> => {
+    if (!projectState.rootPath) {
       setters.setStatusMessage(PROJECT_EDITOR_STRINGS.initialStatus)
       return
     }
 
-    const sectionRoot = getSectionRoot(values.sidebarActiveSection)
+    const sectionRoot = getSectionRoot(sidebarState.sidebarActiveSection)
     if (!sectionRoot) {
       setters.setStatusMessage('Switch to a content section before creating files.')
       return
@@ -81,7 +85,7 @@ function useCreateArticleAction({
       const response = await window.tramaApi.createDocument({ path: createPath, initialContent: '' })
       if (response.ok) {
         setters.setStatusMessage(`Created article: ${response.data.path}`)
-        await openProject(values.rootPath, response.data.path)
+        await openProject(projectState.rootPath, response.data.path)
         return
       }
 
@@ -92,21 +96,22 @@ function useCreateArticleAction({
     }
 
     setters.setStatusMessage('Could not create article: too many name collisions.')
-  }, [openProject, setters, values.rootPath, values.sidebarActiveSection])
+  }, [openProject, setters, projectState.rootPath, sidebarState.sidebarActiveSection] /*Inputs for createArticleAction*/)
 }
 
 function useCreateCategoryAction({
-  values,
+  projectState,
+  sidebarState,
   setters,
   openProject,
 }: UseProjectEditorCreateActionsParams): ProjectEditorActions['createCategory'] {
-  return useCallback(async (input: SidebarCreateInput): Promise<void> => {
-    if (!values.rootPath) {
+  return useCallback(/* createCategoryAction */ async (input: SidebarCreateInput): Promise<void> => {
+    if (!projectState.rootPath) {
       setters.setStatusMessage(PROJECT_EDITOR_STRINGS.initialStatus)
       return
     }
 
-    const sectionRoot = getSectionRoot(values.sidebarActiveSection)
+    const sectionRoot = getSectionRoot(sidebarState.sidebarActiveSection)
     if (!sectionRoot) {
       setters.setStatusMessage('Switch to a content section before creating folders.')
       return
@@ -126,7 +131,7 @@ function useCreateCategoryAction({
       const response = await window.tramaApi.createFolder({ path: createPath })
       if (response.ok) {
         setters.setStatusMessage(`Created category: ${response.data.path}`)
-        await openProject(values.rootPath)
+        await openProject(projectState.rootPath)
         return
       }
 
@@ -137,19 +142,20 @@ function useCreateCategoryAction({
     }
 
     setters.setStatusMessage('Could not create category: too many name collisions.')
-  }, [openProject, setters, values.rootPath, values.sidebarActiveSection])
+  }, [openProject, setters, projectState.rootPath, sidebarState.sidebarActiveSection] /*Inputs for createCategoryAction*/)
 }
 
 export function useProjectEditorCreateActions({
-  values,
+  projectState,
+  sidebarState,
   setters,
   openProject,
 }: UseProjectEditorCreateActionsParams): {
   createArticle: ProjectEditorActions['createArticle']
   createCategory: ProjectEditorActions['createCategory']
 } {
-  const createArticle = useCreateArticleAction({ values, setters, openProject })
-  const createCategory = useCreateCategoryAction({ values, setters, openProject })
+  const createArticle = useCreateArticleAction({ projectState, sidebarState, setters, openProject })
+  const createCategory = useCreateCategoryAction({ projectState, sidebarState, setters, openProject })
 
   return {
     createArticle,

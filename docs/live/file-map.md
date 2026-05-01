@@ -168,6 +168,10 @@ Mandatory doc navigation for new chats: start with `docs/START-HERE.md` — it p
 - `src/features/project-editor/use-project-editor-state.ts`
   - Core local state for the editor feature (panes, loading/saving flags, conflict state, status messages).
   - Derives active editor state (`selectedPath` / `editorValue` / `isDirty`) from `workspaceLayout.activePane`.
+  - Returns 6 memoized sub-states (`documentState`, `paneState`, `layoutState`, `sidebarState`, `projectState`, `uiState`) alongside the legacy `values` object for granular dependency tracking in action hooks.
+- `src/features/project-editor/use-project-editor-sub-state-hooks.ts`
+  - Memoized sub-state builders extracted from `useProjectEditorState` to prevent false re-render cascades.
+  - Exports `useDocumentState`, `usePaneState`, `useLayoutState`, `useSidebarSt`, `useProjectSt`, `useUiSt`, and `getVisibleSidebarPaths`.
 - `src/features/project-editor/use-project-editor-actions.ts`
   - Composes UI actions and core operations (load/save/open/clear) and wires them into the state.
   - Receives `panePersistence` from `useProjectEditor`; does not instantiate it.

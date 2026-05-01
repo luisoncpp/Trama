@@ -1,4 +1,4 @@
-import type { UseProjectEditorStateResult } from './use-project-editor-state'
+import type { ProjectEditorPaneState } from './project-editor-types'
 import type { WorkspaceLayoutState } from './project-editor-types'
 
 function normalizeFolderPath(value: string): string {
@@ -64,8 +64,8 @@ export function pruneWorkspaceLayoutPathsForFolderDelete(
   }
 }
 
-export function hasDirtyPathInsideFolder(values: UseProjectEditorStateResult['values'], folderPath: string): boolean {
-  const primaryDirtyInFolder = values.primaryPane.isDirty && isPathInsideFolder(values.primaryPane.path, folderPath)
-  const secondaryDirtyInFolder = values.secondaryPane.isDirty && isPathInsideFolder(values.secondaryPane.path, folderPath)
+export function hasDirtyPathInsideFolder(paneState: ProjectEditorPaneState, folderPath: string): boolean {
+  const primaryDirtyInFolder = paneState.primaryPane.isDirty && isPathInsideFolder(paneState.primaryPane.path, folderPath)
+  const secondaryDirtyInFolder = paneState.secondaryPane.isDirty && isPathInsideFolder(paneState.secondaryPane.path, folderPath)
   return primaryDirtyInFolder || secondaryDirtyInFolder
 }

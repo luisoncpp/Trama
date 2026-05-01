@@ -3,21 +3,26 @@ import { PROJECT_EDITOR_STRINGS } from './project-editor-strings'
 import { notifyTagIndexRefresh } from './tag-index-events'
 import { normalizeName, isInvalidRenameInput, deduplicateTags } from '../../shared/sidebar-utils'
 import type { ProjectEditorActions, SidebarRenameInput } from './project-editor-types'
-import type { UseProjectEditorStateResult } from './use-project-editor-state'
+import type { ProjectEditorPaneState, ProjectEditorProjectState } from './project-editor-types'
 
 interface UseProjectEditorFileActionsParams {
-  values: UseProjectEditorStateResult['values']
-  setters: UseProjectEditorStateResult['setters']
+  paneState: ProjectEditorPaneState
+  projectState: ProjectEditorProjectState
+  setters: {
+    setStatusMessage: (value: string) => void
+    setPrimaryPane: (value: any) => void
+    setSecondaryPane: (value: any) => void
+  }
   openProject: (projectRoot: string, preferredFilePath?: string) => Promise<void>
 }
 
 function useRenameFileAction({
-  values,
+  projectState,
   setters,
   openProject,
 }: UseProjectEditorFileActionsParams): ProjectEditorActions['renameFile'] {
-  return useCallback(async (input: SidebarRenameInput): Promise<void> => {
-    if (!values.rootPath) {
+  return useCallback(/* renameFileAction */ async (input: SidebarRenameInput): Promise<void> => {
+    if (!projectState.rootPath) {
       setters.setStatusMessage(PROJECT_EDITOR_STRINGS.initialStatus)
       return
     }
@@ -37,17 +42,17 @@ function useRenameFileAction({
     }
 
     setters.setStatusMessage(`Renamed file: ${response.data.renamedTo}`)
-    await openProject(values.rootPath, response.data.renamedTo)
-  }, [openProject, setters, values.rootPath])
+    await openProject(projectState.rootPath, response.data.renamedTo)
+  }, [openProject, setters, projectState.rootPath] /*Inputs for renameFileAction*/)
 }
 
 function useDeleteFileAction({
-  values,
+  projectState,
   setters,
   openProject,
 }: UseProjectEditorFileActionsParams): ProjectEditorActions['deleteFile'] {
-  return useCallback(async (path: string): Promise<void> => {
-    if (!values.rootPath) {
+  return useCallback(/* deleteFileAction */ async (path: string): Promise<void> => {
+    if (!projectState.rootPath) {
       setters.setStatusMessage(PROJECT_EDITOR_STRINGS.initialStatus)
       return
     }
@@ -59,20 +64,20 @@ function useDeleteFileAction({
     }
 
     setters.setStatusMessage(`Deleted file: ${response.data.path}`)
-    await openProject(values.rootPath)
-  }, [openProject, setters, values.rootPath])
+    await openProject(projectState.rootPath)
+  }, [openProject, setters, projectState.rootPath] /*Inputs for deleteFileAction*/)
 }
 
-function useEditFileTagsAction({ values, setters }: UseProjectEditorFileActionsParams): ProjectEditorActions['editFileTags'] {
-  return useCallback(async (path: string, tags: string[]): Promise<void> => {
-    if (!values.rootPath) {
+function useEditFileTagsAction({ paneState, projectState, setters }: UseProjectEditorFileActionsParams): ProjectEditorActions['editFileTags'] {
+  return useCallback(/* editFileTagsAction */ async (path: string, tags: string[]): Promise<void> => {
+    if (!projectState.rootPath) {
       setters.setStatusMessage(PROJECT_EDITOR_STRINGS.initialStatus)
       return
     }
 
     const isTargetDirty =
-      (values.primaryPane.path === path && values.primaryPane.isDirty) ||
-      (values.secondaryPane.path === path && values.secondaryPane.isDirty)
+      (paneState.primaryPane.path === path && paneState.primaryPane.isDirty) ||
+      (paneState.secondaryPane.path === path && paneState.secondaryPane.isDirty)
     if (isTargetDirty) {
       setters.setStatusMessage('Save or wait for autosave before editing tags on this file.')
       return
@@ -102,15 +107,16 @@ function useEditFileTagsAction({ values, setters }: UseProjectEditorFileActionsP
       return
     }
 
-    setters.setPrimaryPane((prev) => prev.path === path ? { ...prev, meta: nextMeta } : prev)
-    setters.setSecondaryPane((prev) => prev.path === path ? { ...prev, meta: nextMeta } : prev)
+    setters.setPrimaryPane((prev: any) => prev.path === path ? { ...prev, meta: nextMeta } : prev)
+    setters.setSecondaryPane((prev: any) => prev.path === path ? { ...prev, meta: nextMeta } : prev)
     notifyTagIndexRefresh()
     setters.setStatusMessage(`Updated tags: ${saveResponse.data.path}`)
-  }, [setters, values.primaryPane.isDirty, values.primaryPane.path, values.rootPath, values.secondaryPane.isDirty, values.secondaryPane.path])
+  }, [setters, paneState.primaryPane.isDirty, paneState.primaryPane.path, projectState.rootPath, paneState.secondaryPane.isDirty, paneState.secondaryPane.path] /*Inputs for editFileTagsAction*/)
 }
 
 export function useProjectEditorFileActions({
-  values,
+  paneState,
+  projectState,
   setters,
   openProject,
 }: UseProjectEditorFileActionsParams): {
@@ -118,9 +124,9 @@ export function useProjectEditorFileActions({
   deleteFile: ProjectEditorActions['deleteFile']
   editFileTags: ProjectEditorActions['editFileTags']
 } {
-  const renameFile = useRenameFileAction({ values, setters, openProject })
-  const deleteFile = useDeleteFileAction({ values, setters, openProject })
-  const editFileTags = useEditFileTagsAction({ values, setters, openProject })
+  const renameFile = useRenameFileAction({ paneState, projectState, setters, openProject })
+  const deleteFile = useDeleteFileAction({ paneState, projectState, setters, openProject })
+  const editFileTags = useEditFileTagsAction({ paneState, projectState, setters, openProject })
 
   return {
     renameFile,

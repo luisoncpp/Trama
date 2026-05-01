@@ -1,3 +1,4 @@
+import { useMemo } from 'preact/hooks'
 import type { ProjectEditorActions } from './project-editor-types'
 import {
   useCloseConflictCompareAction,
@@ -13,7 +14,15 @@ import {
 import { useProjectEditorCreateActions } from './use-project-editor-create-actions'
 import { useProjectEditorFileActions } from './use-project-editor-file-actions'
 import { useProjectEditorFolderActions } from './use-project-editor-folder-actions'
-import type { UseProjectEditorStateResult } from './use-project-editor-state'
+import type {
+  ProjectEditorLayoutState,
+  ProjectEditorPaneState,
+  ProjectEditorProjectState,
+  ProjectEditorSidebarState,
+  ProjectEditorUiState,
+} from './project-editor-types'
+import type { WorkspacePane } from './project-editor-types'
+import type { ProjectEditorPanePersistence } from './use-project-editor-pane-persistence'
 import {
   useEditorViewActions,
   useMoveFileAction,
@@ -30,24 +39,28 @@ function buildProjectEditorActions(input: ProjectEditorActions): ProjectEditorAc
 }
 
 export function usePrimaryProjectEditorActions(
-  values: UseProjectEditorStateResult['values'],
-  setters: UseProjectEditorStateResult['setters'],
+  layoutState: ProjectEditorLayoutState,
+  paneState: ProjectEditorPaneState,
+  projectState: ProjectEditorProjectState,
+  uiState: ProjectEditorUiState,
+  sidebarState: ProjectEditorSidebarState,
+  setters: UseProjectEditorUiActionsParams['setters'],
   openProject: UseProjectEditorUiActionsParams['openProject'],
   loadDocument: UseProjectEditorUiActionsParams['loadDocument'],
-  panePersistence: UseProjectEditorUiActionsParams['panePersistence'],
+  panePersistence: ProjectEditorPanePersistence,
 ) {
-  const assignFileToActivePane = useAssignFileToActivePaneAction(values, setters)
-  const openFileInPane = useOpenFileInPaneAction({ values, setters, loadDocument, panePersistence })
-  const selectFile = useSelectFileAction({ values, loadDocument, assignFileToActivePane, panePersistence })
-  const { createArticle, createCategory } = useProjectEditorCreateActions({ values, setters, openProject })
-  const { renameFile, deleteFile, editFileTags } = useProjectEditorFileActions({ values, setters, openProject })
-  const { renameFolder, deleteFolder, moveFolder } = useProjectEditorFolderActions({ values, setters, openProject })
-  const sidebarActions = useSidebarActions(values, setters)
-  const layoutActions = useWorkspaceLayoutActions(values, setters, loadDocument, panePersistence)
-  const editorViewActions = useEditorViewActions(values, setters, panePersistence)
+  const assignFileToActivePane = useAssignFileToActivePaneAction(layoutState, setters)
+  const openFileInPane = useOpenFileInPaneAction({ layoutState, paneState, projectState, setters, loadDocument, panePersistence })
+  const selectFile = useSelectFileAction({ layoutState, loadDocument, assignFileToActivePane, panePersistence })
+  const { createArticle, createCategory } = useProjectEditorCreateActions({ projectState, sidebarState, setters, openProject })
+  const { renameFile, deleteFile, editFileTags } = useProjectEditorFileActions({ paneState, projectState, setters, openProject })
+  const { renameFolder, deleteFolder, moveFolder } = useProjectEditorFolderActions({ layoutState, paneState, projectState, setters, openProject })
+  const sidebarActions = useSidebarActions(layoutState, sidebarState, setters)
+  const layoutActions = useWorkspaceLayoutActions(layoutState, paneState, projectState, setters, loadDocument, panePersistence)
+  const editorViewActions = useEditorViewActions(layoutState, sidebarState, uiState, setters, panePersistence)
   const projectPickerActions = useProjectPickerActions({ openProject, setters })
-  const reorderFiles = useReorderFilesAction({ setters, openProject, rootPath: values.rootPath })
-  const moveFile = useMoveFileAction({ values, setters, openProject })
+  const reorderFiles = useReorderFilesAction({ setters, openProject, rootPath: projectState.rootPath })
+  const moveFile = useMoveFileAction({ paneState, projectState, setters, openProject })
 
   return {
     ...projectPickerActions,
@@ -70,15 +83,18 @@ export function usePrimaryProjectEditorActions(
 }
 
 export function useSecondaryProjectEditorActions(
-  values: UseProjectEditorStateResult['values'],
-  setters: UseProjectEditorStateResult['setters'],
+  layoutState: ProjectEditorLayoutState,
+  documentState: { selectedPath: string | null; editorValue: string; editorMeta: any; isDirty: boolean },
+  projectState: ProjectEditorProjectState,
+  uiState: ProjectEditorUiState,
+  setters: UseProjectEditorUiActionsParams['setters'],
   openProject: UseProjectEditorUiActionsParams['openProject'],
   loadDocument: UseProjectEditorUiActionsParams['loadDocument'],
 ) {
-  const resolveConflictReload = useResolveConflictReloadAction({ values, setters, loadDocument })
+  const resolveConflictReload = useResolveConflictReloadAction({ documentState, layoutState, uiState, setters, loadDocument })
   const resolveConflictKeep = useResolveConflictKeepAction(setters)
-  const resolveConflictSaveAsCopy = useResolveConflictSaveAsCopyAction({ values, setters, openProject })
-  const resolveConflictCompare = useResolveConflictCompareAction({ values, setters })
+  const resolveConflictSaveAsCopy = useResolveConflictSaveAsCopyAction({ documentState, projectState, layoutState, setters, openProject })
+  const resolveConflictCompare = useResolveConflictCompareAction({ uiState, setters })
   const closeConflictCompare = useCloseConflictCompareAction(setters)
 
   return {
@@ -91,13 +107,25 @@ export function useSecondaryProjectEditorActions(
 }
 
 export function useProjectEditorUiActions({
-  values,
+  layoutState,
+  paneState,
+  projectState,
+  uiState,
+  sidebarState,
   setters,
   openProject,
   loadDocument,
   panePersistence,
 }: UseProjectEditorUiActionsParams): ProjectEditorActions {
-  const primaryActions = usePrimaryProjectEditorActions(values, setters, openProject, loadDocument, panePersistence)
-  const conflictActions = useSecondaryProjectEditorActions(values, setters, openProject, loadDocument)
+  const primaryActions = usePrimaryProjectEditorActions(layoutState, paneState, projectState, uiState, sidebarState, setters, openProject, loadDocument, panePersistence)
+  const activePane = layoutState.workspaceLayout.activePane === 'secondary' ? paneState.secondaryPane : paneState.primaryPane
+  const activePanePath = layoutState.workspaceLayout.activePane === 'secondary' ? layoutState.workspaceLayout.secondaryPath : layoutState.workspaceLayout.primaryPath
+  const documentState = useMemo(() => ({
+    selectedPath: activePanePath,
+    editorValue: activePane.content,
+    editorMeta: activePane.meta,
+    isDirty: activePane.isDirty,
+  }), [activePanePath, activePane.content, activePane.meta, activePane.isDirty])
+  const conflictActions = useSecondaryProjectEditorActions(layoutState, documentState, projectState, uiState, setters, openProject, loadDocument)
   return buildProjectEditorActions({ ...primaryActions, ...conflictActions })
 }

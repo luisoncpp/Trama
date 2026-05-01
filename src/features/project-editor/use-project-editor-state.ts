@@ -1,11 +1,28 @@
 import { useMemo } from 'preact/hooks'
-import type { ProjectSnapshot } from '../../shared/ipc'
 import type { PaneDocumentState, ProjectEditorStateValues, SidebarSection, WorkspaceLayoutState } from './project-editor-types'
+import type { ProjectSnapshot } from '../../shared/ipc'
 import { useSidebarUiState } from './use-sidebar-ui-state'
 import { useWorkspaceLayoutState } from './use-workspace-layout-state'
 import { useProjectEditorCoreState } from './use-project-editor-core-state'
+import {
+  useDocumentState,
+  usePaneState,
+  useLayoutState,
+  useSidebarSt,
+  useProjectSt,
+  useUiSt,
+  getVisibleSidebarPaths,
+} from './use-project-editor-sub-state-hooks'
 
-export { type ProjectEditorStateValues } from './project-editor-types'
+export type {
+  ProjectEditorDocumentState,
+  ProjectEditorLayoutState,
+  ProjectEditorPaneState,
+  ProjectEditorProjectState,
+  ProjectEditorSidebarState,
+  ProjectEditorUiState,
+} from './project-editor-types'
+export { type ProjectEditorStateValues }
 
 export interface ProjectEditorStateSetters {
   setRootPath: (value: string) => void
@@ -27,88 +44,52 @@ export interface ProjectEditorStateSetters {
 
 export interface UseProjectEditorStateResult {
   values: ProjectEditorStateValues
+  documentState: import('./project-editor-types').ProjectEditorDocumentState
+  paneState: import('./project-editor-types').ProjectEditorPaneState
+  layoutState: import('./project-editor-types').ProjectEditorLayoutState
+  sidebarState: import('./project-editor-types').ProjectEditorSidebarState
+  projectState: import('./project-editor-types').ProjectEditorProjectState
+  uiState: import('./project-editor-types').ProjectEditorUiState
   setters: ProjectEditorStateSetters
 }
 
-type SidebarUiStateResult = ReturnType<typeof useSidebarUiState>
-
-type BuildValuesParams = Omit<ProjectEditorStateValues, 'sidebarActiveSection' | 'sidebarPanelCollapsed' | 'sidebarPanelWidth' | 'selectedPath' | 'editorValue' | 'editorMeta' | 'isDirty'> & {
-  sidebarUiState: SidebarUiStateResult
-}
-
-type BuildSettersParams = Omit<ProjectEditorStateSetters, 'setSidebarActiveSection' | 'setSidebarPanelCollapsed' | 'setSidebarPanelWidth'> & {
-  sidebarUiState: SidebarUiStateResult
-}
-
-function getVisibleSidebarPaths(snapshot: ProjectSnapshot | null): string[] {
-  if (!snapshot) return []
-
-  const paths: string[] = []
-  const collect = (items: ProjectSnapshot['tree']) => {
-    for (const item of items) {
-      if (item.type === 'folder') {
-        paths.push(`${item.path}/`)
-        collect(item.children ?? [])
-        continue
-      }
-      paths.push(item.path)
-    }
-  }
-  collect(snapshot.tree)
-  return paths
-}
-
-function buildValues(params: BuildValuesParams): ProjectEditorStateValues {
-  const activePane = params.workspaceLayout.activePane === 'secondary'
-    ? params.secondaryPane
-    : params.primaryPane
-  const activePanePath = params.workspaceLayout.activePane === 'secondary'
-    ? params.workspaceLayout.secondaryPath
-    : params.workspaceLayout.primaryPath
-
+function buildValues(
+  apiAvailable: boolean,
+  coreState: ReturnType<typeof useProjectEditorCoreState>,
+  workspaceLayout: WorkspaceLayoutState,
+  sidebarUiState: ReturnType<typeof useSidebarUiState>,
+  visibleFiles: string[],
+  corkboardOrder: Record<string, string[]>,
+): ProjectEditorStateValues {
+  const activePane = workspaceLayout.activePane === 'secondary'
+    ? coreState.secondaryPane
+    : coreState.primaryPane
+  const activePanePath = workspaceLayout.activePane === 'secondary'
+    ? workspaceLayout.secondaryPath
+    : workspaceLayout.primaryPath
   return {
-    apiAvailable: params.apiAvailable,
-    rootPath: params.rootPath,
-    snapshot: params.snapshot,
-    primaryPane: params.primaryPane,
-    secondaryPane: params.secondaryPane,
+    apiAvailable,
+    rootPath: coreState.rootPath,
+    snapshot: coreState.snapshot,
+    primaryPane: coreState.primaryPane,
+    secondaryPane: coreState.secondaryPane,
     selectedPath: activePanePath,
     editorValue: activePane.content,
     editorMeta: activePane.meta,
     isDirty: activePane.isDirty,
-    loadingProject: params.loadingProject,
-    loadingDocument: params.loadingDocument,
-    saving: params.saving,
-    isFullscreen: params.isFullscreen,
-    externalConflictPath: params.externalConflictPath,
-    conflictComparisonContent: params.conflictComparisonContent,
-    statusMessage: params.statusMessage,
-    visibleFiles: params.visibleFiles,
-    corkboardOrder: params.corkboardOrder,
-    sidebarActiveSection: params.sidebarUiState.values.activeSection,
-    sidebarPanelCollapsed: params.sidebarUiState.values.panelCollapsed,
-    sidebarPanelWidth: params.sidebarUiState.values.panelWidth,
-    workspaceLayout: params.workspaceLayout,
-  }
-}
-
-function buildSetters(params: BuildSettersParams): ProjectEditorStateSetters {
-  return {
-    setRootPath: params.setRootPath,
-    setSnapshot: params.setSnapshot,
-    setPrimaryPane: params.setPrimaryPane,
-    setSecondaryPane: params.setSecondaryPane,
-    setLoadingProject: params.setLoadingProject,
-    setLoadingDocument: params.setLoadingDocument,
-    setSaving: params.setSaving,
-    setIsFullscreen: params.setIsFullscreen,
-    setExternalConflictPath: params.setExternalConflictPath,
-    setConflictComparisonContent: params.setConflictComparisonContent,
-    setStatusMessage: params.setStatusMessage,
-    setSidebarActiveSection: params.sidebarUiState.setters.setActiveSection,
-    setSidebarPanelCollapsed: params.sidebarUiState.setters.setPanelCollapsed,
-    setSidebarPanelWidth: params.sidebarUiState.setters.setPanelWidth,
-    setWorkspaceLayout: params.setWorkspaceLayout,
+    loadingProject: coreState.loadingProject,
+    loadingDocument: coreState.loadingDocument,
+    saving: coreState.saving,
+    isFullscreen: coreState.isFullscreen,
+    externalConflictPath: coreState.externalConflictPath,
+    conflictComparisonContent: coreState.conflictComparisonContent,
+    statusMessage: coreState.statusMessage,
+    visibleFiles,
+    corkboardOrder,
+    sidebarActiveSection: sidebarUiState.values.activeSection,
+    sidebarPanelCollapsed: sidebarUiState.values.panelCollapsed,
+    sidebarPanelWidth: sidebarUiState.values.panelWidth,
+    workspaceLayout,
   }
 }
 
@@ -124,26 +105,28 @@ export function useProjectEditorState(): UseProjectEditorStateResult {
     [coreState.snapshot],
   )
 
-  const values = buildValues({
+  const documentState = useDocumentState(workspaceLayout, coreState.primaryPane, coreState.secondaryPane)
+  const paneState = usePaneState(coreState.primaryPane, coreState.secondaryPane)
+  const layoutState = useLayoutState(workspaceLayout)
+  const sidebarState = useSidebarSt(sidebarUiState.values, workspaceLayout)
+  const projectState = useProjectSt(coreState.rootPath, coreState.snapshot, visibleFiles, corkboardOrder)
+  const uiState = useUiSt(
     apiAvailable,
-    rootPath: coreState.rootPath,
-    snapshot: coreState.snapshot,
-    primaryPane: coreState.primaryPane,
-    secondaryPane: coreState.secondaryPane,
-    loadingProject: coreState.loadingProject,
-    loadingDocument: coreState.loadingDocument,
-    saving: coreState.saving,
-    isFullscreen: coreState.isFullscreen,
-    externalConflictPath: coreState.externalConflictPath,
-    conflictComparisonContent: coreState.conflictComparisonContent,
-    statusMessage: coreState.statusMessage,
-    visibleFiles,
-    corkboardOrder,
-    workspaceLayout,
-    sidebarUiState,
-  })
+    coreState.loadingProject,
+    coreState.loadingDocument,
+    coreState.saving,
+    coreState.isFullscreen,
+    coreState.externalConflictPath,
+    coreState.conflictComparisonContent,
+    coreState.statusMessage,
+  )
 
-  const setters = buildSetters({
+  const values = useMemo(
+    () => buildValues(apiAvailable, coreState, workspaceLayout, sidebarUiState, visibleFiles, corkboardOrder),
+    [apiAvailable, coreState, workspaceLayout, sidebarUiState, visibleFiles, corkboardOrder],
+  )
+
+  const setters = useMemo(() => ({
     setRootPath: coreState.setRootPath,
     setSnapshot: coreState.setSnapshot,
     setPrimaryPane: coreState.setPrimaryPane,
@@ -155,9 +138,11 @@ export function useProjectEditorState(): UseProjectEditorStateResult {
     setExternalConflictPath: coreState.setExternalConflictPath,
     setConflictComparisonContent: coreState.setConflictComparisonContent,
     setStatusMessage: coreState.setStatusMessage,
+    setSidebarActiveSection: sidebarUiState.setters.setActiveSection,
+    setSidebarPanelCollapsed: sidebarUiState.setters.setPanelCollapsed,
+    setSidebarPanelWidth: sidebarUiState.setters.setPanelWidth,
     setWorkspaceLayout,
-    sidebarUiState,
-  })
+  }), [coreState, workspaceLayout, sidebarUiState])
 
-  return { values, setters }
+  return { values, documentState, paneState, layoutState, sidebarState, projectState, uiState, setters }
 }
