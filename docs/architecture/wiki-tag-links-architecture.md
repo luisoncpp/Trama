@@ -108,7 +108,7 @@ Tags inside **bold**, *italic*, or # headers **are** matched — they represent 
 Does not mutate document content. Uses absolute-positioned `<div>` elements rendered below matched text:
 
 1. On Ctrl held, scan editor text for tag matches (case and accent insensitive, word boundaries).
-2. Compute geometric bounds for each match via `quill.getBounds()`.
+2. Compute geometric bounds for each match via `getTagMatchRects()`, which uses `editor.scroll.leaf()` + `Range.getClientRects()` for per-line accuracy (required when tags wrap across lines), falling back to `quill.getBounds()`.
 3. Render `<div class="tag-link-highlight">` overlays at computed positions.
 4. On `Ctrl` + mousedown on a matched tag, hit-test resolved match via click coordinates.
 3. Render `<div class="tag-link-highlight">` overlays at computed positions **only while Ctrl is held**.

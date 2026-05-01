@@ -99,7 +99,7 @@ Do not assume plain-text offsets are Quill document indexes.
 - `getText()` omits embeds.
 - Quill document indexes count embeds as length `1`.
 
-Always map plain-text offsets through Delta ops before calling APIs expecting Quill indexes (`getBounds`, selection APIs, hit-tests derived from bounds).
+Always map plain-text offsets through Delta ops before calling APIs expecting Quill indexes (`getBounds`, `getTagMatchRects`, selection APIs, hit-tests derived from bounds).
 
 See:
 - `docs/lessons-learned/quill-getbounds-container-reference.md`
@@ -119,6 +119,7 @@ Use this sequence to avoid broad searches.
 
 - Navigation stale/missing after save -> likely index freshness (main process rebuild path).
 - Underline misplaced/too wide -> likely Quill index or coordinate reference mismatch.
+- Underline drawn as continuous bar across wrapped lines -> `getBounds()` treats multi-line ranges as one rectangle; use per-line rects.
 - Underline at wrong position after layout change (resize, split toggle) -> likely stale cached bounds; compute at render time, not memoize.
 - Ctrl/Cmd click intermittent -> likely modifier event timing/race handling.
 - Tag exists but not matched -> likely boundaries/code exclusion/tag normalization.
@@ -181,6 +182,10 @@ Modifier-click issues:
 - Stale underline positions after layout change (resize, split toggle):
   - fixed by separating text matching (cacheable) from bounds computation (layout-dependent, recomputed each render).
   - lesson: `docs/lessons-learned/tag-overlay-stale-bounds-on-layout-change.md`
+
+- Underline drawn as single wide bar across wrapped lines:
+  - fixed by replacing `quill.getBounds()` with `editor.scroll.leaf()` + `Range.getClientRects()` to obtain per-line rectangles.
+  - lesson: `docs/lessons-learned/quill-getbounds-multiline-wrap.md`
 
 ## 6. Change checklist for future Wiki Tag work
 

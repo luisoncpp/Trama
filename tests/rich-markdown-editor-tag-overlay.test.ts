@@ -85,7 +85,7 @@ describe('tag overlay bounds recomputation (regression: stale bounds after layou
 
   it('text matches do not include bounds (decoupled from layout)', () => {
     for (const m of textMatches) {
-      expect(m).not.toHaveProperty('bounds')
+      expect(m).not.toHaveProperty('rects')
     }
   })
 
@@ -108,8 +108,8 @@ describe('tag overlay bounds recomputation (regression: stale bounds after layou
     const overlays = resolveTagBounds(editor, textMatches)
 
     expect(overlays).toHaveLength(2)
-    expect(overlays[0].bounds).toEqual({ top: 0, left: 0, width: 40, height: 16 })
-    expect(overlays[1].bounds).toEqual({ top: 0, left: 70, width: 50, height: 16 })
+    expect(overlays[0].rects).toEqual([{ top: 0, left: 0, width: 40, height: 16 }])
+    expect(overlays[1].rects).toEqual([{ top: 0, left: 70, width: 50, height: 16 }])
     expect(getBounds).toHaveBeenCalledTimes(2)
   })
 
@@ -137,12 +137,12 @@ describe('tag overlay bounds recomputation (regression: stale bounds after layou
     getBounds.mockClear()
     const second = resolveTagBounds(editor, textMatches)
 
-    expect(first[0].bounds!.top).toBe(100)
-    expect(first[1].bounds!.top).toBe(100)
-    expect(second[0].bounds!.top).toBe(200)
-    expect(second[1].bounds!.top).toBe(200)
+    expect(first[0].rects[0].top).toBe(100)
+    expect(first[1].rects[0].top).toBe(100)
+    expect(second[0].rects[0].top).toBe(200)
+    expect(second[1].rects[0].top).toBe(200)
 
-    expect(first[0].bounds).not.toEqual(second[0].bounds)
+    expect(first[0].rects).not.toEqual(second[0].rects)
     expect(getBounds).toHaveBeenCalledTimes(2)
   })
 

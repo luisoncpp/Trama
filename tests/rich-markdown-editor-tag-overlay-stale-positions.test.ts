@@ -110,13 +110,13 @@ describe('tag overlay stale positions on typing (regression: distortion in unsav
       } as any
 
       const result1 = buildTagOverlayMatches(editor, tagIndex)
-      expect(result1[0].bounds?.top).toBe(10)
+      expect(result1[0].rects[0]?.top).toBe(10)
 
       getBounds.mockClear()
       callCount = 0
 
       const result2 = buildTagOverlayMatches(editor, tagIndex)
-      expect(result2[0].bounds?.top).toBe(10)
+      expect(result2[0].rects[0]?.top).toBe(10)
     })
   })
 
@@ -145,9 +145,9 @@ describe('tag overlay stale positions on typing (regression: distortion in unsav
       layoutVersion = 1
       const second = resolveTagBounds(editor, matches)
 
-      expect(first[0].bounds?.top).toBe(0)
-      expect(second[0].bounds?.top).toBe(50)
-      expect(first[0].bounds).not.toEqual(second[0].bounds)
+      expect(first[0].rects[0]?.top).toBe(0)
+      expect(second[0].rects[0]?.top).toBe(50)
+      expect(first[0].rects).not.toEqual(second[0].rects)
     })
   })
 
@@ -274,7 +274,7 @@ describe('tag overlay stale positions on typing (regression: distortion in unsav
       const matches = findTagMatchesInText(text, tagIndex)
 
       for (const match of matches) {
-        expect(match).not.toHaveProperty('bounds')
+        expect(match).not.toHaveProperty('rects')
         expect(match).toHaveProperty('start')
         expect(match).toHaveProperty('end')
         expect(match).toHaveProperty('tag')
@@ -282,7 +282,7 @@ describe('tag overlay stale positions on typing (regression: distortion in unsav
       }
     })
 
-    it('bounds are only added by buildTagOverlayMatches or resolveTagBounds at call time', () => {
+    it('rects are only added by buildTagOverlayMatches or resolveTagBounds at call time', () => {
       const getBounds = vi.fn(() => ({ top: 0, left: 0, width: 50, height: 16 }))
 
       const editor = {
@@ -294,10 +294,10 @@ describe('tag overlay stale positions on typing (regression: distortion in unsav
       const text = editor.getText()
       const matches = filterMatchesOutsideCode(text, findTagMatchesInText(text, tagIndex))
 
-      expect(matches[0]).not.toHaveProperty('bounds')
+      expect(matches[0]).not.toHaveProperty('rects')
 
-      const withBounds = resolveTagBounds(editor, matches)
-      expect(withBounds[0]).toHaveProperty('bounds')
+      const withRects = resolveTagBounds(editor, matches)
+      expect(withRects[0]).toHaveProperty('rects')
     })
   })
 })

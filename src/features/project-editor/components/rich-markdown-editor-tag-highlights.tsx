@@ -1,6 +1,6 @@
 import type Quill from 'quill'
 import type { TagMatch } from './rich-markdown-editor-tag-helpers'
-import { mapPlainTextIndexToQuillIndex } from './rich-markdown-editor-tag-overlay'
+import { mapPlainTextIndexToQuillIndex, getTagMatchRects } from './rich-markdown-editor-tag-overlay'
 
 interface TagHighlightsProps {
   matches: TagMatch[]
@@ -9,23 +9,22 @@ interface TagHighlightsProps {
   offsetLeft: number
 }
 
-interface ResolvedBounds {
+interface ResolvedLine {
   top: number
   left: number
   width: number
   height: number
 }
 
-function resolveBounds(editor: Quill, matches: TagMatch[]): ResolvedBounds[] {
+function resolveBounds(editor: Quill, matches: TagMatch[]): ResolvedLine[][] {
   return matches.map((match) => {
     const quillStart = mapPlainTextIndexToQuillIndex(editor, match.start)
     const quillEnd = mapPlainTextIndexToQuillIndex(editor, match.end)
     const matchLength = Math.max(0, quillEnd - quillStart)
     if (matchLength === 0) {
-      return { top: 0, left: 0, width: 0, height: 0 }
+      return []
     }
-    const b = editor.getBounds(quillStart, matchLength)
-    return b ?? { top: 0, left: 0, width: 0, height: 0 }
+    return getTagMatchRects(editor, quillStart, quillEnd)
   })
 }
 
@@ -34,11 +33,11 @@ export function TagHighlights({ matches, editor, offsetTop, offsetLeft }: TagHig
 
   return (
     <>
-      {allBounds.map((bounds, i) => {
-        if (!bounds.width) return null
-        return (
+      {allBounds.map((lines, i) => {
+        if (lines.length === 0) return null
+        return lines.map((bounds, j) => (
           <div
-            key={i}
+            key={`${i}-${j}`}
             class="tag-link-highlight"
             aria-hidden="true"
             style={{
@@ -50,7 +49,7 @@ export function TagHighlights({ matches, editor, offsetTop, offsetLeft }: TagHig
               pointerEvents: 'none',
             }}
           />
-        )
+        ))
       })}
     </>
   )
