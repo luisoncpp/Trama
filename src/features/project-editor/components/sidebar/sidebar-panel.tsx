@@ -16,6 +16,7 @@ function buildSidebarPanelContentProps(props: SidebarPanelProps) {
     loadingDocument: props.loadingDocument,
     apiAvailable: props.apiAvailable,
     loadingProject: props.loadingProject,
+    statusMessage: props.statusMessage,
     onPickFolder: props.onPickFolder,
     onImport: props.onImport,
     onImportZulu: props.onImportZulu,

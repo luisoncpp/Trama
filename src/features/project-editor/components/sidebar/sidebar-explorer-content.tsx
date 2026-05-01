@@ -30,6 +30,7 @@ interface SidebarExplorerContentProps {
   onSelectFile: SidebarExplorerCommonProps['onSelectFile']
   apiAvailable: SidebarExplorerCommonProps['apiAvailable']
   loadingProject: SidebarExplorerCommonProps['loadingProject']
+  statusMessage: SidebarExplorerCommonProps['statusMessage']
   scopePathLabel: string
   filterQuery: string
   onFilterQueryChange: (value: string) => void
@@ -100,6 +101,7 @@ export function SidebarExplorerContent(props: SidebarExplorerContentProps) {
     title: props.title, visibleFiles: props.visibleFiles, selectedPath: props.selectedPath,
     loadingDocument: props.loadingDocument, onSelectFile: props.onSelectFile,
     loadingProject: props.loadingProject, apiAvailable: props.apiAvailable,
+    statusMessage: props.statusMessage,
     scopePathLabel: props.scopePathLabel, filterQuery: props.filterQuery,
     onFilterQueryChange: props.onFilterQueryChange,
     createMode: createDialog.createMode, createInput: createDialog.createInput,

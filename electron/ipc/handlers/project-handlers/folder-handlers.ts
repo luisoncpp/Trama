@@ -76,7 +76,8 @@ export async function handleDeleteFolder(rawPayload: unknown): Promise<IpcEnvelo
       markInternalWrite(filePath)
     }
 
-    await reconcileActiveProjectIndex(projectRoot)
+    // reconcileActiveProjectIndex cannot be called here because chokidar's handle
+    // keeps the deleted files in the index until the next scan, which causes false positives for missing files.
 
     return {
       ok: true,

@@ -67,6 +67,7 @@ interface SidebarExplorerBodyProps {
   onSelectFile: (filePath: string) => Promise<void>
   loadingProject: boolean
   apiAvailable: boolean
+  statusMessage: string
   scopePathLabel: string
   filterQuery: string
   onFilterQueryChange: (value: string) => void
@@ -149,6 +150,7 @@ export function SidebarExplorerBody(props: SidebarExplorerBodyProps) {
   return (
     <>
       <p class="project-menu__path">{props.scopePathLabel || PROJECT_EDITOR_STRINGS.noFolderSelected}</p>
+      {props.statusMessage && <p class="project-menu__status">{props.statusMessage}</p>}
       <SidebarFilter
         value={props.filterQuery}
         disabled={!props.apiAvailable || props.loadingProject}

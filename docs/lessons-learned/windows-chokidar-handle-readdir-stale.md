@@ -10,7 +10,9 @@ In practice: when chokidar watches `projectRoot/book/`, any `fs.rm` or `fs.rmdir
 
 After `handleDeleteFolder` deleted a folder and its contents, the renderer called `handleOpenProject` to refresh the snapshot. `scanProject` → `scanDirectory` → `fs.readdir` still saw the deleted folder on the **first** IPC call. A **second** IPC call saw the correct state because the first `startWatcher` call (inside `handleOpenProject`) ran `watcher.close()`, releasing the old directory handles.
 
-The fix: move `await startWatcher(projectRoot)` **before** `await scanProject(projectRoot)` in `handleOpenProject`. This ensures the old chokidar handles are released before any directory scan.
+The fix in `handleOpenProject`: `await startWatcher(projectRoot)` before `await scanProject(projectRoot)` releases the stale handles before scanning. This is already in place.
+
+**Additional fix for `handleDeleteFolder`**: The index reconciliation call was removed from `handleDeleteFolder` entirely. The sequence `rm(dir) → reconcileActiveProjectIndex` always failed on Windows because chokidar's handle kept deleted directory entries in the `readdir` listing, causing `scanProject` to traverse phantom directories and `readMetaByPath` to fail with `EPERM`. Index reconciliation now happens exclusively inside `openProject` (called by the frontend after every folder operation), which always releases handles first via `startWatcher → stop → start`.
 
 ## Key detail
 

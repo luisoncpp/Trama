@@ -1,4 +1,5 @@
 import type { SidebarTreeRow } from './sidebar-tree-logic'
+import { SCOPED_ROOT_KEY } from './sidebar-panel-logic'
 
 export function sortTreeRowsByOrder(
   rows: SidebarTreeRow[],
@@ -11,7 +12,7 @@ export function sortTreeRowsByOrder(
   for (const [folderKey, order] of Object.entries(corkboardOrder)) {
     if (!order || order.length === 0) continue
 
-    if (folderKey === '') {
+    if (folderKey === SCOPED_ROOT_KEY) {
       reorderDirectChildFiles(result, -1, 0, order)
       continue
     }

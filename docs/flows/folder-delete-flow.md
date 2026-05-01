@@ -24,7 +24,7 @@ This flow involves two IPC calls, two workspace layout updates, and a snapshot r
 
 5. **`executeFolderDelete`** in `use-project-editor-folder-actions.ts:64`:
    - Calls `window.tramaApi.deleteFolder({ path })` — backend removes the folder from disk.
-   - Backend handler (`folder-handlers.ts:62`) marks deleted files as internal writes and reconciles the index.
+   - Backend handler (`folder-handlers.ts:62`) marks deleted files as internal writes. Index reconciliation is **deferred** to `openProject` (chokidar holds a `ReadDirectoryChangesW` handle on Windows that causes stale directory listings in `scanProject`, producing `EPERM` on deleted paths — see common failure mode 5).
    - `pruneWorkspaceLayoutPathsForFolderDelete` removes paths inside the deleted folder from the workspace layout.
    - Calls `setters.setWorkspaceLayout(nextLayout)` — **first layout update, triggers re-render**.
    - Calls `openProject(values.rootPath, preferredPath, activePane)`.
@@ -77,14 +77,14 @@ This flow involves two IPC calls, two workspace layout updates, and a snapshot r
 | Kind | Target | Why |
 |------|--------|-----|
 | Delete folder on disk | IPC `deleteFolder` | Backend removes directory + all contents |
-| Index reconciliation | `.trama.index.json` | Removes stale entries for deleted files |
-| Pruned workspace layout | `setters.setWorkspaceLayout` | Removes open-file references to deleted content |
+| Workspace layout prune | `setters.setWorkspaceLayout` | Removes open-file references to deleted content |
 | Fresh snapshot | `setters.setSnapshot` | Replaces entire project tree state |
 | Reconciled workspace layout | `setters.setWorkspaceLayout` (in applyOpenedProject) | Aligns layout with new markdownFiles |
+| Index reconciliation | `.trama.index.json` | Happens in `openProject`, not here — chokidar handle blocks it immediately after delete |
 
 ## Side effects
 
-- Backend: folder removed from disk, index reconciled, watcher marks deleted files as internal writes.
+- Backend: folder removed from disk, watcher marks deleted files as internal writes. Index reconciliation deferred to `openProject`.
 - Renderer: workspace layout pruned, then reconciled against fresh snapshot. Status message updated.
 - Expanded folder state in `useSidebarTreeExpandedFolders` is filtered to remove invalid entries via `keepValidExpanded`.
 
@@ -113,3 +113,5 @@ This flow involves two IPC calls, two workspace layout updates, and a snapshot r
 3. **Expanded folder state contains removed folder** — if `keepValidExpanded` doesn't filter the deleted folder, the tree builder might try to render a non-existent node. Preact would emit a warning.
 
 4. **Watcher interference** — deleted files inside the folder trigger `unlink` events. These are marked as `internal` writes and filtered out before reaching the renderer (`ipc-runtime.ts:14`).
+
+5. **Chokidar handle causes EPERM on Windows** — after `rm(dir, {recursive: true})`, chokidar's `ReadDirectoryChangesW` handle keeps the deleted directory entry visible to subsequent `readdir` calls. `scanProject` inside `handleDeleteFolder` sees stale entries; `readMetaByPath` then fails trying to read files that no longer exist. Fix: remove `reconcileActiveProjectIndex` from `handleDeleteFolder` entirely — index reconciliation runs inside `handleOpenProject` when `openProject` is called afterward, which calls `startWatcher` → `stop()` first, releasing all stale handles.

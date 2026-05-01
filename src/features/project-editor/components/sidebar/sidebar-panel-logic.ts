@@ -2,6 +2,8 @@ import { useState } from 'preact/hooks'
 import type { SidebarSection } from '../../project-editor-types'
 import { SIDEBAR_SECTION_CONFIG, type ContentSidebarSection } from './sidebar-section-roots'
 
+export const SCOPED_ROOT_KEY = ''
+
 function normalizePath(path: string): string {
   return path.replaceAll('\\', '/')
 }

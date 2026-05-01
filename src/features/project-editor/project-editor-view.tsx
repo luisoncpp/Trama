@@ -104,6 +104,7 @@ function buildSidebarSectionProps(model: ProjectEditorModel, props: SidebarExtra
     apiAvailable: state.apiAvailable,
     loadingProject: state.loadingProject,
     rootPath: state.rootPath,
+    statusMessage: state.statusMessage,
     onPickFolder: () => void actions.pickProjectFolder(),
     onImport: props.onImportClick,
     onImportZulu: props.onImportZuluClick,

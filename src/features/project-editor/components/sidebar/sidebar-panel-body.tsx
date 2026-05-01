@@ -3,7 +3,7 @@ import { SidebarExplorerContent } from './sidebar-explorer-content.tsx'
 import { SIDEBAR_SECTION_CONFIG, type ContentSidebarSection } from './sidebar-section-roots'
 import { SidebarSettingsContent } from './sidebar-settings-content.tsx'
 import { SidebarTransferContent } from './sidebar-transfer-content.tsx'
-import { joinProjectPath } from './sidebar-panel-logic'
+import { joinProjectPath, SCOPED_ROOT_KEY } from './sidebar-panel-logic'
 import type {
   SidebarProjectContextProps,
   SidebarFileActions,
@@ -67,7 +67,7 @@ export function scopeCorkboardOrder(order: Record<string, string[]> | undefined,
   const rootPrefix = sectionRoot.replace(/\/+$/, '')
 
   for (const [key, ids] of Object.entries(order)) {
-    const scopedKey = key === rootPrefix ? '' : key.startsWith(`${rootPrefix}/`) ? key.slice(rootPrefix.length + 1) : null
+    const scopedKey = key === rootPrefix ? SCOPED_ROOT_KEY : key.startsWith(`${rootPrefix}/`) ? key.slice(rootPrefix.length + 1) : null
     if (scopedKey === null) continue
     const scopedIds = ids.map((id) => {
       const prefix = key ? `${key}/` : `${rootPrefix}/`

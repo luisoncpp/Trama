@@ -22,6 +22,7 @@ export interface SidebarProjectContextProps {
   apiAvailable: boolean
   loadingProject: boolean
   rootPath: string
+  statusMessage: string
   onPickFolder: () => void
   onImport: () => void
   onImportZulu: () => void
