@@ -23,6 +23,7 @@ interface UseRichEditorLifecycleParams {
   turndownRef: { current: TurndownService }
   serializationRef: { current: EditorSerializationRefs }
   onDirtyRef: { current: () => void }
+  triggerTagOverlayRender?: () => void
 }
 
 function useInitializeEditor({
@@ -64,6 +65,8 @@ export function useRichEditorLifecycle(params: UseRichEditorLifecycleParams): vo
   useSyncExternalValue({
     documentId: p.documentId, value: p.value, editorRef: p.editorRef, lastEditorValueRef: p.lastEditorValueRef,
     isApplyingExternalValueRef: p.isApplyingExternalValueRef,
+    tagOverlayRecalcRef: p.serializationRef.current.tagOverlayRecalcRef,
+    triggerRender: p.triggerTagOverlayRender,
   })
 
   useEffect(/* toggleDisabled */ () => {

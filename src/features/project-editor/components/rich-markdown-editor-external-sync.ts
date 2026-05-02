@@ -9,6 +9,8 @@ interface UseSyncExternalValueParams {
   editorRef: { current: Quill | null }
   lastEditorValueRef: { current: string }
   isApplyingExternalValueRef: { current: boolean }
+  tagOverlayRecalcRef?: { current: boolean }
+  triggerRender?: () => void
 }
 
 export function useSyncExternalValue({
@@ -17,6 +19,8 @@ export function useSyncExternalValue({
   editorRef,
   lastEditorValueRef,
   isApplyingExternalValueRef,
+  tagOverlayRecalcRef,
+  triggerRender,
 }: UseSyncExternalValueParams): void {
   useEffect(() => {
     const editor = editorRef.current
@@ -28,6 +32,12 @@ export function useSyncExternalValue({
     isApplyingExternalValueRef.current = true
     const selection = editor.getSelection()
     applyMarkdownToEditor(editor, value, 'silent', documentId ?? undefined)
+    if (tagOverlayRecalcRef) {
+      tagOverlayRecalcRef.current = true
+    }
+    if (triggerRender) {
+      triggerRender()
+    }
     if (selection) {
       editor.setSelection(selection)
     }
@@ -36,5 +46,5 @@ export function useSyncExternalValue({
     window.setTimeout(() => {
       isApplyingExternalValueRef.current = false
     }, 0)
-  }, [documentId, editorRef, isApplyingExternalValueRef, lastEditorValueRef, value])
+  }, [documentId, editorRef, isApplyingExternalValueRef, lastEditorValueRef, value, tagOverlayRecalcRef, triggerRender])
 }

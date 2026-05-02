@@ -20,9 +20,7 @@ export function useTagOverlay({ editorRef, tagIndex, ctrlPressed, tagOverlayReca
   }
 
   if (ctrlPressed) {
-    // Only recalculate if dirty or first time (empty matches and no dirty flag set yet)
-    const needsRecalc = tagOverlayRecalcRef.current || tagOverlayMatchesRef.current.length === 0
-    if (needsRecalc) {
+    if (tagOverlayRecalcRef.current || tagOverlayMatchesRef.current.length === 0) {
       const text = editor.getText()
       const allMatches = findTagMatchesInText(text, tagIndex)
       tagOverlayMatchesRef.current = filterMatchesOutsideCode(text, allMatches)

@@ -83,7 +83,7 @@ Tag underlines are rendered via geometric overlays, not document mutation. They 
 
 - `useTagOverlay` recomputes only when `ctrlPressed === true` AND (dirty flag is set OR matches array is empty). This defers the O(n) regex matching to the Ctrl press event instead of running on every keystroke.
 - Dirty flag (`tagOverlayRecalcRef.current`) is set by the `text-change` handler in `rich-markdown-editor-serialization.ts` on every keystroke, marking that matches need refresh.
-- On document change, `resetTagOverlayOnDocChange` effect clears both `tagOverlayMatchesRef.current` and `tagOverlayRecalcRef.current` to prevent stale matches from appearing in new documents.
+- On document change, `resetTagOverlayOnDocChange` effect clears `tagOverlayMatchesRef.current`, sets `tagOverlayRecalcRef.current = true`, and calls a `useState` counter to force a re-render — because ref mutations alone do not trigger React re-renders. Without this, the dirty flag would remain unread until the next Ctrl press.
 - `TagHighlights` calls `getTagMatchRects()` fresh on every render, never memoized, because bounds are layout-dependent. `getTagMatchRects` prefers `Range.getClientRects()` via `editor.scroll.leaf()` for multi-line accuracy, falling back to `getBounds()` when needed.
 - Tag matching is case-insensitive, longest-match-first, with word-boundary rules. Accents are normalized — "canción", "cancion", and "canción" all match the same tag. Inline formatting (bold, italic, headers) does NOT exclude a tag from matching.
 - Code block exclusion uses line-count heuristics (triple backticks, indented lines, inline backticks).

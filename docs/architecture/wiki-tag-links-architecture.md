@@ -222,6 +222,12 @@ Fixed by separating text matching (cacheable) from bounds computation (layout-de
 
 Lesson: `docs/lessons-learned/tag-overlay-stale-bounds-on-layout-change.md`
 
+### Tags not updating after document switch (Ctrl held throughout)
+
+Fixed by adding a `useState`-based re-render trigger alongside the ref-based dirty flag. Ref mutations inside `useEffect` do not cause re-renders — without an explicit state update, the dirty flag set by `resetTagOverlayOnDocChange` would remain unread by `useTagOverlay` until the user released and re-pressed Ctrl.
+
+Lesson: `docs/lessons-learned/ref-mutation-no-trigger-rerender.md`
+
 ## Debug Playbook
 
 ### Step 1: Classify Symptom

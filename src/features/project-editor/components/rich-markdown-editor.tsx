@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'preact/hooks'
+import { useEffect, useRef, useState, useCallback } from 'preact/hooks'
 import TurndownService from 'turndown'
 import Quill from 'quill'
 import { useRichEditorLifecycle } from './rich-markdown-editor-core'
@@ -50,7 +50,9 @@ function createTurndownService(): TurndownService {
 function useRichEditorRefs(
   documentId: string | null,
   value: string,
+  tagIndex: Record<string, string> | null,
   onChange: (value: string) => void,
+  triggerTagOverlayRender?: () => void,
   onMarkDirty?: () => void,
 ) {
   const shellRef = useRef<HTMLDivElement | null>(null)
@@ -69,9 +71,12 @@ function useRichEditorRefs(
   useEffect(/* resetTagOverlayOnDocChange */ () => {
     if (documentId) {
       serializationRef.current.tagOverlayMatchesRef.current = []
-      serializationRef.current.tagOverlayRecalcRef.current = false
+      serializationRef.current.tagOverlayRecalcRef.current = true
+      if (triggerTagOverlayRender) {
+        triggerTagOverlayRender()
+      }
     }
-  }, [documentId] /*Inputs for resetTagOverlayOnDocChange*/)
+  }, [documentId, tagIndex, triggerTagOverlayRender])
   const onDirtyRef = useRef<() => void>(onMarkDirty ?? (() => {}))
 
   useEffect(() => { onChangeRef.current = onChange }, [onChange] /*Inputs for syncOnChangeRef*/)
@@ -113,14 +118,16 @@ export function RichMarkdownEditor(props: RichMarkdownEditorProps) {
     focusModeEnabled = false, focusScope = 'paragraph', tagIndex,
     onTagClick, isActive = true, editorSerializationRef, onMarkDirty,
   } = props
-  const refs = useRichEditorRefs(documentId, value, onChange, onMarkDirty)
+  const safeTagIndex = tagIndex ?? null
+  const [, setTagOverlayTick] = useState(0)
+  const triggerTagOverlayRender = useCallback(() => { setTagOverlayTick((c) => c + 1) }, [])
+  const refs = useRichEditorRefs(documentId, value, safeTagIndex, onChange, triggerTagOverlayRender, onMarkDirty)
   const {
     shellRef, hostRef, editorRef, onChangeRef, lastEditorValueRef,
     isApplyingExternalValueRef, turndownRef,
     onDirtyRef, serializationRef,
   } = refs
   const ctrlPressed = useCtrlKeyState()
-  const safeTagIndex = tagIndex ?? null
   const tagMatches = useTagOverlay({
     editorRef,
     tagIndex: safeTagIndex,
@@ -134,6 +141,7 @@ export function RichMarkdownEditor(props: RichMarkdownEditorProps) {
     documentId, value, disabled, spellcheckEnabled, hostRef, editorRef,
     onChangeRef, isApplyingExternalValueRef,
     lastEditorValueRef, turndownRef, onDirtyRef, serializationRef,
+    triggerTagOverlayRender,
   }
   useRichEditorLifecycle(lifecycleParams)
   useSyncToolbarControls({ documentId, hostRef, editorRef, saveDisabled, saveLabel, onSaveNow, syncState, syncStateLabel })

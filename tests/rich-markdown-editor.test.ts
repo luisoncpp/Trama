@@ -1171,4 +1171,48 @@ describe('RichMarkdownEditor', () => {
       expect(lastMarkdown).not.toContain('IMAGE_PLACEHOLDER')
     })
   })
+
+  describe('tag overlay recalc on document change while ctrl is held', () => {
+    const tagIndex = {
+      aina: 'lore/characters/Aina.md',
+      lirio: 'lore/places/ciudad-principal.md',
+    }
+
+    it('recalcula overlays al cambiar de documento sin soltar ctrl', async () => {
+      act(() => {
+        render(
+          h(RichMarkdownEditor, buildEditorProps({
+            documentId: 'doc-con-tags',
+            value: 'Aina y Lirio en el bosque\n',
+            tagIndex,
+          })),
+          container,
+        )
+      })
+
+      await sleep(80)
+
+      window.dispatchEvent(new KeyboardEvent('keydown', { ctrlKey: true, key: 'Control' }))
+      await sleep(80)
+
+      const before = container.querySelectorAll('.tag-link-highlight')
+      expect(before.length).toBeGreaterThan(0)
+
+      act(() => {
+        render(
+          h(RichMarkdownEditor, buildEditorProps({
+            documentId: 'doc-sin-tags',
+            value: 'Sin tags aqui\n',
+            tagIndex,
+          })),
+          container,
+        )
+      })
+
+      await sleep(80)
+
+      const after = container.querySelectorAll('.tag-link-highlight')
+      expect(after.length).toBe(0)
+    })
+  })
 })
