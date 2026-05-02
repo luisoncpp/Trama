@@ -26,10 +26,11 @@ Tag underlines are rendered via geometric overlays, not document mutation. They 
 6. `TagHighlights` receives `matches` and `editor` instance:
    - Calls `resolveBounds(editor, matches)` on every render (never memoized)
    - Maps each plain-text offset to a Quill index via `mapPlainTextIndexToQuillIndex`
-    - Calls `getTagMatchRects(editor, quillStart, quillEnd)` to get per-line pixel coordinates
-    - Uses `editor.scroll.leaf()` + `Range.getClientRects()` so wrapped tags produce one rect per visual line
-    - Renders absolute-positioned `<div class="tag-link-highlight">` below each matched term (one per line when wrapped)
-7. User releases `Ctrl` → `ctrlPressed = false` → `TagHighlights` unmounts.
+   - Calls `getTagMatchRects(editor, quillStart, quillEnd)` to get per-line pixel coordinates
+   - Uses `editor.scroll.leaf()` + `Range.getClientRects()` so wrapped tags produce one rect per visual line
+   - Renders absolute-positioned `<div class="tag-link-highlight">` below each matched term (one per line when wrapped)
+6b. `useTagOverlayScrollEffect` attaches a `scroll` listener on the editor container while Ctrl is held. On scroll, it increments `setTagScrollTick`, forcing a re-render so `TagHighlights` re-computes fresh bounds. Without this, underlines would stay fixed in viewport coordinates while the text scrolls.
+7. User releases `Ctrl` → `ctrlPressed = false` → `TagHighlights` unmounts, scroll listener removed.
 
 ## State reads
 

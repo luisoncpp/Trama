@@ -1,8 +1,9 @@
-# Tag overlay stale bounds and positions (resize, split toggle, typing, file switch)
+# Tag overlay stale bounds and positions (resize, split toggle, typing, file switch, scroll)
 
 Date: 2026-04-21 (initial fix)
 Date: 2026-04-29 (extended fix: stale positions on typing)
 Date: 2026-04-29 (performance fix: deferred matching with dirty flag)
+Date: 2026-05-01 (scroll fix: underlines drift on scroll while Ctrl held)
 
 ## Context
 
@@ -33,6 +34,15 @@ With `useMemo` removed, `findTagMatchesInText()` ran on every render (every keys
 
 When switching documents, `tagOverlayMatchesRef.current` retained matches from the previous document, causing wrong underlines to appear until toggling twin view.
 
+### Bug 5 (2026-05-01): Underlines drift on scroll while Ctrl held
+
+While Ctrl was held and the user scrolled, tag underlines stayed fixed in viewport coordinates while the text moved. This was the same stale-bounds-on-layout-change pattern manifesting on scroll: `TagHighlights` recomputed bounds on render, but scroll did not trigger a re-render. The find overlay had the same bug and was fixed with a `scrollTick` state that increments on scroll events (see `find-overlay-scroll-stale-bounds.md`). The tag overlay fix mirrors that pattern: `useTagOverlayScrollEffect` attaches a passive scroll listener to `editor.container` that increments `setTagScrollTick` while Ctrl is held, forcing `TagHighlights` to re-render and re-compute fresh bounds.
+
+The fix:
+- `useTagOverlayScrollEffect(ctrlPressed, editorRef, setTagScrollTick)` in `rich-markdown-editor.tsx`
+- Listener attached only when `ctrlPressed === true`, cleaned up on release
+- Uses `{ passive: true }` to avoid blocking scroll performance
+
 ## Fix
 
 **Bug 1 fix (2026-04-21):** Separated text matching (cacheable) from geometric bounds (fresh on every render).
@@ -56,6 +66,8 @@ The architecture is now:
 ## Rule
 
 Never cache Quill `getBounds()` results across renders. Bounds are layout-dependent.
+
+Any overlay positioned with `position: absolute` outside a scrolled container must recompute on scroll. Use a scroll listener that increments a tick state to force re-render — ref mutations alone do not trigger React re-renders.
 
 Defer text matching to the trigger event (Ctrl press) rather than running on every content change. Use a dirty flag to signal that matches need refresh, but only compute when the overlay is actually shown.
 

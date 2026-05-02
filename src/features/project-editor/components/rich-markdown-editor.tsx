@@ -111,6 +111,20 @@ function useTagClickHandler(
   }
 }
 
+function useTagOverlayScrollEffect(
+  ctrlPressed: boolean,
+  editorRef: { current: Quill | null },
+  setTagScrollTick: (f: (t: number) => number) => void,
+) {
+  useEffect(() => { /* trackTagOverlayScroll */
+    if (!ctrlPressed || !editorRef.current) return
+    const container = editorRef.current.container
+    const onScroll = () => setTagScrollTick((t) => t + 1)
+    container.addEventListener('scroll', onScroll, { passive: true })
+    return () => { container.removeEventListener('scroll', onScroll) }
+  }, [ctrlPressed, editorRef.current, setTagScrollTick])
+}
+
 export function RichMarkdownEditor(props: RichMarkdownEditorProps) {
   const {
     documentId, value, disabled, spellcheckEnabled = true, onChange,
@@ -128,6 +142,8 @@ export function RichMarkdownEditor(props: RichMarkdownEditorProps) {
     onDirtyRef, serializationRef,
   } = refs
   const ctrlPressed = useCtrlKeyState()
+  const [, setTagScrollTick] = useState(0)
+
   const tagMatches = useTagOverlay({
     editorRef,
     tagIndex: safeTagIndex,
@@ -136,6 +152,7 @@ export function RichMarkdownEditor(props: RichMarkdownEditorProps) {
     tagOverlayMatchesRef: serializationRef.current.tagOverlayMatchesRef,
   })
   const handleEditorMouseDown = useTagClickHandler(editorRef, safeTagIndex, onTagClick)
+  useTagOverlayScrollEffect(ctrlPressed, editorRef, setTagScrollTick)
 
   const lifecycleParams = {
     documentId, value, disabled, spellcheckEnabled, hostRef, editorRef,
@@ -155,6 +172,24 @@ export function RichMarkdownEditor(props: RichMarkdownEditorProps) {
   }
 
   const findBar = useRichEditorFind({ documentId, hostRef, editorRef })
+
+  return buildRichEditorReturn({
+    shellRef, hostRef, findBar, ctrlPressed, tagIndex, editorRef, tagMatches, handleEditorMouseDown,
+  })
+}
+
+function buildRichEditorReturn({
+  shellRef, hostRef, findBar, ctrlPressed, tagIndex, editorRef, tagMatches, handleEditorMouseDown,
+}: {
+  shellRef: { current: HTMLDivElement | null }
+  hostRef: { current: HTMLDivElement | null }
+  findBar: preact.JSX.Element | null
+  ctrlPressed: boolean
+  tagIndex: Record<string, string> | null | undefined
+  editorRef: { current: Quill | null }
+  tagMatches: Array<{ tag: string; start: number; end: number; filePath: string }>
+  handleEditorMouseDown: (e: MouseEvent) => void
+}) {
   const editorContainerRect = editorRef.current?.container.getBoundingClientRect() ?? null
   const shellRect = shellRef.current?.getBoundingClientRect() ?? null
   const tagOffsetTop = editorContainerRect && shellRect ? editorContainerRect.top - shellRect.top : 0

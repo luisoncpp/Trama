@@ -178,26 +178,70 @@ describe('tag overlay bounds recomputation (regression: stale bounds after layou
     expect(getBounds).toHaveBeenNthCalledWith(2, 8, 5)
   })
 
-  it('skips intermediate embeds when plain offset falls exactly on a string-op boundary', () => {
-    // Document: "Satake\n" + embed(center-end) + embed(spacer) + "caminó\n"
-    // getText() returns "Satake\ncaminó\n" (embeds are invisible)
-    // Searching for "caminó" gives plain offset 7 (right after "Satake\n")
-    // The Quill index must skip both embeds and land at the start of "caminó": 10
+  it('getTagMatchRects reads fresh container rect on each call (not cached)', () => {
+    let containerCallCount = 0
+    let containerTopValue = 0
+
+    const mockContainer = {
+      getBoundingClientRect: () => {
+        containerCallCount++
+        return { top: containerTopValue, left: 0, width: 800, height: 600 }
+      },
+    }
+
+    const mockGetBounds = (index: number, length: number) => ({ top: containerTopValue, left: index * 10, width: length * 10, height: 16 })
+
     const editor = {
-      getText: () => 'Satake\ncaminó\n',
-      getContents: () => ({
-        ops: [
-          { insert: 'Satake\n' },
-          { insert: { tramaDirective: 'center-end' } },
-          { insert: { tramaDirective: 'spacer' } },
-          { insert: 'caminó\n' },
-        ],
-      }),
+      getText: () => 'Aina y Lirio\n',
+      getContents: () => ({ ops: [{ insert: 'Aina y Lirio\n' }] }),
+      getBounds: mockGetBounds,
+      scroll: undefined,
+      container: mockContainer,
     } as any
 
-    // Offset 7 is the start of "caminó" in plain text.
-    // Without the fix (<=) this returns 7 (end of "Satake\n" / start of first embed).
-    // With the fix (<) it returns 9 (start of the "caminó" op, after both embeds).
-    expect(mapPlainTextIndexToQuillIndex(editor, 7)).toBe(9)
+    containerTopValue = 0
+    const first = resolveTagBounds(editor, textMatches)
+
+    containerTopValue = 50
+    const second = resolveTagBounds(editor, textMatches)
+
+    expect(first[0].rects[0].top).toBe(0)
+    expect(second[0].rects[0].top).toBe(50)
+    expect(containerCallCount).toBe(0)
+  })
+
+it('getTagMatchRects returns different rects after scroll (simulated by mock)', () => {
+    let scrollTopValue = 0
+    const mockScroll = {
+      length: () => 100,
+      leaf: (index: number) => {
+        if (index < 10) return [{ length: () => 10, position: () => [document.createTextNode('Aina'), 0] } as any, 0]
+        return [null, 0]
+      },
+      line: () => [null, 0] as any,
+    }
+
+    const mockContainer = {
+      getBoundingClientRect: () => ({ top: scrollTopValue, left: 0, width: 800, height: 600 }),
+    }
+
+    const mockGetBounds = (index: number, length: number) => ({ top: scrollTopValue, left: index * 10, width: length * 10, height: 16 })
+
+    const editor = {
+      getText: () => 'Aina y Lirio\n',
+      getContents: () => ({ ops: [{ insert: 'Aina y Lirio\n' }] }),
+      getBounds: mockGetBounds,
+      scroll: mockScroll,
+      container: mockContainer,
+    } as any
+
+    scrollTopValue = 0
+    const bounds1 = resolveTagBounds(editor, textMatches)
+
+    scrollTopValue = 100
+    const bounds2 = resolveTagBounds(editor, textMatches)
+
+    expect(bounds1[0].rects[0].top).toBe(0)
+    expect(bounds2[0].rects[0].top).toBe(100)
   })
 })

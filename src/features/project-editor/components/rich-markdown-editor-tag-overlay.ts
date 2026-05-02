@@ -62,34 +62,15 @@ export function mapPlainTextIndexToQuillIndex(editor: Quill, plainTextIndex: num
   return quillOffset
 }
 
-export function getTagMatchRects(
-  editor: Quill,
-  quillStart: number,
-  quillEnd: number,
-): Array<{ top: number; left: number; width: number; height: number }> {
-  const scroll = (editor as unknown as {
-    scroll?: {
-      leaf(index: number): [any | null, number]
-      line(index: number): [any | null, number]
-      length(): number
-    }
-  }).scroll
-  const container = (editor as unknown as { container?: HTMLElement }).container
-
-  if (!scroll || !container) {
-    const bounds = editor.getBounds(quillStart, Math.max(0, quillEnd - quillStart))
-    return bounds ? [{ top: bounds.top, left: bounds.left, width: bounds.width, height: bounds.height }] : []
-  }
-
-  const scrollLength = scroll.length()
-  const index = Math.min(quillStart, scrollLength - 1)
-  const length = Math.min(quillEnd, scrollLength - 1) - index
-  if (length <= 0) return []
-
+function computeRectsFromRange(
+  scroll: { leaf(index: number): [any | null, number]; line(index: number): [any | null, number] },
+  container: HTMLElement,
+  index: number,
+  length: number,
+): Array<{ top: number; left: number; width: number; height: number }> | null {
   let [leaf, offset] = scroll.leaf(index)
-  if (leaf == null) return []
+  if (leaf == null) return null
 
-  // Replicate Quill getBounds logic: if at end of leaf and length > 0, move to next leaf
   if (length > 0 && offset === leaf.length()) {
     const [next] = scroll.leaf(index + 1)
     if (next) {
@@ -108,7 +89,7 @@ export function getTagMatchRects(
     range.setStart(startNode, startOffset)
 
     let [endLeaf, endOffset] = scroll.leaf(index + length)
-    if (endLeaf == null) return []
+    if (endLeaf == null) return null
     const [endNode, endNodeOffset] = endLeaf.position(endOffset, true)
     range.setEnd(endNode, endNodeOffset)
 
@@ -130,6 +111,31 @@ export function getTagMatchRects(
   } catch {
     // fallback to getBounds
   }
+  return null
+}
+
+export function getTagMatchRects(
+  editor: Quill,
+  quillStart: number,
+  quillEnd: number,
+): Array<{ top: number; left: number; width: number; height: number }> {
+  const scroll = (editor as unknown as {
+    scroll?: { leaf(index: number): [any | null, number]; line(index: number): [any | null, number]; length(): number }
+  }).scroll
+  const container = (editor as unknown as { container?: HTMLElement }).container
+
+  if (!scroll || !container) {
+    const bounds = editor.getBounds(quillStart, Math.max(0, quillEnd - quillStart))
+    return bounds ? [{ top: bounds.top, left: bounds.left, width: bounds.width, height: bounds.height }] : []
+  }
+
+  const scrollLength = scroll.length()
+  const index = Math.min(quillStart, scrollLength - 1)
+  const length = Math.min(quillEnd, scrollLength - 1) - index
+  if (length <= 0) return []
+
+  const rects = computeRectsFromRange(scroll, container, index, length)
+  if (rects) return rects
 
   const bounds = editor.getBounds(quillStart, Math.max(0, quillEnd - quillStart))
   if (bounds) {
