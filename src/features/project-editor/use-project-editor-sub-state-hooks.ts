@@ -2,6 +2,7 @@ import { useMemo } from 'preact/hooks'
 import type { PaneDocumentState, WorkspaceLayoutState } from './project-editor-types'
 import type { SidebarUiStateValues } from './use-sidebar-ui-state'
 import type { ProjectSnapshot } from '../../shared/ipc'
+import { deriveActivePaneDocument } from './project-editor-logic'
 
 export function getVisibleSidebarPaths(snapshot: ProjectSnapshot | null): string[] {
   if (!snapshot) return []
@@ -25,16 +26,8 @@ export function useDocumentState(
   primaryPane: PaneDocumentState,
   secondaryPane: PaneDocumentState,
 ) {
-  return useMemo(() => {
-    const activePane = ws.activePane === 'secondary' ? secondaryPane : primaryPane
-    const activePanePath = ws.activePane === 'secondary' ? ws.secondaryPath : ws.primaryPath
-    return {
-      selectedPath: activePanePath,
-      editorValue: activePane.content,
-      editorMeta: activePane.meta,
-      isDirty: activePane.isDirty,
-    }
-  }, [ws.activePane, ws.secondaryPath, ws.primaryPath, primaryPane, secondaryPane])
+  return useMemo(() => deriveActivePaneDocument(ws, primaryPane, secondaryPane),
+    [ws, primaryPane, secondaryPane])
 }
 
 export function usePaneState(p: PaneDocumentState, s: PaneDocumentState) {

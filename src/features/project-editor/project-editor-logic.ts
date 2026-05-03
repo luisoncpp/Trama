@@ -1,5 +1,5 @@
-import type { ProjectSnapshot } from '../../shared/ipc'
-import type { WorkspaceLayoutState } from './project-editor-types'
+import type { DocumentMeta, ProjectSnapshot } from '../../shared/ipc'
+import type { PaneDocumentState, WorkspaceLayoutState } from './project-editor-types'
 
 export const WORKSPACE_LAYOUT_STORAGE_KEY = 'trama.workspace.layout.v1'
 
@@ -166,6 +166,23 @@ export function canSelectFile(isDirty: boolean, selectedPath: string | null, nex
   }
 
   return selectedPath === nextPath
+}
+
+export function deriveActivePaneDocument(
+  workspaceLayout: WorkspaceLayoutState,
+  primaryPane: PaneDocumentState,
+  secondaryPane: PaneDocumentState,
+): { selectedPath: string | null; editorValue: string; editorMeta: DocumentMeta; isDirty: boolean } {
+  const activePane = workspaceLayout.activePane === 'secondary' ? secondaryPane : primaryPane
+  const activePanePath = workspaceLayout.activePane === 'secondary'
+    ? workspaceLayout.secondaryPath
+    : workspaceLayout.primaryPath
+  return {
+    selectedPath: activePanePath,
+    editorValue: activePane.content,
+    editorMeta: activePane.meta,
+    isDirty: activePane.isDirty,
+  }
 }
 
 export function shouldRefreshTreeOnExternalEvent(eventKind: 'add' | 'change' | 'unlink'): boolean {

@@ -1,5 +1,6 @@
 import { useMemo } from 'preact/hooks'
 import type { ProjectEditorActions } from './project-editor-types'
+import { deriveActivePaneDocument } from './project-editor-logic'
 import {
   useCloseConflictCompareAction,
   useResolveConflictCompareAction,
@@ -117,14 +118,17 @@ export function useProjectEditorUiActions({
   panePersistence,
 }: UseProjectEditorUiActionsParams): ProjectEditorActions {
   const primaryActions = usePrimaryProjectEditorActions(layoutState, paneState, projectState, uiState, sidebarState, setters, openProject, loadDocument, panePersistence)
-  const activePane = layoutState.workspaceLayout.activePane === 'secondary' ? paneState.secondaryPane : paneState.primaryPane
-  const activePanePath = layoutState.workspaceLayout.activePane === 'secondary' ? layoutState.workspaceLayout.secondaryPath : layoutState.workspaceLayout.primaryPath
+  const { selectedPath, editorValue, editorMeta, isDirty } = deriveActivePaneDocument(
+    layoutState.workspaceLayout,
+    paneState.primaryPane,
+    paneState.secondaryPane,
+  )
   const documentState = useMemo(() => ({
-    selectedPath: activePanePath,
-    editorValue: activePane.content,
-    editorMeta: activePane.meta,
-    isDirty: activePane.isDirty,
-  }), [activePanePath, activePane.content, activePane.meta, activePane.isDirty])
+    selectedPath,
+    editorValue,
+    editorMeta,
+    isDirty,
+  }), [selectedPath, editorValue, editorMeta, isDirty])
   const conflictActions = useSecondaryProjectEditorActions(layoutState, documentState, projectState, uiState, setters, openProject, loadDocument)
   return buildProjectEditorActions({ ...primaryActions, ...conflictActions })
 }

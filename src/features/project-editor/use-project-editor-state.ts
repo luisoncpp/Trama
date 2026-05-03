@@ -13,6 +13,7 @@ import {
   useUiSt,
   getVisibleSidebarPaths,
 } from './use-project-editor-sub-state-hooks'
+import { deriveActivePaneDocument } from './project-editor-logic'
 
 export type {
   ProjectEditorDocumentState,
@@ -61,22 +62,21 @@ function buildValues(
   visibleFiles: string[],
   corkboardOrder: Record<string, string[]>,
 ): ProjectEditorStateValues {
-  const activePane = workspaceLayout.activePane === 'secondary'
-    ? coreState.secondaryPane
-    : coreState.primaryPane
-  const activePanePath = workspaceLayout.activePane === 'secondary'
-    ? workspaceLayout.secondaryPath
-    : workspaceLayout.primaryPath
+  const { selectedPath, editorValue, editorMeta, isDirty } = deriveActivePaneDocument(
+    workspaceLayout,
+    coreState.primaryPane,
+    coreState.secondaryPane,
+  )
   return {
     apiAvailable,
     rootPath: coreState.rootPath,
     snapshot: coreState.snapshot,
     primaryPane: coreState.primaryPane,
     secondaryPane: coreState.secondaryPane,
-    selectedPath: activePanePath,
-    editorValue: activePane.content,
-    editorMeta: activePane.meta,
-    isDirty: activePane.isDirty,
+    selectedPath,
+    editorValue,
+    editorMeta,
+    isDirty,
     loadingProject: coreState.loadingProject,
     loadingDocument: coreState.loadingDocument,
     saving: coreState.saving,

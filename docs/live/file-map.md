@@ -134,6 +134,8 @@ Mandatory doc navigation for new chats: start with `docs/START-HERE.md` — it p
   - Folder rename action with dirty-subtree guard and split-layout remap before project reopen.
 - `src/features/project-editor/project-editor-folder-logic.ts`
   - Pure helpers for folder-prefix path remap (`isPathInsideFolder`, `remapFolderPrefix`, layout remap).
+- `src/features/project-editor/project-editor-logic.ts`
+  - Pure workspace helpers: `deriveActivePaneDocument` (active pane projection), `canSelectFile`, `reconcileWorkspaceLayout`, `buildConflictCopyPath`, and layout persistence.
 - `src/features/project-editor/use-project-editor-create-actions.ts`
   - Create article/category actions.
 - `src/features/project-editor/use-project-editor-sidebar-actions.ts`
