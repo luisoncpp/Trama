@@ -15,11 +15,35 @@ export interface ActivePaneDocumentInfo extends PaneDocumentInfo {
 }
 
 export class PaneWorkspace {
+  private autosaveTimer: number | null = null
+
   constructor(
     private layoutState: WorkspaceLayoutState,
     private primaryPane: PaneDocumentState,
     private secondaryPane: PaneDocumentState,
   ) {}
+
+  scheduleAutosave(pane: WorkspacePane, saveFn: () => Promise<void>, delay: number): void {
+    this.cancelAutosave()
+    const capturedPane = pane
+    this.autosaveTimer = window.setTimeout(() => {
+      this.autosaveTimer = null
+      if (this.layoutState.activePane === capturedPane) {
+        void saveFn()
+      }
+    }, delay)
+  }
+
+  cancelAutosave(): void {
+    if (this.autosaveTimer !== null) {
+      window.clearTimeout(this.autosaveTimer)
+      this.autosaveTimer = null
+    }
+  }
+
+  destroy(): void {
+    this.cancelAutosave()
+  }
 
   getActivePaneDocument(): ActivePaneDocumentInfo {
     const { activePane } = this.layoutState

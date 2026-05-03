@@ -1,4 +1,5 @@
-import { describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { act } from 'preact/test-utils'
 import { PaneWorkspace } from '../src/features/project-editor/pane-workspace'
 import type { PaneDocumentState, WorkspaceLayoutState } from '../src/features/project-editor/project-editor-types'
 
@@ -164,6 +165,72 @@ describe('PaneWorkspace', () => {
       expect(ws.secondary).not.toBe(secondaryDirty)
       expect(ws.secondary.isDirty).toBe(true)
       expect(Object.isFrozen(ws.secondary)).toBe(true)
+    })
+  })
+
+  describe('scheduleAutosave / cancelAutosave / destroy', () => {
+    beforeEach(() => { vi.useFakeTimers() })
+    afterEach(() => { vi.useRealTimers() })
+
+    it('scheduleAutosave fires the saved fn after delay', async () => {
+      const layout = makeLayout('primary', 'docs/a.md', 'docs/b.md')
+      const ws = new PaneWorkspace(layout, primaryDirty, secondaryClean)
+
+      let called = false
+      ws.scheduleAutosave('primary', async () => { called = true }, 50)
+
+      expect(called).toBe(false)
+      await act(async () => { vi.advanceTimersByTime(51); await Promise.resolve() })
+      expect(called).toBe(true)
+    })
+
+    it('cancelAutosave stops a pending timer', async () => {
+      const layout = makeLayout('primary', 'docs/a.md', 'docs/b.md')
+      const ws = new PaneWorkspace(layout, primaryDirty, secondaryClean)
+
+      let called = false
+      ws.scheduleAutosave('primary', async () => { called = true }, 50)
+      ws.cancelAutosave()
+
+      await act(async () => { vi.advanceTimersByTime(51); await Promise.resolve() })
+      expect(called).toBe(false)
+    })
+
+    it('calling scheduleAutosave again cancels the previous timer', async () => {
+      const layout = makeLayout('primary', 'docs/a.md', 'docs/b.md')
+      const ws = new PaneWorkspace(layout, primaryDirty, secondaryClean)
+
+      let firstCalled = false
+      let secondCalled = false
+
+      ws.scheduleAutosave('primary', async () => { firstCalled = true }, 50)
+      ws.scheduleAutosave('primary', async () => { secondCalled = true }, 30)
+
+      await act(async () => { vi.advanceTimersByTime(31); await Promise.resolve() })
+      expect(secondCalled).toBe(true)
+      expect(firstCalled).toBe(false)
+
+      await act(async () => { vi.advanceTimersByTime(30); await Promise.resolve() })
+      expect(firstCalled).toBe(false)
+    })
+
+    it('destroy cancels any pending timer', async () => {
+      const layout = makeLayout('primary', 'docs/a.md', 'docs/b.md')
+      const ws = new PaneWorkspace(layout, primaryDirty, secondaryClean)
+
+      let called = false
+      ws.scheduleAutosave('primary', async () => { called = true }, 50)
+      ws.destroy()
+
+      await act(async () => { vi.advanceTimersByTime(51); await Promise.resolve() })
+      expect(called).toBe(false)
+    })
+
+    it('cancelAutosave on idle timer is a no-op (no throw)', () => {
+      const layout = makeLayout('primary', 'docs/a.md', 'docs/b.md')
+      const ws = new PaneWorkspace(layout, primaryClean, secondaryClean)
+
+      expect(() => ws.cancelAutosave()).not.toThrow()
     })
   })
 })

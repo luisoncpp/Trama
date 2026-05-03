@@ -178,7 +178,7 @@ Mandatory doc navigation for new chats: start with `docs/START-HERE.md` — it p
   - Composes UI actions and core operations (load/save/open/clear) and wires them into the state.
   - Receives `panePersistence` from `useProjectEditor`; does not instantiate it.
 - `src/features/project-editor/use-project-editor-autosave-effect.ts`
-  - Debounced autosave effect that persists edits after a short idle period.
+  - Minimal Preact adapter: detects dirty → calls `paneWorkspace.scheduleAutosave`, detects clean/unmount → calls `paneWorkspace.cancelAutosave`. Timer logic lives in `PaneWorkspace`.
 - `src/features/project-editor/use-project-editor-pane-persistence.ts`
   - Shared pane-targeted persistence helper: serialization-ref lookup, pane-state lookup, `flushPane`, `savePaneIfDirty`, and `saveAllDirtyPanes`.
 - `src/features/project-editor/use-project-editor-external-events-effect.ts`

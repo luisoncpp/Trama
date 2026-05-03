@@ -11,6 +11,8 @@ import { useProjectEditorCloseEffect } from './use-project-editor-close-effect'
 import { useProjectEditorShortcutsEffect } from './use-project-editor-shortcuts-effect'
 import { useProjectEditorState } from './use-project-editor-state'
 import { useProjectEditorPanePersistence } from './use-project-editor-pane-persistence'
+import type { PaneWorkspace } from './pane-workspace'
+import { PaneWorkspace as PaneWorkspaceClass } from './pane-workspace'
 
 function useAutoPickProjectFolderEffect(
   pickProjectFolder: () => Promise<void>,
@@ -66,12 +68,14 @@ function useProjectEditorEffects(
   core: ReturnType<typeof useProjectEditorActions>['core'],
   autoPickProjectFolderOnStart: boolean,
   panePersistence: ReturnType<typeof useProjectEditorPanePersistence>,
+  paneWorkspace: PaneWorkspace,
 ): void {
   useAutoPickProjectFolderEffect(actions.pickProjectFolder, autoPickProjectFolderOnStart, uiState.apiAvailable, projectState.rootPath)
   useProjectEditorAutosaveEffect({
     selectedPath: documentState.selectedPath, isDirty: documentState.isDirty,
     activePane: layoutState.workspaceLayout.activePane,
     panePersistence,
+    paneWorkspace,
   })
   useProjectEditorExternalEventsEffect({
     snapshotRootPath: projectState.snapshot?.rootPath ?? null,
@@ -133,7 +137,17 @@ export function useProjectEditor(): ProjectEditorModel {
   })
   saveDocumentNowRef.current = core.saveDocumentNow
 
-  useProjectEditorEffects(uiState, projectState, documentState, layoutState, paneState, setters, actions, core, autoPickProjectFolderOnStart, panePersistence)
+  const paneWorkspace = new PaneWorkspaceClass(
+    layoutState.workspaceLayout,
+    paneState.primaryPane,
+    paneState.secondaryPane,
+  )
+
+  useEffect(() => {
+    return () => paneWorkspace.destroy()
+  }, [paneWorkspace])
+
+  useProjectEditorEffects(uiState, projectState, documentState, layoutState, paneState, setters, actions, core, autoPickProjectFolderOnStart, panePersistence, paneWorkspace)
 
   return {
     state: (({ snapshot, editorMeta, ...state }) => state)(values),
