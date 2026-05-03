@@ -8,12 +8,11 @@ import {
 import { noteSidebarFolderRenamed } from './components/sidebar/sidebar-folder-rename-events'
 import { normalizeName, isInvalidRenameInput } from '../../shared/sidebar-utils'
 import type { ProjectEditorActions, SidebarRenameInput, WorkspaceLayoutState } from './project-editor-types'
-import type { ProjectEditorLayoutState, ProjectEditorProjectState } from './project-editor-types'
+import type { ProjectEditorProjectState } from './project-editor-types'
 import type { PaneWorkspace } from './pane-workspace'
 
 interface UseProjectEditorFolderActionsParams {
   workspace: PaneWorkspace
-  layoutState: ProjectEditorLayoutState
   projectState: ProjectEditorProjectState
   setters: {
     setStatusMessage: (value: string) => void
@@ -30,7 +29,6 @@ function preferredPathFromLayout(layout: WorkspaceLayoutState): string | null {
 
 async function executeFolderRename(
   workspace: PaneWorkspace,
-  layoutState: ProjectEditorLayoutState,
   projectState: ProjectEditorProjectState,
   setters: UseProjectEditorFolderActionsParams['setters'],
   openProject: UseProjectEditorFolderActionsParams['openProject'],
@@ -61,7 +59,7 @@ async function executeFolderRename(
   }
 
   const remappedLayout = remapWorkspaceLayoutPathsForFolderRename(
-    layoutState.workspaceLayout,
+    workspace.layout,
     response.data.path,
     response.data.renamedTo,
   )
@@ -73,7 +71,6 @@ async function executeFolderRename(
 
 async function executeFolderDelete(
   workspace: PaneWorkspace,
-  layoutState: ProjectEditorLayoutState,
   projectState: ProjectEditorProjectState,
   setters: UseProjectEditorFolderActionsParams['setters'],
   openProject: UseProjectEditorFolderActionsParams['openProject'],
@@ -100,7 +97,7 @@ async function executeFolderDelete(
     return
   }
 
-  const nextLayout = pruneWorkspaceLayoutPathsForFolderDelete(layoutState.workspaceLayout, response.data.path)
+  const nextLayout = pruneWorkspaceLayoutPathsForFolderDelete(workspace.layout, response.data.path)
   setters.setWorkspaceLayout(nextLayout)
   setters.setStatusMessage(`Deleted folder: ${response.data.path}`)
   await openProject(projectState.rootPath, preferredPathFromLayout(nextLayout) ?? undefined, nextLayout.activePane)
@@ -108,7 +105,6 @@ async function executeFolderDelete(
 
 async function executeFolderMove(
   workspace: PaneWorkspace,
-  layoutState: ProjectEditorLayoutState,
   projectState: ProjectEditorProjectState,
   setters: UseProjectEditorFolderActionsParams['setters'],
   openProject: UseProjectEditorFolderActionsParams['openProject'],
@@ -132,7 +128,7 @@ async function executeFolderMove(
   }
 
   const remappedLayout = remapWorkspaceLayoutPathsForFolderRename(
-    layoutState.workspaceLayout,
+    workspace.layout,
     response.data.sourcePath,
     response.data.renamedTo,
   )
@@ -147,7 +143,6 @@ async function executeFolderMove(
 
 export function useProjectEditorFolderActions({
   workspace,
-  layoutState,
   projectState,
   setters,
   openProject,
@@ -157,16 +152,16 @@ export function useProjectEditorFolderActions({
   moveFolder: ProjectEditorActions['moveFolder']
 } {
   const renameFolder = useCallback(
-    (input: SidebarRenameInput) => executeFolderRename(workspace, layoutState, projectState, setters, openProject, input),
-    [workspace, layoutState, projectState, openProject, setters],
+    (input: SidebarRenameInput) => executeFolderRename(workspace, projectState, setters, openProject, input),
+    [workspace, projectState, openProject, setters],
   )
   const deleteFolder = useCallback(
-    (path: string) => executeFolderDelete(workspace, layoutState, projectState, setters, openProject, path),
-    [workspace, layoutState, projectState, openProject, setters],
+    (path: string) => executeFolderDelete(workspace, projectState, setters, openProject, path),
+    [workspace, projectState, openProject, setters],
   )
   const moveFolder = useCallback(
-    (sourcePath: string, targetParent: string) => executeFolderMove(workspace, layoutState, projectState, setters, openProject, sourcePath, targetParent),
-    [workspace, layoutState, projectState, openProject, setters],
+    (sourcePath: string, targetParent: string) => executeFolderMove(workspace, projectState, setters, openProject, sourcePath, targetParent),
+    [workspace, projectState, openProject, setters],
   )
   return { renameFolder, deleteFolder, moveFolder }
 }

@@ -16,13 +16,12 @@ import { useProjectEditorCreateActions } from './use-project-editor-create-actio
 import { useProjectEditorFileActions } from './use-project-editor-file-actions'
 import { useProjectEditorFolderActions } from './use-project-editor-folder-actions'
 import type {
-  ProjectEditorLayoutState,
-  ProjectEditorPaneState,
   ProjectEditorProjectState,
   ProjectEditorSidebarState,
   ProjectEditorUiState,
 } from './project-editor-types'
 import type { ProjectEditorPanePersistence } from './use-project-editor-pane-persistence'
+import type { PaneWorkspace } from './pane-workspace'
 import { usePaneWorkspace } from './use-pane-workspace'
 import {
   useEditorViewActions,
@@ -40,7 +39,7 @@ function buildProjectEditorActions(input: ProjectEditorActions): ProjectEditorAc
 }
 
 export function usePrimaryProjectEditorActions(
-  workspace,
+  workspace: PaneWorkspace,
   projectState: ProjectEditorProjectState,
   uiState: ProjectEditorUiState,
   sidebarState: ProjectEditorSidebarState,
@@ -54,7 +53,7 @@ export function usePrimaryProjectEditorActions(
   const selectFile = useSelectFileAction({ workspace, loadDocument, assignFileToActivePane, panePersistence })
   const { createArticle, createCategory } = useProjectEditorCreateActions({ projectState, sidebarState, setters, openProject })
   const { renameFile, deleteFile, editFileTags } = useProjectEditorFileActions({ workspace, projectState, setters, openProject })
-  const { renameFolder, deleteFolder, moveFolder } = useProjectEditorFolderActions({ workspace, layoutState: workspace.layout, projectState, setters, openProject })
+  const { renameFolder, deleteFolder, moveFolder } = useProjectEditorFolderActions({ workspace, projectState, setters, openProject })
   const sidebarActions = useSidebarActions(workspace.layout, sidebarState, setters)
   const layoutActions = useWorkspaceLayoutActions(workspace, projectState, setters, loadDocument, panePersistence)
   const editorViewActions = useEditorViewActions(workspace, uiState, setters, panePersistence)
@@ -83,7 +82,7 @@ export function usePrimaryProjectEditorActions(
 }
 
 export function useSecondaryProjectEditorActions(
-  workspace,
+  workspace: PaneWorkspace,
   documentState: { selectedPath: string | null; editorValue: string; editorMeta: any; isDirty: boolean },
   projectState: ProjectEditorProjectState,
   uiState: ProjectEditorUiState,

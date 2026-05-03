@@ -7,6 +7,7 @@ import type {
   ProjectEditorProjectState,
   ProjectEditorSidebarState,
   ProjectEditorUiState,
+  WorkspaceLayoutState,
 } from './project-editor-types'
 import type { SidebarSection } from './project-editor-types'
 import type { WorkspacePane } from './project-editor-types'
@@ -138,13 +139,13 @@ export function useMoveFileAction({
 }
 
 export function useSidebarActions(
-  layoutState: ProjectEditorLayoutState,
+  layout: WorkspaceLayoutState,
   sidebarState: ProjectEditorSidebarState,
   setters: UseProjectEditorUiActionsParams['setters'],
 ) {
   return {
     setSidebarSection: useSetSidebarSectionAction(setters),
-    toggleSidebarPanelCollapsed: useToggleSidebarPanelCollapsedAction(layoutState, sidebarState, setters),
+    toggleSidebarPanelCollapsed: useToggleSidebarPanelCollapsedAction(layout, sidebarState, setters),
     setSidebarPanelWidth: useSetSidebarPanelWidthAction(setters),
   }
 }

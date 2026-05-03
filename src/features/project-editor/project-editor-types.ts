@@ -18,7 +18,7 @@ export interface WorkspaceLayoutState {
 export interface PaneDocumentState {
   path: string | null
   content: string
-  meta: DocumentMeta
+  meta: Readonly<DocumentMeta>
   isDirty: boolean
 }
 

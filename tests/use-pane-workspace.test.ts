@@ -39,9 +39,12 @@ describe('usePaneWorkspace', () => {
     })
 
     expect(workspaceRef).toBeDefined()
-    expect(workspaceRef.layout).toBe(layout)
-    expect(workspaceRef.primary).toBe(primary)
-    expect(workspaceRef.secondary).toBe(secondary)
+    expect(workspaceRef.layout).toEqual(layout)
+    expect(Object.isFrozen(workspaceRef.layout)).toBe(true)
+    expect(workspaceRef.primary).toEqual(primary)
+    expect(Object.isFrozen(workspaceRef.primary)).toBe(true)
+    expect(workspaceRef.secondary).toEqual(secondary)
+    expect(Object.isFrozen(workspaceRef.secondary)).toBe(true)
   })
 
   it('memoizes workspace across re-renders when layout changes', () => {

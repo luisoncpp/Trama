@@ -57,15 +57,15 @@ export class PaneWorkspace {
     return !doc.isDirty || doc.path === null
   }
 
-  get layout(): WorkspaceLayoutState {
-    return this.layoutState
+  get layout(): Readonly<WorkspaceLayoutState> {
+    return Object.freeze({ ...this.layoutState })
   }
 
-  get primary(): PaneDocumentState {
-    return this.primaryPane
+  get primary(): Readonly<PaneDocumentState> {
+    return Object.freeze({ ...this.primaryPane })
   }
 
-  get secondary(): PaneDocumentState {
-    return this.secondaryPane
+  get secondary(): Readonly<PaneDocumentState> {
+    return Object.freeze({ ...this.secondaryPane })
   }
 }

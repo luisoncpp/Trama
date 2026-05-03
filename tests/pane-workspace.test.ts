@@ -139,28 +139,31 @@ describe('PaneWorkspace', () => {
   })
 
   describe('getters', () => {
-    it('layout returns the layout state reference', () => {
+    it('layout returns a frozen copy', () => {
       const layout = makeLayout('primary', 'docs/a.md', null)
       const ws = new PaneWorkspace(layout, primaryClean, emptyPane)
 
-      expect(ws.layout).toBe(layout)
+      expect(ws.layout).toEqual(layout)
+      expect(Object.isFrozen(ws.layout)).toBe(true)
       expect(ws.layout.activePane).toBe('primary')
     })
 
-    it('primary returns the primary pane state reference', () => {
+    it('primary returns a frozen copy (immutable)', () => {
       const layout = makeLayout('primary', 'docs/a.md', null)
       const ws = new PaneWorkspace(layout, primaryDirty, emptyPane)
 
-      expect(ws.primary).toBe(primaryDirty)
+      expect(ws.primary).not.toBe(primaryDirty)
       expect(ws.primary.isDirty).toBe(true)
+      expect(Object.isFrozen(ws.primary)).toBe(true)
     })
 
-    it('secondary returns the secondary pane state reference', () => {
+    it('secondary returns a frozen copy (immutable)', () => {
       const layout = makeLayout('primary', 'docs/a.md', null)
       const ws = new PaneWorkspace(layout, primaryClean, secondaryDirty)
 
-      expect(ws.secondary).toBe(secondaryDirty)
+      expect(ws.secondary).not.toBe(secondaryDirty)
       expect(ws.secondary.isDirty).toBe(true)
+      expect(Object.isFrozen(ws.secondary)).toBe(true)
     })
   })
 })
