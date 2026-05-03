@@ -2,7 +2,7 @@ import { describe, expect, it, beforeEach, afterEach } from 'vitest'
 import { h, render, Fragment } from 'preact'
 import { act } from 'preact/test-utils'
 import Quill from 'quill'
-import { RichMarkdownEditor } from '../src/features/project-editor/components/rich-markdown-editor'
+import { RichMarkdownEditor } from '../src/features/project-editor/pane/rich-markdown-editor/rich-markdown-editor'
 import { WORKSPACE_CONTEXT_MENU_EVENT } from '../src/shared/workspace-context-menu'
 
 describe('Paste Markdown workspace command', () => {

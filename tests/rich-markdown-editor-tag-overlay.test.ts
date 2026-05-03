@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
-import { buildTagOverlayMatches, resolveTagBounds, mapPlainTextIndexToQuillIndex } from '../src/features/project-editor/components/rich-markdown-editor-tag-overlay'
-import { findTagMatchesInText, filterMatchesOutsideCode, isInsideCodeBlock } from '../src/features/project-editor/components/rich-markdown-editor-tag-helpers'
+import { buildTagOverlayMatches, resolveTagBounds, mapPlainTextIndexToQuillIndex } from '../src/features/project-editor/pane/rich-markdown-editor/rich-markdown-editor-tag-overlay'
+import { findTagMatchesInText, filterMatchesOutsideCode, isInsideCodeBlock } from '../src/features/project-editor/pane/rich-markdown-editor/rich-markdown-editor-tag-helpers'
 
 describe('rich-markdown-editor-tag-overlay', () => {
   it('maps plain text offsets to Quill indexes when embeds exist before a tag', () => {

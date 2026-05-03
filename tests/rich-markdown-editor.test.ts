@@ -3,7 +3,7 @@ import { h, render, Fragment } from 'preact'
 import { act } from 'preact/test-utils'
 import { useState } from 'preact/hooks'
 import Quill from 'quill'
-import { RichMarkdownEditor } from '../src/features/project-editor/components/rich-markdown-editor'
+import { RichMarkdownEditor } from '../src/features/project-editor/pane/rich-markdown-editor/rich-markdown-editor'
 import { hydrateMarkdownImages, getImageMap } from '../src/shared/markdown-image-placeholder'
 import type { EditorSerializationRefs } from '../src/features/project-editor/project-editor-types'
 

@@ -11,3 +11,4 @@ export { handleDeleteFolder, handleMoveFolder, handleRenameFolder } from './fold
 export { handleOpenProject } from './project-open-handler.js'
 export { handleSelectProjectFolder } from './project-folder-dialog-handler.js'
 export { handleMoveFile, handleReorderFiles } from './order-handlers.js'
+

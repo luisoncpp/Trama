@@ -2,8 +2,8 @@ import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest'
 import { h, render } from 'preact'
 import { act } from 'preact/test-utils'
 import Quill from 'quill'
-import { getActiveMatchBounds } from '../src/features/project-editor/components/rich-markdown-editor-find-visual'
-import { RichMarkdownEditor } from '../src/features/project-editor/components/rich-markdown-editor'
+import { getActiveMatchBounds } from '../src/features/project-editor/pane/rich-markdown-editor/rich-markdown-editor-find-visual'
+import { RichMarkdownEditor } from '../src/features/project-editor/pane/rich-markdown-editor/rich-markdown-editor'
 
 function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms))

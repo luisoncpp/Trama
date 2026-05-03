@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import { useTagOverlay } from '../src/features/project-editor/components/rich-markdown-editor-tag-overlay'
+import { useTagOverlay } from '../src/features/project-editor/pane/rich-markdown-editor/rich-markdown-editor-tag-overlay'
 
 const tagIndex = {
   aina: 'lore/characters/Aina.md',

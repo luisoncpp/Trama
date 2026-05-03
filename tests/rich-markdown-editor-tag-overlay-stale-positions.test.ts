@@ -3,8 +3,8 @@ import {
   buildTagOverlayMatches,
   resolveTagBounds,
   mapPlainTextIndexToQuillIndex,
-} from '../src/features/project-editor/components/rich-markdown-editor-tag-overlay'
-import { findTagMatchesInText, filterMatchesOutsideCode } from '../src/features/project-editor/components/rich-markdown-editor-tag-helpers'
+} from '../src/features/project-editor/pane/rich-markdown-editor/rich-markdown-editor-tag-overlay'
+import { findTagMatchesInText, filterMatchesOutsideCode } from '../src/features/project-editor/pane/rich-markdown-editor/rich-markdown-editor-tag-helpers'
 
 describe('tag overlay stale positions on typing (regression: distortion in unsaved files)', () => {
   const tagIndex = {

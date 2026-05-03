@@ -3,7 +3,7 @@ import { Fragment, h, render } from 'preact'
 import { act } from 'preact/test-utils'
 import { useState } from 'preact/hooks'
 import Quill from 'quill'
-import { RichMarkdownEditor } from '../src/features/project-editor/components/rich-markdown-editor'
+import { RichMarkdownEditor } from '../src/features/project-editor/pane/rich-markdown-editor/rich-markdown-editor'
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 const noop = () => {}

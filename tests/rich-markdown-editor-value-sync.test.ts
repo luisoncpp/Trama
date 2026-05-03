@@ -3,7 +3,7 @@ import { clearImageMap, getImageMap } from '../src/shared/markdown-image-placeho
 import {
   areEquivalentEditorValues,
   normalizeEditorDocumentValue,
-} from '../src/features/project-editor/components/rich-markdown-editor-value-sync'
+} from '../src/features/project-editor/pane/rich-markdown-editor/rich-markdown-editor-value-sync'
 
 describe('rich-markdown-editor-value-sync', () => {
   const TINY_PNG =
