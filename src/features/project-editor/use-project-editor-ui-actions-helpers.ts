@@ -1,5 +1,4 @@
 import { useCallback } from 'preact/hooks'
-import { PROJECT_EDITOR_STRINGS } from './project-editor-strings'
 import type { ProjectEditorActions } from './project-editor-types'
 import type { ProjectEditorPanePersistence } from './use-project-editor-pane-persistence'
 import type {
@@ -161,7 +160,7 @@ export function useWorkspaceLayoutActions(
   panePersistence: ProjectEditorPanePersistence,
 ) {
   return {
-    toggleWorkspaceLayoutMode: useToggleWorkspaceLayoutModeAction(layoutState, projectState, setters),
+    toggleWorkspaceLayoutMode: useToggleWorkspaceLayoutModeAction(projectState, setters),
     setWorkspaceLayoutRatio: useSetWorkspaceLayoutRatioAction(setters),
     setWorkspaceActivePane: useSetWorkspaceActivePaneAction({ layoutState, paneState, projectState, setters, loadDocument, panePersistence }),
   }
@@ -169,7 +168,6 @@ export function useWorkspaceLayoutActions(
 
 export function useEditorViewActions(
   layoutState: ProjectEditorLayoutState,
-  sidebarState: ProjectEditorSidebarState,
   uiState: ProjectEditorUiState,
   setters: UseProjectEditorUiActionsParams['setters'],
   panePersistence: ProjectEditorPanePersistence,
@@ -192,7 +190,7 @@ export function useEditorViewActions(
       void panePersistence.savePaneIfDirty(targetPane)
     },
     setFullscreenEnabled: useSetFullscreenEnabledAction(setters),
-    toggleFocusMode: useToggleFocusModeAction(layoutState, sidebarState, setters),
+    toggleFocusMode: useToggleFocusModeAction(layoutState, setters),
     setFocusScope: useSetFocusScopeAction(setters),
   }
 }

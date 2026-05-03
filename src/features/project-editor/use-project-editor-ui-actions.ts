@@ -21,7 +21,6 @@ import type {
   ProjectEditorSidebarState,
   ProjectEditorUiState,
 } from './project-editor-types'
-import type { WorkspacePane } from './project-editor-types'
 import type { ProjectEditorPanePersistence } from './use-project-editor-pane-persistence'
 import {
   useEditorViewActions,
@@ -57,7 +56,7 @@ export function usePrimaryProjectEditorActions(
   const { renameFolder, deleteFolder, moveFolder } = useProjectEditorFolderActions({ layoutState, paneState, projectState, setters, openProject })
   const sidebarActions = useSidebarActions(layoutState, sidebarState, setters)
   const layoutActions = useWorkspaceLayoutActions(layoutState, paneState, projectState, setters, loadDocument, panePersistence)
-  const editorViewActions = useEditorViewActions(layoutState, sidebarState, uiState, setters, panePersistence)
+  const editorViewActions = useEditorViewActions(layoutState, uiState, setters, panePersistence)
   const projectPickerActions = useProjectPickerActions({ openProject, setters })
   const reorderFiles = useReorderFilesAction({ setters, openProject, rootPath: projectState.rootPath })
   const moveFile = useMoveFileAction({ paneState, projectState, setters, openProject })
@@ -91,7 +90,7 @@ export function useSecondaryProjectEditorActions(
   openProject: UseProjectEditorUiActionsParams['openProject'],
   loadDocument: UseProjectEditorUiActionsParams['loadDocument'],
 ) {
-  const resolveConflictReload = useResolveConflictReloadAction({ documentState, layoutState, uiState, setters, loadDocument })
+  const resolveConflictReload = useResolveConflictReloadAction({ layoutState, uiState, setters, loadDocument })
   const resolveConflictKeep = useResolveConflictKeepAction(setters)
   const resolveConflictSaveAsCopy = useResolveConflictSaveAsCopyAction({ documentState, projectState, layoutState, setters, openProject })
   const resolveConflictCompare = useResolveConflictCompareAction({ uiState, setters })

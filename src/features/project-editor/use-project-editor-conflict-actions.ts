@@ -10,13 +10,11 @@ import type {
 } from './project-editor-types'
 
 export function useResolveConflictReloadAction({
-  documentState,
   layoutState,
   uiState,
   setters,
   loadDocument,
 }: {
-  documentState: ProjectEditorDocumentState
   layoutState: ProjectEditorLayoutState
   uiState: ProjectEditorUiState
   setters: {

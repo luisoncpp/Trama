@@ -47,7 +47,6 @@ export function useAssignFileToPaneAction(
 }
 
 export function useToggleWorkspaceLayoutModeAction(
-  layoutState: ProjectEditorLayoutState,
   projectState: ProjectEditorProjectState,
   setters: { setWorkspaceLayout: (value: any) => void },
 ): ProjectEditorActions['toggleWorkspaceLayoutMode'] {
