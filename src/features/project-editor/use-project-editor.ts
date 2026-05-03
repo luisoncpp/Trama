@@ -100,7 +100,7 @@ function useProjectEditorEffects(
 export function useProjectEditor(): ProjectEditorModel {
   const autoPickProjectFolderOnStart = import.meta.env.MODE !== 'test'
   const state = useProjectEditorState()
-  const { values, setters, documentState, paneState, layoutState, sidebarState, projectState, uiState } = state
+  const { values, setters, documentState, layoutState, sidebarState, projectState, uiState, paneBindings } = state
 
   const primarySerializationRef = useRef<EditorSerializationRefs>({
     flush: () => null,
@@ -114,13 +114,6 @@ export function useProjectEditor(): ProjectEditorModel {
   })
 
   const saveDocumentNowRef = useRef<((path: string, content: string, meta: DocumentMeta) => Promise<void>) | null>(null)
-
-  const paneBindings = {
-    primaryPane: paneState.primaryPane,
-    secondaryPane: paneState.secondaryPane,
-    setPrimaryPane: setters.setPrimaryPane,
-    setSecondaryPane: setters.setSecondaryPane,
-  }
 
   const paneWorkspace = usePaneWorkspace(
     layoutState.workspaceLayout,

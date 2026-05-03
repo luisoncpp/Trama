@@ -1,5 +1,5 @@
 import { useMemo } from 'preact/hooks'
-import type { PaneDocumentState, ProjectEditorStateValues, SidebarSection, WorkspaceLayoutState } from './project-editor-types'
+import type { ProjectEditorStateValues, SidebarSection, WorkspaceLayoutState } from './project-editor-types'
 import type { ProjectSnapshot } from '../../shared/ipc'
 import { useSidebarUiState } from './use-sidebar-ui-state'
 import { useWorkspaceLayoutState } from './use-workspace-layout-state'
@@ -25,6 +25,8 @@ export type {
 } from './project-editor-types'
 export { type ProjectEditorStateValues }
 
+import type { PaneBindings } from './pane'
+
 export interface ProjectEditorStateSetters {
   setRootPath: (value: string) => void
   setSnapshot: (value: ProjectSnapshot | null) => void
@@ -39,8 +41,6 @@ export interface ProjectEditorStateSetters {
   setSidebarPanelCollapsed: (value: boolean) => void
   setSidebarPanelWidth: (value: number) => void
   setWorkspaceLayout: (value: WorkspaceLayoutState | ((previous: WorkspaceLayoutState) => WorkspaceLayoutState)) => void
-  setPrimaryPane: (value: PaneDocumentState | ((prev: PaneDocumentState) => PaneDocumentState)) => void
-  setSecondaryPane: (value: PaneDocumentState | ((prev: PaneDocumentState) => PaneDocumentState)) => void
 }
 
 export interface UseProjectEditorStateResult {
@@ -52,6 +52,7 @@ export interface UseProjectEditorStateResult {
   projectState: import('./project-editor-types').ProjectEditorProjectState
   uiState: import('./project-editor-types').ProjectEditorUiState
   setters: ProjectEditorStateSetters
+  paneBindings: PaneBindings
 }
 
 function buildValues(
@@ -100,10 +101,7 @@ export function useProjectEditorState(): UseProjectEditorStateResult {
 
   const apiAvailable = Boolean(window.tramaApi?.openProject)
   const visibleFiles = useMemo(() => getVisibleSidebarPaths(coreState.snapshot), [coreState.snapshot])
-  const corkboardOrder = useMemo(
-    () => coreState.snapshot?.index?.corkboardOrder ?? {},
-    [coreState.snapshot],
-  )
+  const corkboardOrder = useMemo(() => coreState.snapshot?.index?.corkboardOrder ?? {}, [coreState.snapshot])
 
   const documentState = useDocumentState(workspaceLayout, coreState.primaryPane, coreState.secondaryPane)
   const paneState = usePaneState(coreState.primaryPane, coreState.secondaryPane)
@@ -129,8 +127,6 @@ export function useProjectEditorState(): UseProjectEditorStateResult {
   const setters = useMemo(() => ({
     setRootPath: coreState.setRootPath,
     setSnapshot: coreState.setSnapshot,
-    setPrimaryPane: coreState.setPrimaryPane,
-    setSecondaryPane: coreState.setSecondaryPane,
     setLoadingProject: coreState.setLoadingProject,
     setLoadingDocument: coreState.setLoadingDocument,
     setSaving: coreState.setSaving,
@@ -144,5 +140,12 @@ export function useProjectEditorState(): UseProjectEditorStateResult {
     setWorkspaceLayout,
   }), [coreState, workspaceLayout, sidebarUiState])
 
-  return { values, documentState, paneState, layoutState, sidebarState, projectState, uiState, setters }
+  const paneBindings = useMemo(/* paneBindings */ () => ({
+    primaryPane: coreState.primaryPane,
+    secondaryPane: coreState.secondaryPane,
+    setPrimaryPane: coreState.setPrimaryPane,
+    setSecondaryPane: coreState.setSecondaryPane,
+  }), [coreState.primaryPane, coreState.secondaryPane, coreState.setPrimaryPane, coreState.setSecondaryPane] /*Inputs for paneBindings*/)
+
+  return { values, documentState, paneState, layoutState, sidebarState, projectState, uiState, setters, paneBindings }
 }
