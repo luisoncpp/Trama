@@ -2,6 +2,7 @@ import { useCallback } from 'preact/hooks'
 import type { DocumentMeta } from '../../shared/ipc'
 import type { EditorSerializationRefs, WorkspacePane } from './project-editor-types'
 import type { ProjectEditorPaneState } from './project-editor-types'
+import { executePaneSave } from './pane-save-logic'
 
 export interface ProjectEditorPanePersistence {
   getSerializationRefForPane: (pane: WorkspacePane) => { current: EditorSerializationRefs }
@@ -43,8 +44,8 @@ export function useProjectEditorPanePersistence({
       return
     }
 
-    const latestContent = flushPane(pane) ?? paneStateLocal.content
-    await saveDocumentNow(paneStateLocal.path, latestContent, paneStateLocal.meta)
+    const flushResult = flushPane(pane)
+    await executePaneSave(paneStateLocal, flushResult, saveDocumentNow)
   }, [flushPane, getPaneStateForPane, saveDocumentNow] /*Inputs for savePaneIfDirty*/)
 
   const saveAllDirtyPanes = useCallback(/* saveAllDirtyPanes */ async (): Promise<void> => {
