@@ -16,39 +16,39 @@ This flow mixes synchronous layout state with asynchronous document state. It is
 
 1. The user interacts with a split-pane editor.
 2. In `workspace-editor-panels.tsx`, `PaneEditor` calls `actions.setWorkspaceActivePane(pane)` when activating the pane.
-3. `useSetWorkspaceActivePaneAction(...)` reads the current outgoing pane from `layoutState.workspaceLayout.activePane`.
-4. It reads the outgoing pane document state through `panePersistence.getPaneStateForPane(outgoingPane)`.
+3. `useSetWorkspaceActivePaneAction({ workspace, ... })` reads the outgoing pane identity from `workspace.layout.activePane`.
+4. It reads the outgoing pane document state through `workspace.getPaneDocument(outgoingPane)` (or `panePersistence.getPaneStateForPane` for flush).
 5. If the outgoing pane is dirty and has a path:
    - call `panePersistence.savePaneIfDirty(outgoingPane)`
    - inside that helper, choose the matching serialization ref
    - call `flush()`
    - fall back to `outgoingState.content` only if `flush()` returns `null`
    - call `saveDocumentNow(...)`
-6. The action computes the next assigned path from layout state:
-    - `layoutState.workspaceLayout.primaryPath`
-    - `layoutState.workspaceLayout.secondaryPath`
+6. The action computes the next assigned path from layout state via `workspace.layout`:
+   - `workspace.layout.primaryPath`
+   - `workspace.layout.secondaryPath`
 7. It updates `workspaceLayout.activePane` immediately.
 8. If the next pane has no assigned path:
-    - clear compare state
-    - set the "no file selected" status
-    - stop
+   - clear compare state
+   - set the "no file selected" status
+   - stop
 9. If the pane has an assigned path but the document state is not already loaded for that pane:
-    - call `loadDocument(nextPath, pane)`
+   - call `loadDocument(nextPath, pane)`
 10. `use-project-editor-state.ts` projects UI-facing aliases into `documentState`:
     - `selectedPath`
     - `editorValue`
     - `editorMeta`
     - `isDirty`
-    from the new active pane.
+    from the new active pane. `usePaneWorkspace` is created inside `useProjectEditorUiActions` and passed down to all action hooks.
 
 ## Reads
 
 | Kind | Source | Why |
 |------|--------|-----|
-| Outgoing pane identity | `layoutState.workspaceLayout.activePane` | Determines which pane may need flushing/saving |
-| Outgoing pane state | `paneState.primaryPane` / `paneState.secondaryPane` | Determines dirty/path/meta/content |
-| Next pane assigned path | `layoutState.workspaceLayout.primaryPath` / `layoutState.workspaceLayout.secondaryPath` | Layout layer is the immediate source of truth for pane assignment |
-| Target pane document state | `paneState.primaryPane.path` / `paneState.secondaryPane.path` | Decides whether async load is still needed |
+| Outgoing pane identity | `workspace.layout.activePane` | Determines which pane may need flushing/saving |
+| Outgoing pane state | `workspace.getPaneDocument(outgoingPane)` | Determines dirty/path/content |
+| Next pane assigned path | `workspace.layout.primaryPath` / `workspace.layout.secondaryPath` | Layout layer is the immediate source of truth for pane assignment |
+| Target pane document state | `workspace.primary.path` / `workspace.secondary.path` | Decides whether async load is still needed |
 
 ## Writes
 

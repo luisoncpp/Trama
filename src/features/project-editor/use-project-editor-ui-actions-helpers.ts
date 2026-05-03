@@ -10,6 +10,7 @@ import type {
 } from './project-editor-types'
 import type { SidebarSection } from './project-editor-types'
 import type { WorkspacePane } from './project-editor-types'
+import type { PaneWorkspace } from './pane-workspace'
 import { useSetSidebarPanelWidthAction, useSetSidebarSectionAction, useToggleSidebarPanelCollapsedAction } from './use-project-editor-sidebar-actions'
 import { useSetFocusScopeAction, useSetFullscreenEnabledAction, useToggleFocusModeAction } from './use-project-editor-focus-actions'
 import {
@@ -45,18 +46,18 @@ export interface UseProjectEditorUiActionsParams {
 export { useProjectPickerActions }
 
 export function useSelectFileAction({
-  layoutState,
+  workspace,
   loadDocument,
   assignFileToActivePane,
   panePersistence,
 }: {
-  layoutState: ProjectEditorLayoutState
+  workspace: PaneWorkspace
   loadDocument: (path: string, pane: WorkspacePane) => Promise<void>
   assignFileToActivePane: (filePath: string) => void
   panePersistence: ProjectEditorPanePersistence
 }): ProjectEditorActions['selectFile'] {
   return useCallback(/* selectFileAction */ async (filePath: string): Promise<void> => {
-      const activePane = layoutState.workspaceLayout.activePane
+      const activePane = workspace.layout.activePane
       const activePaneState = panePersistence.getPaneStateForPane(activePane)
       await panePersistence.savePaneIfDirty(activePane)
 
@@ -66,7 +67,7 @@ export function useSelectFileAction({
       }
     }, [
       assignFileToActivePane, loadDocument, panePersistence,
-      layoutState.workspaceLayout.activePane,
+      workspace,
     ] /*Inputs for selectFileAction*/)
 }
 
@@ -96,12 +97,12 @@ export function useReorderFilesAction({
 }
 
 export function useMoveFileAction({
-  paneState,
+  workspace,
   projectState,
   setters,
   openProject,
 }: {
-  paneState: ProjectEditorPaneState
+  workspace: PaneWorkspace
   projectState: ProjectEditorProjectState
   setters: UseProjectEditorUiActionsParams['setters']
   openProject: (projectRoot: string, preferredFilePath?: string) => Promise<void>
@@ -113,8 +114,8 @@ export function useMoveFileAction({
       }
 
       const isSourceDirty =
-        (paneState.primaryPane.path === sourcePath && paneState.primaryPane.isDirty) ||
-        (paneState.secondaryPane.path === sourcePath && paneState.secondaryPane.isDirty)
+        (workspace.primary.path === sourcePath && workspace.primary.isDirty) ||
+        (workspace.secondary.path === sourcePath && workspace.secondary.isDirty)
       if (isSourceDirty) {
         setters.setStatusMessage('Save the file before moving it.')
         return
@@ -133,10 +134,7 @@ export function useMoveFileAction({
         setters.setStatusMessage(`Error moving file: ${error instanceof Error ? error.message : 'Unknown error'}`)
       }
     },
-    [openProject, setters,
-      paneState.primaryPane.isDirty, paneState.primaryPane.path,
-      paneState.secondaryPane.isDirty, paneState.secondaryPane.path,
-      projectState.rootPath] /*Inputs for moveFileAction*/)
+    [openProject, setters, workspace, projectState.rootPath] /*Inputs for moveFileAction*/)
 }
 
 export function useSidebarActions(
@@ -152,8 +150,7 @@ export function useSidebarActions(
 }
 
 export function useWorkspaceLayoutActions(
-  layoutState: ProjectEditorLayoutState,
-  paneState: ProjectEditorPaneState,
+  workspace: PaneWorkspace,
   projectState: ProjectEditorProjectState,
   setters: UseProjectEditorUiActionsParams['setters'],
   loadDocument: (path: string, pane: WorkspacePane) => Promise<void>,
@@ -162,19 +159,19 @@ export function useWorkspaceLayoutActions(
   return {
     toggleWorkspaceLayoutMode: useToggleWorkspaceLayoutModeAction(projectState, setters),
     setWorkspaceLayoutRatio: useSetWorkspaceLayoutRatioAction(setters),
-    setWorkspaceActivePane: useSetWorkspaceActivePaneAction({ layoutState, paneState, projectState, setters, loadDocument, panePersistence }),
+    setWorkspaceActivePane: useSetWorkspaceActivePaneAction({ workspace, setters, loadDocument, panePersistence }),
   }
 }
 
 export function useEditorViewActions(
-  layoutState: ProjectEditorLayoutState,
+  workspace: PaneWorkspace,
   uiState: ProjectEditorUiState,
   setters: UseProjectEditorUiActionsParams['setters'],
   panePersistence: ProjectEditorPanePersistence,
 ) {
   return {
     updateEditorValue: (nextValue: string, pane?: WorkspacePane) => {
-      const targetPane = pane ?? layoutState.workspaceLayout.activePane
+      const targetPane = pane ?? workspace.layout.activePane
       if (targetPane === 'secondary') {
         setters.setSecondaryPane((prev: any) => ({ ...prev, content: nextValue, isDirty: true }))
       } else {
@@ -182,7 +179,7 @@ export function useEditorViewActions(
       }
     },
     saveNow: (pane?: WorkspacePane) => {
-      const targetPane = pane ?? layoutState.workspaceLayout.activePane
+      const targetPane = pane ?? workspace.layout.activePane
       const paneStateLocal = panePersistence.getPaneStateForPane(targetPane)
       if (!paneStateLocal.path || uiState.saving || !paneStateLocal.isDirty) {
         return
@@ -190,7 +187,7 @@ export function useEditorViewActions(
       void panePersistence.savePaneIfDirty(targetPane)
     },
     setFullscreenEnabled: useSetFullscreenEnabledAction(setters),
-    toggleFocusMode: useToggleFocusModeAction(layoutState, setters),
+    toggleFocusMode: useToggleFocusModeAction(workspace.layout, setters),
     setFocusScope: useSetFocusScopeAction(setters),
   }
 }

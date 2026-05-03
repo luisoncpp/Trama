@@ -1,8 +1,6 @@
 import { useCallback } from 'preact/hooks'
-import type { ProjectEditorActions, ProjectEditorLayoutState } from './project-editor-types'
-import type { FocusScope } from './project-editor-types'
-
-import type { WorkspaceLayoutState } from './project-editor-types'
+import type { ProjectEditorActions } from './project-editor-types'
+import type { FocusScope, WorkspaceLayoutState } from './project-editor-types'
 
 export function useSetFullscreenEnabledAction(
   setters: { setStatusMessage: (value: string) => void; setIsFullscreen?: (value: boolean) => void },
@@ -23,11 +21,11 @@ export function useSetFullscreenEnabledAction(
 }
 
 export function useToggleFocusModeAction(
-  layoutState: ProjectEditorLayoutState,
+  layout: WorkspaceLayoutState,
   setters: { setSidebarPanelCollapsed: (value: boolean) => void; setWorkspaceLayout: (value: any) => void },
 ): ProjectEditorActions['toggleFocusMode'] {
   return useCallback(/* toggleFocusModeAction */ () => {
-    if (!layoutState.workspaceLayout.focusModeEnabled) {
+    if (!layout.focusModeEnabled) {
       setters.setSidebarPanelCollapsed(true)
     }
 
@@ -35,7 +33,7 @@ export function useToggleFocusModeAction(
       ...previous,
       focusModeEnabled: !previous.focusModeEnabled,
     }))
-  }, [setters, layoutState.workspaceLayout.focusModeEnabled] /*Inputs for toggleFocusModeAction*/)
+  }, [setters, layout.focusModeEnabled] /*Inputs for toggleFocusModeAction*/)
 }
 
 export function useSetFocusScopeAction(

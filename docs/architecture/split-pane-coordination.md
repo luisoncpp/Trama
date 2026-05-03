@@ -45,6 +45,37 @@ There are two independent `PaneDocumentState` instances: `primaryPane` and `seco
 
 **Source:** `src/features/project-editor/use-project-editor-state.ts`
 
+## PaneWorkspace — Read-Only Query Facade
+
+Action hooks no longer reciben `layoutState` + `paneState` separados y recalculan proyecciones localmente. En cambio, consumen una instância de `PaneWorkspace` que actúa como fachada de consulta:
+
+```typescript
+class PaneWorkspace {
+  constructor(
+    private layoutState: WorkspaceLayoutState,
+    private primaryPane: PaneDocumentState,
+    private secondaryPane: PaneDocumentState,
+  ) {}
+
+  getActivePaneDocument(): ActivePaneDocumentInfo  // selectedPath, editorValue, editorMeta, isDirty
+  getPaneDocument(pane: WorkspacePane): PaneDocumentInfo  // path, content, isDirty
+  isPaneDirty(pane?: WorkspacePane): boolean           // usa active si pane es undefined
+  canSwitchAwayFrom(pane?: WorkspacePane): boolean     // true si no está dirty o no tiene path
+
+  get layout(): WorkspaceLayoutState           // acceso directo al layout
+  get primary(): PaneDocumentState             // acceso directo al pane primario
+  get secondary(): PaneDocumentState           // acceso directo al pane secundario
+}
+```
+
+**Key invariant:** `selectedPath` se deriva del **layout** (`workspaceLayout.primaryPath` / `secondaryPath`), no del pane document (`pane.path`). Esto evita el stale/null flash durante pane switches.
+
+**Files:**
+- `src/features/project-editor/pane-workspace.ts` — the class
+- `src/features/project-editor/use-pane-workspace.ts` — hook adapter (`useMemo`-based)
+
+**Rule:** Los action hooks reciben `PaneWorkspace` como parámetro en vez de `layoutState` + `paneState` separados. No mutan el estado de Preact a través de esta interfaz — es solo lectura.
+
 ## The Formal Contracts
 
 ### Contract 1: `selectedPath` derives from layout, not document state
@@ -206,6 +237,8 @@ To prevent false re-render cascades caused by a single `values` object changing 
 | File | Role |
 |---|---|
 | `src/features/project-editor/project-editor-types.ts` | `WorkspaceLayoutState`, `PaneDocumentState`, `WorkspacePane`, and 6 sub-state type definitions |
+| `src/features/project-editor/pane-workspace.ts` | `PaneWorkspace` read-only query facade |
+| `src/features/project-editor/use-pane-workspace.ts` | `usePaneWorkspace` hook adapter |
 | `src/features/project-editor/use-project-editor-state.ts` | `buildValues()` — projection from layout+document layers to shared state; returns 6 memoized sub-states |
 | `src/features/project-editor/use-project-editor-sub-state-hooks.ts` | Memoized sub-state builders (`useDocumentState`, `usePaneState`, `useLayoutState`, `useSidebarSt`, `useProjectSt`, `useUiSt`) |
 | `src/features/project-editor/use-project-editor-layout-actions.ts` | `openFileInPane`, `setWorkspaceActivePane`, `toggleWorkspaceLayoutMode` |
@@ -222,4 +255,6 @@ Run these first when debugging split-pane issues:
 npm run test -- tests/project-editor-conflict-flow.test.ts
 npm run test -- tests/use-project-editor.test.ts
 npm run test -- tests/workspace-layout-persistence.test.ts
+npm run test -- tests/pane-workspace.test.ts
+npm run test -- tests/use-pane-workspace.test.ts
 ```

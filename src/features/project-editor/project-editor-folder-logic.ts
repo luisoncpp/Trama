@@ -1,5 +1,6 @@
 import type { ProjectEditorPaneState } from './project-editor-types'
 import type { WorkspaceLayoutState } from './project-editor-types'
+import type { PaneWorkspace } from './pane-workspace'
 
 function normalizeFolderPath(value: string): string {
   return value.replaceAll('\\', '/').replace(/^\/+/, '').replace(/\/+$/, '')
@@ -67,5 +68,11 @@ export function pruneWorkspaceLayoutPathsForFolderDelete(
 export function hasDirtyPathInsideFolder(paneState: ProjectEditorPaneState, folderPath: string): boolean {
   const primaryDirtyInFolder = paneState.primaryPane.isDirty && isPathInsideFolder(paneState.primaryPane.path, folderPath)
   const secondaryDirtyInFolder = paneState.secondaryPane.isDirty && isPathInsideFolder(paneState.secondaryPane.path, folderPath)
+  return primaryDirtyInFolder || secondaryDirtyInFolder
+}
+
+export function hasDirtyPathInsideFolderUsingWorkspace(workspace: PaneWorkspace, folderPath: string): boolean {
+  const primaryDirtyInFolder = workspace.primary.isDirty && isPathInsideFolder(workspace.primary.path, folderPath)
+  const secondaryDirtyInFolder = workspace.secondary.isDirty && isPathInsideFolder(workspace.secondary.path, folderPath)
   return primaryDirtyInFolder || secondaryDirtyInFolder
 }

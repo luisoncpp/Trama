@@ -1,7 +1,7 @@
 import { useCallback } from 'preact/hooks'
 import type { ProjectEditorActions, SidebarSection } from './project-editor-types'
 import type { ProjectEditorSidebarState } from './project-editor-types'
-import type { ProjectEditorLayoutState } from './project-editor-types'
+import type { WorkspaceLayoutState } from './project-editor-types'
 
 export function useSetSidebarSectionAction(
   setters: { setSidebarActiveSection: (value: SidebarSection) => void },
@@ -15,18 +15,18 @@ export function useSetSidebarSectionAction(
 }
 
 export function useToggleSidebarPanelCollapsedAction(
-  layoutState: ProjectEditorLayoutState,
+  layout: WorkspaceLayoutState,
   sidebarState: ProjectEditorSidebarState,
   setters: { setSidebarPanelCollapsed: (value: boolean) => void },
 ): ProjectEditorActions['toggleSidebarPanelCollapsed'] {
   return useCallback(/* toggleSidebarPanelCollapsedAction */ () => {
-    if (layoutState.workspaceLayout.focusModeEnabled) {
+    if (layout.focusModeEnabled) {
       setters.setSidebarPanelCollapsed(true)
       return
     }
 
     setters.setSidebarPanelCollapsed(!sidebarState.sidebarPanelCollapsed)
-  }, [setters, layoutState.workspaceLayout.focusModeEnabled, sidebarState.sidebarPanelCollapsed] /*Inputs for toggleSidebarPanelCollapsedAction*/)
+  }, [setters, layout.focusModeEnabled, sidebarState.sidebarPanelCollapsed] /*Inputs for toggleSidebarPanelCollapsedAction*/)
 }
 
 export function useSetSidebarPanelWidthAction(

@@ -3,10 +3,11 @@ import { PROJECT_EDITOR_STRINGS } from './project-editor-strings'
 import { notifyTagIndexRefresh } from './tag-index-events'
 import { normalizeName, isInvalidRenameInput, deduplicateTags } from '../../shared/sidebar-utils'
 import type { ProjectEditorActions, SidebarRenameInput } from './project-editor-types'
-import type { ProjectEditorPaneState, ProjectEditorProjectState } from './project-editor-types'
+import type { ProjectEditorProjectState } from './project-editor-types'
+import type { PaneWorkspace } from './pane-workspace'
 
 interface UseProjectEditorFileActionsParams {
-  paneState: ProjectEditorPaneState
+  workspace: PaneWorkspace
   projectState: ProjectEditorProjectState
   setters: {
     setStatusMessage: (value: string) => void
@@ -68,7 +69,7 @@ function useDeleteFileAction({
   }, [openProject, setters, projectState.rootPath] /*Inputs for deleteFileAction*/)
 }
 
-function useEditFileTagsAction({ paneState, projectState, setters }: UseProjectEditorFileActionsParams): ProjectEditorActions['editFileTags'] {
+function useEditFileTagsAction({ workspace, projectState, setters }: UseProjectEditorFileActionsParams): ProjectEditorActions['editFileTags'] {
   return useCallback(/* editFileTagsAction */ async (path: string, tags: string[]): Promise<void> => {
     if (!projectState.rootPath) {
       setters.setStatusMessage(PROJECT_EDITOR_STRINGS.initialStatus)
@@ -76,8 +77,8 @@ function useEditFileTagsAction({ paneState, projectState, setters }: UseProjectE
     }
 
     const isTargetDirty =
-      (paneState.primaryPane.path === path && paneState.primaryPane.isDirty) ||
-      (paneState.secondaryPane.path === path && paneState.secondaryPane.isDirty)
+      (workspace.primary.path === path && workspace.primary.isDirty) ||
+      (workspace.secondary.path === path && workspace.secondary.isDirty)
     if (isTargetDirty) {
       setters.setStatusMessage('Save or wait for autosave before editing tags on this file.')
       return
@@ -111,11 +112,11 @@ function useEditFileTagsAction({ paneState, projectState, setters }: UseProjectE
     setters.setSecondaryPane((prev: any) => prev.path === path ? { ...prev, meta: nextMeta } : prev)
     notifyTagIndexRefresh()
     setters.setStatusMessage(`Updated tags: ${saveResponse.data.path}`)
-  }, [setters, paneState.primaryPane.isDirty, paneState.primaryPane.path, projectState.rootPath, paneState.secondaryPane.isDirty, paneState.secondaryPane.path] /*Inputs for editFileTagsAction*/)
+  }, [setters, workspace, projectState.rootPath] /*Inputs for editFileTagsAction*/)
 }
 
 export function useProjectEditorFileActions({
-  paneState,
+  workspace,
   projectState,
   setters,
   openProject,
@@ -124,9 +125,9 @@ export function useProjectEditorFileActions({
   deleteFile: ProjectEditorActions['deleteFile']
   editFileTags: ProjectEditorActions['editFileTags']
 } {
-  const renameFile = useRenameFileAction({ paneState, projectState, setters, openProject })
-  const deleteFile = useDeleteFileAction({ paneState, projectState, setters, openProject })
-  const editFileTags = useEditFileTagsAction({ paneState, projectState, setters, openProject })
+  const renameFile = useRenameFileAction({ workspace, projectState, setters, openProject })
+  const deleteFile = useDeleteFileAction({ workspace, projectState, setters, openProject })
+  const editFileTags = useEditFileTagsAction({ workspace, projectState, setters, openProject })
 
   return {
     renameFile,

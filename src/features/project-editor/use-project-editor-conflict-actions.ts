@@ -4,18 +4,18 @@ import { PROJECT_EDITOR_STRINGS } from './project-editor-strings'
 import type { ProjectEditorActions } from './project-editor-types'
 import type {
   ProjectEditorDocumentState,
-  ProjectEditorLayoutState,
   ProjectEditorProjectState,
   ProjectEditorUiState,
 } from './project-editor-types'
+import type { PaneWorkspace } from './pane-workspace'
 
 export function useResolveConflictReloadAction({
-  layoutState,
+  workspace,
   uiState,
   setters,
   loadDocument,
 }: {
-  layoutState: ProjectEditorLayoutState
+  workspace: PaneWorkspace
   uiState: ProjectEditorUiState
   setters: {
     setExternalConflictPath: (value: string | null) => void
@@ -26,13 +26,13 @@ export function useResolveConflictReloadAction({
 }): ProjectEditorActions['resolveConflictReload'] {
   return useCallback(/* resolveConflictReloadAction */ () => {
     if (uiState.externalConflictPath) {
-      void loadDocument(uiState.externalConflictPath, layoutState.workspaceLayout.activePane)
+      void loadDocument(uiState.externalConflictPath, workspace.layout.activePane)
     }
 
     setters.setExternalConflictPath(null)
     setters.setConflictComparisonContent(null)
     setters.setStatusMessage(PROJECT_EDITOR_STRINGS.statusReloadDiscarded)
-  }, [loadDocument, setters, uiState.externalConflictPath, layoutState.workspaceLayout.activePane] /*Inputs for resolveConflictReloadAction*/)
+  }, [loadDocument, setters, uiState.externalConflictPath, workspace] /*Inputs for resolveConflictReloadAction*/)
 }
 
 export function useResolveConflictKeepAction(
@@ -54,17 +54,17 @@ export function useResolveConflictSaveAsCopyAction({
   projectState,
   setters,
   openProject,
-  layoutState,
+  workspace,
 }: {
   documentState: ProjectEditorDocumentState
   projectState: ProjectEditorProjectState
-  layoutState: ProjectEditorLayoutState
   setters: {
     setStatusMessage: (value: string) => void
     setExternalConflictPath: (value: string | null) => void
     setConflictComparisonContent: (value: string | null) => void
   }
   openProject: (projectRoot: string, preferredFilePath?: string, preferredPane?: 'primary' | 'secondary') => Promise<void>
+  workspace: PaneWorkspace
 }): ProjectEditorActions['resolveConflictSaveAsCopy'] {
   return useCallback(/* resolveConflictSaveAsCopyAction */ () => {
     if (!documentState.selectedPath || !projectState.rootPath) {
@@ -87,7 +87,7 @@ export function useResolveConflictSaveAsCopyAction({
       setters.setExternalConflictPath(null)
       setters.setConflictComparisonContent(null)
       setters.setStatusMessage(PROJECT_EDITOR_STRINGS.statusSaveAsCopyCreated)
-      await openProject(projectState.rootPath, response.data.path, layoutState.workspaceLayout.activePane)
+      await openProject(projectState.rootPath, response.data.path, workspace.layout.activePane)
     })()
   }, [
     openProject,
@@ -97,7 +97,7 @@ export function useResolveConflictSaveAsCopyAction({
     projectState.rootPath,
     documentState.selectedPath,
     projectState.visibleFiles,
-    layoutState.workspaceLayout.activePane,
+    workspace,
   ] /*Inputs for resolveConflictSaveAsCopyAction*/)
 }
 
