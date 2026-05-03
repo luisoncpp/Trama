@@ -104,7 +104,6 @@ export function useSecondaryProjectEditorActions(
 
 export function useProjectEditorUiActions({
   layoutState,
-  paneState,
   projectState,
   uiState,
   sidebarState,
@@ -116,8 +115,8 @@ export function useProjectEditorUiActions({
   const primaryActions = usePrimaryProjectEditorActions(paneWorkspace, projectState, uiState, sidebarState, setters, openProject, loadDocument)
   const { selectedPath, editorValue, editorMeta, isDirty } = deriveActivePaneDocument(
     layoutState.workspaceLayout,
-    paneState.primaryPane,
-    paneState.secondaryPane,
+    paneWorkspace.primary,
+    paneWorkspace.secondary,
   )
   const documentState = useMemo(() => ({
     selectedPath,

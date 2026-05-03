@@ -10,6 +10,9 @@ Phase 2, Phase 3 (WS1–WS5), and Phase 4 WS1/wiki-tag-links, WS2/folder-operati
 
 **Not implemented:** Templates (WS3).
 
+**Completed infrastructure:**
+- `pane-isolation-plan-v2` — Módulo `pane/` fully encapsulates all pane mutation; `PaneWorkspace` is the exclusive mutation surface; Preact setters are injected via `usePaneWorkspace` factory hook; `markPaneSaved` is private; `saveNow` is awaitable (see `docs/plan/done/pane-isolation-plan-v2.md`, `docs/lessons-learned/awaitable-save-actions.md`).
+
 **Next step:** Folder move/reparent reintroduced in dedicated slice after merge.
 
 ## Reliability

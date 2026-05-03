@@ -101,8 +101,7 @@ describe('editor serialization debounce', () => {
     await act(async () => { vi.advanceTimersByTime(DEBOUNCE_MS - 1); await Promise.resolve() })
     expect(saveDocumentMock).toHaveBeenCalledTimes(0)
     await act(async () => {
-      model?.actions.saveNow()
-      await Promise.resolve()
+      await model?.actions.saveNow()
     })
     expect(saveDocumentMock).toHaveBeenCalledTimes(1)
     expect(saveDocumentMock.mock.calls[0]?.[0]).toMatchObject({ path: 'docs/a.md', content: '# third' })
@@ -119,8 +118,7 @@ describe('editor serialization debounce', () => {
     await act(async () => { vi.advanceTimersByTime(DEBOUNCE_MS - 1); await Promise.resolve() })
     expect(saveDocumentMock).toHaveBeenCalledTimes(0)
     await act(async () => {
-      model?.actions.saveNow()
-      await Promise.resolve()
+      await model?.actions.saveNow()
     })
     expect(saveDocumentMock).toHaveBeenCalledTimes(1)
     expect(saveDocumentMock.mock.calls[0]?.[0]).toMatchObject({ path: 'docs/a.md', content: '# changed content' })

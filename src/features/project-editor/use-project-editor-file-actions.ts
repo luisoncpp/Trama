@@ -11,8 +11,6 @@ interface UseProjectEditorFileActionsParams {
   projectState: ProjectEditorProjectState
   setters: {
     setStatusMessage: (value: string) => void
-    setPrimaryPane: (value: any) => void
-    setSecondaryPane: (value: any) => void
   }
   openProject: (projectRoot: string, preferredFilePath?: string) => Promise<void>
 }
@@ -108,8 +106,7 @@ function useEditFileTagsAction({ workspace, projectState, setters }: UseProjectE
       return
     }
 
-    setters.setPrimaryPane((prev: any) => prev.path === path ? { ...prev, meta: nextMeta } : prev)
-    setters.setSecondaryPane((prev: any) => prev.path === path ? { ...prev, meta: nextMeta } : prev)
+    workspace.updatePaneMeta(path, nextMeta)
     notifyTagIndexRefresh()
     setters.setStatusMessage(`Updated tags: ${saveResponse.data.path}`)
   }, [setters, workspace, projectState.rootPath] /*Inputs for editFileTagsAction*/)

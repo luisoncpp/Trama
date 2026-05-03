@@ -298,8 +298,7 @@ describe('project editor conflict flow', () => {
     expect(model?.state.secondaryPane.isDirty).toBe(true)
 
     await act(async () => {
-      model?.actions.saveNow('secondary')
-      await Promise.resolve()
+      await model?.actions.saveNow('secondary')
     })
 
     expect(saveDocumentMock).toHaveBeenCalledTimes(1)

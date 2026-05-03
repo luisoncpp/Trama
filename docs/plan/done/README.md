@@ -9,5 +9,6 @@ Current archived plans:
 - `phase-3-sidebar-requirements.md`
 - `rich-editor-refactor-plan.md`
 - `sidebar-technical-design-and-implementation-plan.md`
+- `pane-isolation-plan-v2.md`
 - `wiki-tag-links-implementation-plan.md`
 - `wiki-tag-links-system-guide.md`

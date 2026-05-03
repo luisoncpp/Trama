@@ -10,7 +10,7 @@ import { useProjectEditorFullscreenEffect } from './use-project-editor-fullscree
 import { useProjectEditorCloseEffect } from './use-project-editor-close-effect'
 import { useProjectEditorShortcutsEffect } from './use-project-editor-shortcuts-effect'
 import { useProjectEditorState } from './use-project-editor-state'
-import { PaneWorkspace } from './pane'
+import { usePaneWorkspace } from './pane'
 
 function useAutoPickProjectFolderEffect(
   pickProjectFolder: () => Promise<void>,
@@ -64,7 +64,7 @@ function useProjectEditorEffects(
   actions: ReturnType<typeof useProjectEditorActions>['actions'],
   core: ReturnType<typeof useProjectEditorActions>['core'],
   autoPickProjectFolderOnStart: boolean,
-  paneWorkspace: PaneWorkspace,
+  paneWorkspace: ReturnType<typeof usePaneWorkspace>,
 ): void {
   useAutoPickProjectFolderEffect(actions.pickProjectFolder, autoPickProjectFolderOnStart, uiState.apiAvailable, projectState.rootPath)
   useProjectEditorAutosaveEffect({
@@ -115,20 +115,22 @@ export function useProjectEditor(): ProjectEditorModel {
 
   const saveDocumentNowRef = useRef<((path: string, content: string, meta: DocumentMeta) => Promise<void>) | null>(null)
 
-  const paneWorkspace = new PaneWorkspace(
+  const paneBindings = {
+    primaryPane: paneState.primaryPane,
+    secondaryPane: paneState.secondaryPane,
+    setPrimaryPane: setters.setPrimaryPane,
+    setSecondaryPane: setters.setSecondaryPane,
+  }
+
+  const paneWorkspace = usePaneWorkspace(
     layoutState.workspaceLayout,
-    paneState.primaryPane,
-    paneState.secondaryPane,
-    {
-      primary: primarySerializationRef,
-      secondary: secondarySerializationRef,
-    },
+    paneBindings,
+    { primary: primarySerializationRef, secondary: secondarySerializationRef },
     (path, content, meta) => saveDocumentNowRef.current?.(path, content, meta) ?? Promise.resolve(),
   )
 
   const { actions, core } = useProjectEditorActions({
     layoutState,
-    paneState,
     projectState,
     uiState,
     sidebarState,

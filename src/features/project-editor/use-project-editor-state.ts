@@ -28,8 +28,6 @@ export { type ProjectEditorStateValues }
 export interface ProjectEditorStateSetters {
   setRootPath: (value: string) => void
   setSnapshot: (value: ProjectSnapshot | null) => void
-  setPrimaryPane: (value: PaneDocumentState | ((prev: PaneDocumentState) => PaneDocumentState)) => void
-  setSecondaryPane: (value: PaneDocumentState | ((prev: PaneDocumentState) => PaneDocumentState)) => void
   setLoadingProject: (value: boolean) => void
   setLoadingDocument: (value: boolean) => void
   setSaving: (value: boolean) => void
@@ -41,6 +39,8 @@ export interface ProjectEditorStateSetters {
   setSidebarPanelCollapsed: (value: boolean) => void
   setSidebarPanelWidth: (value: number) => void
   setWorkspaceLayout: (value: WorkspaceLayoutState | ((previous: WorkspaceLayoutState) => WorkspaceLayoutState)) => void
+  setPrimaryPane: (value: PaneDocumentState | ((prev: PaneDocumentState) => PaneDocumentState)) => void
+  setSecondaryPane: (value: PaneDocumentState | ((prev: PaneDocumentState) => PaneDocumentState)) => void
 }
 
 export interface UseProjectEditorStateResult {

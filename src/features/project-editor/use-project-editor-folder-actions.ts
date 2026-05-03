@@ -17,8 +17,6 @@ interface UseProjectEditorFolderActionsParams {
   setters: {
     setStatusMessage: (value: string) => void
     setWorkspaceLayout: (value: WorkspaceLayoutState | ((previous: WorkspaceLayoutState) => WorkspaceLayoutState)) => void
-    setPrimaryPane: (value: any) => void
-    setSecondaryPane: (value: any) => void
   }
   openProject: (projectRoot: string, preferredFilePath?: string, preferredPane?: 'primary' | 'secondary') => Promise<void>
 }

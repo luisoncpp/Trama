@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { act } from 'preact/test-utils'
-import { PaneWorkspace } from '../src/features/project-editor/pane'
+import { PaneWorkspace, type PaneBindings } from '../src/features/project-editor/pane'
 import type { PaneDocumentState, WorkspaceLayoutState } from '../src/features/project-editor/project-editor-types'
 
 function makeLayout(activePane: 'primary' | 'secondary', primaryPath: string | null, secondaryPath: string | null): WorkspaceLayoutState {
@@ -45,7 +45,13 @@ function makeRefs() {
 const saveDocumentFn = vi.fn().mockResolvedValue(undefined)
 
 function makeWs(activePane: 'primary' | 'secondary', primary: PaneDocumentState, secondary: PaneDocumentState) {
-  return new PaneWorkspace(makeLayout(activePane, primary.path, secondary.path), primary, secondary, makeRefs(), saveDocumentFn)
+  const paneBindings: PaneBindings = {
+    primaryPane: primary,
+    secondaryPane: secondary,
+    setPrimaryPane: () => {},
+    setSecondaryPane: () => {},
+  }
+  return new PaneWorkspace(makeLayout(activePane, primary.path, secondary.path), paneBindings, makeRefs(), saveDocumentFn)
 }
 
 describe('PaneWorkspace', () => {
@@ -81,7 +87,13 @@ describe('PaneWorkspace', () => {
 
     it('uses layout path, not document path, for selectedPath (async loading gap)', () => {
       const layout = makeLayout('secondary', 'docs/a.md', 'docs/b.md')
-      const ws = new PaneWorkspace(layout, primaryClean, emptyPane, makeRefs(), saveDocumentFn)
+      const paneBindings: PaneBindings = {
+        primaryPane: primaryClean,
+        secondaryPane: emptyPane,
+        setPrimaryPane: () => {},
+        setSecondaryPane: () => {},
+      }
+      const ws = new PaneWorkspace(layout, paneBindings, makeRefs(), saveDocumentFn)
 
       const doc = ws.getActivePaneDocument()
 
@@ -128,7 +140,13 @@ describe('PaneWorkspace', () => {
 
     it('returns false for empty pane (no path)', () => {
       const layout = makeLayout('primary', 'docs/a.md', null)
-      const ws = new PaneWorkspace(layout, primaryDirty, emptyPane, makeRefs(), saveDocumentFn)
+      const paneBindings: PaneBindings = {
+        primaryPane: primaryDirty,
+        secondaryPane: emptyPane,
+        setPrimaryPane: () => {},
+        setSecondaryPane: () => {},
+      }
+      const ws = new PaneWorkspace(layout, paneBindings, makeRefs(), saveDocumentFn)
 
       expect(ws.isPaneDirty('secondary')).toBe(false)
     })
@@ -143,7 +161,13 @@ describe('PaneWorkspace', () => {
 
     it('returns true when pane has no path (not loaded)', () => {
       const layout = makeLayout('primary', 'docs/a.md', null)
-      const ws = new PaneWorkspace(layout, primaryDirty, emptyPane, makeRefs(), saveDocumentFn)
+      const paneBindings: PaneBindings = {
+        primaryPane: primaryDirty,
+        secondaryPane: emptyPane,
+        setPrimaryPane: () => {},
+        setSecondaryPane: () => {},
+      }
+      const ws = new PaneWorkspace(layout, paneBindings, makeRefs(), saveDocumentFn)
 
       expect(ws.canSwitchAwayFrom('secondary')).toBe(true)
     })
@@ -164,7 +188,13 @@ describe('PaneWorkspace', () => {
   describe('getters', () => {
     it('layout returns a frozen copy', () => {
       const layout = makeLayout('primary', 'docs/a.md', null)
-      const ws = new PaneWorkspace(layout, primaryClean, emptyPane, makeRefs(), saveDocumentFn)
+      const paneBindings: PaneBindings = {
+        primaryPane: primaryClean,
+        secondaryPane: emptyPane,
+        setPrimaryPane: () => {},
+        setSecondaryPane: () => {},
+      }
+      const ws = new PaneWorkspace(layout, paneBindings, makeRefs(), saveDocumentFn)
 
       expect(ws.layout).toEqual(layout)
       expect(Object.isFrozen(ws.layout)).toBe(true)
@@ -199,7 +229,13 @@ describe('PaneWorkspace', () => {
 
     it('does not save dirty pane without path', async () => {
       const dirtyNoPath = makePane(null, '# content', true)
-      const ws = new PaneWorkspace(makeLayout('primary', null, null), dirtyNoPath, emptyPane, makeRefs(), saveDocumentFn)
+      const paneBindings: PaneBindings = {
+        primaryPane: dirtyNoPath,
+        secondaryPane: emptyPane,
+        setPrimaryPane: () => {},
+        setSecondaryPane: () => {},
+      }
+      const ws = new PaneWorkspace(makeLayout('primary', null, null), paneBindings, makeRefs(), saveDocumentFn)
 
       await ws.savePaneIfDirty('primary')
 

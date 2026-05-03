@@ -1,7 +1,7 @@
 import { useCallback } from 'preact/hooks'
 import type { DocumentMeta } from '../../shared/ipc'
-import type { PaneDocumentState, ProjectEditorActions, ProjectEditorUiState, WorkspacePane } from './project-editor-types'
-import type { ProjectEditorLayoutState, ProjectEditorPaneState, ProjectEditorProjectState, ProjectEditorSidebarState } from './project-editor-types'
+import type { ProjectEditorActions, ProjectEditorUiState, WorkspacePane } from './project-editor-types'
+import type { ProjectEditorLayoutState, ProjectEditorProjectState, ProjectEditorSidebarState } from './project-editor-types'
 import type { PaneWorkspace } from './pane'
 import { useOpenProject } from './use-project-editor-open-project'
 import { useProjectEditorUiActions } from './use-project-editor-ui-actions'
@@ -25,13 +25,10 @@ export interface UseProjectEditorActionsResult {
 
 export interface UseProjectEditorActionsParams {
   layoutState: ProjectEditorLayoutState
-  paneState: ProjectEditorPaneState
   projectState: ProjectEditorProjectState
   uiState: ProjectEditorUiState
   sidebarState: ProjectEditorSidebarState
   setters: {
-    setPrimaryPane: (value: PaneDocumentState | ((prev: PaneDocumentState) => PaneDocumentState)) => void
-    setSecondaryPane: (value: PaneDocumentState | ((prev: PaneDocumentState) => PaneDocumentState)) => void
     setLoadingDocument: (value: boolean) => void
     setLoadingProject: (value: boolean) => void
     setSaving: (value: boolean) => void
@@ -46,11 +43,12 @@ export interface UseProjectEditorActionsParams {
   paneWorkspace: PaneWorkspace
 }
 
-function useClearEditor(setters: UseProjectEditorActionsParams['setters']): () => void {
+function useClearEditor(
+  setters: UseProjectEditorActionsParams['setters'],
+  paneWorkspace: PaneWorkspace,
+): () => void {
   return useCallback(/* clearEditorAction */ () => {
-    const emptyPane: PaneDocumentState = { path: null, content: '', meta: {}, isDirty: false }
-    setters.setPrimaryPane(emptyPane)
-    setters.setSecondaryPane(emptyPane)
+    paneWorkspace.clearPanes()
     setters.setExternalConflictPath(null)
     setters.setConflictComparisonContent(null)
     setters.setWorkspaceLayout((previous: any) => ({
@@ -60,10 +58,13 @@ function useClearEditor(setters: UseProjectEditorActionsParams['setters']): () =
       activePane: 'primary',
       mode: 'single',
     }))
-  }, [setters] /*Inputs for clearEditorAction*/)
+  }, [setters, paneWorkspace] /*Inputs for clearEditorAction*/)
 }
 
-function useLoadDocument(setters: UseProjectEditorActionsParams['setters']): (path: string, targetPane: WorkspacePane) => Promise<void> {
+function useLoadDocument(
+  setters: UseProjectEditorActionsParams['setters'],
+  paneWorkspace: PaneWorkspace,
+): (path: string, targetPane: WorkspacePane) => Promise<void> {
   return useCallback(/* loadDocumentAction */ async (filePath: string, targetPane: WorkspacePane): Promise<void> => {
       setters.setLoadingDocument(true)
 
@@ -76,23 +77,13 @@ function useLoadDocument(setters: UseProjectEditorActionsParams['setters']): (pa
 
         const { markdownWithoutImages } = stripBase64ImagesFromMarkdown(response.data.content, response.data.path)
 
-        const loadedPane: PaneDocumentState = {
-          path: response.data.path,
-          content: markdownWithoutImages,
-          meta: response.data.meta,
-          isDirty: false,
-        }
-        if (targetPane === 'secondary') {
-          setters.setSecondaryPane(loadedPane)
-        } else {
-          setters.setPrimaryPane(loadedPane)
-        }
+        paneWorkspace.loadPaneDocument(targetPane, response.data.path, markdownWithoutImages, response.data.meta)
         setters.setStatusMessage(`Loaded document: ${response.data.path}`)
       } finally {
         setters.setLoadingDocument(false)
       }
     },
-    [setters] /*Inputs for loadDocumentAction*/)
+    [setters, paneWorkspace] /*Inputs for loadDocumentAction*/)
 }
 
 function useSaveDocumentNow(
@@ -109,9 +100,6 @@ function useSaveDocumentNow(
           return
         }
 
-        const savedPath = response.data.path
-        setters.setPrimaryPane((prev) => prev.path === savedPath ? { ...prev, isDirty: false } : prev)
-        setters.setSecondaryPane((prev) => prev.path === savedPath ? { ...prev, isDirty: false } : prev)
         setters.setStatusMessage(`Saved: ${response.data.path} (${response.data.version})`)
       } finally {
         setters.setSaving(false)
@@ -122,20 +110,18 @@ function useSaveDocumentNow(
 
 export function useProjectEditorActions({
   layoutState,
-  paneState,
   projectState,
   uiState,
   sidebarState,
   setters,
   paneWorkspace,
 }: UseProjectEditorActionsParams): UseProjectEditorActionsResult {
-  const clearEditor = useClearEditor(setters)
-  const loadDocument = useLoadDocument(setters)
+  const clearEditor = useClearEditor(setters, paneWorkspace)
+  const loadDocument = useLoadDocument(setters, paneWorkspace)
   const openProject = useOpenProject(setters, clearEditor, loadDocument)
   const saveDocumentNow = useSaveDocumentNow(setters)
   const actions = useProjectEditorUiActions({
     layoutState,
-    paneState,
     projectState,
     uiState,
     sidebarState,

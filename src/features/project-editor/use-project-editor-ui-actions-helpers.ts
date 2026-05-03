@@ -2,7 +2,6 @@ import { useCallback } from 'preact/hooks'
 import type { ProjectEditorActions } from './project-editor-types'
 import type {
   ProjectEditorLayoutState,
-  ProjectEditorPaneState,
   ProjectEditorProjectState,
   ProjectEditorSidebarState,
   ProjectEditorUiState,
@@ -22,7 +21,6 @@ import { useProjectPickerActions } from './use-project-editor-picker-actions'
 
 export interface UseProjectEditorUiActionsParams {
   layoutState: ProjectEditorLayoutState
-  paneState: ProjectEditorPaneState
   projectState: ProjectEditorProjectState
   uiState: ProjectEditorUiState
   sidebarState: ProjectEditorSidebarState
@@ -32,8 +30,6 @@ export interface UseProjectEditorUiActionsParams {
     setSidebarPanelCollapsed: (value: boolean) => void
     setSidebarActiveSection: (value: SidebarSection) => void
     setSidebarPanelWidth: (value: number) => void
-    setSecondaryPane: (value: any) => void
-    setPrimaryPane: (value: any) => void
     setConflictComparisonContent: (value: string | null) => void
     setExternalConflictPath: (value: string | null) => void
     setIsFullscreen?: (value: boolean) => void
@@ -167,19 +163,15 @@ export function useEditorViewActions(
   return {
     updateEditorValue: (nextValue: string, pane?: WorkspacePane) => {
       const targetPane = pane ?? workspace.layout.activePane
-      if (targetPane === 'secondary') {
-        setters.setSecondaryPane((prev: any) => ({ ...prev, content: nextValue, isDirty: true }))
-      } else {
-        setters.setPrimaryPane((prev: any) => ({ ...prev, content: nextValue, isDirty: true }))
-      }
+      workspace.updatePaneContent(targetPane, nextValue)
     },
-    saveNow: (pane?: WorkspacePane) => {
+    saveNow: async (pane?: WorkspacePane): Promise<void> => {
       const targetPane = pane ?? workspace.layout.activePane
       const paneStateLocal = workspace.getPaneDocument(targetPane)
       if (!paneStateLocal.path || uiState.saving || !paneStateLocal.isDirty) {
         return
       }
-      void workspace.savePaneIfDirty(targetPane)
+      await workspace.savePaneIfDirty(targetPane)
     },
     setFullscreenEnabled: useSetFullscreenEnabledAction(setters),
     toggleFocusMode: useToggleFocusModeAction(workspace.layout, setters),

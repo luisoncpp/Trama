@@ -16,13 +16,19 @@ export interface ActivePaneDocumentInfo extends PaneDocumentInfo {
   editorMeta: PaneDocumentState['meta']
 }
 
+export interface PaneBindings {
+  primaryPane: PaneDocumentState
+  secondaryPane: PaneDocumentState
+  setPrimaryPane: (value: PaneDocumentState | ((prev: PaneDocumentState) => PaneDocumentState)) => void
+  setSecondaryPane: (value: PaneDocumentState | ((prev: PaneDocumentState) => PaneDocumentState)) => void
+}
+
 export class PaneWorkspace {
   private autosaveTimer: number | null = null
 
   constructor(
     private layoutState: WorkspaceLayoutState,
-    private primaryPane: PaneDocumentState,
-    private secondaryPane: PaneDocumentState,
+    private paneBindings: PaneBindings,
     private serializationRefs: {
       primary: { current: EditorSerializationRefs }
       secondary: { current: EditorSerializationRefs }
@@ -66,12 +72,13 @@ export class PaneWorkspace {
   }
 
   async savePaneIfDirty(pane: WorkspacePane): Promise<void> {
-    const paneDocument = pane === 'secondary' ? this.secondaryPane : this.primaryPane
+    const paneDocument = pane === 'secondary' ? this.paneBindings.secondaryPane : this.paneBindings.primaryPane
     if (!paneDocument.isDirty || !paneDocument.path) {
       return
     }
     const flushResult = this.flushPane(pane)
     await executePaneSave(paneDocument, flushResult, this.saveDocumentFn)
+    this.markPaneSaved(pane, paneDocument.path)
   }
 
   async saveAllDirtyPanes(): Promise<void> {
@@ -80,7 +87,7 @@ export class PaneWorkspace {
 
   getActivePaneDocument(): ActivePaneDocumentInfo {
     const { activePane } = this.layoutState
-    const pane = activePane === 'secondary' ? this.secondaryPane : this.primaryPane
+    const pane = activePane === 'secondary' ? this.paneBindings.secondaryPane : this.paneBindings.primaryPane
     const selectedPath = activePane === 'secondary'
       ? this.layoutState.secondaryPath
       : this.layoutState.primaryPath
@@ -95,7 +102,7 @@ export class PaneWorkspace {
   }
 
   getPaneDocument(pane: WorkspacePane): PaneDocumentInfo {
-    const doc = pane === 'secondary' ? this.secondaryPane : this.primaryPane
+    const doc = pane === 'secondary' ? this.paneBindings.secondaryPane : this.paneBindings.primaryPane
     return {
       path: doc.path,
       content: doc.content,
@@ -114,15 +121,51 @@ export class PaneWorkspace {
     return !doc.isDirty || doc.path === null
   }
 
+  updatePaneContent(pane: WorkspacePane, content: string): void {
+    if (pane === 'secondary') {
+      this.paneBindings.setSecondaryPane((prev) => ({ ...prev, content, isDirty: true }))
+    } else {
+      this.paneBindings.setPrimaryPane((prev) => ({ ...prev, content, isDirty: true }))
+    }
+  }
+
+  loadPaneDocument(pane: WorkspacePane, path: string, content: string, meta: DocumentMeta): void {
+    const doc: PaneDocumentState = { path, content, meta, isDirty: false }
+    if (pane === 'secondary') {
+      this.paneBindings.setSecondaryPane(doc)
+    } else {
+      this.paneBindings.setPrimaryPane(doc)
+    }
+  }
+
+  clearPanes(): void {
+    const emptyPane: PaneDocumentState = { path: null, content: '', meta: {}, isDirty: false }
+    this.paneBindings.setPrimaryPane(emptyPane)
+    this.paneBindings.setSecondaryPane(emptyPane)
+  }
+
+  updatePaneMeta(path: string, meta: DocumentMeta): void {
+    this.paneBindings.setPrimaryPane((prev) => prev.path === path ? { ...prev, meta } : prev)
+    this.paneBindings.setSecondaryPane((prev) => prev.path === path ? { ...prev, meta } : prev)
+  }
+
+  private markPaneSaved(pane: WorkspacePane, path: string): void {
+    if (pane === 'secondary') {
+      this.paneBindings.setSecondaryPane((prev) => prev.path === path ? { ...prev, isDirty: false } : prev)
+    } else {
+      this.paneBindings.setPrimaryPane((prev) => prev.path === path ? { ...prev, isDirty: false } : prev)
+    }
+  }
+
   get layout(): Readonly<WorkspaceLayoutState> {
     return Object.freeze({ ...this.layoutState })
   }
 
   get primary(): Readonly<PaneDocumentState> {
-    return Object.freeze({ ...this.primaryPane })
+    return Object.freeze({ ...this.paneBindings.primaryPane })
   }
 
   get secondary(): Readonly<PaneDocumentState> {
-    return Object.freeze({ ...this.secondaryPane })
+    return Object.freeze({ ...this.paneBindings.secondaryPane })
   }
 }

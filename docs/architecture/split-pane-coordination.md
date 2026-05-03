@@ -148,6 +148,8 @@ onPaneEditorChange = (nextValue: string) => {
 
 **Rule:** Each pane's save affordance should call `saveNow(pane)` so clicks in the secondary pane save the secondary pane's document, not the active pane's. Both `updateEditorValue` and `saveNow` accept an optional `pane` parameter — when omitted, they fall back to `activePane`. Explicit routing is preferred when the call site knows which pane triggered the action.
 
+`saveNow` is also awaitable. Interactive callers may ignore the returned promise, but tests and any flow that needs to observe post-save pane state should await it so the full `savePaneIfDirty()` chain (`flush -> save -> markPaneSaved`) finishes before the next assertion or state transition.
+
 **Wrong:**
 ```typescript
 // Could save primary when user clicked secondary's save button

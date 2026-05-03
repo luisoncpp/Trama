@@ -181,8 +181,9 @@ Mandatory doc navigation for new chats: start with `docs/START-HERE.md` — it p
   - Minimal Preact adapter: detects dirty → calls `paneWorkspace.scheduleAutosave`, detects clean/unmount → calls `paneWorkspace.cancelAutosave`. Timer logic lives in `PaneWorkspace`.
 - `src/features/project-editor/pane/`
   - Private module for pane coordination. All pane state, flush, save, and autosave access goes through this module.
-  - `pane/index.ts` — barrel exporting only `PaneWorkspace` and public types
-  - `pane/pane-workspace.ts` — coordinator class with read methods (`getPaneDocument`, `isPaneDirty`) and write methods (`savePaneIfDirty`, `saveAllDirtyPanes`, `scheduleAutosave`)
+  - `pane/index.ts` — barrel exporting `PaneWorkspace`, `usePaneWorkspace`, and public types
+  - `pane/pane-workspace.ts` — coordinator class with read methods (`getPaneDocument`, `isPaneDirty`) and write methods (`savePaneIfDirty`, `saveAllDirtyPanes`, `scheduleAutosave`, `updatePaneContent`, etc.); `markPaneSaved` is private
+  - `pane/use-pane-workspace.ts` — factory hook that encapsulates Preact setter injection, creating a `PaneWorkspace` instance via `useMemo`
   - `pane/pane-save-logic.ts` — `executePaneSave` (internal, not exported from barrel)
 - `src/features/project-editor/use-project-editor-external-events-effect.ts`
   - Subscribes to external file events (watcher) and handles reloads/conflicts/tree refresh.
@@ -438,6 +439,10 @@ Core and regression suites:
   - Import service coverage: replace mode overwrites existing file content, append mode appends with separator, preview correctly classifies new vs existing files.
 - `tests/ai-import-ipc-handler.test.ts`
   - IPC handler coverage: rejects invalid `importMode` with `VALIDATION_ERROR`, append mode produces expected written content via IPC.
+- `tests/pane-workspace.test.ts`
+  - Unit tests for `PaneWorkspace` coordinator class: mutation methods (`updatePaneContent`, `loadPaneDocument`, `clearPanes`, `updatePaneMeta`), save/isDirty contracts, autosave timer lifecycle.
+- `tests/use-pane-workspace.test.ts`
+  - Unit tests for the `usePaneWorkspace` factory hook: stable identity across re-renders, proper passing of bindings/refs/saveFn to `PaneWorkspace`.
 - `tests/use-ai-import.test.ts`
   - Renderer import hook coverage: `importMode` forwarded to preview IPC call, `importMode` forwarded to execute IPC call, log message format matches created/appended/replaced/skipped/errors counts.
 - `tests/window-close.test.ts`

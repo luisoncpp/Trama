@@ -21,6 +21,6 @@ export function useProjectEditorAutosaveEffect({
       return
     }
 
-    paneWorkspace.scheduleAutosave(activePane, 10 * 1000)
+    paneWorkspace.scheduleAutosave(activePane, 10 * 60 * 1000)
   }, [selectedPath, isDirty, activePane, paneWorkspace] /*Inputs for autosaveOnDirty*/)
 }
