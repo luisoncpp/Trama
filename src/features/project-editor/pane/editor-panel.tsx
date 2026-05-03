@@ -1,7 +1,7 @@
 import { PROJECT_EDITOR_STRINGS } from '../project-editor-strings'
 import type { EditorSerializationRefs, FocusScope } from '../project-editor-types'
-import { RichMarkdownEditor } from './rich-markdown-editor'
-import type { RichEditorSyncState } from './rich-markdown-editor-toolbar'
+import { RichMarkdownEditor } from './rich-markdown-editor/rich-markdown-editor'
+import type { RichEditorSyncState } from './rich-markdown-editor/rich-markdown-editor-toolbar'
 
 interface EditorPanelProps {
   selectedPath: string | null

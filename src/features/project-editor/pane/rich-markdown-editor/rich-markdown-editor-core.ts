@@ -2,13 +2,13 @@ import { useEffect } from 'preact/hooks'
 import type Quill from 'quill'
 import type TurndownService from 'turndown'
 import { registerTypographyHandler } from './rich-markdown-editor-typography'
-import { WORKSPACE_CONTEXT_MENU_EVENT } from '../../../shared/workspace-context-menu'
+import { WORKSPACE_CONTEXT_MENU_EVENT } from '../../../../shared/workspace-context-menu'
 import { registerWorkspaceCommandListener } from './rich-markdown-editor-commands'
 import { createQuillEditor, applyMarkdownToEditor, syncEditorSpellcheck } from './rich-markdown-editor-quill'
 import { registerEditorTextChangeHandler } from './rich-markdown-editor-serialization'
 import { useSyncExternalValue } from './rich-markdown-editor-external-sync'
 import { normalizeEditorDocumentValue } from './rich-markdown-editor-value-sync'
-import type { EditorSerializationRefs } from '../project-editor-types'
+import type { EditorSerializationRefs } from '../../project-editor-types'
 
 interface UseRichEditorLifecycleParams {
   documentId: string | null

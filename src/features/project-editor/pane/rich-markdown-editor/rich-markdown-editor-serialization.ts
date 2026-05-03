@@ -1,7 +1,7 @@
 import type Quill from 'quill'
 import type TurndownService from 'turndown'
-import type { EditorSerializationRefs } from '../project-editor-types'
-import { hydrateMarkdownImages } from '../../../shared/markdown-image-placeholder'
+import type { EditorSerializationRefs } from '../../project-editor-types'
+import { hydrateMarkdownImages } from '../../../../shared/markdown-image-placeholder'
 import { syncCenteredLayoutArtifacts } from './rich-markdown-editor-layout-centering'
 import { serializeEditorMarkdownFromRef } from './rich-markdown-editor-quill'
 

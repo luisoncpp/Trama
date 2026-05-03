@@ -1,7 +1,7 @@
 import type { ProjectEditorModel } from './project-editor-types'
 import { ConflictBanner } from './components/conflict-banner'
 import { ConflictComparePanel } from './components/conflict-compare-panel'
-import { WorkspaceLayoutPanel } from './components/workspace-editor-panels.tsx'
+import { WorkspaceLayoutPanel } from './pane'
 import { SidebarPanel } from './components/sidebar/sidebar-panel.tsx'
 import { ProjectEditorDialogs } from './project-editor-dialogs'
 import { useAiImport } from './use-ai-import'

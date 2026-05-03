@@ -7,7 +7,7 @@ import {
 	applyFocusScope,
 	getSelectionViewportRect,
 } from './rich-markdown-editor-focus-scope-helpers'
-import type { FocusScope } from '../project-editor-types'
+import type { FocusScope } from '../../project-editor-types'
 
 function getEditorElements(host: HTMLDivElement): { editorRoot: HTMLElement; container: HTMLElement } | null {
 	const editorRoot = host.querySelector('.ql-editor')

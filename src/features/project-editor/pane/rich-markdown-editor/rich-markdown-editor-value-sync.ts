@@ -1,4 +1,4 @@
-import { stripBase64ImagesFromMarkdown } from '../../../shared/markdown-image-placeholder'
+import { stripBase64ImagesFromMarkdown } from '../../../../shared/markdown-image-placeholder'
 import { normalizeMarkdown } from './rich-markdown-editor-quill'
 
 export function normalizeEditorDocumentValue(value: string, documentId: string | null): string {

@@ -4,7 +4,7 @@ import {
 	findSentenceBoundaries,
 	resolveTextOffsetToDomPosition,
 } from './rich-markdown-editor-focus-scope-geometry'
-import type { FocusScope } from '../project-editor-types'
+import type { FocusScope } from '../../project-editor-types'
 
 const FOCUS_TEXT_HIGHLIGHT_NAME = 'trama-focus-scope'
 

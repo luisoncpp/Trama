@@ -1,8 +1,8 @@
 import type Quill from 'quill'
 import TurndownService from 'turndown'
 import { marked } from 'marked'
-import { WORKSPACE_CONTEXT_MENU_EVENT, type WorkspaceContextCommand } from '../../../shared/workspace-context-menu'
-import { renderDirectiveArtifactsToMarkdown } from '../../../shared/markdown-layout-directives'
+import { WORKSPACE_CONTEXT_MENU_EVENT, type WorkspaceContextCommand } from '../../../../shared/workspace-context-menu'
+import { renderDirectiveArtifactsToMarkdown } from '../../../../shared/markdown-layout-directives'
 import { serializeEditorMarkdownFromRef } from './rich-markdown-editor-quill'
 
 function getCopySourceHtml(editor: Quill): string {

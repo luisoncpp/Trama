@@ -1,18 +1,18 @@
 import Quill from 'quill'
 import TurndownService from 'turndown'
 import { marked } from 'marked'
-import { renderDirectiveArtifactsToMarkdown } from '../../../shared/markdown-layout-directives'
-import { normalizeBlankLinesToSpacerDirectives } from '../../../shared/markdown-layout-directives-spacing'
+import { renderDirectiveArtifactsToMarkdown } from '../../../../shared/markdown-layout-directives'
+import { normalizeBlankLinesToSpacerDirectives } from '../../../../shared/markdown-layout-directives-spacing'
 import { registerLayoutDirectiveBlots } from './rich-markdown-editor-layout-blots'
 import { registerLayoutDirectiveClipboardMatchers } from './rich-markdown-editor-layout-clipboard'
 import { registerLayoutDirectiveKeyboardBindings } from './rich-markdown-editor-layout-keyboard'
 import { syncCenteredLayoutArtifacts } from './rich-markdown-editor-layout-centering'
-import { serializeDirectiveArtifactNode } from '../../../shared/markdown-layout-directives'
-import type { DirectiveArtifactNode } from '../../../shared/markdown-layout-directives-artifact-node'
+import { serializeDirectiveArtifactNode } from '../../../../shared/markdown-layout-directives'
+import type { DirectiveArtifactNode } from '../../../../shared/markdown-layout-directives-artifact-node'
 import {
   hydrateMarkdownImages,
   stripBase64ImagesFromHtml,
-} from '../../../shared/markdown-image-placeholder'
+} from '../../../../shared/markdown-image-placeholder'
 
 type QuillChangeSource = 'api' | 'user' | 'silent'
 

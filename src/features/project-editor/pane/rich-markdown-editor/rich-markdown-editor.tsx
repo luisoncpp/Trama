@@ -8,9 +8,9 @@ import { type RichEditorSyncState, useSyncToolbarControls } from './rich-markdow
 import { buildTagOverlayMatches, useTagOverlay, findMatchAtPosition } from './rich-markdown-editor-tag-overlay'
 import { useCtrlKeyState } from './rich-markdown-editor-ctrl-key'
 import { TagHighlights } from './rich-markdown-editor-tag-highlights'
-import type { FocusScope } from '../project-editor-types'
-import type { EditorSerializationRefs } from '../project-editor-types'
-import { serializeDirectiveArtifactNode } from '../../../shared/markdown-layout-directives'
+import type { FocusScope } from '../../project-editor-types'
+import type { EditorSerializationRefs } from '../../project-editor-types'
+import { serializeDirectiveArtifactNode } from '../../../../shared/markdown-layout-directives'
 import { normalizeEditorDocumentValue } from './rich-markdown-editor-value-sync'
 
 interface RichMarkdownEditorProps {
