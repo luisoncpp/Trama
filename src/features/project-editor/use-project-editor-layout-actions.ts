@@ -1,27 +1,13 @@
 import { useCallback } from 'preact/hooks'
 import { canSelectFile } from './project-editor-logic'
 import { PROJECT_EDITOR_STRINGS } from './project-editor-strings'
-import type { ProjectEditorActions, ProjectEditorLayoutState, ProjectEditorPaneState, ProjectEditorProjectState, WorkspaceLayoutState, WorkspacePane } from './project-editor-types'
-import type { ProjectEditorPanePersistence } from './use-project-editor-pane-persistence'
-import type { PaneWorkspace } from './pane-workspace'
+import type { ProjectEditorActions, ProjectEditorProjectState, WorkspaceLayoutState, WorkspacePane } from './project-editor-types'
+import type { PaneWorkspace } from './pane'
 
 function updatePathForPane(layout: WorkspaceLayoutState, pane: WorkspacePane, path: string): WorkspaceLayoutState {
   return pane === 'primary'
     ? { ...layout, primaryPath: path }
     : { ...layout, secondaryPath: path }
-}
-
-interface UseWorkspaceLayoutActionParams {
-  layoutState: ProjectEditorLayoutState
-  paneState: ProjectEditorPaneState
-  projectState: ProjectEditorProjectState
-  setters: {
-    setWorkspaceLayout: (value: any) => void
-    setConflictComparisonContent: (value: string | null) => void
-    setStatusMessage: (value: string) => void
-  }
-  loadDocument: (path: string, pane: WorkspacePane) => Promise<void>
-  panePersistence: ProjectEditorPanePersistence
 }
 
 interface UseSetWorkspaceActivePaneActionParams {
@@ -32,7 +18,6 @@ interface UseSetWorkspaceActivePaneActionParams {
     setStatusMessage: (value: string) => void
   }
   loadDocument: (path: string, pane: WorkspacePane) => Promise<void>
-  panePersistence: ProjectEditorPanePersistence
 }
 
 export function useAssignFileToActivePaneAction(
@@ -95,13 +80,12 @@ export function useSetWorkspaceActivePaneAction({
   workspace,
   setters,
   loadDocument,
-  panePersistence,
 }: UseSetWorkspaceActivePaneActionParams): ProjectEditorActions['setWorkspaceActivePane'] {
   return useCallback(/* setWorkspaceActivePaneAction */ async (pane: WorkspacePane) => {
       const outgoingPane = workspace.layout.activePane
-      const outgoingState = panePersistence.getPaneStateForPane(outgoingPane)
+      const outgoingState = workspace.getPaneDocument(outgoingPane)
       if (outgoingState.isDirty && outgoingState.path) {
-        await panePersistence.savePaneIfDirty(outgoingPane)
+        await workspace.savePaneIfDirty(outgoingPane)
       }
 
       const nextPath = pane === 'secondary' ? workspace.layout.secondaryPath : workspace.layout.primaryPath
@@ -123,7 +107,7 @@ export function useSetWorkspaceActivePaneAction({
       }
     },
     [
-      loadDocument, panePersistence, setters,
+      loadDocument, setters,
       workspace,
     ] /*Inputs for setWorkspaceActivePaneAction*/)
 }

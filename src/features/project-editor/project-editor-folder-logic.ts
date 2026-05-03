@@ -1,6 +1,6 @@
 import type { ProjectEditorPaneState } from './project-editor-types'
 import type { WorkspaceLayoutState } from './project-editor-types'
-import type { PaneWorkspace } from './pane-workspace'
+import type { PaneWorkspace } from './pane'
 
 function normalizeFolderPath(value: string): string {
   return value.replaceAll('\\', '/').replace(/^\/+/, '').replace(/\/+$/, '')

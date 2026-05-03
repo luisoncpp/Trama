@@ -4,7 +4,7 @@ import { notifyTagIndexRefresh } from './tag-index-events'
 import { normalizeName, isInvalidRenameInput, deduplicateTags } from '../../shared/sidebar-utils'
 import type { ProjectEditorActions, SidebarRenameInput } from './project-editor-types'
 import type { ProjectEditorProjectState } from './project-editor-types'
-import type { PaneWorkspace } from './pane-workspace'
+import type { PaneWorkspace } from './pane'
 
 interface UseProjectEditorFileActionsParams {
   workspace: PaneWorkspace

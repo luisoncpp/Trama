@@ -2,7 +2,7 @@ import { useCallback } from 'preact/hooks'
 import type { DocumentMeta } from '../../shared/ipc'
 import type { PaneDocumentState, ProjectEditorActions, ProjectEditorUiState, WorkspacePane } from './project-editor-types'
 import type { ProjectEditorLayoutState, ProjectEditorPaneState, ProjectEditorProjectState, ProjectEditorSidebarState } from './project-editor-types'
-import type { ProjectEditorPanePersistence } from './use-project-editor-pane-persistence'
+import type { PaneWorkspace } from './pane'
 import { useOpenProject } from './use-project-editor-open-project'
 import { useProjectEditorUiActions } from './use-project-editor-ui-actions'
 import { hydrateMarkdownImages, stripBase64ImagesFromMarkdown } from '../../shared/markdown-image-placeholder'
@@ -43,7 +43,7 @@ export interface UseProjectEditorActionsParams {
     setSidebarActiveSection: (value: import('./project-editor-types').SidebarSection) => void
     setSidebarPanelWidth: (value: number) => void
   }
-  panePersistence: ProjectEditorPanePersistence
+  paneWorkspace: PaneWorkspace
 }
 
 function useClearEditor(setters: UseProjectEditorActionsParams['setters']): () => void {
@@ -127,7 +127,7 @@ export function useProjectEditorActions({
   uiState,
   sidebarState,
   setters,
-  panePersistence,
+  paneWorkspace,
 }: UseProjectEditorActionsParams): UseProjectEditorActionsResult {
   const clearEditor = useClearEditor(setters)
   const loadDocument = useLoadDocument(setters)
@@ -142,7 +142,7 @@ export function useProjectEditorActions({
     setters,
     openProject,
     loadDocument,
-    panePersistence,
+    paneWorkspace,
   })
 
   return {

@@ -1,6 +1,5 @@
 import { useCallback } from 'preact/hooks'
 import type { ProjectEditorActions } from './project-editor-types'
-import type { ProjectEditorPanePersistence } from './use-project-editor-pane-persistence'
 import type {
   ProjectEditorLayoutState,
   ProjectEditorPaneState,
@@ -11,7 +10,7 @@ import type {
 } from './project-editor-types'
 import type { SidebarSection } from './project-editor-types'
 import type { WorkspacePane } from './project-editor-types'
-import type { PaneWorkspace } from './pane-workspace'
+import type { PaneWorkspace } from './pane'
 import { useSetSidebarPanelWidthAction, useSetSidebarSectionAction, useToggleSidebarPanelCollapsedAction } from './use-project-editor-sidebar-actions'
 import { useSetFocusScopeAction, useSetFullscreenEnabledAction, useToggleFocusModeAction } from './use-project-editor-focus-actions'
 import {
@@ -41,7 +40,6 @@ export interface UseProjectEditorUiActionsParams {
   }
   openProject: (projectRoot: string, preferredFilePath?: string, preferredPane?: 'primary' | 'secondary') => Promise<void>
   loadDocument: (path: string, pane: WorkspacePane) => Promise<void>
-  panePersistence: ProjectEditorPanePersistence
 }
 
 export { useProjectPickerActions }
@@ -50,24 +48,22 @@ export function useSelectFileAction({
   workspace,
   loadDocument,
   assignFileToActivePane,
-  panePersistence,
 }: {
   workspace: PaneWorkspace
   loadDocument: (path: string, pane: WorkspacePane) => Promise<void>
   assignFileToActivePane: (filePath: string) => void
-  panePersistence: ProjectEditorPanePersistence
 }): ProjectEditorActions['selectFile'] {
   return useCallback(/* selectFileAction */ async (filePath: string): Promise<void> => {
       const activePane = workspace.layout.activePane
-      const activePaneState = panePersistence.getPaneStateForPane(activePane)
-      await panePersistence.savePaneIfDirty(activePane)
+      const activePaneState = workspace.getPaneDocument(activePane)
+      await workspace.savePaneIfDirty(activePane)
 
       assignFileToActivePane(filePath)
       if (filePath !== activePaneState.path) {
         void loadDocument(filePath, activePane)
       }
     }, [
-      assignFileToActivePane, loadDocument, panePersistence,
+      assignFileToActivePane, loadDocument,
       workspace,
     ] /*Inputs for selectFileAction*/)
 }
@@ -155,12 +151,11 @@ export function useWorkspaceLayoutActions(
   projectState: ProjectEditorProjectState,
   setters: UseProjectEditorUiActionsParams['setters'],
   loadDocument: (path: string, pane: WorkspacePane) => Promise<void>,
-  panePersistence: ProjectEditorPanePersistence,
 ) {
   return {
     toggleWorkspaceLayoutMode: useToggleWorkspaceLayoutModeAction(projectState, setters),
     setWorkspaceLayoutRatio: useSetWorkspaceLayoutRatioAction(setters),
-    setWorkspaceActivePane: useSetWorkspaceActivePaneAction({ workspace, setters, loadDocument, panePersistence }),
+    setWorkspaceActivePane: useSetWorkspaceActivePaneAction({ workspace, setters, loadDocument }),
   }
 }
 
@@ -168,7 +163,6 @@ export function useEditorViewActions(
   workspace: PaneWorkspace,
   uiState: ProjectEditorUiState,
   setters: UseProjectEditorUiActionsParams['setters'],
-  panePersistence: ProjectEditorPanePersistence,
 ) {
   return {
     updateEditorValue: (nextValue: string, pane?: WorkspacePane) => {
@@ -181,11 +175,11 @@ export function useEditorViewActions(
     },
     saveNow: (pane?: WorkspacePane) => {
       const targetPane = pane ?? workspace.layout.activePane
-      const paneStateLocal = panePersistence.getPaneStateForPane(targetPane)
+      const paneStateLocal = workspace.getPaneDocument(targetPane)
       if (!paneStateLocal.path || uiState.saving || !paneStateLocal.isDirty) {
         return
       }
-      void panePersistence.savePaneIfDirty(targetPane)
+      void workspace.savePaneIfDirty(targetPane)
     },
     setFullscreenEnabled: useSetFullscreenEnabledAction(setters),
     toggleFocusMode: useToggleFocusModeAction(workspace.layout, setters),

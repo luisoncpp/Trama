@@ -17,11 +17,10 @@ This flow mixes synchronous layout state with asynchronous document state. It is
 1. The user interacts with a split-pane editor.
 2. In `workspace-editor-panels.tsx`, `PaneEditor` calls `actions.setWorkspaceActivePane(pane)` when activating the pane.
 3. `useSetWorkspaceActivePaneAction({ workspace, ... })` reads the outgoing pane identity from `workspace.layout.activePane`.
-4. It reads the outgoing pane document state through `workspace.getPaneDocument(outgoingPane)` (or `panePersistence.getPaneStateForPane` for flush).
+4. It reads the outgoing pane document state through `workspace.getPaneDocument(outgoingPane)`.
 5. If the outgoing pane is dirty and has a path:
-   - call `panePersistence.savePaneIfDirty(outgoingPane)`
-   - inside that helper, choose the matching serialization ref
-   - call `flush()`
+   - call `workspace.savePaneIfDirty(outgoingPane)`
+   - inside that method: flush the pane's serialization ref
    - fall back to `outgoingState.content` only if `flush()` returns `null`
    - call `saveDocumentNow(...)`
 6. The action computes the next assigned path from layout state via `workspace.layout`:
@@ -39,7 +38,7 @@ This flow mixes synchronous layout state with asynchronous document state. It is
     - `editorValue`
     - `editorMeta`
     - `isDirty`
-    from the new active pane. `usePaneWorkspace` is created inside `useProjectEditorUiActions` and passed down to all action hooks.
+    from the new active pane. `paneWorkspace` is created in `useProjectEditor` and passed down to all action hooks.
 
 ## Reads
 
@@ -64,7 +63,7 @@ This flow mixes synchronous layout state with asynchronous document state. It is
 
 | Side effect | File |
 |-------------|------|
-| Flush-before-switch | `use-project-editor-layout-actions.ts` + `use-project-editor-pane-persistence.ts` |
+| Flush-before-switch | `use-project-editor-layout-actions.ts` + `pane/pane-workspace.ts` |
 | Renderer save through IPC | `use-project-editor-actions.ts` |
 | Async document load | `use-project-editor-actions.ts` |
 | Sidebar selected file projection | `use-project-editor-state.ts` |
@@ -74,7 +73,7 @@ This flow mixes synchronous layout state with asynchronous document state. It is
 | File | Why inspect it |
 |------|----------------|
 | `src/features/project-editor/components/workspace-editor-panels.tsx` | Pane activation wiring and explicit pane identity |
-| `src/features/project-editor/use-project-editor-pane-persistence.ts` | Centralized outgoing-pane flush/save policy |
+| `src/features/project-editor/pane/pane-workspace.ts` | Centralized outgoing-pane flush/save policy |
 | `src/features/project-editor/use-project-editor-layout-actions.ts` | Switch-pane action and flush-before-switch |
 | `src/features/project-editor/use-project-editor-state.ts` | Active-pane UI projection layer (produces `documentState`) |
 | `src/features/project-editor/use-project-editor-sub-state-hooks.ts` | Memoized sub-state builders consumed by action hooks |

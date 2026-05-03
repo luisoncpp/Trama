@@ -9,7 +9,7 @@ import { noteSidebarFolderRenamed } from './components/sidebar/sidebar-folder-re
 import { normalizeName, isInvalidRenameInput } from '../../shared/sidebar-utils'
 import type { ProjectEditorActions, SidebarRenameInput, WorkspaceLayoutState } from './project-editor-types'
 import type { ProjectEditorProjectState } from './project-editor-types'
-import type { PaneWorkspace } from './pane-workspace'
+import type { PaneWorkspace } from './pane'
 
 interface UseProjectEditorFolderActionsParams {
   workspace: PaneWorkspace

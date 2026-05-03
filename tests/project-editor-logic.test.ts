@@ -10,7 +10,7 @@ import {
   restoreWorkspaceLayoutState,
   shouldRefreshTreeOnExternalEvent,
 } from '../src/features/project-editor/project-editor-logic'
-import { executePaneSave } from '../src/features/project-editor/pane-save-logic'
+import { executePaneSave } from '../src/features/project-editor/pane/pane-save-logic'
 import type { ProjectSnapshot } from '../src/shared/ipc'
 
 function buildSnapshot(paths: string[]): ProjectSnapshot {

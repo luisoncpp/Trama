@@ -1,32 +1,29 @@
 import { useEffect } from 'preact/hooks'
-import type { ProjectEditorPaneState } from './project-editor-types'
-import type { ProjectEditorPanePersistence } from './use-project-editor-pane-persistence'
+import type { PaneWorkspace } from './pane'
 
 interface UseProjectEditorCloseEffectParams {
-  paneState: ProjectEditorPaneState
-  panePersistence: ProjectEditorPanePersistence
+  paneWorkspace: PaneWorkspace
 }
 
 export function useProjectEditorCloseEffect({
-  paneState,
-  panePersistence,
+  paneWorkspace,
 }: UseProjectEditorCloseEffectParams): void {
   useEffect(/* notifyCloseStateDirtyFlag */ () => {
-    const hasUnsavedChanges = paneState.primaryPane.isDirty || paneState.secondaryPane.isDirty
+    const hasUnsavedChanges = paneWorkspace.isPaneDirty('primary') || paneWorkspace.isPaneDirty('secondary')
     if (window.tramaApi?.notifyCloseState) {
       void window.tramaApi.notifyCloseState({ hasUnsavedChanges })
     }
-  }, [paneState.primaryPane.isDirty, paneState.secondaryPane.isDirty] /*Inputs for notifyCloseStateDirtyFlag*/)
+  }, [paneWorkspace] /*Inputs for notifyCloseStateDirtyFlag*/)
 
   useEffect(/* registerSaveAllGlobalHandler */ () => {
     const w = window as unknown as Record<string, unknown>
 
     w.__tramaSaveAll = async (): Promise<void> => {
-      await panePersistence.saveAllDirtyPanes()
+      await paneWorkspace.saveAllDirtyPanes()
     }
 
     return () => {
       delete w.__tramaSaveAll
     }
-  }, [panePersistence, paneState.primaryPane, paneState.secondaryPane] /*Inputs for registerSaveAllGlobalHandler*/)
+  }, [paneWorkspace] /*Inputs for registerSaveAllGlobalHandler*/)
 }

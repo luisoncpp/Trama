@@ -1,4 +1,6 @@
-import type { PaneDocumentState, WorkspaceLayoutState, WorkspacePane } from './project-editor-types'
+import type { DocumentMeta } from '../../../shared/ipc'
+import type { EditorSerializationRefs, PaneDocumentState, WorkspaceLayoutState, WorkspacePane } from '../project-editor-types'
+import { executePaneSave } from './pane-save-logic'
 
 export type { WorkspacePane }
 
@@ -21,15 +23,24 @@ export class PaneWorkspace {
     private layoutState: WorkspaceLayoutState,
     private primaryPane: PaneDocumentState,
     private secondaryPane: PaneDocumentState,
+    private serializationRefs: {
+      primary: { current: EditorSerializationRefs }
+      secondary: { current: EditorSerializationRefs }
+    },
+    private saveDocumentFn: (
+      path: string,
+      content: string,
+      meta: DocumentMeta
+    ) => Promise<void>,
   ) {}
 
-  scheduleAutosave(pane: WorkspacePane, saveFn: () => Promise<void>, delay: number): void {
+  scheduleAutosave(pane: WorkspacePane, delay: number): void {
     this.cancelAutosave()
     const capturedPane = pane
     this.autosaveTimer = window.setTimeout(() => {
       this.autosaveTimer = null
       if (this.layoutState.activePane === capturedPane) {
-        void saveFn()
+        void this.savePaneIfDirty(capturedPane)
       }
     }, delay)
   }
@@ -43,6 +54,28 @@ export class PaneWorkspace {
 
   destroy(): void {
     this.cancelAutosave()
+  }
+
+  private getSerializationRefForPane(pane: WorkspacePane): { current: EditorSerializationRefs } {
+    return pane === 'secondary' ? this.serializationRefs.secondary : this.serializationRefs.primary
+  }
+
+  private flushPane(pane: WorkspacePane): string | null {
+    const ref = this.getSerializationRefForPane(pane)
+    return ref.current.flush()
+  }
+
+  async savePaneIfDirty(pane: WorkspacePane): Promise<void> {
+    const paneDocument = pane === 'secondary' ? this.secondaryPane : this.primaryPane
+    if (!paneDocument.isDirty || !paneDocument.path) {
+      return
+    }
+    const flushResult = this.flushPane(pane)
+    await executePaneSave(paneDocument, flushResult, this.saveDocumentFn)
+  }
+
+  async saveAllDirtyPanes(): Promise<void> {
+    await Promise.all((['primary', 'secondary'] as const).map((pane) => this.savePaneIfDirty(pane)))
   }
 
   getActivePaneDocument(): ActivePaneDocumentInfo {

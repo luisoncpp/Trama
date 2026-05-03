@@ -47,7 +47,7 @@ There are two independent `PaneDocumentState` instances: `primaryPane` and `seco
 
 ## PaneWorkspace — Coordinator with Internal Timer
 
-Action hooks no longer reciben `layoutState` + `paneState` separados y recalculan proyecciones localmente. En cambio, consumen una instância de `PaneWorkspace` que actúa como fachada de consulta y coordinador de autosave:
+Action hooks no longer reciben `layoutState` + `paneState` separados y recalculan proyecciones localmente. En cambio, consumen uma instância de `PaneWorkspace` que actúa como fachada completa de paneles: lectura, save, flush y autosave.
 
 ```typescript
 class PaneWorkspace {
@@ -57,6 +57,11 @@ class PaneWorkspace {
     private layoutState: WorkspaceLayoutState,
     private primaryPane: PaneDocumentState,
     private secondaryPane: PaneDocumentState,
+    private serializationRefs: {
+      primary: { current: EditorSerializationRefs }
+      secondary: { current: EditorSerializationRefs }
+    },
+    private saveDocumentFn: (path: string, content: string, meta: DocumentMeta) => Promise<void>,
   ) {}
 
   // Query methods (read-only)
@@ -65,8 +70,12 @@ class PaneWorkspace {
   isPaneDirty(pane?: WorkspacePane): boolean           // usa active si pane es undefined
   canSwitchAwayFrom(pane?: WorkspacePane): boolean     // true si no está dirty o no tiene path
 
+  // Persistence methods
+  savePaneIfDirty(pane: WorkspacePane): Promise<void>  // flush + save
+  saveAllDirtyPanes(): Promise<void>                    // flush + save both panes
+
   // Coordination methods
-  scheduleAutosave(pane: WorkspacePane, saveFn: () => Promise<void>, delay: number): void
+  scheduleAutosave(pane: WorkspacePane, delay: number): void  // sin callback,interno
   cancelAutosave(): void
   destroy(): void
 
@@ -79,11 +88,14 @@ class PaneWorkspace {
 
 **Responsibilities:**
 - Query facade: exposes pane state without mutating Preact state
-- Autosave coordinator: owns the timer, called by the effect adapter
+- Persistence coordinator: owns flush, save, and autosave timer internally
+- `scheduleAutosave` no longer takes a callback — save policy lives inside the module
 
 **Files:**
-- `src/features/project-editor/pane-workspace.ts` — the class
-- `src/features/project-editor/use-pane-workspace.ts` — hook adapter (`useMemo`-based)
+- `src/features/project-editor/pane/pane-workspace.ts` — the class
+- `src/features/project-editor/pane/index.ts` — barrel export (only `PaneWorkspace` and public types)
+- `src/features/project-editor/pane/pane-save-logic.ts` — `executePaneSave` (internal, not exported)
+- `src/features/project-editor/use-pane-workspace.ts` — hook adapter (`useMemo`-based, for stubs only)
 
 ## The Formal Contracts
 
@@ -246,8 +258,10 @@ To prevent false re-render cascades caused by a single `values` object changing 
 | File | Role |
 |---|---|
 | `src/features/project-editor/project-editor-types.ts` | `WorkspaceLayoutState`, `PaneDocumentState`, `WorkspacePane`, and 6 sub-state type definitions |
-| `src/features/project-editor/pane-workspace.ts` | `PaneWorkspace` coordinator with internal autosave timer (`scheduleAutosave`, `cancelAutosave`, `destroy`) |
-| `src/features/project-editor/use-pane-workspace.ts` | `usePaneWorkspace` hook adapter |
+| `src/features/project-editor/pane/pane-workspace.ts` | `PaneWorkspace` coordinator: read methods + `savePaneIfDirty`, `saveAllDirtyPanes`, `scheduleAutosave` (no callback) |
+| `src/features/project-editor/pane/index.ts` | Barrel: only `PaneWorkspace` and public types exported |
+| `src/features/project-editor/pane/pane-save-logic.ts` | `executePaneSave` helper (internal, not in barrel) |
+| `src/features/project-editor/use-project-editor.ts` | Creates `PaneWorkspace` instance with `serializationRefs` and `saveDocumentFn` |
 | `src/features/project-editor/use-project-editor-state.ts` | `buildValues()` — projection from layout+document layers to shared state; returns 6 memoized sub-states |
 | `src/features/project-editor/use-project-editor-sub-state-hooks.ts` | Memoized sub-state builders (`useDocumentState`, `usePaneState`, `useLayoutState`, `useSidebarSt`, `useProjectSt`, `useUiSt`) |
 | `src/features/project-editor/use-project-editor-layout-actions.ts` | `openFileInPane`, `setWorkspaceActivePane`, `toggleWorkspaceLayoutMode` |

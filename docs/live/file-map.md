@@ -176,11 +176,14 @@ Mandatory doc navigation for new chats: start with `docs/START-HERE.md` — it p
   - Exports `useDocumentState`, `usePaneState`, `useLayoutState`, `useSidebarSt`, `useProjectSt`, `useUiSt`, and `getVisibleSidebarPaths`.
 - `src/features/project-editor/use-project-editor-actions.ts`
   - Composes UI actions and core operations (load/save/open/clear) and wires them into the state.
-  - Receives `panePersistence` from `useProjectEditor`; does not instantiate it.
+  - Receives `paneWorkspace` from `useProjectEditor`.
 - `src/features/project-editor/use-project-editor-autosave-effect.ts`
   - Minimal Preact adapter: detects dirty → calls `paneWorkspace.scheduleAutosave`, detects clean/unmount → calls `paneWorkspace.cancelAutosave`. Timer logic lives in `PaneWorkspace`.
-- `src/features/project-editor/use-project-editor-pane-persistence.ts`
-  - Shared pane-targeted persistence helper: serialization-ref lookup, pane-state lookup, `flushPane`, `savePaneIfDirty`, and `saveAllDirtyPanes`.
+- `src/features/project-editor/pane/`
+  - Private module for pane coordination. All pane state, flush, save, and autosave access goes through this module.
+  - `pane/index.ts` — barrel exporting only `PaneWorkspace` and public types
+  - `pane/pane-workspace.ts` — coordinator class with read methods (`getPaneDocument`, `isPaneDirty`) and write methods (`savePaneIfDirty`, `saveAllDirtyPanes`, `scheduleAutosave`)
+  - `pane/pane-save-logic.ts` — `executePaneSave` (internal, not exported from barrel)
 - `src/features/project-editor/use-project-editor-external-events-effect.ts`
   - Subscribes to external file events (watcher) and handles reloads/conflicts/tree refresh.
 - `src/features/project-editor/use-project-editor-context-menu-effect.ts`

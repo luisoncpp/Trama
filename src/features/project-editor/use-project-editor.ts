@@ -10,9 +10,7 @@ import { useProjectEditorFullscreenEffect } from './use-project-editor-fullscree
 import { useProjectEditorCloseEffect } from './use-project-editor-close-effect'
 import { useProjectEditorShortcutsEffect } from './use-project-editor-shortcuts-effect'
 import { useProjectEditorState } from './use-project-editor-state'
-import { useProjectEditorPanePersistence } from './use-project-editor-pane-persistence'
-import type { PaneWorkspace } from './pane-workspace'
-import { PaneWorkspace as PaneWorkspaceClass } from './pane-workspace'
+import { PaneWorkspace } from './pane'
 
 function useAutoPickProjectFolderEffect(
   pickProjectFolder: () => Promise<void>,
@@ -62,19 +60,17 @@ function useProjectEditorEffects(
   projectState: ReturnType<typeof useProjectEditorState>['projectState'],
   documentState: ReturnType<typeof useProjectEditorState>['documentState'],
   layoutState: ReturnType<typeof useProjectEditorState>['layoutState'],
-  paneState: ReturnType<typeof useProjectEditorState>['paneState'],
   setters: ReturnType<typeof useProjectEditorState>['setters'],
   actions: ReturnType<typeof useProjectEditorActions>['actions'],
   core: ReturnType<typeof useProjectEditorActions>['core'],
   autoPickProjectFolderOnStart: boolean,
-  panePersistence: ReturnType<typeof useProjectEditorPanePersistence>,
   paneWorkspace: PaneWorkspace,
 ): void {
   useAutoPickProjectFolderEffect(actions.pickProjectFolder, autoPickProjectFolderOnStart, uiState.apiAvailable, projectState.rootPath)
   useProjectEditorAutosaveEffect({
-    selectedPath: documentState.selectedPath, isDirty: documentState.isDirty,
+    selectedPath: documentState.selectedPath,
+    isDirty: documentState.isDirty,
     activePane: layoutState.workspaceLayout.activePane,
-    panePersistence,
     paneWorkspace,
   })
   useProjectEditorExternalEventsEffect({
@@ -90,8 +86,7 @@ function useProjectEditorEffects(
   useProjectEditorFullscreenEffect({ setIsFullscreen: setters.setIsFullscreen })
   useProjectEditorShortcutsEffect(buildShortcutsEffectParams(actions, core, uiState.isFullscreen, layoutState.workspaceLayout, projectState.rootPath))
   useProjectEditorCloseEffect({
-    paneState,
-    panePersistence,
+    paneWorkspace,
   })
   useProjectEditorContextMenuEffect({
     isFullscreen: uiState.isFullscreen,
@@ -119,12 +114,17 @@ export function useProjectEditor(): ProjectEditorModel {
   })
 
   const saveDocumentNowRef = useRef<((path: string, content: string, meta: DocumentMeta) => Promise<void>) | null>(null)
-  const panePersistence = useProjectEditorPanePersistence({
-    paneState,
-    saveDocumentNow: (path, content, meta) => saveDocumentNowRef.current?.(path, content, meta) ?? Promise.resolve(),
-    primarySerializationRef,
-    secondarySerializationRef,
-  })
+
+  const paneWorkspace = new PaneWorkspace(
+    layoutState.workspaceLayout,
+    paneState.primaryPane,
+    paneState.secondaryPane,
+    {
+      primary: primarySerializationRef,
+      secondary: secondarySerializationRef,
+    },
+    (path, content, meta) => saveDocumentNowRef.current?.(path, content, meta) ?? Promise.resolve(),
+  )
 
   const { actions, core } = useProjectEditorActions({
     layoutState,
@@ -133,21 +133,15 @@ export function useProjectEditor(): ProjectEditorModel {
     uiState,
     sidebarState,
     setters,
-    panePersistence,
+    paneWorkspace,
   })
   saveDocumentNowRef.current = core.saveDocumentNow
-
-  const paneWorkspace = new PaneWorkspaceClass(
-    layoutState.workspaceLayout,
-    paneState.primaryPane,
-    paneState.secondaryPane,
-  )
 
   useEffect(() => {
     return () => paneWorkspace.destroy()
   }, [paneWorkspace])
 
-  useProjectEditorEffects(uiState, projectState, documentState, layoutState, paneState, setters, actions, core, autoPickProjectFolderOnStart, panePersistence, paneWorkspace)
+  useProjectEditorEffects(uiState, projectState, documentState, layoutState, setters, actions, core, autoPickProjectFolderOnStart, paneWorkspace)
 
   return {
     state: (({ snapshot, editorMeta, ...state }) => state)(values),

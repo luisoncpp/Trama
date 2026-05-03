@@ -7,7 +7,7 @@ import type {
   ProjectEditorProjectState,
   ProjectEditorUiState,
 } from './project-editor-types'
-import type { PaneWorkspace } from './pane-workspace'
+import type { PaneWorkspace } from './pane'
 
 export function useResolveConflictReloadAction({
   workspace,
