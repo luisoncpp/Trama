@@ -47,7 +47,9 @@ There are two independent `PaneDocumentState` instances: `primaryPane` and `seco
 
 ## PaneWorkspace — Coordinator with Internal Timer
 
-Action hooks no longer reciben `layoutState` + `paneState` separados y recalculan proyecciones localmente. En cambio, consumen uma instância de `PaneWorkspace` que actúa como fachada completa de paneles: lectura, save, flush y autosave.
+Action hooks no longer reciben `layoutState` + `paneState` separados y recalculan proyecciones localmente. En cambio, consumen una instancia de `PaneWorkspace` que actúa como fachada completa de paneles: lectura, mutación, save, flush y autosave.
+
+`PaneWorkspace` recibe los setters de Preact via `paneBindings` (con `primaryPane`, `secondaryPane`, `setPrimaryPane`, `setSecondaryPane`) y es el **único** modulo que llama `setPrimaryPane`/`setSecondaryPane`. Los hooks externos solo usan los métodos públicos de la fachada.
 
 ```typescript
 class PaneWorkspace {
@@ -55,8 +57,7 @@ class PaneWorkspace {
 
   constructor(
     private layoutState: WorkspaceLayoutState,
-    private primaryPane: PaneDocumentState,
-    private secondaryPane: PaneDocumentState,
+    private paneBindings: PaneBindings,  // { primaryPane, secondaryPane, setPrimaryPane, setSecondaryPane }
     private serializationRefs: {
       primary: { current: EditorSerializationRefs }
       secondary: { current: EditorSerializationRefs }
@@ -70,8 +71,14 @@ class PaneWorkspace {
   isPaneDirty(pane?: WorkspacePane): boolean           // usa active si pane es undefined
   canSwitchAwayFrom(pane?: WorkspacePane): boolean     // true si no está dirty o no tiene path
 
+  // Mutation methods (public)
+  updatePaneContent(pane: WorkspacePane, content: string): void        // actualiza contenido y marca dirty
+  loadPaneDocument(pane: WorkspacePane, path: string, content: string, meta: DocumentMeta): void  // carga documento en un pane
+  clearPanes(): void                                                    // limpia ambos paneles (no toca layout)
+  updatePaneMeta(path: string, meta: DocumentMeta): void                // actualiza meta del pane con ese path
+
   // Persistence methods
-  savePaneIfDirty(pane: WorkspacePane): Promise<void>  // flush + save
+  savePaneIfDirty(pane: WorkspacePane): Promise<void>  // flush + save + markPaneSaved
   saveAllDirtyPanes(): Promise<void>                    // flush + save both panes
 
   // Coordination methods
@@ -88,14 +95,15 @@ class PaneWorkspace {
 
 **Responsibilities:**
 - Query facade: exposes pane state without mutating Preact state
-- Persistence coordinator: owns flush, save, and autosave timer internally
+- Mutation facade: `updatePaneContent`, `loadPaneDocument`, `clearPanes`, `updatePaneMeta` — únicos puntos de entrada para mutar paneles
+- Persistence coordinator: owns flush, save, and autosave timer internally; `markPaneSaved` is **private** and called by `savePaneIfDirty` after successful IPC save
 - `scheduleAutosave` no longer takes a callback — save policy lives inside the module
 
 **Files:**
-- `src/features/project-editor/pane/pane-workspace.ts` — the class
-- `src/features/project-editor/pane/index.ts` — barrel export (only `PaneWorkspace` and public types)
+- `src/features/project-editor/pane/pane-workspace.ts` — the class with `PaneBindings` interface and mutation methods
+- `src/features/project-editor/pane/index.ts` — barrel export (`PaneWorkspace`, `usePaneWorkspace`, `PaneBindings`, and public types)
+- `src/features/project-editor/pane/use-pane-workspace.ts` — factory hook that encapsulates Preact setter injection, creates `PaneWorkspace` via `useMemo`
 - `src/features/project-editor/pane/pane-save-logic.ts` — `executePaneSave` (internal, not exported)
-- `src/features/project-editor/use-pane-workspace.ts` — hook adapter (`useMemo`-based, for stubs only)
 
 ## The Formal Contracts
 
@@ -258,16 +266,17 @@ To prevent false re-render cascades caused by a single `values` object changing 
 ## Key Implementation Files
 
 | File | Role |
-|---|---|
+|---|---|---|
 | `src/features/project-editor/project-editor-types.ts` | `WorkspaceLayoutState`, `PaneDocumentState`, `WorkspacePane`, and 6 sub-state type definitions |
-| `src/features/project-editor/pane/pane-workspace.ts` | `PaneWorkspace` coordinator: read methods + `savePaneIfDirty`, `saveAllDirtyPanes`, `scheduleAutosave` (no callback) |
-| `src/features/project-editor/pane/index.ts` | Barrel: only `PaneWorkspace` and public types exported |
+| `src/features/project-editor/pane/pane-workspace.ts` | `PaneWorkspace` coordinator: read methods + mutation methods (`updatePaneContent`, `loadPaneDocument`, `clearPanes`, `updatePaneMeta`) + `savePaneIfDirty`/`saveAllDirtyPanes` + `scheduleAutosave`; `markPaneSaved` is private; receives `PaneBindings` with Preact setters |
+| `src/features/project-editor/pane/use-pane-workspace.ts` | Factory hook that encapsulates setter injection via `useMemo`, creating a `PaneWorkspace` instance from `paneBindings` + `serializationRefs` + `saveDocumentFn` |
+| `src/features/project-editor/pane/index.ts` | Barrel: exports `PaneWorkspace`, `usePaneWorkspace`, `PaneBindings`, and public types |
 | `src/features/project-editor/pane/pane-save-logic.ts` | `executePaneSave` helper (internal, not in barrel) |
-| `src/features/project-editor/use-project-editor.ts` | Creates `PaneWorkspace` instance with `serializationRefs` and `saveDocumentFn` |
-| `src/features/project-editor/use-project-editor-state.ts` | `buildValues()` — projection from layout+document layers to shared state; returns 6 memoized sub-states |
+| `src/features/project-editor/use-project-editor.ts` | Composition root: builds `paneBindings` from `paneState` + setters, creates `PaneWorkspace` via `usePaneWorkspace`, wires `serializationRefs` and `saveDocumentFn` |
+| `src/features/project-editor/use-project-editor-state.ts` | `buildValues()` — projection from layout+document layers to shared state; returns 6 memoized sub-states; `ProjectEditorStateSetters` excludes `setPrimaryPane`/`setSecondaryPane` from public API |
 | `src/features/project-editor/use-project-editor-sub-state-hooks.ts` | Memoized sub-state builders (`useDocumentState`, `usePaneState`, `useLayoutState`, `useSidebarSt`, `useProjectSt`, `useUiSt`) |
 | `src/features/project-editor/use-project-editor-layout-actions.ts` | `openFileInPane`, `setWorkspaceActivePane`, `toggleWorkspaceLayoutMode` |
-| `src/features/project-editor/use-project-editor-ui-actions.ts` | `updateEditorValue(pane?)`, `saveNow(pane?)` with explicit pane routing; composes primary + secondary (conflict) action sets |
+| `src/features/project-editor/use-project-editor-ui-actions.ts` | `updateEditorValue(pane?)` delegates to `workspace.updatePaneContent`; `saveNow(pane?)` delegates to `workspace.savePaneIfDirty`; composes primary + secondary (conflict) action sets |
 | `src/features/project-editor/use-project-editor-open-project.ts` | `applyOpenedProject` with `preferredPane` handling |
 | `src/features/project-editor/project-editor-logic.ts` | `reconcileWorkspaceLayout`, `canSelectFile` |
 | `src/features/project-editor/components/workspace-editor-panels.tsx` | Split UI with explicit pane routing in `PaneEditor` |

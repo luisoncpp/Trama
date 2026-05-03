@@ -52,7 +52,6 @@ function makePaneBindings(primary: PaneDocumentState, secondary: PaneDocumentSta
   }
 }
 
-console.log('USE-PANE-WORKSPACE TEST FILE es:', import.meta.url)
 describe('usePaneWorkspace', () => {
   it('creates a PaneWorkspace with the given inputs', () => {
     let workspaceRef: any = null

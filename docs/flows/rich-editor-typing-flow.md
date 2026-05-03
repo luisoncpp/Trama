@@ -76,7 +76,7 @@ The canonical equivalence rule now lives in `src/features/project-editor/compone
 | `src/features/project-editor/components/rich-markdown-editor-serialization.ts` | Debounce handler, `flush()` with image hydration, `text-change` listener |
 | `src/features/project-editor/components/rich-markdown-editor-value-sync.ts` | Canonical placeholder-based normalization/equality used by external sync |
 | `src/features/project-editor/components/rich-markdown-editor-quill.ts` | Markdown <-> HTML conversion and image placeholder logic |
-| `src/features/project-editor/use-project-editor-pane-persistence.ts` | Where later save/switch callers consume `flush()` safely by pane |
+| `src/features/project-editor/pane/pane-workspace.ts` | Where later save/switch callers consume `flush()` safely by pane |
 | `src/features/project-editor/use-project-editor-ui-actions-helpers.ts` | Pane state updates through `updateEditorValue(...)` |
 | `docs/lessons-learned/editor-debounce-closure-capture.md` | Non-obvious debounce invariants |
 | `docs/lessons-learned/quill-render-keypress-image-loss.md` | Canonical image representation rule |
