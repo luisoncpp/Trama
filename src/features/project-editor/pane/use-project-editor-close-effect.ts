@@ -1,5 +1,5 @@
 import { useEffect } from 'preact/hooks'
-import type { PaneWorkspace } from './pane'
+import type { PaneWorkspace } from './pane-workspace'
 
 interface UseProjectEditorCloseEffectParams {
   paneWorkspace: PaneWorkspace

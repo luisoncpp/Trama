@@ -3,14 +3,12 @@ import type { DocumentMeta } from '../../shared/ipc'
 import type { EditorSerializationRefs, ProjectEditorModel } from './project-editor-types'
 import type { WorkspaceLayoutState } from './project-editor-types'
 import { useProjectEditorActions } from './use-project-editor-actions'
-import { useProjectEditorAutosaveEffect } from './use-project-editor-autosave-effect'
 import { useProjectEditorContextMenuEffect } from './use-project-editor-context-menu-effect'
 import { useProjectEditorExternalEventsEffect } from './use-project-editor-external-events-effect'
 import { useProjectEditorFullscreenEffect } from './use-project-editor-fullscreen-effect'
-import { useProjectEditorCloseEffect } from './use-project-editor-close-effect'
 import { useProjectEditorShortcutsEffect } from './use-project-editor-shortcuts-effect'
 import { useProjectEditorState } from './use-project-editor-state'
-import { usePaneWorkspace } from './pane'
+import { usePaneWorkspace, useProjectEditorAutosaveEffect, useProjectEditorCloseEffect } from './pane'
 
 function useAutoPickProjectFolderEffect(
   pickProjectFolder: () => Promise<void>,

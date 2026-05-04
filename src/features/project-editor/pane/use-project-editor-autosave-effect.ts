@@ -1,6 +1,6 @@
 import { useEffect } from 'preact/hooks'
-import type { WorkspacePane } from './project-editor-types'
-import type { PaneWorkspace } from './pane'
+import type { WorkspacePane } from '../project-editor-types'
+import type { PaneWorkspace } from './pane-workspace'
 
 interface UseProjectEditorAutosaveEffectParams {
   selectedPath: string | null
