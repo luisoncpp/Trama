@@ -30,10 +30,6 @@ export function useDocumentState(
     [ws, primaryPane, secondaryPane])
 }
 
-export function usePaneState(p: PaneDocumentState, s: PaneDocumentState) {
-  return useMemo(() => ({ primaryPane: p, secondaryPane: s }), [p, s])
-}
-
 export function useLayoutState(ws: WorkspaceLayoutState) {
   return useMemo(() => ({ workspaceLayout: ws }), [ws])
 }
