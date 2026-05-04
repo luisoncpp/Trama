@@ -126,6 +126,7 @@ Mandatory doc navigation for new chats: start with `docs/START-HERE.md` — it p
 - `src/features/project-editor/use-project-editor-ui-actions.ts`
   - Composes UI actions.
   - `updateEditorValue(value, pane?)` supports pane-targeted updates; split-pane call sites should pass explicit pane.
+  - `revertChanges(pane?)` — Discards unsaved changes and reloads the file from disk. Reuses `loadDocument` under the hood.
 - `src/features/project-editor/use-project-editor-focus-actions.ts`
   - Fullscreen/focus-mode action hooks. When enabling focus, auto-collapses the sidebar.
 - `src/features/project-editor/use-project-editor-file-actions.ts`
@@ -136,6 +137,8 @@ Mandatory doc navigation for new chats: start with `docs/START-HERE.md` — it p
   - Pure helpers for folder-prefix path remap (`isPathInsideFolder`, `remapFolderPrefix`, layout remap).
 - `src/features/project-editor/project-editor-logic.ts`
   - Pure workspace helpers: `deriveActivePaneDocument` (active pane projection), `canSelectFile`, `reconcileWorkspaceLayout`, `buildConflictCopyPath`, and layout persistence.
+- `src/features/project-editor/use-project-editor-ui-actions-helpers.ts`
+  - Helper hooks for editor view actions: `useSelectFileAction`, `useRevertChangesAction` (calls `loadDocument` when pane is dirty, discarding unsaved changes), `useEditorViewActions`, `useWorkspaceLayoutActions`.
 - `src/features/project-editor/use-project-editor-create-actions.ts`
   - Create article/category actions.
 - `src/features/project-editor/use-project-editor-sidebar-actions.ts`
@@ -277,7 +280,7 @@ Mandatory doc navigation for new chats: start with `docs/START-HERE.md` — it p
 - `src/features/project-editor/components/rich-markdown-editor-focus-scope-geometry.ts`
   - Geometry helpers for focus-mode (text offset resolution, visual line/sentence boundary calculations).
 - `src/features/project-editor/components/rich-markdown-editor-toolbar.ts`
-  - Injects and synchronizes toolbar controls (save button, sync indicator) into the Quill toolbar.
+  - Injects and synchronizes toolbar controls (save button, revert button, sync indicator) into the Quill toolbar.
 
 ### Sidebar components
 

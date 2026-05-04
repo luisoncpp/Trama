@@ -14,6 +14,9 @@ interface SyncToolbarControlsParams {
   saveDisabled: boolean
   saveLabel: string
   onSaveNow: () => void
+  revertDisabled: boolean
+  revertLabel: string
+  onRevertNow: () => void
   syncState: RichEditorSyncState
   syncStateLabel: string
 }
@@ -22,6 +25,7 @@ interface ToolbarControls {
   centerButton: HTMLButtonElement
   pagebreakButton: HTMLButtonElement
   saveButton: HTMLButtonElement
+  revertButton: HTMLButtonElement
   syncIcon: HTMLSpanElement
 }
 
@@ -74,6 +78,19 @@ function createPagebreakIconButton(): HTMLButtonElement {
   )
 }
 
+function createRevertIconButton(): HTMLButtonElement {
+  return createToolbarIconButton(
+    'ql-revert-changes',
+    'Revertir cambios no guardados',
+    [
+      '<svg class="rich-toolbar-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">',
+      '<polyline points="1 4 1 10 7 10" />',
+      '<path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" />',
+      '</svg>',
+    ].join(''),
+  )
+}
+
 function ensureLayoutButtonsInListGroup(toolbar: HTMLElement): {
   centerButton: HTMLButtonElement
   pagebreakButton: HTMLButtonElement
@@ -120,6 +137,9 @@ function ensureToolbarControls(toolbar: HTMLElement): ToolbarControls {
     controls = document.createElement('div')
     controls.className = 'rich-toolbar-controls'
 
+    const revertButton = createRevertIconButton()
+    controls.append(revertButton)
+
     const saveButton = document.createElement('button')
     saveButton.type = 'button'
     saveButton.className = 'editor-button editor-button--secondary editor-button--inline'
@@ -134,10 +154,15 @@ function ensureToolbarControls(toolbar: HTMLElement): ToolbarControls {
     toolbar.append(controls)
   }
 
+  const revertButton = controls.querySelector('button.ql-revert-changes') as HTMLButtonElement ?? createRevertIconButton()
+  if (!controls.contains(revertButton)) {
+    controls.prepend(revertButton)
+  }
+
   const saveButton = controls.querySelector('button[data-trama-action="save"]') as HTMLButtonElement
   const syncIcon = controls.querySelector('.rich-toolbar-sync') as HTMLSpanElement
 
-  return { centerButton, pagebreakButton, saveButton, syncIcon }
+  return { centerButton, pagebreakButton, saveButton, revertButton, syncIcon }
 }
 
 export function useSyncToolbarControls({
@@ -147,6 +172,9 @@ export function useSyncToolbarControls({
   saveDisabled,
   saveLabel,
   onSaveNow,
+  revertDisabled,
+  revertLabel,
+  onRevertNow,
   syncState,
   syncStateLabel,
 }: SyncToolbarControlsParams): void {
@@ -161,7 +189,7 @@ export function useSyncToolbarControls({
       return
     }
 
-    const { centerButton, pagebreakButton, saveButton, syncIcon } = ensureToolbarControls(toolbar)
+    const { centerButton, pagebreakButton, saveButton, revertButton, syncIcon } = ensureToolbarControls(toolbar)
     const editor = editorRef.current
     const canUseLayoutActions = isEditorInteractive(editor)
 
@@ -185,8 +213,15 @@ export function useSyncToolbarControls({
     saveButton.textContent = saveLabel
     saveButton.onclick = onSaveNow
 
+    revertButton.disabled = revertDisabled
+    revertButton.title = revertLabel
+    revertButton.setAttribute('aria-label', revertLabel)
+    revertButton.onclick = onRevertNow
+
     syncIcon.className = `rich-toolbar-sync is-${syncState}`
     syncIcon.setAttribute('aria-label', syncStateLabel)
     syncIcon.title = syncStateLabel
-  }, [documentId, editorRef, hostRef, onSaveNow, saveDisabled, saveLabel, syncState, syncStateLabel])
+  }, [documentId, editorRef, hostRef, onSaveNow, saveDisabled, saveLabel,
+      onRevertNow, revertDisabled, revertLabel,
+      syncState, syncStateLabel])
 }

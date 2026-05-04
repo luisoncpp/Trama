@@ -123,7 +123,7 @@ If you need the shortest path to the editor's risky seams instead of the full su
 | `rich-markdown-editor-serialization.ts` | Debounced serialization session: text-change listener, debounce timer, flush with image hydration for parent |
 | `rich-markdown-editor-value-sync.ts` | Canonical editor-value normalization/equality for image-bearing markdown |
 | `rich-markdown-editor-quill.ts` | Quill creation, markdown parse/serialize (see `image-handling-architecture.md`) |
-| `rich-markdown-editor-toolbar.ts` | Toolbar controls: save button, sync state, layout buttons (center/pagebreak) |
+| `rich-markdown-editor-toolbar.ts` | Toolbar controls: save button, revert button, sync state, layout buttons (center/pagebreak) |
 | `../../shared/markdown-image-placeholder.ts` | Image extraction, placeholder generation, hydration, in-memory cache |
 | `rich-markdown-editor-commands.ts` | Command bridge via CustomEvent (`paste-markdown`, `copy-as-markdown`) |
 | `rich-markdown-editor-typography.ts` | Typography replacements (`--` → `—`) |
@@ -179,7 +179,7 @@ export function createQuillEditor(host: HTMLDivElement): Quill {
 ```
 
 ### Key decisions:
-- **Manual toolbar creation**: Quill expects a toolbar container, but Trama injects it into an empty `host` and then extends with custom buttons (`ql-center-layout`, `ql-pagebreak-layout`, save button).
+- **Manual toolbar creation**: Quill expects a toolbar container, but Trama injects it into an empty `host` and then extends with custom buttons (`ql-center-layout`, `ql-pagebreak-layout`, save button, revert button).
 - **History `userOnly: true`**: Prevents programmatic changes (`'api'`, `'silent'`) from entering the undo stack.
 
 ---

@@ -1926,6 +1926,34 @@ select {
   gap: 8px;
 }
 
+.rich-toolbar-controls button.ql-revert-changes {
+  width: 28px;
+  height: 24px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  opacity: 0.6;
+}
+
+.rich-toolbar-controls button.ql-revert-changes:hover:not(:disabled),
+.rich-toolbar-controls button.ql-revert-changes:focus:not(:disabled) {
+  opacity: 1;
+}
+
+.rich-toolbar-controls button.ql-revert-changes:disabled {
+  cursor: default;
+  opacity: 0.3;
+}
+
+.rich-toolbar-controls button.ql-revert-changes:hover:not(:disabled) .rich-toolbar-icon,
+.rich-toolbar-controls button.ql-revert-changes:focus:not(:disabled) .rich-toolbar-icon {
+  color: var(--quill-active);
+}
+
 .rich-toolbar-sync {
   width: 17px;
   height: 17px;

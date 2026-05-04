@@ -125,6 +125,7 @@ export interface ProjectEditorActions {
   setFocusScope: (scope: FocusScope) => void
   updateEditorValue: (value: string, pane?: WorkspacePane) => void
   saveNow: (pane?: WorkspacePane) => Promise<void>
+  revertChanges: (pane?: WorkspacePane) => void
   resolveConflictReload: () => void
   resolveConflictKeep: () => void
   resolveConflictSaveAsCopy: () => void

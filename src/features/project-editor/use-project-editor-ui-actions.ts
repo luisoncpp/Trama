@@ -53,7 +53,7 @@ export function usePrimaryProjectEditorActions(
   const { renameFolder, deleteFolder, moveFolder } = useProjectEditorFolderActions({ workspace, projectState, setters, openProject })
   const sidebarActions = useSidebarActions(workspace.layout, sidebarState, setters)
   const layoutActions = useWorkspaceLayoutActions(workspace, projectState, setters, loadDocument)
-  const editorViewActions = useEditorViewActions(workspace, uiState, setters)
+  const editorViewActions = useEditorViewActions(workspace, uiState, setters, loadDocument)
   const projectPickerActions = useProjectPickerActions({ openProject, setters })
   const reorderFiles = useReorderFilesAction({ setters, openProject, rootPath: projectState.rootPath })
   const moveFile = useMoveFileAction({ workspace, projectState, setters, openProject })

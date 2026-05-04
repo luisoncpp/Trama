@@ -22,6 +22,9 @@ interface RichMarkdownEditorProps {
   saveDisabled: boolean
   saveLabel: string
   onSaveNow: () => void
+  revertDisabled: boolean
+  revertLabel: string
+  onRevertNow: () => void
   syncState: RichEditorSyncState
   syncStateLabel: string
   focusModeEnabled?: boolean
@@ -128,7 +131,9 @@ function useTagOverlayScrollEffect(
 export function RichMarkdownEditor(props: RichMarkdownEditorProps) {
   const {
     documentId, value, disabled, spellcheckEnabled = true, onChange,
-    saveDisabled, saveLabel, onSaveNow, syncState, syncStateLabel,
+    saveDisabled, saveLabel, onSaveNow,
+    revertDisabled, revertLabel, onRevertNow,
+    syncState, syncStateLabel,
     focusModeEnabled = false, focusScope = 'paragraph', tagIndex,
     onTagClick, isActive = true, editorSerializationRef, onMarkDirty,
   } = props
@@ -161,7 +166,7 @@ export function RichMarkdownEditor(props: RichMarkdownEditorProps) {
     triggerTagOverlayRender,
   }
   useRichEditorLifecycle(lifecycleParams)
-  useSyncToolbarControls({ documentId, hostRef, editorRef, saveDisabled, saveLabel, onSaveNow, syncState, syncStateLabel })
+  useSyncToolbarControls({ documentId, hostRef, editorRef, saveDisabled, saveLabel, onSaveNow, revertDisabled, revertLabel, onRevertNow, syncState, syncStateLabel })
   useFocusModeScopeEffect(editorRef, hostRef, focusModeEnabled, focusScope, isActive)
 
   // Sync the serialization ref into the parent-provided prop ref.

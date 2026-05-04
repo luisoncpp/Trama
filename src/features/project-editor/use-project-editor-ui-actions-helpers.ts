@@ -155,10 +155,28 @@ export function useWorkspaceLayoutActions(
   }
 }
 
+export function useRevertChangesAction({
+  workspace,
+  loadDocument,
+}: {
+  workspace: PaneWorkspace
+  loadDocument: (path: string, pane: WorkspacePane) => Promise<void>
+}): ProjectEditorActions['revertChanges'] {
+  return useCallback((pane?: WorkspacePane): void => {
+    const targetPane = pane ?? workspace.layout.activePane
+    const paneDocument = workspace.getPaneDocument(targetPane)
+    if (!paneDocument.isDirty || !paneDocument.path) {
+      return
+    }
+    void loadDocument(paneDocument.path, targetPane)
+  }, [workspace, loadDocument])
+}
+
 export function useEditorViewActions(
   workspace: PaneWorkspace,
   uiState: ProjectEditorUiState,
   setters: UseProjectEditorUiActionsParams['setters'],
+  loadDocument: (path: string, pane: WorkspacePane) => Promise<void>,
 ) {
   return {
     updateEditorValue: (nextValue: string, pane?: WorkspacePane) => {
@@ -173,6 +191,7 @@ export function useEditorViewActions(
       }
       await workspace.savePaneIfDirty(targetPane)
     },
+    revertChanges: useRevertChangesAction({ workspace, loadDocument }),
     setFullscreenEnabled: useSetFullscreenEnabledAction(setters),
     toggleFocusMode: useToggleFocusModeAction(workspace.layout, setters),
     setFocusScope: useSetFocusScopeAction(setters),

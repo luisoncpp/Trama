@@ -38,6 +38,7 @@ function PaneEditor({ model, spellcheckEnabled, pane, tagIndex, onTagClick }: Pa
   const onMarkDirty = () => { actions.updateEditorValue(paneState.content, pane) }
   const onPaneEditorChange = (nextValue: string) => { actions.updateEditorValue(nextValue, pane) }
   const onPaneSaveNow = () => { actions.saveNow(pane) }
+  const onPaneRevertNow = () => { actions.revertChanges(pane) }
   const onActivate = () => { if (!isActive) { void actions.setWorkspaceActivePane(pane) } }
 
   return (
@@ -61,6 +62,7 @@ function PaneEditor({ model, spellcheckEnabled, pane, tagIndex, onTagClick }: Pa
           editorValue={paneState.content}
           spellcheckEnabled={spellcheckEnabled}
           onSaveNow={onPaneSaveNow}
+          onRevertNow={onPaneRevertNow}
           onEditorChange={onPaneEditorChange}
           focusModeEnabled={state.workspaceLayout.focusModeEnabled}
           focusScope={state.workspaceLayout.focusScope}
@@ -99,6 +101,7 @@ function ActiveEditorPanel({ model, spellcheckEnabled, tagIndex, onTagClick }: A
       editorValue={state.editorValue}
       spellcheckEnabled={spellcheckEnabled}
       onSaveNow={actions.saveNow}
+      onRevertNow={actions.revertChanges}
       onEditorChange={actions.updateEditorValue}
       focusModeEnabled={state.workspaceLayout.focusModeEnabled}
       focusScope={state.workspaceLayout.focusScope}

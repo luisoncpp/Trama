@@ -11,6 +11,7 @@ interface EditorPanelProps {
   editorValue: string
   spellcheckEnabled: boolean
   onSaveNow: () => void
+  onRevertNow: () => void
   onEditorChange: (value: string) => void
   focusModeEnabled: boolean
   focusScope: FocusScope
@@ -37,6 +38,7 @@ export function EditorPanel({
   editorValue,
   spellcheckEnabled,
   onSaveNow,
+  onRevertNow,
   onEditorChange,
   focusModeEnabled,
   focusScope,
@@ -54,6 +56,11 @@ export function EditorPanel({
       ? PROJECT_EDITOR_STRINGS.saveNow
       : PROJECT_EDITOR_STRINGS.noChanges
 
+  const revertDisabled = !selectedPath || saving || !isDirty
+  const revertLabel = isDirty
+    ? PROJECT_EDITOR_STRINGS.revertChanges
+    : PROJECT_EDITOR_STRINGS.noChanges
+
   const syncState: RichEditorSyncState = !selectedPath || loadingDocument ? 'disabled' : saving ? 'saving' : isDirty ? 'dirty' : 'clean'
   const syncStateLabel = computeSyncStateLabel(selectedPath, loadingDocument, saving, isDirty)
 
@@ -65,8 +72,10 @@ export function EditorPanel({
           disabled={!selectedPath || loadingDocument}
           spellcheckEnabled={spellcheckEnabled} onChange={onEditorChange}
           saveDisabled={saveDisabled} saveLabel={saveLabel}
-          onSaveNow={onSaveNow} syncState={syncState}
-          syncStateLabel={syncStateLabel}
+          onSaveNow={onSaveNow}
+          revertDisabled={revertDisabled} revertLabel={revertLabel}
+          onRevertNow={onRevertNow}
+          syncState={syncState} syncStateLabel={syncStateLabel}
           focusModeEnabled={focusModeEnabled} focusScope={focusScope}
           tagIndex={tagIndex} onTagClick={onTagClick} isActive={isActive}
           editorSerializationRef={editorSerializationRef}

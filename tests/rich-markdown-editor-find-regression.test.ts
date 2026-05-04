@@ -9,6 +9,8 @@ function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms))
 }
 
+const noop = () => {}
+
 function getQuillInstance(root: ParentNode): Quill {
   const quillContainer = root.querySelector('.ql-container')
   if (!quillContainer) {
@@ -140,6 +142,9 @@ describe('RichMarkdownEditor find scroll regression', () => {
           saveDisabled: false,
           saveLabel: 'Guardar',
           onSaveNow: () => {},
+          revertDisabled: true,
+          revertLabel: '',
+          onRevertNow: noop,
           syncState: 'clean',
           syncStateLabel: 'Sin cambios',
         }),
@@ -208,6 +213,9 @@ describe('RichMarkdownEditor find & replace', () => {
     saveDisabled: false,
     saveLabel: 'Guardar',
     onSaveNow: noop,
+    revertDisabled: true,
+    revertLabel: '',
+    onRevertNow: noop,
     syncState: 'clean',
     syncStateLabel: 'Sin cambios',
     ...overrides,
