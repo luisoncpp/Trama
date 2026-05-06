@@ -2044,12 +2044,20 @@ select {
   height: var(--focus-extra-bottom, 0px);
 }
 
-.rich-editor .ql-editor.is-focus-mode.is-focus-scope-paragraph > * {
+.rich-editor .ql-editor.is-focus-mode.is-focus-scope-paragraph > *:not(ul):not(ol) {
   opacity: 0.24;
   transition: opacity 140ms ease;
 }
 
-.rich-editor .ql-editor.is-focus-mode.is-focus-scope-paragraph > *.is-focus-emphasis {
+.rich-editor .ql-editor.is-focus-mode.is-focus-scope-paragraph > ul > li,
+.rich-editor .ql-editor.is-focus-mode.is-focus-scope-paragraph > ol > li {
+  opacity: 0.24;
+  transition: opacity 140ms ease;
+}
+
+.rich-editor .ql-editor.is-focus-mode.is-focus-scope-paragraph > *.is-focus-emphasis,
+.rich-editor .ql-editor.is-focus-mode.is-focus-scope-paragraph > ul > li.is-focus-emphasis,
+.rich-editor .ql-editor.is-focus-mode.is-focus-scope-paragraph > ol > li.is-focus-emphasis {
   opacity: 1;
 }
 
@@ -2103,6 +2111,8 @@ select {
 }
 
 .rich-editor .ql-editor.is-focus-mode.is-focus-scope-paragraph > *.is-focus-emphasis,
+.rich-editor .ql-editor.is-focus-mode.is-focus-scope-paragraph > ul > li.is-focus-emphasis,
+.rich-editor .ql-editor.is-focus-mode.is-focus-scope-paragraph > ol > li.is-focus-emphasis,
 .rich-editor .ql-editor.is-focus-mode.is-focus-scope-sentence > *.is-focus-emphasis,
 .rich-editor .ql-editor.is-focus-mode.is-focus-scope-line > *.is-focus-emphasis {
   opacity: 1;

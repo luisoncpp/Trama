@@ -107,7 +107,7 @@ Both `line` and `sentence` use `applyInlineFocusScope`:
 Paragraph scope works differently:
 
 ```typescript
-// rich-markdown-editor-focus-scope-helpers.ts:109-123
+// rich-markdown-editor-focus-scope-helpers.ts:109-128
 export function applyFocusScope(quill: Quill, editorRoot: HTMLElement, scope: FocusScope): void {
   clearBlockFocusScope(editorRoot)
   if (scope !== 'paragraph') {
@@ -117,12 +117,22 @@ export function applyFocusScope(quill: Quill, editorRoot: HTMLElement, scope: Fo
   // paragraph: add is-focus-emphasis to the current line node
   const selection = quill.getSelection()
   const [line] = quill.getLine(selection?.index ?? 0)
-  const targetNode = line?.domNode
+  let targetNode = line?.domNode
   if (targetNode instanceof HTMLElement) {
+    // Quill 2.x lists wrap text in <p> inside <li>; paragraph emphasis
+    // must be applied to the <li> so CSS selectors can target it.
+    const listItem = targetNode.closest('li')
+    if (listItem) {
+      targetNode = listItem
+    }
     targetNode.classList.add('is-focus-emphasis')
   }
 }
 ```
+
+**List/Bullet Support**: Quill 2.x renders list items as `<li data-list="bullet"><p>text</p></li>`. `quill.getLine()` returns the inner `<p>` block, so the helper walks up to the parent `<li>` via `closest('li')` before applying `is-focus-emphasis`. `clearBlockFocusScope` cleans up both direct children and any nested emphasis nodes (e.g. inside `<ul>`/`<ol>`). The CSS selectors in `src/index.css` explicitly include:
+- `ul > li`, `ol > li` for dimming non-focused list items
+- `ul > li.is-focus-emphasis`, `ol > li.is-focus-emphasis` for the highlighted item
 
 ---
 

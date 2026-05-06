@@ -459,6 +459,113 @@ describe('useProjectEditor', () => {
     expect(model?.state.sidebarPanelCollapsed).toBe(false)
   })
 
+  it('expands collapsed sidebar when clicking a rail section', async () => {
+    window.localStorage.removeItem('trama.sidebar.ui.v1')
+    window.localStorage.removeItem(WORKSPACE_LAYOUT_STORAGE_KEY)
+    setupTramaApiMock()
+
+    let model: ProjectEditorModel | undefined
+
+    function Harness() {
+      model = useProjectEditor()
+      return null
+    }
+
+    const container = document.createElement('div')
+    act(() => {
+      render(h(Harness, {}), container)
+    })
+
+    expect(model?.state.sidebarPanelCollapsed).toBe(false)
+    expect(model?.state.sidebarActiveSection).toBe('explorer')
+
+    await act(async () => {
+      model?.actions.toggleSidebarPanelCollapsed()
+      await Promise.resolve()
+    })
+
+    expect(model?.state.sidebarPanelCollapsed).toBe(true)
+
+    await act(async () => {
+      model?.actions.setSidebarSection('lore')
+      await Promise.resolve()
+    })
+
+    expect(model?.state.sidebarActiveSection).toBe('lore')
+    expect(model?.state.sidebarPanelCollapsed).toBe(false)
+  })
+
+  it('does not expand sidebar when clicking rail section while focus mode is active', async () => {
+    window.localStorage.removeItem('trama.sidebar.ui.v1')
+    window.localStorage.removeItem(WORKSPACE_LAYOUT_STORAGE_KEY)
+    setupTramaApiMock()
+
+    let model: ProjectEditorModel | undefined
+
+    function Harness() {
+      model = useProjectEditor()
+      return null
+    }
+
+    const container = document.createElement('div')
+    act(() => {
+      render(h(Harness, {}), container)
+    })
+
+    expect(model?.state.sidebarPanelCollapsed).toBe(false)
+
+    await act(async () => {
+      model?.actions.toggleFocusMode()
+      await Promise.resolve()
+    })
+
+    expect(model?.state.workspaceLayout.focusModeEnabled).toBe(true)
+    expect(model?.state.sidebarPanelCollapsed).toBe(true)
+
+    await act(async () => {
+      model?.actions.setSidebarSection('settings')
+      await Promise.resolve()
+    })
+
+    expect(model?.state.sidebarActiveSection).toBe('settings')
+    expect(model?.state.sidebarPanelCollapsed).toBe(true)
+  })
+
+  it('does not expand sidebar when clicking same rail section while collapsed', async () => {
+    window.localStorage.removeItem('trama.sidebar.ui.v1')
+    window.localStorage.removeItem(WORKSPACE_LAYOUT_STORAGE_KEY)
+    setupTramaApiMock()
+
+    let model: ProjectEditorModel | undefined
+
+    function Harness() {
+      model = useProjectEditor()
+      return null
+    }
+
+    const container = document.createElement('div')
+    act(() => {
+      render(h(Harness, {}), container)
+    })
+
+    expect(model?.state.sidebarActiveSection).toBe('explorer')
+
+    await act(async () => {
+      model?.actions.toggleSidebarPanelCollapsed()
+      await Promise.resolve()
+    })
+
+    expect(model?.state.sidebarPanelCollapsed).toBe(true)
+
+    await act(async () => {
+      model?.actions.setSidebarSection('outline')
+      await Promise.resolve()
+    })
+
+    expect(model?.state.sidebarActiveSection).toBe('outline')
+    expect(model?.state.sidebarPanelCollapsed).toBe(false)
+  })
+
   it('ESC exits focus mode when focus mode is active', async () => {
     window.localStorage.removeItem('trama.sidebar.ui.v1')
     window.localStorage.removeItem(WORKSPACE_LAYOUT_STORAGE_KEY)

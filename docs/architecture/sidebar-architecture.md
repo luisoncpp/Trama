@@ -156,6 +156,19 @@ Persisted in `trama.sidebar.ui.v1`:
 - `panelCollapsed`: whether the entire sidebar is collapsed
 - `panelWidth`: panel width in pixels
 
+### Rail click expands sidebar
+
+When the sidebar panel is collapsed, clicking a rail section button (`explorer`, `outline`, `lore`, `transfer`, `settings`) automatically expands the panel. This behavior is implemented in `useSidebarActions` within `use-project-editor-ui-actions-helpers.ts`.
+
+**Rule:** `setSidebarSection` also calls `setSidebarPanelCollapsed(false)` when `sidebarPanelCollapsed === true` and `focusModeEnabled === false`.
+
+**Rationale:** Clicking a rail button signals user intent to interact with the sidebar. Expanding automatically makes the target section visible without requiring an extra toggle step.
+
+**Constraint:** This auto-expand does not apply when focus mode is active (`focusModeEnabled === true`), because focus mode locks the sidebar in its collapsed state and blocks reopening until focus mode is disabled (see Focus mode lock invariant).
+
+**Files:**
+- `src/features/project-editor/use-project-editor-ui-actions-helpers.ts` — `useSidebarActions` handles the auto-expand logic
+
 ## Dialogs and context menus
 
 ### Dialog state machine

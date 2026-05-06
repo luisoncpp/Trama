@@ -1,0 +1,144 @@
+import { describe, expect, it, vi } from 'vitest'
+import { h, render } from 'preact'
+import { act } from 'preact/test-utils'
+import { useRevertChangesAction } from '../src/features/project-editor/use-project-editor-ui-actions-helpers'
+import { usePaneWorkspace, type PaneBindings } from '../src/features/project-editor/pane'
+import type { EditorSerializationRefs, PaneDocumentState, WorkspaceLayoutState } from '../src/features/project-editor/project-editor-types'
+
+function makeLayout(activePane: 'primary' | 'secondary', primaryPath: string | null = 'docs/a.md', secondaryPath: string | null = 'docs/b.md'): WorkspaceLayoutState {
+  return {
+    mode: 'split',
+    ratio: 0.5,
+    primaryPath,
+    secondaryPath,
+    activePane,
+    focusModeEnabled: false,
+    focusScope: 'paragraph',
+  }
+}
+
+function makePane(path: string | null, content: string, isDirty: boolean): PaneDocumentState {
+  return { path, content, meta: {}, isDirty }
+}
+
+function makeSerializationRefs(): { primary: { current: EditorSerializationRefs }; secondary: { current: EditorSerializationRefs } } {
+  return {
+    primary: { current: { flush: () => null, tagOverlayRecalcRef: { current: false }, tagOverlayMatchesRef: { current: [] } } },
+    secondary: { current: { flush: () => null, tagOverlayRecalcRef: { current: false }, tagOverlayMatchesRef: { current: [] } } },
+  }
+}
+
+const noopSaveDocumentFn = () => Promise.resolve()
+
+function makePaneBindings(primary: PaneDocumentState, secondary: PaneDocumentState): PaneBindings {
+  return {
+    primaryPane: primary,
+    secondaryPane: secondary,
+    setPrimaryPane: () => {},
+    setSecondaryPane: () => {},
+  }
+}
+
+describe('useRevertChangesAction', () => {
+  it('calls loadDocument when pane is dirty and has a path', () => {
+    const layout = makeLayout('primary')
+    const primary = makePane('docs/a.md', '# dirty content', true)
+    const secondary = makePane('docs/b.md', '# B', false)
+    const paneBindings = makePaneBindings(primary, secondary)
+    const serializationRefs = makeSerializationRefs()
+
+    const loadDocument = vi.fn().mockResolvedValue(undefined)
+    let revertAction: ((pane?: 'primary' | 'secondary') => void) | null = null
+
+    function Harness() {
+      const ws = usePaneWorkspace(layout, paneBindings, serializationRefs, noopSaveDocumentFn)
+      const revert = useRevertChangesAction({ workspace: ws, loadDocument })
+      revertAction = revert
+      return null
+    }
+
+    const container = document.createElement('div')
+    act(() => { render(h(Harness, {}), container) })
+
+    act(() => { revertAction!() })
+
+    expect(loadDocument).toHaveBeenCalledTimes(1)
+    expect(loadDocument).toHaveBeenCalledWith('docs/a.md', 'primary')
+  })
+
+  it('does not call loadDocument when pane is not dirty', () => {
+    const layout = makeLayout('primary')
+    const primary = makePane('docs/a.md', '# clean content', false)
+    const secondary = makePane('docs/b.md', '# B', false)
+    const paneBindings = makePaneBindings(primary, secondary)
+    const serializationRefs = makeSerializationRefs()
+
+    const loadDocument = vi.fn().mockResolvedValue(undefined)
+    let revertAction: ((pane?: 'primary' | 'secondary') => void) | null = null
+
+    function Harness() {
+      const ws = usePaneWorkspace(layout, paneBindings, serializationRefs, noopSaveDocumentFn)
+      const revert = useRevertChangesAction({ workspace: ws, loadDocument })
+      revertAction = revert
+      return null
+    }
+
+    const container = document.createElement('div')
+    act(() => { render(h(Harness, {}), container) })
+
+    act(() => { revertAction!() })
+
+    expect(loadDocument).not.toHaveBeenCalled()
+  })
+
+  it('does not call loadDocument when pane has no path', () => {
+    const layout = makeLayout('primary')
+    const primary = makePane(null, '# no path', true)
+    const secondary = makePane('docs/b.md', '# B', false)
+    const paneBindings = makePaneBindings(primary, secondary)
+    const serializationRefs = makeSerializationRefs()
+
+    const loadDocument = vi.fn().mockResolvedValue(undefined)
+    let revertAction: ((pane?: 'primary' | 'secondary') => void) | null = null
+
+    function Harness() {
+      const ws = usePaneWorkspace(layout, paneBindings, serializationRefs, noopSaveDocumentFn)
+      const revert = useRevertChangesAction({ workspace: ws, loadDocument })
+      revertAction = revert
+      return null
+    }
+
+    const container = document.createElement('div')
+    act(() => { render(h(Harness, {}), container) })
+
+    act(() => { revertAction!() })
+
+    expect(loadDocument).not.toHaveBeenCalled()
+  })
+
+  it('uses explicit pane when provided', () => {
+    const layout = makeLayout('primary')
+    const primary = makePane('docs/a.md', '# A clean', false)
+    const secondary = makePane('docs/b.md', '# B dirty', true)
+    const paneBindings = makePaneBindings(primary, secondary)
+    const serializationRefs = makeSerializationRefs()
+
+    const loadDocument = vi.fn().mockResolvedValue(undefined)
+    let revertAction: ((pane?: 'primary' | 'secondary') => void) | null = null
+
+    function Harness() {
+      const ws = usePaneWorkspace(layout, paneBindings, serializationRefs, noopSaveDocumentFn)
+      const revert = useRevertChangesAction({ workspace: ws, loadDocument })
+      revertAction = revert
+      return null
+    }
+
+    const container = document.createElement('div')
+    act(() => { render(h(Harness, {}), container) })
+
+    act(() => { revertAction!('secondary') })
+
+    expect(loadDocument).toHaveBeenCalledTimes(1)
+    expect(loadDocument).toHaveBeenCalledWith('docs/b.md', 'secondary')
+  })
+})

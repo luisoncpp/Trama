@@ -136,7 +136,15 @@ export function useSidebarActions(
   setters: UseProjectEditorUiActionsParams['setters'],
 ) {
   return {
-    setSidebarSection: useSetSidebarSectionAction(setters),
+    setSidebarSection: useCallback(
+      (section: SidebarSection) => {
+        setters.setSidebarActiveSection(section)
+        if (sidebarState.sidebarPanelCollapsed && !layout.focusModeEnabled) {
+          setters.setSidebarPanelCollapsed(false)
+        }
+      },
+      [setters, sidebarState.sidebarPanelCollapsed, layout.focusModeEnabled],
+    ),
     toggleSidebarPanelCollapsed: useToggleSidebarPanelCollapsedAction(layout, sidebarState, setters),
     setSidebarPanelWidth: useSetSidebarPanelWidthAction(setters),
   }

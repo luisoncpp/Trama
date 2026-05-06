@@ -71,6 +71,13 @@ export function clearBlockFocusScope(editorRoot: HTMLElement): void {
 			block.classList.remove('is-focus-emphasis')
 		}
 	}
+	// Also clear nested emphasis nodes (e.g. <li> inside <ul>/<ol> in Quill 2.x lists)
+	const nestedEmphasis = editorRoot.querySelectorAll('.is-focus-emphasis')
+	for (const node of Array.from(nestedEmphasis)) {
+		if (node instanceof HTMLElement) {
+			node.classList.remove('is-focus-emphasis')
+		}
+	}
 }
 
 export function applyInlineFocusScope(quill: Quill, editorRoot: HTMLElement, scope: FocusScope): void {
@@ -116,8 +123,14 @@ export function applyFocusScope(quill: Quill, editorRoot: HTMLElement, scope: Fo
 	clearFocusTextHighlight(editorRoot)
 	const selection = quill.getSelection()
 	const [line] = quill.getLine(selection?.index ?? 0)
-	const targetNode = line?.domNode
+	let targetNode = line?.domNode
 	if (targetNode instanceof HTMLElement) {
+		// Quill 2.x lists wrap text in <p> inside <li>; paragraph emphasis
+		// must be applied to the <li> so CSS selectors can target it.
+		const listItem = targetNode.closest('li')
+		if (listItem) {
+			targetNode = listItem
+		}
 		targetNode.classList.add('is-focus-emphasis')
 	}
 }

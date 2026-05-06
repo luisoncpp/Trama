@@ -272,6 +272,124 @@ describe('RichMarkdownEditor focus rendering regression', () => {
     expect(editorRoot.style.getPropertyValue('--focus-extra-bottom')).toBe('')
   })
 
+  it('aplica is-focus-emphasis al item de lista cuando cursor esta sobre bullet en paragraph scope', async () => {
+    globalAny.CSS = { ...(globalAny.CSS ?? {}) }
+    delete (globalAny.CSS as { highlights?: unknown }).highlights
+    delete globalAny.Highlight
+
+    act(() => {
+      render(
+        h(RichMarkdownEditor, buildProps({
+          value: '- Primer item de lista\n- Segundo item de lista\n- Tercer item de lista',
+          focusScope: 'paragraph',
+        })),
+        container,
+      )
+    })
+
+    await sleep(120)
+
+    const editorRoot = container.querySelector('.ql-editor') as HTMLElement
+    expect(editorRoot).toBeTruthy()
+    expect(editorRoot.classList.contains('is-focus-scope-paragraph')).toBe(true)
+
+    const listItems = editorRoot.querySelectorAll('li')
+    expect(listItems.length).toBeGreaterThan(0)
+
+    const emphasizedItems = editorRoot.querySelectorAll('li.is-focus-emphasis')
+    expect(emphasizedItems.length).toBe(1)
+
+    const listContainer = editorRoot.querySelector('ul, ol')
+    expect(listContainer).toBeTruthy()
+  })
+
+  it('no muta contenido de lista al recalcular foco en paragraph scope', async () => {
+    globalAny.CSS = { ...(globalAny.CSS ?? {}) }
+    delete (globalAny.CSS as { highlights?: unknown }).highlights
+    delete globalAny.Highlight
+
+    act(() => {
+      render(
+        h(RichMarkdownEditor, buildProps({
+          value: '- Item uno\n- Item dos\n- Item tres para recalcular\n- Item cuatro\n- Item cinco',
+          focusScope: 'paragraph',
+        })),
+        container,
+      )
+    })
+
+    await sleep(120)
+
+    const editor = getQuillInstance(container)
+    const before = editor.getText()
+    const beforeListItems = (before.match(/^- /gm) ?? []).length
+
+    for (let index = 1; index <= 8; index += 1) {
+      const target = Math.min(index * 3, Math.max(0, editor.getLength() - 1))
+      act(() => {
+        editor.setSelection(target, 0, 'silent')
+      })
+      await sleep(16)
+    }
+
+    const after = editor.getText()
+    const afterListItems = (after.match(/^- /gm) ?? []).length
+    expect(after).toBe(before)
+    expect(afterListItems).toBe(beforeListItems)
+  })
+
+  it('regresion: focus paragraph en lista aplica is-focus-emphasis al li, no al p interno ni al ul', async () => {
+    globalAny.CSS = { ...(globalAny.CSS ?? {}) }
+    delete (globalAny.CSS as { highlights?: unknown }).highlights
+    delete globalAny.Highlight
+
+    act(() => {
+      render(
+        h(RichMarkdownEditor, buildProps({
+          value: '- Primer item\n- Segundo item\n- Tercer item',
+          focusScope: 'paragraph',
+        })),
+        container,
+      )
+    })
+
+    await sleep(120)
+
+    const editor = getQuillInstance(container)
+    const editorRoot = container.querySelector('.ql-editor') as HTMLElement
+
+    const listContainer = editorRoot.querySelector('ul, ol') as HTMLElement
+    expect(listContainer).toBeTruthy()
+
+    // El contenedor ul/ol NO debe tener is-focus-emphasis (evita opacidad multiplicativa)
+    expect(listContainer.classList.contains('is-focus-emphasis')).toBe(false)
+
+    const listItems = Array.from(editorRoot.querySelectorAll('li'))
+    expect(listItems.length).toBe(3)
+
+    // Exactamente un li debe estar resaltado
+    const emphasizedLi = listItems.filter((li) => li.classList.contains('is-focus-emphasis'))
+    expect(emphasizedLi.length).toBe(1)
+
+    // El <p> interno del li activo NO debe tener la clase (regresión de closest('li'))
+    const activeParagraph = emphasizedLi[0].querySelector('p')
+    if (activeParagraph) {
+      expect(activeParagraph.classList.contains('is-focus-emphasis')).toBe(false)
+    }
+
+    // Mover cursor al segundo item y verificar que el foco se transfiere limpiamente
+    act(() => {
+      editor.setSelection(20, 0, 'silent')
+    })
+    await sleep(30)
+
+    const newEmphasizedLi = Array.from(editorRoot.querySelectorAll('li')).filter((li) =>
+      li.classList.contains('is-focus-emphasis'),
+    )
+    expect(newEmphasizedLi.length).toBe(1)
+    expect(listContainer.classList.contains('is-focus-emphasis')).toBe(false)
+  })
+
   it('mantiene foco en editor y seleccion valida tras repetidos cambios de seleccion en focus mode', async () => {
     globalAny.CSS = { ...(globalAny.CSS ?? {}) }
     delete (globalAny.CSS as { highlights?: unknown }).highlights
