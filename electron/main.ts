@@ -155,6 +155,14 @@ async function createMainWindow(): Promise<void> {
   configureFullscreenEvents(win)
   configureWindowCloseBehavior(win)
 
+  win.webContents.on('before-input-event', (event, input) => {
+    const isReloadShortcut = (input.control || input.meta) && input.key.toLowerCase() === 'r'
+    if (isReloadShortcut && !input.shift && !input.alt) {
+      event.preventDefault()
+      win.webContents.send(IPC_CHANNELS.reloadProjectRequested)
+    }
+  })
+
   const renderer = getRendererEntry()
   await loadRendererEntry(win, renderer)
 

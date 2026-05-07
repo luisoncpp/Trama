@@ -10,7 +10,7 @@ import type {
 import type { SidebarSection } from './project-editor-types'
 import type { WorkspacePane } from './project-editor-types'
 import type { PaneWorkspace } from './pane'
-import { useSetSidebarPanelWidthAction, useSetSidebarSectionAction, useToggleSidebarPanelCollapsedAction } from './use-project-editor-sidebar-actions'
+import { useSetSidebarPanelWidthAction, useToggleSidebarPanelCollapsedAction } from './use-project-editor-sidebar-actions'
 import { useSetFocusScopeAction, useSetFullscreenEnabledAction, useToggleFocusModeAction } from './use-project-editor-focus-actions'
 import {
   useSetWorkspaceActivePaneAction,

@@ -1,6 +1,6 @@
 # START HERE - Documentation Entry Point
 
-> **Last updated:** 2026-04-19. If this file drifts from reality, update it before doing anything else.
+> **Last updated:** 2026-05-05. If this file drifts from reality, update it before doing anything else.
 
 This file is the required first stop for new conversations.
 
@@ -12,12 +12,12 @@ When a change affects behavior (not only formatting) or when detecting anything 
 
 ## 3-minute bootstrap
 
-1. Read `docs/live/current-status.md` for implemented vs pending features.
-2. Read `docs/live/file-map.md` for file ownership and where to edit.
-3. Read `docs/lessons-learned/README.md` and any relevant lesson files.
-4. Read `docs/dev-workflow.md` for build/test/checklist rules.
-5. Read `docs/architecture/README.md` to read any documents relevant to your current task before writing/reading any code.
-6. Read `docs/flows/README.md` when the hard part is following behavior end-to-end rather than understanding subsystem design.
+@docs/live/current-status.md for implemented vs pending features.
+@docs/live/file-map.md for file ownership and where to edit.
+@docs/lessons-learned/README.md and any relevant lesson files.
+@docs/dev-workflow.md for build/test/checklist rules.
+@docs/architecture/README.md to read any documents relevant to your current task before writing/reading any code.
+@docs/flows/README.md when the hard part is following behavior end-to-end rather than understanding subsystem design.
 
 ## 90-second project summary
 
@@ -31,27 +31,9 @@ Trama is a file-first desktop writing tool (Electron + Preact + TypeScript). The
 
 **Fullscreen/Focus Mode** — Native fullscreen toggle via `Ctrl/Cmd+Shift+F`; focus mode with `line | sentence | paragraph` scope dimming around caret via `Ctrl/Cmd+Shift+M`; `ESC` deactivates fullscreen, focus mode, or both; state persists in `trama.workspace.layout.v1`; focus Scope selector in sidebar Settings tab; sidebar hidden completely (display:none) during focus, editor grid collapses to single column, scrollbar dimmed.
 
-**UX hardening** — Workspace toolbar removed; all controls in native right-click context menu; event bridge pattern (`trama:workspace-command` CustomEvent); smart typography (`--` → `—`, `<<` → `«`, `>>` → `»`, each Ctrl+Z reversible); Paste from Markdown converts clipboard Markdown to rich editor HTML; In-document Find via `Ctrl/Cmd+F` with result counter and next/previous navigation.
+**UX hardening** — Workspace toolbar removed; all controls in native right-click context menu; event bridge pattern (`trama:workspace-command` CustomEvent); smart typography (`--` → `—`, `<<` → `«`, `>>` → `»`, each Ctrl+Z reversible); Paste from Markdown converts clipboard Markdown to rich editor HTML; In-document Find via `Ctrl/Cmd+F`, Find + Replace via `Ctrl/Cmd+H`; **Recargar proyecto** via `Ctrl/Cmd+R` (intercepted before Electron native reload).
 
 **AI import/export** — Structured clipboard import (`=== FILE: ... ===` format) with preview and `replace`/`append` modes; AI export to clipboard with multi-file selection and include/exclude frontmatter.
-
-## Feature-specific maps
-
-Open these only when relevant:
-
-- IPC extension workflow: `docs/architecture/ipc-architecture.md`
-- Split pane coordination model: `docs/architecture/split-pane-coordination.md`
-- Phase planning details: `docs/plan/phase-4-detailed-plan.md`
-- Wiki Tag Links system guide + debug playbook: `docs/plan/done/wiki-tag-links-system-guide.md`
-- Markdown layout directives (center/spacer/pagebreak + EPUB/MOBI): `docs/spec/markdown-layout-directives-spec.md`
-- Book export architecture (PDF/DOCX/EPUB/HTML/Markdown pipeline): `docs/architecture/book-export-architecture.md`
-- AI import/export architecture (clipboard pipeline, format grammar, path validation): `docs/architecture/ai-import-export-architecture.md`
-- Sidebar path scoping model (section-relative ↔ project-relative conversion): `docs/architecture/sidebar-path-scoping-model.md`
-- Project index data model and reconciliation: `docs/architecture/project-index-architecture.md`
-- ZuluPad import pipeline (parser, encoding, tags, line endings): `docs/architecture/zulu-import-architecture.md`
-- Editor serialization debounce (closure-capture, ref mutation, flush-before-switch): `docs/architecture/editor-serialization-debounce-architecture.md`
-- Rich editor refactor roadmap (Quill lifecycle, canonical value sync, pane persistence): `docs/plan/rich-editor-refactor-plan.md`
-- Trigger-oriented behavior walkthroughs: `docs/flows/README.md`
 
 ## Fast routing by task
 
@@ -115,11 +97,3 @@ Before finalizing any implementation/doc change:
 1. Confirm `docs/live/file-map.md` includes any new TS/TSX files.
 2. Confirm relevant notes exist in `docs/lessons-learned/README.md` and add one if needed.
 3. Confirm `docs/live/current-status.md` is still accurate for feature status.
-
-## Why this exists
-
-Repeated misses were happening because key docs were not consistently opened (`file-map.md`, `lessons-learned/README.md`).
-
-If this file gets outdated, update it first and then update links in:
-- `docs/dev-workflow.md`
-- `docs/live/file-map.md`

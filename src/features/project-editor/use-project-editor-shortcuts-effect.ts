@@ -7,7 +7,6 @@ interface UseProjectEditorShortcutsEffectParams {
   onSwitchActivePane: () => void
   onSaveNow: () => void
   onEscapePressed: () => void
-  onRefreshTree: () => void
 }
 
 function isFormFieldTarget(target: EventTarget | null): boolean {
@@ -30,7 +29,6 @@ export function useProjectEditorShortcutsEffect({
   onSwitchActivePane,
   onSaveNow,
   onEscapePressed,
-  onRefreshTree,
 }: UseProjectEditorShortcutsEffectParams): void {
   useEffect(/* registerWorkspaceShortcuts */ () => {
     const onWindowKeyDown = (event: KeyboardEvent) => {
@@ -68,16 +66,11 @@ export function useProjectEditorShortcutsEffect({
         event.preventDefault()
         onSaveNow()
       }
-
-      if ((event.ctrlKey || event.metaKey) && !event.altKey && !event.shiftKey && event.code === 'KeyH') {
-        event.preventDefault()
-        onRefreshTree()
-      }
     }
 
     window.addEventListener('keydown', onWindowKeyDown)
     return () => {
       window.removeEventListener('keydown', onWindowKeyDown)
     }
-  }, [onSaveNow, onSwitchActivePane, onToggleFocusMode, onToggleFullscreen, onToggleSplitLayout, onEscapePressed, onRefreshTree] /*Inputs for registerWorkspaceShortcuts*/)
+  }, [onSaveNow, onSwitchActivePane, onToggleFocusMode, onToggleFullscreen, onToggleSplitLayout, onEscapePressed] /*Inputs for registerWorkspaceShortcuts*/)
 }

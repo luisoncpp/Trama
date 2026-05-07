@@ -72,6 +72,7 @@ declare global {
       setSpellcheckSettings(payload: SetSpellcheckSettingsRequest): Promise<IpcEnvelope<SpellcheckSettingsResponse>>
       onExternalFileEvent(callback: (event: ExternalFileEvent) => void): () => void
       onFullscreenChanged(callback: (event: FullscreenChangedEvent) => void): () => void
+      onReloadProjectRequested(callback: () => void): () => void
       aiImportPreview(payload: AiImportRequest): Promise<IpcEnvelope<AiImportPreview>>
       aiImport(payload: AiImportRequest): Promise<IpcEnvelope<AiImportResponse>>
       aiExport(payload: AiExportRequest): Promise<IpcEnvelope<AiExportResponse>>

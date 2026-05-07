@@ -4,7 +4,7 @@ import type { EditorSerializationRefs, ProjectEditorModel } from './project-edit
 import type { WorkspaceLayoutState } from './project-editor-types'
 import { useProjectEditorActions } from './use-project-editor-actions'
 import { useProjectEditorContextMenuEffect } from './use-project-editor-context-menu-effect'
-import { useProjectEditorExternalEventsEffect } from './use-project-editor-external-events-effect'
+import { useProjectEditorExternalEventsEffect, useReloadProjectShortcutEffect } from './use-project-editor-external-events-effect'
 import { useProjectEditorFullscreenEffect } from './use-project-editor-fullscreen-effect'
 import { useProjectEditorShortcutsEffect } from './use-project-editor-shortcuts-effect'
 import { useProjectEditorState } from './use-project-editor-state'
@@ -27,10 +27,8 @@ function useAutoPickProjectFolderEffect(
 
 function buildShortcutsEffectParams(
   actions: ReturnType<typeof useProjectEditorActions>['actions'],
-  core: ReturnType<typeof useProjectEditorActions>['core'],
   isFullscreen: boolean,
   workspaceLayout: WorkspaceLayoutState,
-  rootPath: string,
 ) {
   return {
     onToggleSplitLayout: actions.toggleWorkspaceLayoutMode,
@@ -41,7 +39,6 @@ function buildShortcutsEffectParams(
       actions.setWorkspaceActivePane(workspaceLayout.activePane === 'primary' ? 'secondary' : 'primary')
     },
     onSaveNow: () => actions.saveNow(),
-    onRefreshTree: () => { if (rootPath) void core.openProject(rootPath) },
     onEscapePressed: () => {
       if (isFullscreen) {
         void actions.setFullscreenEnabled(false)
@@ -81,8 +78,9 @@ function useProjectEditorEffects(
     setConflictComparisonContent: setters.setConflictComparisonContent,
     setStatusMessage: setters.setStatusMessage,
   })
+  useReloadProjectShortcutEffect(projectState.rootPath, () => { if (projectState.rootPath) void core.openProject(projectState.rootPath) })
   useProjectEditorFullscreenEffect({ setIsFullscreen: setters.setIsFullscreen })
-  useProjectEditorShortcutsEffect(buildShortcutsEffectParams(actions, core, uiState.isFullscreen, layoutState.workspaceLayout, projectState.rootPath))
+  useProjectEditorShortcutsEffect(buildShortcutsEffectParams(actions, uiState.isFullscreen, layoutState.workspaceLayout))
   useProjectEditorCloseEffect({
     paneWorkspace,
   })

@@ -34,6 +34,7 @@ export const IPC_CHANNELS = {
   zuluImport: 'trama:zulu:import',
   readImageFile: 'trama:image:read',
   writeImageFile: 'trama:image:write',
+  reloadProjectRequested: 'trama:project:reload-requested',
 } as const
 
 export const pingRequestSchema = z.object({ message: z.string().trim().min(1).max(120) })

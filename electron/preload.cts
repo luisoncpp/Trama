@@ -128,6 +128,16 @@ const tramaApi = {
       ipcRenderer.removeListener(IPC_CHANNELS.fullscreenChanged, listener)
     }
   },
+  onReloadProjectRequested(callback: () => void): () => void {
+    const listener = () => {
+      callback()
+    }
+
+    ipcRenderer.on(IPC_CHANNELS.reloadProjectRequested, listener)
+    return () => {
+      ipcRenderer.removeListener(IPC_CHANNELS.reloadProjectRequested, listener)
+    }
+  },
   aiImportPreview(payload: AiImportRequest): Promise<IpcEnvelope<AiImportPreview>> {
     return ipcRenderer.invoke(IPC_CHANNELS.aiImportPreview, payload)
   },

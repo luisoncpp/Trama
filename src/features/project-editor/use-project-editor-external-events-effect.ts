@@ -133,3 +133,24 @@ export function useProjectEditorExternalEventsEffect({
     snapshotRootPath,
   ])
 }
+
+export function useReloadProjectShortcutEffect(
+  rootPath: string | null,
+  onRefreshTree: () => void,
+): void {
+  useEffect(() => {
+    if (!window.tramaApi?.onReloadProjectRequested) {
+      return
+    }
+
+    const unsubscribe = window.tramaApi.onReloadProjectRequested(() => {
+      if (rootPath) {
+        onRefreshTree()
+      }
+    })
+
+    return () => {
+      unsubscribe()
+    }
+  }, [rootPath, onRefreshTree])
+}
