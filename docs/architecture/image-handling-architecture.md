@@ -51,9 +51,10 @@ The solution is to keep two representations:
 | File | Responsibility |
 |------|----------------|
 | `src/shared/markdown-image-placeholder.ts` | Image extraction, placeholder generation, hydration, in-memory cache |
+| `src/shared/turndown-service-factory.ts` | Centralized `createTramaTurndownService()` — encapsulates all Turndown rules (layout directives, image placeholders) and `normalizeMarkdownOutput()` |
 | `src/features/project-editor/components/rich-markdown-editor-serialization.ts` | Debounced flush: holds `lastEditorValueRef` as placeholder-markdown, hydrates to `![...](data:...)` only before `onChangeRef.current` so parent state always receives portable markdown |
 | `src/features/project-editor/components/rich-markdown-editor-value-sync.ts` | Canonical editor-value normalization/equality for placeholder-vs-base64 comparisons |
-| `src/features/project-editor/components/rich-markdown-editor-quill.ts` | `serializeEditorMarkdown()` (HTML → placeholder-markdown), `applyMarkdownToEditor()` (markdown → Quill with image hydration + contentEditable guard), `restoreImagesAfterMarkedparsing()` |
+| `src/features/project-editor/components/rich-markdown-editor-quill.ts` | `serializeEditorMarkdown()` (HTML → placeholder-markdown via factory), `applyMarkdownToEditor()` (markdown → Quill with image hydration + contentEditable guard), `restoreImagesAfterMarkedparsing()` |
 | `src/features/project-editor/components/rich-markdown-editor-core.ts` | Passes `documentId` through lifecycle hooks; no longer owns debounce serialization |
 | `src/features/project-editor/use-project-editor-actions.ts` | `useSaveDocumentNow` hydrates placeholders before calling IPC `saveDocument` |
 
@@ -126,40 +127,28 @@ export function restoreImagesAfterMarkedparsing(html: string): string {
 
 ```typescript
 export function serializeEditorMarkdown(
-  _turndownService: TurndownService,
+  _turndownService: unknown,
   html: string,
   documentId: string,
 ): string {
   // 1. Strip base64 from HTML, store in cache
   const { htmlWithoutImages, imageMap } = stripBase64ImagesFromHtml(html, documentId)
 
-  // 2. Fresh TurndownService with custom rules
-  const td = new TurndownService({ headingStyle: 'atx', bulletListMarker: '-' })
+  // 2. Create TurndownService via factory (includes layout directives + image placeholder rules)
+  const td = createTramaTurndownService(imageMap)
 
-  // 3. Layout directives rule
-  td.addRule('trama-layout-directives', { ... })
-
-  // 4. Image placeholder rule (only if images exist)
-  if (imageMap.size > 0) {
-    td.addRule('tramaImagePlaceholder', {
-      filter: (node) => node.nodeName === 'IMG' &&
-        node.getAttribute('src')?.startsWith('trama-image-placeholder:'),
-      replacement: (_content, node) => {
-        const uuid = node.getAttribute('src')!.slice('trama-image-placeholder:'.length)
-        return `<!-- IMAGE_PLACEHOLDER:${uuid} -->`
-      },
-    })
-  }
-
-  // 5. Convert to markdown
-  const markdown = normalizeMarkdown(td.turndown(htmlWithoutImages))
-  return normalizeBlankLinesToSpacerDirectives(markdown)
+  // 3. Convert to normalized markdown
+  return normalizeMarkdownOutput(td.turndown(htmlWithoutImages))
 }
 ```
 
-### Why a fresh TurndownService per call?
+### TurndownService factory
 
-TurndownService instances accumulate rules. Creating a fresh one per serialization avoids rule duplication and prevents test interference. The `imageMap.size > 0` guard ensures documents without images get clean Turndown output.
+All TurndownService instances are created via `createTramaTurndownService()` in `src/shared/turndown-service-factory.ts`. This single factory encapsulates:
+- Base options (`headingStyle: 'atx'`, `bulletListMarker: '-'`)
+- Layout directives rule (`trama-layout-directives`)
+- Image placeholder rule (`tramaImagePlaceholder`)
+- `normalizeMarkdownOutput()` normalization (CRLF → LF, trimEnd, spacer directives)
 
 ### Performance impact
 

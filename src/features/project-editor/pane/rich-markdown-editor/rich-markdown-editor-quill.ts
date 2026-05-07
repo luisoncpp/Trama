@@ -1,18 +1,16 @@
 import Quill from 'quill'
-import TurndownService from 'turndown'
+import type TurndownService from 'turndown'
 import { marked } from 'marked'
 import { renderDirectiveArtifactsToMarkdown } from '../../../../shared/markdown-layout-directives'
-import { normalizeBlankLinesToSpacerDirectives } from '../../../../shared/markdown-layout-directives-spacing'
 import { registerLayoutDirectiveBlots } from './rich-markdown-editor-layout-blots'
 import { registerLayoutDirectiveClipboardMatchers } from './rich-markdown-editor-layout-clipboard'
 import { registerLayoutDirectiveKeyboardBindings } from './rich-markdown-editor-layout-keyboard'
 import { syncCenteredLayoutArtifacts } from './rich-markdown-editor-layout-centering'
-import { serializeDirectiveArtifactNode } from '../../../../shared/markdown-layout-directives'
-import type { DirectiveArtifactNode } from '../../../../shared/markdown-layout-directives-artifact-node'
 import {
   hydrateMarkdownImages,
   stripBase64ImagesFromHtml,
 } from '../../../../shared/markdown-image-placeholder'
+import { createTramaTurndownService, normalizeMarkdownOutput } from '../../../../shared/turndown-service-factory'
 
 type QuillChangeSource = 'api' | 'user' | 'silent'
 
@@ -81,39 +79,15 @@ export function applyMarkdownToEditor(
 }
 
 export function serializeEditorMarkdown(
-  _turndownService: TurndownService,
+  _turndownService: unknown,
   html: string,
   documentId: string,
 ): string {
   const { htmlWithoutImages, imageMap } = stripBase64ImagesFromHtml(html, documentId)
 
-  const td = new TurndownService({ headingStyle: 'atx', bulletListMarker: '-' })
+  const td = createTramaTurndownService(imageMap)
 
-  td.addRule('trama-layout-directives', {
-    filter: (node) => Boolean((node as { getAttribute?: (name: string) => string | null }).getAttribute?.('data-trama-directive')),
-      replacement: (_content, node) => {
-        const directiveComment = serializeDirectiveArtifactNode(node as DirectiveArtifactNode)
-        return directiveComment ? `\n${directiveComment}\n` : ''
-      },
-  })
-
-  if (imageMap.size > 0) {
-    td.addRule('tramaImagePlaceholder', {
-      filter: (node) => {
-        if (node.nodeName !== 'IMG') return false
-        const src = (node as { getAttribute?: (name: string) => string | null }).getAttribute?.('src') ?? ''
-        return src.startsWith('trama-image-placeholder:')
-      },
-      replacement: (_content, node) => {
-        const src = (node as { getAttribute?: (name: string) => string | null }).getAttribute?.('src') ?? ''
-        const uuid = src.slice('trama-image-placeholder:'.length)
-        return `<!-- IMAGE_PLACEHOLDER:${uuid} -->`
-      },
-    })
-  }
-
-  const markdown = normalizeMarkdown(td.turndown(htmlWithoutImages))
-  return normalizeBlankLinesToSpacerDirectives(markdown)
+  return normalizeMarkdownOutput(td.turndown(htmlWithoutImages))
 }
 
 export function serializeEditorMarkdownFromRef(

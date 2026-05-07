@@ -243,19 +243,22 @@ onChange(markdown)                     // Parent state receives hydrated markdow
 
 `serializeEditorMarkdown` lives in `rich-markdown-editor-quill.ts` and produces lightweight placeholder-markdown for internal use. The debounced flush wrapper, which hydrates images before forwarding to the parent, lives in `rich-markdown-editor-serialization.ts`. A `serializeEditorMarkdownFromRef` variant accepts `{ current: TurndownService }` (the ref pattern used across hooks). The serialization module owns the full lifecycle: text-change listener, debounce timer, immediate dirty mark, and `serializationRef` mutation.
 
-### Turndown Custom Rule (`rich-markdown-editor.tsx:34-40`)
+### Turndown Custom Rules (via factory)
+
+All TurndownService instances are created via `createTramaTurndownService()` from `src/shared/turndown-service-factory.ts`. The factory applies both rules in a single call:
+
+- **`trama-layout-directives`** — Converts `data-trama-directive` HTML nodes back to markdown comments.
+- **`tramaImagePlaceholder`** — Converts `<img src="trama-image-placeholder:uuid">` to `<!-- IMAGE_PLACEHOLDER:uuid -->`.
 
 ```typescript
-service.addRule('trama-layout-directives', {
-  filter: (node) => Boolean((node as Element).getAttribute?.('data-trama-directive')),
-  replacement: (_content, node) => {
-    const directiveComment = serializeDirectiveArtifactNode(node as Element)
-    return directiveComment ? `\n${directiveComment}\n` : ''
-  },
-})
+import { createTramaTurndownService } from '../../../../shared/turndown-service-factory'
+
+// Usage in serialization:
+const td = createTramaTurndownService(imageMap)
+const markdown = normalizeMarkdownOutput(td.turndown(htmlWithoutImages))
 ```
 
-Converts nodes with `data-trama-directive` back to markdown directives (`<!-- trama-directive: spacer lines:3 -->`).
+The `turndownRef` in `rich-markdown-editor.tsx` is initialized once with `createTramaTurndownService()` and passed through to hooks. The actual serialization in `serializeEditorMarkdown()` creates a fresh service per call via the factory.
 
 ---
 

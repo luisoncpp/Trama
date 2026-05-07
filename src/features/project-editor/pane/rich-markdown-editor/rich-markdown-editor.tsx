@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState, useCallback } from 'preact/hooks'
-import TurndownService from 'turndown'
 import Quill from 'quill'
 import { useRichEditorLifecycle } from './rich-markdown-editor-core'
 import { useRichEditorFind } from './rich-markdown-editor-find'
@@ -10,8 +9,8 @@ import { useCtrlKeyState } from './rich-markdown-editor-ctrl-key'
 import { TagHighlights } from './rich-markdown-editor-tag-highlights'
 import type { FocusScope } from '../../project-editor-types'
 import type { EditorSerializationRefs } from '../../project-editor-types'
-import { serializeDirectiveArtifactNode } from '../../../../shared/markdown-layout-directives'
 import { normalizeEditorDocumentValue } from './rich-markdown-editor-value-sync'
+import { createTramaTurndownService } from '../../../../shared/turndown-service-factory'
 
 interface RichMarkdownEditorProps {
   documentId: string | null
@@ -36,20 +35,6 @@ interface RichMarkdownEditorProps {
   onMarkDirty?: () => void
 }
 
-function createTurndownService(): TurndownService {
-  const service = new TurndownService({ headingStyle: 'atx', bulletListMarker: '-' })
-
-  service.addRule('trama-layout-directives', {
-    filter: (node) => Boolean((node as Element).getAttribute?.('data-trama-directive')),
-    replacement: (_content, node) => {
-      const directiveComment = serializeDirectiveArtifactNode(node as Element)
-      return directiveComment ? `\n${directiveComment}\n` : ''
-    },
-  })
-
-  return service
-}
-
 function useRichEditorRefs(
   documentId: string | null,
   value: string,
@@ -64,7 +49,7 @@ function useRichEditorRefs(
   const onChangeRef = useRef(onChange)
   const lastEditorValueRef = useRef(normalizeEditorDocumentValue(value, documentId))
   const isApplyingExternalValueRef = useRef(false)
-  const turndownRef = useRef(createTurndownService())
+  const turndownRef = useRef(createTramaTurndownService())
   const serializationRef = useRef<EditorSerializationRefs>({
     flush: () => null,
     tagOverlayRecalcRef: { current: false },

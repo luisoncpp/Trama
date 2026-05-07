@@ -1,7 +1,3 @@
-import TurndownService from 'turndown'
-import { serializeDirectiveArtifactNode } from './markdown-layout-directives.js'
-import type { DirectiveArtifactNode } from './markdown-layout-directives-artifact-node.js'
-
 const IMAGE_PLACEHOLDER_PROTOCOL = 'trama-image-placeholder:'
 
 /**
@@ -120,36 +116,4 @@ export function hydrateMarkdownImages(markdown: string, documentId: string): str
     const dataUrl = imageMap.get(uuid)
     return dataUrl ? `![${uuid}](${dataUrl})` : _match
   })
-}
-
-let turndownServiceInstance: TurndownService | null = null
-
-export function getImagePreservingTurndownService(): TurndownService {
-  if (!turndownServiceInstance) {
-    const service = new TurndownService({ headingStyle: 'atx', bulletListMarker: '-' })
-
-    service.addRule('tramaImagePlaceholder', {
-      filter: (node) => {
-        if (node.nodeName !== 'IMG') return false
-        const src = (node as { getAttribute?: (name: string) => string | null }).getAttribute?.('src') ?? ''
-        return src.startsWith(IMAGE_PLACEHOLDER_PROTOCOL)
-      },
-      replacement: (_content, node) => {
-        const src = (node as { getAttribute?: (name: string) => string | null }).getAttribute?.('src') ?? ''
-        const uuid = src.slice(IMAGE_PLACEHOLDER_PROTOCOL.length)
-        return imagePlaceholderToComment(uuid)
-      },
-    })
-
-    service.addRule('trama-layout-directives', {
-      filter: (node) => Boolean((node as { getAttribute?: (name: string) => string | null }).getAttribute?.('data-trama-directive')),
-      replacement: (_content, node) => {
-        const directiveComment = serializeDirectiveArtifactNode(node as DirectiveArtifactNode)
-        return directiveComment ? `\n${directiveComment}\n` : ''
-      },
-    })
-
-    turndownServiceInstance = service
-  }
-  return turndownServiceInstance
 }
