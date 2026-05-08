@@ -10,7 +10,7 @@ import { TagHighlights } from './rich-markdown-editor-tag-highlights'
 import type { FocusScope } from '../../project-editor-types'
 import type { EditorSerializationRefs } from '../../project-editor-types'
 import { normalizeEditorDocumentValue } from './rich-markdown-editor-value-sync'
-import { createTramaTurndownService } from '../../../../shared/turndown-service-factory'
+import { createTramaTurndownService, TurndownServiceFlags } from '../../../../shared/turndown-service-factory'
 
 interface RichMarkdownEditorProps {
   documentId: string | null
@@ -49,7 +49,7 @@ function useRichEditorRefs(
   const onChangeRef = useRef(onChange)
   const lastEditorValueRef = useRef(normalizeEditorDocumentValue(value, documentId))
   const isApplyingExternalValueRef = useRef(false)
-  const turndownRef = useRef(createTramaTurndownService())
+  const turndownRef = useRef(createTramaTurndownService(TurndownServiceFlags.None))
   const serializationRef = useRef<EditorSerializationRefs>({
     flush: () => null,
     tagOverlayRecalcRef: { current: false },

@@ -6,10 +6,15 @@ import type { DirectiveArtifactNode } from './markdown-layout-directives-artifac
 
 const IMAGE_PLACEHOLDER_PROTOCOL = 'trama-image-placeholder:'
 
-export function createTramaTurndownService(imageMap?: Map<string, string>): TurndownService {
-  const td = new TurndownService({ headingStyle: 'atx', bulletListMarker: '-' })
+export enum TurndownServiceFlags {
+  None = 0,
+  HasImages = 1 << 0
+}
 
-  td.addRule('trama-layout-directives', {
+export function createTramaTurndownService(flags : number): TurndownService {
+  const service = new TurndownService({ headingStyle: 'atx', bulletListMarker: '-' })
+
+  service.addRule('trama-layout-directives', {
     filter: (node) =>
       Boolean(
         (node as { getAttribute?: (name: string) => string | null }).getAttribute?.(
@@ -22,22 +27,24 @@ export function createTramaTurndownService(imageMap?: Map<string, string>): Turn
     },
   })
 
-  td.addRule('tramaImagePlaceholder', {
-    filter: (node) => {
-      if (node.nodeName !== 'IMG') return false
-      const src =
-        (node as { getAttribute?: (name: string) => string | null }).getAttribute?.('src') ?? ''
-      return src.startsWith(IMAGE_PLACEHOLDER_PROTOCOL)
-    },
-    replacement: (_content, node) => {
-      const src =
-        (node as { getAttribute?: (name: string) => string | null }).getAttribute?.('src') ?? ''
-      const uuid = src.slice(IMAGE_PLACEHOLDER_PROTOCOL.length)
-      return imagePlaceholderToComment(uuid)
-    },
-  })
+  if ((flags & TurndownServiceFlags.HasImages) !== 0) {
+    service.addRule('tramaImagePlaceholder', {
+      filter: (node) => {
+        if (node.nodeName !== 'IMG') return false
+        const src =
+          (node as { getAttribute?: (name: string) => string | null }).getAttribute?.('src') ?? ''
+        return src.startsWith(IMAGE_PLACEHOLDER_PROTOCOL)
+      },
+      replacement: (_content, node) => {
+        const src =
+          (node as { getAttribute?: (name: string) => string | null }).getAttribute?.('src') ?? ''
+        const uuid = src.slice(IMAGE_PLACEHOLDER_PROTOCOL.length)
+        return imagePlaceholderToComment(uuid)
+      },
+    })
+  }
 
-  return td
+  return service
 }
 
 export function normalizeMarkdownOutput(markdown: string): string {

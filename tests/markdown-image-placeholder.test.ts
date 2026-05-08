@@ -66,19 +66,8 @@ describe('markdown-image-placeholder', () => {
       expect(htmlWithoutImages).toContain('trama-image-placeholder:img_0')
     })
 
-    it('guarda el imageMap en cache cuando se provee documentId', () => {
-      const html = `<img src="${TINY_PNG}">`
-      stripBase64ImagesFromHtml(html, 'test-doc')
 
-      const cached = getImageMap('test-doc')
-      expect(cached).toBeDefined()
-      expect(cached!.get('img_0')).toBe(TINY_PNG)
-    })
 
-    it('no guarda en cache cuando no hay imagenes', () => {
-      stripBase64ImagesFromHtml('<p>sin imagenes</p>', 'test-doc')
-      expect(getImageMap('test-doc')).toBeUndefined()
-    })
   })
 
   describe('stripBase64ImagesFromMarkdown', () => {

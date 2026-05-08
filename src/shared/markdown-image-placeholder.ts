@@ -26,13 +26,9 @@ export function clearImageMap(documentId: string): void {
  * Replace every `<img src="data:image/...">` in the HTML with a lightweight
  * `<img src="trama-image-placeholder:img_N">` and collect the extracted
  * base64 data URLs into an `imageMap`.
- *
- * When `documentId` is provided the map is also stored in `imageMapCache`
- * so `hydrateMarkdownImages` can expand it back before saving.
  */
 export function stripBase64ImagesFromHtml(
-  html: string,
-  documentId?: string,
+  html: string
 ): { htmlWithoutImages: string; imageMap: Map<string, string> } {
   const imageMap = new Map<string, string>()
   let counter = 0
@@ -45,10 +41,6 @@ export function stripBase64ImagesFromHtml(
     imageMap.set(uuid, dataUrl)
     return `<img ${before}src="${IMAGE_PLACEHOLDER_PROTOCOL}${uuid}"${after}>`
   })
-
-  if (documentId && imageMap.size > 0) {
-    storeImageMap(documentId, imageMap)
-  }
 
   return { htmlWithoutImages: stripped, imageMap }
 }

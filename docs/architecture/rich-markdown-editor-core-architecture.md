@@ -104,10 +104,11 @@ If you need the shortest path to the editor's risky seams instead of the full su
 │    (Wrapped with contentEditable='false' guard)              │
 │                                                             │
 │  serializeEditorMarkdown()  (Quill HTML → markdown)            │
-│    1. stripBase64ImagesFromHtml() → placeholders + cache       │
-│    2. turndownService.turndown() (with custom rules)           │
-│    3. normalizeMarkdown()               // \r\n → \n, trim end │
-│    4. normalizeBlankLinesToSpacerDirectives()                  │
+│    1. stripBase64ImagesFromHtml() → placeholders + imageMap    │
+│    2. storeImageMap(documentId, imageMap) (cache for hydration)│
+│    3. createTramaTurndownService(flags) (HasImages when needed)│
+│    4. turndownService.turndown() (with custom rules)           │
+│    5. normalizeMarkdownOutput()         // \r\n → \n, trim end │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -245,20 +246,21 @@ onChange(markdown)                     // Parent state receives hydrated markdow
 
 ### Turndown Custom Rules (via factory)
 
-All TurndownService instances are created via `createTramaTurndownService()` from `src/shared/turndown-service-factory.ts`. The factory applies both rules in a single call:
+All TurndownService instances are created via `createTramaTurndownService(flags)` from `src/shared/turndown-service-factory.ts`:
 
-- **`trama-layout-directives`** — Converts `data-trama-directive` HTML nodes back to markdown comments.
-- **`tramaImagePlaceholder`** — Converts `<img src="trama-image-placeholder:uuid">` to `<!-- IMAGE_PLACEHOLDER:uuid -->`.
+- **`trama-layout-directives`** — Always active. Converts `data-trama-directive` HTML nodes back to markdown comments.
+- **`tramaImagePlaceholder`** — Active only when `flags & TurndownServiceFlags.HasImages`. Converts `<img src="trama-image-placeholder:uuid">` to `<!-- IMAGE_PLACEHOLDER:uuid -->`.
 
 ```typescript
-import { createTramaTurndownService } from '../../../../shared/turndown-service-factory'
+import { createTramaTurndownService, TurndownServiceFlags } from '../../../../shared/turndown-service-factory'
 
 // Usage in serialization:
-const td = createTramaTurndownService(imageMap)
+const flags = imageMap.size > 0 ? TurndownServiceFlags.HasImages : TurndownServiceFlags.None
+const td = createTramaTurndownService(flags)
 const markdown = normalizeMarkdownOutput(td.turndown(htmlWithoutImages))
 ```
 
-The `turndownRef` in `rich-markdown-editor.tsx` is initialized once with `createTramaTurndownService()` and passed through to hooks. The actual serialization in `serializeEditorMarkdown()` creates a fresh service per call via the factory.
+The `turndownRef` in `rich-markdown-editor.tsx` is initialized once with `createTramaTurndownService(TurndownServiceFlags.None)` and passed through to hooks. The actual serialization in `serializeEditorMarkdown()` creates a fresh service per call via the factory with the appropriate flags.
 
 ---
 

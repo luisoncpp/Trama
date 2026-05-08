@@ -1,22 +1,29 @@
 import { describe, expect, it } from 'vitest'
-import { createTramaTurndownService, normalizeMarkdownOutput } from '../src/shared/turndown-service-factory'
+import { createTramaTurndownService, normalizeMarkdownOutput, TurndownServiceFlags } from '../src/shared/turndown-service-factory'
 
 describe('turndown-service-factory', () => {
   describe('createTramaTurndownService', () => {
     it('creates TurndownService with correct base options', () => {
-      const td = createTramaTurndownService()
+      const td = createTramaTurndownService(TurndownServiceFlags.None)
       expect(td).toBeDefined()
     })
 
-    it('converts image placeholder img tags to placeholder comments', () => {
-      const td = createTramaTurndownService()
+    it('converts image placeholder img tags to placeholder comments when HasImages flag is set', () => {
+      const td = createTramaTurndownService(TurndownServiceFlags.HasImages)
       const html = '<img src="trama-image-placeholder:img_0">'
       const result = td.turndown(html)
       expect(result).toContain('<!-- IMAGE_PLACEHOLDER:img_0 -->')
     })
 
+    it('does NOT convert image placeholders when HasImages flag is NOT set', () => {
+      const td = createTramaTurndownService(TurndownServiceFlags.None)
+      const html = '<img src="trama-image-placeholder:img_0">'
+      const result = td.turndown(html)
+      expect(result).not.toContain('<!-- IMAGE_PLACEHOLDER:img_0 -->')
+    })
+
     it('converts multiple image placeholders', () => {
-      const td = createTramaTurndownService()
+      const td = createTramaTurndownService(TurndownServiceFlags.HasImages)
       const html = '<p><img src="trama-image-placeholder:img_0"></p><p><img src="trama-image-placeholder:img_1"></p>'
       const result = td.turndown(html)
       expect(result).toContain('<!-- IMAGE_PLACEHOLDER:img_0 -->')
@@ -24,40 +31,40 @@ describe('turndown-service-factory', () => {
     })
 
     it('does not convert non-placeholder img tags', () => {
-      const td = createTramaTurndownService()
+      const td = createTramaTurndownService(TurndownServiceFlags.HasImages)
       const html = '<img src="https://example.com/image.png">'
       const result = td.turndown(html)
       expect(result).not.toContain('IMAGE_PLACEHOLDER')
     })
 
     it('does not convert trama-image-placeholder protocol for non-img elements', () => {
-      const td = createTramaTurndownService()
+      const td = createTramaTurndownService(TurndownServiceFlags.HasImages)
       const html = '<div src="trama-image-placeholder:img_0"></div>'
       const result = td.turndown(html)
       expect(result).not.toContain('IMAGE_PLACEHOLDER')
     })
 
-    it('handles empty imageMap (no images)', () => {
-      const td = createTramaTurndownService()
+    it('handles documents without images', () => {
+      const td = createTramaTurndownService(TurndownServiceFlags.None)
       const html = '<p>Simple paragraph</p>'
       const result = td.turndown(html)
       expect(result).toContain('Simple paragraph')
     })
 
-    it('accepts imageMap parameter without affecting behavior', () => {
-      const imageMap = new Map([['img_test', 'data:image/png;base64,abc']])
-      const td = createTramaTurndownService(imageMap)
+    it('converts image placeholders with HasImages flag', () => {
+      const service = createTramaTurndownService(TurndownServiceFlags.HasImages)
       const html = '<img src="trama-image-placeholder:img_test">'
-      const result = td.turndown(html)
+      const result = service.turndown(html)
       expect(result).toContain('<!-- IMAGE_PLACEHOLDER:img_test -->')
     })
 
     it('handles complex HTML with images embedded in various tags', () => {
-      const td = createTramaTurndownService()
+      const td = createTramaTurndownService(TurndownServiceFlags.HasImages)
       const html = '<div><p><img src="trama-image-placeholder:img_x"></p></div>'
       const result = td.turndown(html)
       expect(result).toContain('<!-- IMAGE_PLACEHOLDER:img_x -->')
     })
+
   })
 
   describe('normalizeMarkdownOutput', () => {

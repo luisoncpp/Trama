@@ -29,8 +29,9 @@ The solution is to keep two representations:
 │  Quill DOM: <img src="data:image/...">                                  │
 │  → stripBase64ImagesFromHtml() replaces with                            │
 │    <img src="trama-image-placeholder:img_0">                            │
+│  → storeImageMap() stores base64 in imageMapCache[documentId]           │
+│  → createTramaTurndownService(flags) with HasImages when needed         │
 │  → Turndown emits <!-- IMAGE_PLACEHOLDER:img_0 -->                      │
-│  → base64 stored in imageMapCache[documentId]                           │
 │  → lastEditorValueRef = placeholder-markdown (lightweight internal)     │
 │  → hydrateMarkdownImages() before onChangeRef → parent gets full images │
 └─────────────────────────────────────────────────────────────────────────┘
@@ -131,23 +132,29 @@ export function serializeEditorMarkdown(
   html: string,
   documentId: string,
 ): string {
-  // 1. Strip base64 from HTML, store in cache
-  const { htmlWithoutImages, imageMap } = stripBase64ImagesFromHtml(html, documentId)
+  // 1. Strip base64 from HTML
+  const { htmlWithoutImages, imageMap } = stripBase64ImagesFromHtml(html)
 
-  // 2. Create TurndownService via factory (includes layout directives + image placeholder rules)
-  const td = createTramaTurndownService(imageMap)
+  // 2. Store extracted images in cache for later hydration
+  if (documentId && imageMap.size > 0) {
+    storeImageMap(documentId, imageMap)
+  }
 
-  // 3. Convert to normalized markdown
+  // 3. Create TurndownService via factory with flags
+  const flags = imageMap.size > 0 ? TurndownServiceFlags.HasImages : TurndownServiceFlags.None
+  const td = createTramaTurndownService(flags)
+
+  // 4. Convert to normalized markdown
   return normalizeMarkdownOutput(td.turndown(htmlWithoutImages))
 }
 ```
 
 ### TurndownService factory
 
-All TurndownService instances are created via `createTramaTurndownService()` in `src/shared/turndown-service-factory.ts`. This single factory encapsulates:
+All TurndownService instances are created via `createTramaTurndownService(flags)` in `src/shared/turndown-service-factory.ts`. This single factory encapsulates:
 - Base options (`headingStyle: 'atx'`, `bulletListMarker: '-'`)
-- Layout directives rule (`trama-layout-directives`)
-- Image placeholder rule (`tramaImagePlaceholder`)
+- Layout directives rule (`trama-layout-directives`, always active)
+- Image placeholder rule (`tramaImagePlaceholder`, active only when `TurndownServiceFlags.HasImages` is set)
 - `normalizeMarkdownOutput()` normalization (CRLF → LF, trimEnd, spacer directives)
 
 ### Performance impact

@@ -1,5 +1,5 @@
 import Quill from 'quill'
-import type TurndownService from 'turndown'
+import TurndownService from 'turndown'
 import { marked } from 'marked'
 import { renderDirectiveArtifactsToMarkdown } from '../../../../shared/markdown-layout-directives'
 import { registerLayoutDirectiveBlots } from './rich-markdown-editor-layout-blots'
@@ -8,9 +8,10 @@ import { registerLayoutDirectiveKeyboardBindings } from './rich-markdown-editor-
 import { syncCenteredLayoutArtifacts } from './rich-markdown-editor-layout-centering'
 import {
   hydrateMarkdownImages,
+  storeImageMap,
   stripBase64ImagesFromHtml,
 } from '../../../../shared/markdown-image-placeholder'
-import { createTramaTurndownService, normalizeMarkdownOutput } from '../../../../shared/turndown-service-factory'
+import { createTramaTurndownService, normalizeMarkdownOutput, TurndownServiceFlags } from '../../../../shared/turndown-service-factory'
 
 type QuillChangeSource = 'api' | 'user' | 'silent'
 
@@ -83,11 +84,16 @@ export function serializeEditorMarkdown(
   html: string,
   documentId: string,
 ): string {
-  const { htmlWithoutImages, imageMap } = stripBase64ImagesFromHtml(html, documentId)
+  const { htmlWithoutImages, imageMap } = stripBase64ImagesFromHtml(html)
 
-  const td = createTramaTurndownService(imageMap)
+  if (documentId && imageMap.size > 0) {
+    storeImageMap(documentId, imageMap)
+  }
 
-  return normalizeMarkdownOutput(td.turndown(htmlWithoutImages))
+  const serviceFlags = imageMap.size > 0 ? TurndownServiceFlags.HasImages : TurndownServiceFlags.None
+  const service = createTramaTurndownService(serviceFlags)
+
+  return normalizeMarkdownOutput(service.turndown(htmlWithoutImages))
 }
 
 export function serializeEditorMarkdownFromRef(
