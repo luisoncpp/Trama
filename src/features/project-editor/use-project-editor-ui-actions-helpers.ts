@@ -166,9 +166,16 @@ export function useWorkspaceLayoutActions(
 export function useRevertChangesAction({
   workspace,
   loadDocument,
+  setters,
+  uiState,
 }: {
   workspace: PaneWorkspace
   loadDocument: (path: string, pane: WorkspacePane) => Promise<void>
+  setters: {
+    setExternalConflictPath: (value: string | null) => void
+    setConflictComparisonContent: (value: string | null) => void
+  }
+  uiState: ProjectEditorUiState
 }): ProjectEditorActions['revertChanges'] {
   return useCallback((pane?: WorkspacePane): void => {
     const targetPane = pane ?? workspace.layout.activePane
@@ -176,8 +183,12 @@ export function useRevertChangesAction({
     if (!paneDocument.isDirty || !paneDocument.path) {
       return
     }
+    if (paneDocument.path === uiState.externalConflictPath) {
+      setters.setExternalConflictPath(null)
+      setters.setConflictComparisonContent(null)
+    }
     void loadDocument(paneDocument.path, targetPane)
-  }, [workspace, loadDocument])
+  }, [workspace, loadDocument, setters, uiState.externalConflictPath])
 }
 
 export function useEditorViewActions(
@@ -198,8 +209,12 @@ export function useEditorViewActions(
         return
       }
       await workspace.savePaneIfDirty(targetPane)
+      if (paneStateLocal.path === uiState.externalConflictPath) {
+        setters.setExternalConflictPath(null)
+        setters.setConflictComparisonContent(null)
+      }
     },
-    revertChanges: useRevertChangesAction({ workspace, loadDocument }),
+    revertChanges: useRevertChangesAction({ workspace, loadDocument, setters, uiState }),
     setFullscreenEnabled: useSetFullscreenEnabledAction(setters),
     toggleFocusMode: useToggleFocusModeAction(workspace.layout, setters),
     setFocusScope: useSetFocusScopeAction(setters),

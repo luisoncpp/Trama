@@ -3,7 +3,25 @@ import { h, render } from 'preact'
 import { act } from 'preact/test-utils'
 import { useRevertChangesAction } from '../src/features/project-editor/use-project-editor-ui-actions-helpers'
 import { usePaneWorkspace, type PaneBindings } from '../src/features/project-editor/pane'
-import type { EditorSerializationRefs, PaneDocumentState, WorkspaceLayoutState } from '../src/features/project-editor/project-editor-types'
+import type { EditorSerializationRefs, PaneDocumentState, WorkspaceLayoutState, ProjectEditorUiState } from '../src/features/project-editor/project-editor-types'
+
+interface TestSetters {
+  setExternalConflictPath: (value: string | null) => void
+  setConflictComparisonContent: (value: string | null) => void
+}
+
+function makeUiState(externalConflictPath: string | null = null): ProjectEditorUiState {
+  return {
+    apiAvailable: true,
+    loadingProject: false,
+    loadingDocument: false,
+    saving: false,
+    isFullscreen: false,
+    externalConflictPath,
+    conflictComparisonContent: null,
+    statusMessage: '',
+  }
+}
 
 function makeLayout(activePane: 'primary' | 'secondary', primaryPath: string | null = 'docs/a.md', secondaryPath: string | null = 'docs/b.md'): WorkspaceLayoutState {
   return {
@@ -46,13 +64,18 @@ describe('useRevertChangesAction', () => {
     const secondary = makePane('docs/b.md', '# B', false)
     const paneBindings = makePaneBindings(primary, secondary)
     const serializationRefs = makeSerializationRefs()
+    const setters: TestSetters = {
+      setExternalConflictPath: vi.fn(),
+      setConflictComparisonContent: vi.fn(),
+    }
+    const uiState = makeUiState()
 
     const loadDocument = vi.fn().mockResolvedValue(undefined)
     let revertAction: ((pane?: 'primary' | 'secondary') => void) | null = null
 
     function Harness() {
       const ws = usePaneWorkspace(layout, paneBindings, serializationRefs, noopSaveDocumentFn)
-      const revert = useRevertChangesAction({ workspace: ws, loadDocument })
+      const revert = useRevertChangesAction({ workspace: ws, loadDocument, setters, uiState })
       revertAction = revert
       return null
     }
@@ -72,13 +95,18 @@ describe('useRevertChangesAction', () => {
     const secondary = makePane('docs/b.md', '# B', false)
     const paneBindings = makePaneBindings(primary, secondary)
     const serializationRefs = makeSerializationRefs()
+    const setters: TestSetters = {
+      setExternalConflictPath: vi.fn(),
+      setConflictComparisonContent: vi.fn(),
+    }
+    const uiState = makeUiState()
 
     const loadDocument = vi.fn().mockResolvedValue(undefined)
     let revertAction: ((pane?: 'primary' | 'secondary') => void) | null = null
 
     function Harness() {
       const ws = usePaneWorkspace(layout, paneBindings, serializationRefs, noopSaveDocumentFn)
-      const revert = useRevertChangesAction({ workspace: ws, loadDocument })
+      const revert = useRevertChangesAction({ workspace: ws, loadDocument, setters, uiState })
       revertAction = revert
       return null
     }
@@ -97,13 +125,18 @@ describe('useRevertChangesAction', () => {
     const secondary = makePane('docs/b.md', '# B', false)
     const paneBindings = makePaneBindings(primary, secondary)
     const serializationRefs = makeSerializationRefs()
+    const setters: TestSetters = {
+      setExternalConflictPath: vi.fn(),
+      setConflictComparisonContent: vi.fn(),
+    }
+    const uiState = makeUiState()
 
     const loadDocument = vi.fn().mockResolvedValue(undefined)
     let revertAction: ((pane?: 'primary' | 'secondary') => void) | null = null
 
     function Harness() {
       const ws = usePaneWorkspace(layout, paneBindings, serializationRefs, noopSaveDocumentFn)
-      const revert = useRevertChangesAction({ workspace: ws, loadDocument })
+      const revert = useRevertChangesAction({ workspace: ws, loadDocument, setters, uiState })
       revertAction = revert
       return null
     }
@@ -122,13 +155,18 @@ describe('useRevertChangesAction', () => {
     const secondary = makePane('docs/b.md', '# B dirty', true)
     const paneBindings = makePaneBindings(primary, secondary)
     const serializationRefs = makeSerializationRefs()
+    const setters: TestSetters = {
+      setExternalConflictPath: vi.fn(),
+      setConflictComparisonContent: vi.fn(),
+    }
+    const uiState = makeUiState()
 
     const loadDocument = vi.fn().mockResolvedValue(undefined)
     let revertAction: ((pane?: 'primary' | 'secondary') => void) | null = null
 
     function Harness() {
       const ws = usePaneWorkspace(layout, paneBindings, serializationRefs, noopSaveDocumentFn)
-      const revert = useRevertChangesAction({ workspace: ws, loadDocument })
+      const revert = useRevertChangesAction({ workspace: ws, loadDocument, setters, uiState })
       revertAction = revert
       return null
     }
