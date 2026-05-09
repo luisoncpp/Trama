@@ -29,7 +29,7 @@ acceptProjectPath(sectionPath)
 
 describe('sidebar path scoping brands', () => {
   it('builds project-relative create paths through the scoping module', () => {
-    expect(buildProjectCandidatePath(sectionRoot, 'chapter-1', 'intro', 0, true)).toBe('book/chapter-1/intro.md')
-    expect(buildProjectCandidatePath(sectionRoot, '', 'Act-01', 1, false)).toBe('book/Act-01-2')
+    expect(buildProjectCandidatePath({ sectionRoot, directory: 'chapter-1', name: 'intro', attempt: 0, asMarkdown: true })).toBe('book/chapter-1/intro.md')
+    expect(buildProjectCandidatePath({ sectionRoot, directory: '', name: 'Act-01', attempt: 1, asMarkdown: false })).toBe('book/Act-01-2')
   })
 })

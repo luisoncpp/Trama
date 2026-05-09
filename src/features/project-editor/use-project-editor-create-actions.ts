@@ -65,7 +65,7 @@ function useCreateArticleAction({
 
     const maxAttempts = 20
     for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
-      const createPath = buildProjectCandidatePath(sectionRoot, directory, name, attempt, true)
+      const createPath = buildProjectCandidatePath({ sectionRoot, directory, name, attempt, asMarkdown: true })
       const response = await window.tramaApi.createDocument({ path: createPath, initialContent: '' })
       if (response.ok) {
         setters.setStatusMessage(`Created article: ${response.data.path}`)
@@ -111,7 +111,7 @@ function useCreateCategoryAction({
 
     const maxAttempts = 20
     for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
-      const createPath = buildProjectCandidatePath(sectionRoot, directory, name, attempt, false)
+      const createPath = buildProjectCandidatePath({ sectionRoot, directory, name, attempt, asMarkdown: false })
       const response = await window.tramaApi.createFolder({ path: createPath })
       if (response.ok) {
         setters.setStatusMessage(`Created category: ${response.data.path}`)

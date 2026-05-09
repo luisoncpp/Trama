@@ -79,17 +79,19 @@ toProjectPath(sectionPath, defineSidebarSectionRoot('book/'))
 
 Used for folder targets and the section-root sentinel (`''` → `book`).
 
-**`buildProjectCandidatePath(sectionRoot, directory, baseName, attempt, asMarkdown)`** — `sidebar-path-scoping.ts`
+**`buildProjectCandidatePath(params)`** — `sidebar-path-scoping.ts`
 
 Used for create operations:
 
 ```typescript
 // Example: creating "My Article" in directory "drafts" under book/
-sectionRoot = 'book/'
-directory = 'drafts'
-baseName = 'my-article'
-attempt = 0
-asMarkdown = true
+const params = {
+  sectionRoot: defineSidebarSectionRoot('book/'),
+  directory: 'drafts',
+name: 'my-article',
+  attempt: 0,
+  asMarkdown: true,
+}
 
 // Result: 'book/drafts/my-article.md'
 ```
@@ -218,15 +220,15 @@ function normalizePath(path: string): string {
 
 **Cause:** Articles need `.md` extension, categories (folders) don't.
 
-**Fix:** `buildProjectCandidatePath()` takes `asMarkdown` boolean:
+**Fix:** `buildProjectCandidatePath()` takes params object with `asMarkdown` boolean:
 
 ```typescript
 // Article: adds .md extension
-buildProjectCandidatePath(defineSidebarSectionRoot('book/'), 'drafts', 'my-article', 0, true)
+buildProjectCandidatePath({ sectionRoot: defineSidebarSectionRoot('book/'), directory: 'drafts', name: 'my-article', attempt: 0, asMarkdown: true })
 // → 'book/drafts/my-article.md'
 
 // Category (folder): no extension
-buildProjectCandidatePath(defineSidebarSectionRoot('book/'), 'drafts', 'my-category', 0, false)
+buildProjectCandidatePath({ sectionRoot: defineSidebarSectionRoot('book/'), directory: 'drafts', name: 'my-category', attempt: 0, asMarkdown: false })
 // → 'book/drafts/my-category'
 ```
 

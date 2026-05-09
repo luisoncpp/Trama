@@ -73,16 +73,19 @@ export function toProjectFolderPath(path: SectionRelativeFolderPath, sectionRoot
   return path === SCOPED_ROOT_KEY ? getProjectRootPath(sectionRoot) : toProjectPath(path, sectionRoot)
 }
 
-export function buildProjectCandidatePath(
-  sectionRoot: SidebarSectionRoot,
-  directory: string,
-  baseName: string,
-  attempt: number,
-  asMarkdown: boolean,
-): ProjectRelativePath {
+export interface BuildProjectCandidatePathParams {
+  sectionRoot: SidebarSectionRoot
+  directory: string
+  name: string
+  attempt: number
+  asMarkdown: boolean
+}
+
+export function buildProjectCandidatePath(params: BuildProjectCandidatePathParams): ProjectRelativePath {
+  const { sectionRoot, directory, name, attempt, asMarkdown } = params
   const suffix = attempt === 0 ? '' : `-${attempt + 1}`
   const sectionDirectory = toSectionRelativeFolderPath(directory)
-  const sectionLeaf = `${baseName}${suffix}${asMarkdown ? '.md' : ''}`
+  const sectionLeaf = `${name}${suffix}${asMarkdown ? '.md' : ''}`
   const sectionPath = sectionDirectory === SCOPED_ROOT_KEY
     ? asSectionRelativePath(sectionLeaf)
     : asSectionRelativePath(`${sectionDirectory}/${sectionLeaf}`)
