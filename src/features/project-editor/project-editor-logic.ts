@@ -5,9 +5,15 @@ export const WORKSPACE_LAYOUT_STORAGE_KEY = 'trama.workspace.layout.v1'
 
 const MIN_SPLIT_RATIO = 0.2
 const MAX_SPLIT_RATIO = 0.8
+const MIN_ZOOM_LEVEL = 0.5
+const MAX_ZOOM_LEVEL = 2.0
 
 function clampSplitRatio(value: number): number {
   return Math.min(MAX_SPLIT_RATIO, Math.max(MIN_SPLIT_RATIO, value))
+}
+
+function clampZoomLevel(value: number): number {
+  return Math.min(MAX_ZOOM_LEVEL, Math.max(MIN_ZOOM_LEVEL, value))
 }
 
 export function createDefaultWorkspaceLayoutState(): WorkspaceLayoutState {
@@ -19,6 +25,7 @@ export function createDefaultWorkspaceLayoutState(): WorkspaceLayoutState {
     activePane: 'primary',
     focusModeEnabled: false,
     focusScope: 'paragraph',
+    zoomLevel: 1.0,
   }
 }
 
@@ -31,6 +38,7 @@ export function normalizeWorkspaceLayoutState(layout: WorkspaceLayoutState): Wor
     activePane: layout.activePane,
     focusModeEnabled: layout.focusModeEnabled ?? false,
     focusScope: layout.focusScope ?? 'paragraph',
+    zoomLevel: clampZoomLevel(layout.zoomLevel ?? 1.0),
   }
 }
 
@@ -53,6 +61,7 @@ function isWorkspaceLayoutShape(value: unknown): value is WorkspaceLayoutState {
       || candidate.focusScope === 'sentence'
       || candidate.focusScope === 'paragraph'
     )
+    && (candidate.zoomLevel === undefined || typeof candidate.zoomLevel === 'number')
   )
 }
 

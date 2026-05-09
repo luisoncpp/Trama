@@ -123,35 +123,28 @@ useCallback(async (...) => { ... }, [deps])
   ```
   → needs `/*Inputs for syncFullscreenState*/`
 
-### 12. `src/features/project-editor/use-workspace-keyboard-shortcuts.ts` (1 hook)
-- **Line 48** — `useWorkspaceKeyboardShortcuts` effect
-  ```typescript
-  }, [state, actions])
-  ```
-  → needs `/*Inputs for registerWorkspaceShortcuts*/`
-
-### 13. `src/features/project-editor/use-workspace-layout-state.ts` (1 hook)
+### 12. `src/features/project-editor/use-workspace-layout-state.ts` (1 hook)
 - **Line 28** — effect persisting workspace layout state
   ```typescript
   }, [workspaceLayout])
   ```
   → needs `/*Inputs for persistWorkspaceLayout*/`
 
-### 14. `src/features/project-editor/components/sidebar/use-sidebar-filter-shortcut.ts` (1 hook)
+### 13. `src/features/project-editor/components/sidebar/use-sidebar-filter-shortcut.ts` (1 hook)
 - **Line 25** — `useSidebarFilterShortcut` effect
   ```typescript
   }, [enabled, focusFilterInput])
   ```
   → needs `/*Inputs for registerFilterShortcut*/`
 
-### 15. `src/features/project-editor/components/sidebar/use-sidebar-responsive-collapse.ts` (1 hook)
+### 14. `src/features/project-editor/components/sidebar/use-sidebar-responsive-collapse.ts` (1 hook)
 - **Line 21** — `useSidebarResponsiveCollapse` effect
   ```typescript
   }, [])
   ```
   → needs `/*Inputs for trackViewportWidth*/`
 
-### 16. `src/features/project-editor/components/sidebar/sidebar-filter.tsx` (2 hooks)
+### 15. `src/features/project-editor/components/sidebar/sidebar-filter.tsx` (2 hooks)
 - **Line 16** — effect syncing draft value with prop
   ```typescript
   }, [value])
@@ -186,6 +179,6 @@ The following files were updated in this conversation and already have correct n
 
 | Category | Count |
 |----------|-------|
-| Hooks missing naming comment | 21 |
-| Files affected | 18 |
+| Hooks missing naming comment | 20 |
+| Files affected | 17 |
 | Already compliant (project-editor) | ~24 hooks across 9 files |

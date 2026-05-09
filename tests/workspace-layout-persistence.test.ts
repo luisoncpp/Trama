@@ -110,6 +110,7 @@ describe('workspace layout persistence', () => {
         activePane: 'primary',
         focusModeEnabled: true,
         focusScope: 'sentence',
+        zoomLevel: 1,
       }),
     )
     setupTramaApiMock()
@@ -139,6 +140,7 @@ describe('workspace layout persistence', () => {
         primaryPath: 'docs/a.md',
         secondaryPath: 'docs/b.md',
         activePane: 'secondary',
+        zoomLevel: 1,
       }),
     )
     setupTramaApiMock()
@@ -163,6 +165,7 @@ describe('workspace layout persistence', () => {
       activePane: 'secondary',
       focusModeEnabled: false,
       focusScope: 'paragraph',
+      zoomLevel: 1,
     })
   })
 
@@ -175,6 +178,7 @@ describe('workspace layout persistence', () => {
         primaryPath: 'docs/missing.md',
         secondaryPath: 'docs/b.md',
         activePane: 'secondary',
+        zoomLevel: 1,
       }),
     )
 
@@ -223,8 +227,102 @@ describe('workspace layout persistence', () => {
       activePane: 'secondary',
       focusModeEnabled: false,
       focusScope: 'paragraph',
+      zoomLevel: 1,
     })
     expect(model?.state.selectedPath).toBe('docs/b.md')
     expect(model?.state.editorValue).toBe('# B')
+  })
+
+  it('persists and restores zoomLevel on startup', () => {
+    window.localStorage.setItem(
+      WORKSPACE_LAYOUT_STORAGE_KEY,
+      JSON.stringify({
+        mode: 'single',
+        ratio: 0.5,
+        primaryPath: 'docs/a.md',
+        secondaryPath: null,
+        activePane: 'primary',
+        focusModeEnabled: false,
+        focusScope: 'paragraph',
+        zoomLevel: 1.5,
+      }),
+    )
+    setupTramaApiMock()
+
+    let model: ProjectEditorModel | undefined
+
+    function Harness() {
+      model = useProjectEditor()
+      return null
+    }
+
+    const container = document.createElement('div')
+    act(() => {
+      render(h(Harness, {}), container)
+    })
+
+    expect(model?.state.workspaceLayout.zoomLevel).toBe(1.5)
+  })
+
+  it('clamps zoomLevel to MIN_ZOOM_LEVEL when persisted value is too low', () => {
+    window.localStorage.setItem(
+      WORKSPACE_LAYOUT_STORAGE_KEY,
+      JSON.stringify({
+        mode: 'single',
+        ratio: 0.5,
+        primaryPath: null,
+        secondaryPath: null,
+        activePane: 'primary',
+        focusModeEnabled: false,
+        focusScope: 'paragraph',
+        zoomLevel: 0.1,
+      }),
+    )
+    setupTramaApiMock()
+
+    let model: ProjectEditorModel | undefined
+
+    function Harness() {
+      model = useProjectEditor()
+      return null
+    }
+
+    const container = document.createElement('div')
+    act(() => {
+      render(h(Harness, {}), container)
+    })
+
+    expect(model?.state.workspaceLayout.zoomLevel).toBe(0.5)
+  })
+
+  it('clamps zoomLevel to MAX_ZOOM_LEVEL when persisted value is too high', () => {
+    window.localStorage.setItem(
+      WORKSPACE_LAYOUT_STORAGE_KEY,
+      JSON.stringify({
+        mode: 'single',
+        ratio: 0.5,
+        primaryPath: null,
+        secondaryPath: null,
+        activePane: 'primary',
+        focusModeEnabled: false,
+        focusScope: 'paragraph',
+        zoomLevel: 5,
+      }),
+    )
+    setupTramaApiMock()
+
+    let model: ProjectEditorModel | undefined
+
+    function Harness() {
+      model = useProjectEditor()
+      return null
+    }
+
+    const container = document.createElement('div')
+    act(() => {
+      render(h(Harness, {}), container)
+    })
+
+    expect(model?.state.workspaceLayout.zoomLevel).toBe(2.0)
   })
 })

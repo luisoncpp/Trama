@@ -7,6 +7,9 @@ interface UseProjectEditorShortcutsEffectParams {
   onSwitchActivePane: () => void
   onSaveNow: () => void
   onEscapePressed: () => void
+  onZoomIn: () => void
+  onZoomOut: () => void
+  onZoomReset: () => void
 }
 
 function isFormFieldTarget(target: EventTarget | null): boolean {
@@ -29,9 +32,13 @@ export function useProjectEditorShortcutsEffect({
   onSwitchActivePane,
   onSaveNow,
   onEscapePressed,
+  onZoomIn,
+  onZoomOut,
+  onZoomReset
 }: UseProjectEditorShortcutsEffectParams): void {
   useEffect(/* registerWorkspaceShortcuts */ () => {
     const onWindowKeyDown = (event: KeyboardEvent) => {
+      
       if (isFormFieldTarget(event.target)) {
         return
       }
@@ -41,36 +48,63 @@ export function useProjectEditorShortcutsEffect({
         onEscapePressed()
         return
       }
+      const isCommandKey = (event.ctrlKey || event.metaKey);
 
-      if ((event.ctrlKey || event.metaKey) && !event.altKey && event.code === 'Period') {
+      if (isCommandKey) {
+        console.log('Key pressed with command key:', event.key, event.code);
+      }      
+
+      if (isCommandKey && !event.altKey && event.code === 'Period') {
         event.preventDefault()
         onToggleSplitLayout()
       }
 
-      if ((event.ctrlKey || event.metaKey) && event.shiftKey && event.code === 'KeyF') {
+      if (isCommandKey && event.shiftKey && event.code === 'KeyF') {
         event.preventDefault()
         onToggleFullscreen()
       }
 
-      if ((event.ctrlKey || event.metaKey) && event.shiftKey && event.code === 'KeyM') {
+      if (isCommandKey && event.shiftKey && event.code === 'KeyM') {
         event.preventDefault()
         onToggleFocusMode()
       }
 
-      if ((event.ctrlKey || event.metaKey) && event.shiftKey && event.code === 'Tab') {
+      if (isCommandKey && event.shiftKey && event.code === 'Tab') {
         event.preventDefault()
         onSwitchActivePane()
       }
 
-      if ((event.ctrlKey || event.metaKey) && !event.altKey && !event.shiftKey && event.code === 'KeyS') {
+      if (isCommandKey && !event.altKey && !event.shiftKey && event.code === 'KeyS') {
         event.preventDefault()
         onSaveNow()
+        return
       }
+
+      // Ctrl/Cmd++: Zoom in (English: Ctrl+=, Spanish: Ctrl++ tecla propia)
+      if (isCommandKey && !event.altKey && !event.shiftKey && (event.code === 'Equal' || event.key === '+')) {
+        event.preventDefault()
+        onZoomIn()
+        return
+      }
+
+      // Ctrl/Cmd+-: Zoom out
+      if (isCommandKey && !event.altKey && !event.shiftKey && (event.code === 'Minus' || event.key === '-')) {
+        event.preventDefault()
+        onZoomOut()
+        return
+      }
+
+      if (isCommandKey && !event.altKey && !event.shiftKey && event.key == '0') {
+        event.preventDefault()
+        onZoomReset();
+        return
+      }      
+
     }
 
     window.addEventListener('keydown', onWindowKeyDown)
     return () => {
       window.removeEventListener('keydown', onWindowKeyDown)
     }
-  }, [onSaveNow, onSwitchActivePane, onToggleFocusMode, onToggleFullscreen, onToggleSplitLayout, onEscapePressed] /*Inputs for registerWorkspaceShortcuts*/)
+  }, [onSaveNow, onSwitchActivePane, onToggleFocusMode, onToggleFullscreen, onToggleSplitLayout, onEscapePressed, onZoomIn, onZoomOut] /*Inputs for registerWorkspaceShortcuts*/)
 }

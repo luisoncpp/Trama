@@ -133,6 +133,7 @@ describe('useProjectEditor', () => {
       activePane: 'primary',
       focusModeEnabled: false,
       focusScope: 'paragraph',
+      zoomLevel: 1,
     })
   })
 
@@ -213,6 +214,7 @@ describe('useProjectEditor', () => {
       activePane: 'primary',
       focusModeEnabled: false,
       focusScope: 'paragraph',
+      zoomLevel: 1,
     })
   })
 

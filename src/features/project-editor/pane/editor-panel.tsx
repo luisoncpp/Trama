@@ -21,6 +21,7 @@ interface EditorPanelProps {
   isActive?: boolean
   editorSerializationRef?: { current: EditorSerializationRefs }
   onMarkDirty?: () => void
+  zoomLevel?: number
 }
 
 function computeSyncStateLabel(selectedPath: string | null, loadingDocument: boolean, saving: boolean, isDirty: boolean): string {
@@ -48,6 +49,7 @@ export function EditorPanel({
   isActive = true,
   editorSerializationRef,
   onMarkDirty,
+  zoomLevel = 1.0,
 }: EditorPanelProps) {
   const saveDisabled = !selectedPath || saving || !isDirty
   const saveLabel = saving
@@ -80,6 +82,7 @@ export function EditorPanel({
           tagIndex={tagIndex} onTagClick={onTagClick} isActive={isActive}
           editorSerializationRef={editorSerializationRef}
           onMarkDirty={onMarkDirty}
+          zoomLevel={zoomLevel}
         />
       </div>
     </article>

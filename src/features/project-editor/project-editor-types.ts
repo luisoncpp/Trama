@@ -13,6 +13,7 @@ export interface WorkspaceLayoutState {
   activePane: WorkspacePane
   focusModeEnabled: boolean
   focusScope: FocusScope
+  zoomLevel: number
 }
 
 export interface PaneDocumentState {
@@ -123,6 +124,7 @@ export interface ProjectEditorActions {
   setFullscreenEnabled: (enabled: boolean) => Promise<void>
   toggleFocusMode: () => void
   setFocusScope: (scope: FocusScope) => void
+  setZoomLevel: (level: number) => void
   updateEditorValue: (value: string, pane?: WorkspacePane) => void
   saveNow: (pane?: WorkspacePane) => Promise<void>
   revertChanges: (pane?: WorkspacePane) => void

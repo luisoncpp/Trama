@@ -47,6 +47,17 @@ function buildShortcutsEffectParams(
         actions.toggleFocusMode()
       }
     },
+    onZoomIn: () => {
+      const current = workspaceLayout.zoomLevel ?? 1.0
+      actions.setZoomLevel(current + 0.1)
+    },
+    onZoomOut: () => {
+      const current = workspaceLayout.zoomLevel ?? 1.0
+      actions.setZoomLevel(current - 0.1)
+    },
+    onZoomReset: () => {
+      actions.setZoomLevel(1.0)
+    }
   }
 }
 

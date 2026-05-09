@@ -84,6 +84,7 @@ describe('project editor logic helpers', () => {
       activePane: 'primary',
       focusModeEnabled: false,
       focusScope: 'paragraph',
+      zoomLevel: 1,
     })
 
     expect(normalized.ratio).toBe(0.8)
@@ -99,6 +100,7 @@ describe('project editor logic helpers', () => {
         activePane: 'secondary',
         focusModeEnabled: false,
         focusScope: 'paragraph',
+        zoomLevel: 1,
       },
       ['docs/a.md', 'docs/b.md'],
       undefined,
@@ -120,6 +122,7 @@ describe('project editor logic helpers', () => {
         activePane: 'secondary',
         focusModeEnabled: false,
         focusScope: 'paragraph',
+        zoomLevel: 1,
       },
       ['docs/a.md', 'docs/b.md', 'docs/c.md'],
       'docs/c.md',
@@ -139,7 +142,7 @@ describe('project editor logic helpers', () => {
     })
 
     it('returns primary pane state when active pane is primary', () => {
-      const layout = { mode: 'split' as const, ratio: 0.5, primaryPath: 'docs/a.md', secondaryPath: 'docs/b.md', activePane: 'primary' as const, focusModeEnabled: false, focusScope: 'paragraph' as const }
+      const layout = { mode: 'split' as const, ratio: 0.5, primaryPath: 'docs/a.md', secondaryPath: 'docs/b.md', activePane: 'primary' as const, focusModeEnabled: false, focusScope: 'paragraph' as const, zoomLevel: 1 }
       const primary = makePane('docs/a.md', '# Primary content', true)
       const secondary = makePane('docs/b.md', '# Secondary content', false)
 
@@ -151,7 +154,7 @@ describe('project editor logic helpers', () => {
     })
 
     it('returns secondary pane state when active pane is secondary', () => {
-      const layout = { mode: 'split' as const, ratio: 0.5, primaryPath: 'docs/a.md', secondaryPath: 'docs/b.md', activePane: 'secondary' as const, focusModeEnabled: false, focusScope: 'paragraph' as const }
+      const layout = { mode: 'split' as const, ratio: 0.5, primaryPath: 'docs/a.md', secondaryPath: 'docs/b.md', activePane: 'secondary' as const, focusModeEnabled: false, focusScope: 'paragraph' as const, zoomLevel: 1 }
       const primary = makePane('docs/a.md', '# Primary content', true)
       const secondary = makePane('docs/b.md', '# Secondary content', false)
 
@@ -163,7 +166,7 @@ describe('project editor logic helpers', () => {
     })
 
     it('returns primary path even when primary pane has no loaded document', () => {
-      const layout = { mode: 'single' as const, ratio: 0.5, primaryPath: 'docs/a.md', secondaryPath: null, activePane: 'primary' as const, focusModeEnabled: false, focusScope: 'paragraph' as const }
+      const layout = { mode: 'single' as const, ratio: 0.5, primaryPath: 'docs/a.md', secondaryPath: null, activePane: 'primary' as const, focusModeEnabled: false, focusScope: 'paragraph' as const, zoomLevel: 1 }
       const primary = makePane(null, '', false)
       const secondary = makePane('docs/b.md', '# Secondary', false)
 
@@ -175,7 +178,7 @@ describe('project editor logic helpers', () => {
     })
 
     it('returns secondary path in single mode with secondary active', () => {
-      const layout = { mode: 'single' as const, ratio: 0.5, primaryPath: 'docs/a.md', secondaryPath: 'docs/b.md', activePane: 'secondary' as const, focusModeEnabled: false, focusScope: 'paragraph' as const }
+      const layout = { mode: 'single' as const, ratio: 0.5, primaryPath: 'docs/a.md', secondaryPath: 'docs/b.md', activePane: 'secondary' as const, focusModeEnabled: false, focusScope: 'paragraph' as const, zoomLevel: 1 }
       const primary = makePane('docs/a.md', '# Primary', true)
       const secondary = makePane('docs/b.md', '# Secondary', true)
 

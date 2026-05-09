@@ -18,6 +18,7 @@ import {
   useToggleWorkspaceLayoutModeAction,
 } from './use-project-editor-layout-actions'
 import { useProjectPickerActions } from './use-project-editor-picker-actions'
+import { clampZoomLevel } from './editor-zoom'
 
 export interface UseProjectEditorUiActionsParams {
   layoutState: ProjectEditorLayoutState
@@ -160,6 +161,12 @@ export function useWorkspaceLayoutActions(
     toggleWorkspaceLayoutMode: useToggleWorkspaceLayoutModeAction(projectState, setters),
     setWorkspaceLayoutRatio: useSetWorkspaceLayoutRatioAction(setters),
     setWorkspaceActivePane: useSetWorkspaceActivePaneAction({ workspace, setters, loadDocument }),
+    setZoomLevel: (level: number) => {
+      setters.setWorkspaceLayout((previous: WorkspaceLayoutState) => ({
+        ...previous,
+        zoomLevel: clampZoomLevel(level),
+      }))
+    },
   }
 }
 

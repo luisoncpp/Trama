@@ -32,6 +32,7 @@ function makeLayout(activePane: 'primary' | 'secondary', primaryPath: string | n
     activePane,
     focusModeEnabled: false,
     focusScope: 'paragraph',
+    zoomLevel: 1,
   }
 }
 
