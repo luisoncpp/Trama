@@ -127,7 +127,7 @@ export function RichMarkdownEditor(props: RichMarkdownEditorProps) {
   } = props
   const safeTagIndex = tagIndex ?? null
   const [, setTagOverlayTick] = useState(0)
-  const triggerTagOverlayRender = useCallback(() => { setTagOverlayTick((c) => c + 1) }, [])
+  const triggerTagOverlayRender = useCallback(() => setTagOverlayTick((c) => c + 1), [])
   const refs = useRichEditorRefs(documentId, value, safeTagIndex, onChange, triggerTagOverlayRender, onMarkDirty)
   const {
     shellRef, hostRef, editorRef, onChangeRef, lastEditorValueRef,
@@ -156,7 +156,7 @@ export function RichMarkdownEditor(props: RichMarkdownEditorProps) {
   useRichEditorLifecycle(lifecycleParams)
   useSyncToolbarControls({ documentId, hostRef, editorRef, saveDisabled, saveLabel, onSaveNow, revertDisabled, revertLabel, onRevertNow, syncState, syncStateLabel })
   useFocusModeScopeEffect(editorRef, hostRef, focusModeEnabled, focusScope, isActive)
-  useEditorZoom({ editorRef, hostRef, zoomLevel })
+  useEditorZoom({ editorRef, hostRef, zoomLevel, triggerTagOverlayRender })
 
   // Sync the serialization ref into the parent-provided prop ref.
   // Because registerEditorTextChangeHandler mutates serializationRef.current.flush

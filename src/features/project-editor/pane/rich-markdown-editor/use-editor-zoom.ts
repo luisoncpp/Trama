@@ -6,13 +6,13 @@ interface UseEditorZoomParams {
   editorRef: { current: Quill | null }
   hostRef: { current: HTMLDivElement | null }
   zoomLevel: number
+  triggerTagOverlayRender: () => void
 }
 
-export function useEditorZoom({ editorRef, hostRef, zoomLevel }: UseEditorZoomParams): void {
+export function useEditorZoom({ editorRef, hostRef, zoomLevel, triggerTagOverlayRender }: UseEditorZoomParams): void {
   const zoomStyleRef = useRef<{ scale: number; applied: boolean }>({ scale: 1, applied: false })
 
   useEffect(() => {
-    console.log('Applying zoom level', zoomLevel);
     const clampedZoom = clampZoomLevel(zoomLevel)
     if (clampedZoom === zoomStyleRef.current.scale && zoomStyleRef.current.applied) {
       return
@@ -45,7 +45,7 @@ export function useEditorZoom({ editorRef, hostRef, zoomLevel }: UseEditorZoomPa
       editorContainer.style.overflow = 'hidden'
       editorContainer.style.height = `${100 / scale}%`
     }
-
     zoomStyleRef.current = { scale, applied: true }
-  }, [editorRef, hostRef, zoomLevel])
+    triggerTagOverlayRender()
+  }, [editorRef, hostRef, zoomLevel, triggerTagOverlayRender])
 }
