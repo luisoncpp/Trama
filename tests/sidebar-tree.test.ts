@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { filterSidebarTree } from '../src/features/project-editor/components/sidebar/sidebar-filter-logic'
 import { buildSidebarTree, getAncestorFolderPaths, getVisibleSidebarRows, sortTreeRowsByOrder } from '../src/features/project-editor/components/sidebar/sidebar-tree-logic'
-import { scopeCorkboardOrder } from '../src/features/project-editor/components/sidebar/sidebar-panel-body.tsx'
+import { defineSidebarSectionRoot, scopeCorkboardOrder } from '../src/features/project-editor/components/sidebar/sidebar-path-scoping'
 
 describe('sidebar tree logic', () => {
   it('builds hierarchical folders and files with folder-first sorting', () => {
@@ -156,7 +156,7 @@ describe('sortTreeRowsByOrder', () => {
 
 describe('scopeCorkboardOrder', () => {
   it('returns undefined for undefined input', () => {
-    expect(scopeCorkboardOrder(undefined, 'book/')).toBeUndefined()
+    expect(scopeCorkboardOrder(undefined, defineSidebarSectionRoot('book/'))).toBeUndefined()
   })
 
   it('converts project-relative keys to section-relative keys', () => {
@@ -164,7 +164,7 @@ describe('scopeCorkboardOrder', () => {
       'book': ['scene-b.md', 'scene-a.md'],
       'book/Act-01': ['scene-2.md', 'scene-1.md'],
     }
-    const scoped = scopeCorkboardOrder(order, 'book/')
+    const scoped = scopeCorkboardOrder(order, defineSidebarSectionRoot('book/'))
     expect(scoped).toBeDefined()
     expect(Object.keys(scoped!)).toEqual(['', 'Act-01'])
     expect(scoped!['']).toEqual(['scene-b.md', 'scene-a.md'])
@@ -176,7 +176,7 @@ describe('scopeCorkboardOrder', () => {
       'book': ['scene-b.md', 'scene-a.md'],
       'lore/places': ['city.md'],
     }
-    const scoped = scopeCorkboardOrder(order, 'book/')
+    const scoped = scopeCorkboardOrder(order, defineSidebarSectionRoot('book/'))
     expect(Object.keys(scoped!)).toEqual([''])
   })
 
@@ -184,7 +184,7 @@ describe('scopeCorkboardOrder', () => {
     const order = {
       'book/Act-01': ['book/Act-01/scene-2.md', 'book/Act-01/scene-1.md'],
     }
-    const scoped = scopeCorkboardOrder(order, 'book/')
+    const scoped = scopeCorkboardOrder(order, defineSidebarSectionRoot('book/'))
     expect(scoped!['Act-01']).toEqual(['scene-2.md', 'scene-1.md'])
   })
 
@@ -192,7 +192,7 @@ describe('scopeCorkboardOrder', () => {
     const order = {
       'book': ['intro.md', 'ch-01.md'],
     }
-    const scoped = scopeCorkboardOrder(order, 'book/')
+    const scoped = scopeCorkboardOrder(order, defineSidebarSectionRoot('book/'))
     expect(scoped!['']).toEqual(['intro.md', 'ch-01.md'])
   })
 })

@@ -287,9 +287,11 @@ Mandatory doc navigation for new chats: start with `docs/START-HERE.md` — it p
 - `src/features/project-editor/components/sidebar/sidebar-panel.tsx`
   - Sidebar shell/orchestrator.
 - `src/features/project-editor/components/sidebar/sidebar-panel-body.tsx`
-  - Active section body composition. Path conversion boundary: `scopeCorkboardOrder()` converts project-relative `corkboardOrder` to section-relative; `buildScopedReorderHandler()` converts section-relative reorder payload to project-relative for IPC.
+  - Active section body composition. Thin adapter that converts raw sidebar callback strings through `sidebar-path-scoping.ts` before invoking project-level actions.
 - `src/features/project-editor/components/sidebar/sidebar-panel-logic.ts`
-  - Section scoping + filter-state helpers.
+  - Section scoping + filter-state helpers. Delegates path branding/scoping to `sidebar-path-scoping.ts`.
+- `src/features/project-editor/components/sidebar/sidebar-path-scoping.ts`
+  - Canonical sidebar path-scoping module. Owns branded path types (`SectionRelativePath`, `ProjectRelativePath`, `SidebarSectionRoot`) and all conversions between section-relative/project-relative paths, reorder payload scoping, and create-path building.
 - `src/features/project-editor/components/sidebar/sidebar-rail.tsx`
   - Section rail and collapse toggle.
 - `src/features/project-editor/components/sidebar/sidebar-explorer-content.tsx`
@@ -397,6 +399,8 @@ Core and regression suites:
 - `tests/rich-markdown-editor-focus-split-pane.test.ts`
   - Split pane focus regression: active/inactive pane behavior, `isActive` strict equality (`=== false`), CSS class application for `.is-focus-mode-inactive` dimming.
 - `tests/sidebar-tree.test.ts`
+- `tests/sidebar-path-scoping-types.test.ts`
+  - Runtime smoke coverage for the new path-scoping seam plus compile-time brand assertions enforced through `tests/typescript-compile.test.ts`.
 - `tests/sidebar-filter.test.ts`
 - `tests/sidebar-panels.test.ts`
 - `tests/spellcheck-settings.test.ts`

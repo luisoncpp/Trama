@@ -1,6 +1,6 @@
 # Sidebar Drag & Drop Architecture
 
-> **Last updated:** 2026-04-21
+> **Last updated:** 2026-05-08
 
 Goal: document the sidebar drag-and-drop system end-to-end so contributors understand the drop position model, path scoping rules, IPC contracts, and state management without tracing code across multiple files.
 
@@ -91,7 +91,7 @@ Both operations originate in the sidebar tree (section-relative paths) but diffe
 
 ```
 snapshot.index.corkboardOrder (project-relative keys + values)
-  → scopeCorkboardOrder(order, sectionConfig.root) [sidebar-panel-body.tsx]
+  → scopeCorkboardOrder(order, sectionConfig.root) [sidebar-path-scoping.ts]
     → strips section root prefix from keys
     → strips folder prefix from file IDs within each key
   → scopedCorkboardOrder { '': [...], 'Act-01': [...] }
@@ -103,23 +103,26 @@ snapshot.index.corkboardOrder (project-relative keys + values)
 
 ```
 executeDrop() builds section-relative sibling file list
-  → buildScopedReorderHandler(onReorderFiles, withRoot, sectionRoot) [sidebar-panel-body.tsx]
-    → converts folderPath: '' → sectionRoot.replace(/\/+$/, '')
-    → converts folderPath: 'Act-01' → sectionRoot + 'Act-01'
-    → converts orderedIds: each id → withRoot(id)
+  → buildScopedReorderHandler(onReorderFiles, sectionRoot) [sidebar-path-scoping.ts]
+    → converts folderPath through toProjectFolderPath()
+    → converts orderedIds through toProjectPath()
   → IPC: { folderPath: 'book/Act-01', orderedIds: ['book/Act-01/scene-b.md', ...] }
 ```
 
-### Move — `withRoot()`
+### Move — `toProjectPath()` / `toProjectFolderPath()`
 
 Move uses project-relative paths for filesystem operations. The conversion is simpler:
 
 ```typescript
 // sidebar-panel-body.tsx
-onMoveFile={onMoveFile ? (s, t) => onMoveFile(withRoot(s), withRoot(t)) : undefined}
+onMoveFile={(sourcePath, targetFolder) =>
+  onMoveFile(
+    toProjectPath(toSectionRelativePath(sourcePath), sectionConfig.root),
+    toProjectFolderPath(toSectionRelativeFolderPath(targetFolder), sectionConfig.root),
+  )
+}
 ```
-
-Both `sourcePath` and `targetFolder` are prepended with `sectionConfig.root`.
+`sidebar-panel-body.tsx` stays thin: it converts raw callback strings immediately, then delegates all actual scoping rules to `sidebar-path-scoping.ts`.
 
 ## IPC Contract
 
@@ -216,7 +219,8 @@ SidebarTree
 |------|---------------|
 | `src/features/project-editor/components/sidebar/use-sidebar-tree-drag-handlers.ts` | `calculateDropPosition()`, `executeDrop()`, drag handler hook |
 | `src/features/project-editor/components/sidebar/sidebar-tree-sort.ts` | `sortTreeRowsByOrder()` — reorders rows by corkboardOrder |
-| `src/features/project-editor/components/sidebar/sidebar-panel-body.tsx` | `scopeCorkboardOrder()`, `buildScopedReorderHandler()` — path scoping boundary |
+| `src/features/project-editor/components/sidebar/sidebar-path-scoping.ts` | `scopeCorkboardOrder()`, `buildScopedReorderHandler()`, `toProjectPath()`, `toProjectFolderPath()` — canonical path scoping seam |
+| `src/features/project-editor/components/sidebar/sidebar-panel-body.tsx` | Thin adapter that invokes the canonical path scoping seam from raw UI callbacks |
 | `src/features/project-editor/components/sidebar/sidebar-tree.tsx` | `SidebarTree`, `SidebarTreeRows`, drag state |
 | `src/features/project-editor/components/sidebar/sidebar-tree-row-button.tsx` | Row rendering, drag event attachment |
 | `src/features/project-editor/components/sidebar/drop-indicator.tsx` | `DropIndicatorPosition` types |

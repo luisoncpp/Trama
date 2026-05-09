@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest'
 import { buildSidebarTree, getVisibleSidebarRows, sortTreeRowsByOrder } from '../src/features/project-editor/components/sidebar/sidebar-tree-logic'
-import { scopeCorkboardOrder } from '../src/features/project-editor/components/sidebar/sidebar-panel-body'
+import { defineSidebarSectionRoot, scopeCorkboardOrder } from '../src/features/project-editor/components/sidebar/sidebar-path-scoping'
 
 describe('corkboardOrder integration', () => {
   describe('scopeCorkboardOrder: project-relative → section-relative conversion', () => {
     it('converts book/ root key to empty string for book/ section root', () => {
       const order = { 'book': ['scene-b.md', 'scene-a.md'] }
-      const scoped = scopeCorkboardOrder(order, 'book/')
+      const scoped = scopeCorkboardOrder(order, defineSidebarSectionRoot('book/'))
       expect(scoped!['']).toEqual(['scene-b.md', 'scene-a.md'])
     })
 
@@ -15,7 +15,7 @@ describe('corkboardOrder integration', () => {
         'outline': ['intro.md', 'chapter-1/scene-1.md'],
         'outline/chapter-1': ['scene-3.md', 'scene-2.md', 'scene-1.md'],
       }
-      const scoped = scopeCorkboardOrder(order, 'outline/')
+      const scoped = scopeCorkboardOrder(order, defineSidebarSectionRoot('outline/'))
       expect(Object.keys(scoped!)).toEqual(['', 'chapter-1'])
       expect(scoped!['']).toEqual(['intro.md', 'chapter-1/scene-1.md'])
       expect(scoped!['chapter-1']).toEqual(['scene-3.md', 'scene-2.md', 'scene-1.md'])
@@ -27,20 +27,20 @@ describe('corkboardOrder integration', () => {
         'lore': ['place-a.md'],
         'outline': ['scene-b.md'],
       }
-      const scoped = scopeCorkboardOrder(order, 'book/')
+      const scoped = scopeCorkboardOrder(order, defineSidebarSectionRoot('book/'))
       expect(Object.keys(scoped!)).toEqual([''])
       expect(scoped!['lore']).toBeUndefined()
     })
 
     it('returns undefined when input is undefined', () => {
-      expect(scopeCorkboardOrder(undefined, 'book/')).toBeUndefined()
+      expect(scopeCorkboardOrder(undefined, defineSidebarSectionRoot('book/'))).toBeUndefined()
     })
 
     it('strips folder prefix from file ids within each key', () => {
       const order = {
         'book/Act-01': ['book/Act-01/scene-2.md', 'book/Act-01/scene-1.md'],
       }
-      const scoped = scopeCorkboardOrder(order, 'book/')
+      const scoped = scopeCorkboardOrder(order, defineSidebarSectionRoot('book/'))
       expect(scoped!['Act-01']).toEqual(['scene-2.md', 'scene-1.md'])
     })
   })
@@ -155,7 +155,7 @@ describe('corkboardOrder integration', () => {
         'book/Act-01': ['scene-2.md', 'scene-1.md'],
       }
 
-      const scoped = scopeCorkboardOrder(indexOrder, 'book/')
+      const scoped = scopeCorkboardOrder(indexOrder, defineSidebarSectionRoot('book/'))
 
       const scopedFiles = ['intro.md', 'ch-01.md', 'Act-01/scene-1.md', 'Act-01/scene-2.md']
       const scopedTree = buildSidebarTree(scopedFiles)

@@ -33,9 +33,9 @@ SidebarPanel (src/.../sidebar/sidebar-panel.tsx)
 SidebarPanelBody (sidebar-panel-body.tsx)
   │ if effectiveCollapsed → null
   │ if sectionConfig → renderExplorer(props)
-  │   withRoot = makeRootPath(sectionConfig.root)
+  │   section paths enter the sidebar-path-scoping seam
   │   scopedCorkboardOrder = scopeCorkboardOrder(corkboardOrder, sectionConfig.root)
-  │   scopedReorderHandler = buildScopedReorderHandler(onReorderFiles, withRoot, sectionConfig.root)
+  │   scopedReorderHandler = buildScopedReorderHandler(onReorderFiles, sectionConfig.root)
   ▼
 SidebarExplorerContent (sidebar-explorer-content.tsx)
   │ visibleFiles={scopedFiles}
@@ -96,8 +96,9 @@ In `renderExplorer` → `SidebarExplorerContent` → `SidebarExplorerBody` → `
 | `src/app.tsx` | Top-level model wiring |
 | `src/features/project-editor/project-editor-view.tsx` | `buildSidebarSectionProps` |
 | `src/.../sidebar/sidebar-panel.tsx` | `useSidebarPanelRenderState` |
-| `src/.../sidebar/sidebar-panel-logic.ts` | `useSidebarContentSection`, `getScopedFiles` |
-| `src/.../sidebar/sidebar-panel-body.tsx` | `renderExplorer`, path wrapping |
+| `src/.../sidebar/sidebar-panel-logic.ts` | `useSidebarContentSection`, `joinProjectPath` |
+| `src/.../sidebar/sidebar-path-scoping.ts` | branded path seam: `getScopedFiles`, `getScopedSelectedPath`, `scopeCorkboardOrder`, `buildScopedReorderHandler` |
+| `src/.../sidebar/sidebar-panel-body.tsx` | `renderExplorer`, raw-string adapter into the path-scoping seam |
 | `src/.../sidebar/sidebar-explorer-content.tsx` | Pass-through to `SidebarExplorerBody` |
 | `src/.../sidebar/sidebar-explorer-body.tsx` | `SidebarTreeArea` inline component |
 | `src/.../sidebar/sidebar-tree.tsx` | `useSidebarTreeData`, `SidebarTreeRows` |

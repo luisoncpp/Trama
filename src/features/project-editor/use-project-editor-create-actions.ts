@@ -4,6 +4,7 @@ import { normalizeName } from '../../shared/sidebar-utils'
 import type { ProjectEditorActions } from './project-editor-types'
 import type { SidebarCreateInput } from './project-editor-types'
 import type { ProjectEditorProjectState, ProjectEditorSidebarState } from './project-editor-types'
+import { buildProjectCandidatePath, type SidebarSectionRoot } from './components/sidebar/sidebar-path-scoping'
 import { SIDEBAR_SECTION_CONFIG } from './components/sidebar/sidebar-section-roots'
 
 interface UseProjectEditorCreateActionsParams {
@@ -13,23 +14,6 @@ interface UseProjectEditorCreateActionsParams {
     setStatusMessage: (value: string) => void
   }
   openProject: (projectRoot: string, preferredFilePath?: string) => Promise<void>
-}
-
-function ensureMarkdownExtension(value: string): string {
-  return value.toLowerCase().endsWith('.md') ? value : `${value}.md`
-}
-
-function buildCandidatePath(
-  sectionRoot: string,
-  directory: string,
-  baseName: string,
-  attempt: number,
-  asMarkdown: boolean,
-): string {
-  const suffix = attempt === 0 ? '' : `-${attempt + 1}`
-  const prefix = directory ? `${sectionRoot}${directory}/` : sectionRoot
-  const raw = `${prefix}${baseName}${suffix}`
-  return asMarkdown ? ensureMarkdownExtension(raw) : raw
 }
 
 function isPathExistsError(message: string): boolean {
@@ -45,7 +29,7 @@ function isContentSection(value: ProjectEditorSidebarState['sidebarActiveSection
   return Object.hasOwn(SIDEBAR_SECTION_CONFIG, value)
 }
 
-function getSectionRoot(activeSection: ProjectEditorSidebarState['sidebarActiveSection']): string | null {
+function getSectionRoot(activeSection: ProjectEditorSidebarState['sidebarActiveSection']): SidebarSectionRoot | null {
   if (!isContentSection(activeSection)) {
     return null
   }
@@ -81,7 +65,7 @@ function useCreateArticleAction({
 
     const maxAttempts = 20
     for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
-      const createPath = buildCandidatePath(sectionRoot, directory, name, attempt, true)
+      const createPath = buildProjectCandidatePath(sectionRoot, directory, name, attempt, true)
       const response = await window.tramaApi.createDocument({ path: createPath, initialContent: '' })
       if (response.ok) {
         setters.setStatusMessage(`Created article: ${response.data.path}`)
@@ -127,7 +111,7 @@ function useCreateCategoryAction({
 
     const maxAttempts = 20
     for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
-      const createPath = buildCandidatePath(sectionRoot, directory, name, attempt, false)
+      const createPath = buildProjectCandidatePath(sectionRoot, directory, name, attempt, false)
       const response = await window.tramaApi.createFolder({ path: createPath })
       if (response.ok) {
         setters.setStatusMessage(`Created category: ${response.data.path}`)

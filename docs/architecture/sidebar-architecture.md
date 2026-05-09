@@ -1,6 +1,6 @@
 # Sidebar Architecture Guide
 
-> **Last updated:** 2026-04-21
+> **Last updated:** 2026-05-08
 
 Goal: explain the sidebar subsystem end-to-end so contributors can understand data flow, path scoping, and extension points without broad code searches.
 
@@ -44,9 +44,9 @@ Sections are defined in `sidebar-section-roots.ts`:
 
 ```typescript
 export const SIDEBAR_SECTION_CONFIG: Record<ContentSidebarSection, SidebarSectionConfig> = {
-  explorer: { title: 'Manuscript', root: 'book/' },
-  outline: { title: 'Outline', root: 'outline/' },
-  lore:    { title: 'Lore',    root: 'lore/' },
+  explorer: { title: 'Manuscript', root: defineSidebarSectionRoot('book/') },
+  outline: { title: 'Outline', root: defineSidebarSectionRoot('outline/') },
+  lore:    { title: 'Lore',    root: defineSidebarSectionRoot('lore/') },
 }
 ```
 
@@ -72,11 +72,12 @@ sidebar path  →  IPC path
 ```
 
 Functions responsible:
+- `sidebar-path-scoping.ts` — canonical seam with branded path types and all section-relative ↔ project-relative conversions
 - `getScopedFiles()` — strips `sectionRoot` prefix from project paths → sidebar paths
 - `getScopedSelectedPath()` — same for selected path
+- `toProjectPath()` / `toProjectFolderPath()` — convert sidebar paths to IPC-safe project-relative paths
 - `joinProjectPath()` — builds the absolute section label path shown in the UI from `rootPath + sectionRoot`
-- `makeRootPath()` in `sidebar-panel-body.tsx` — `(path) => root + path` used for IPC calls
-- `loadFileTags()` in `sidebar-panel-body.tsx` — reads document tags via project-relative `readDocument` IPC when the Edit Tags dialog opens
+- `loadFileTags()` in `sidebar-panel-body.tsx` — reads document tags via project-relative `readDocument` IPC using the canonical seam
 
 **Lesson:** Any IPC file operation (read, rename, delete, create) must use the project-relative path, not the sidebar path. See `lessons-learned/sidebar-path-scoping.md` and the dedicated `docs/architecture/sidebar-path-scoping-model.md` for full conversion tables and boundary functions.
 
@@ -223,8 +224,8 @@ drag file → dropPosition.type === 'onFolder'
 trama:index:reorder → { folderPath: string, orderedIds: string[] }
 ```
 
-- `folderPath`: **project-relative** folder path used as the `corkboardOrder` key (for example `book/chapter-1` or `book` for section root). Conversion from section-relative happens in `buildScopedReorderHandler()` at `sidebar-panel-body.tsx`.
-- `orderedIds`: **project-relative** file paths (e.g., `book/Act-01/scene-2.md`). Conversion from section-relative happens in `buildScopedReorderHandler()`.
+- `folderPath`: **project-relative** folder path used as the `corkboardOrder` key (for example `book/chapter-1` or `book` for section root). Conversion from section-relative happens in `buildScopedReorderHandler()` at `sidebar-path-scoping.ts`.
+- `orderedIds`: **project-relative** file paths (e.g., `book/Act-01/scene-2.md`). Conversion from section-relative happens in `buildScopedReorderHandler()` at `sidebar-path-scoping.ts`.
 - Persists `corkboardOrder` in `.trama.index.json` (no disk file moves)
 - After successful reorder, `openProject(rootPath)` refreshes the snapshot so `corkboardOrder` state updates immediately
 
@@ -269,7 +270,7 @@ SidebarPanelBody
 
 ## Invariants
 
-1. **Path scoping**: sidebar tree paths are section-relative. Filesystem IPC paths (read/create/rename/delete/move) are project-relative at the boundary. Reorder also converts to project-relative via `buildScopedReorderHandler()` at `sidebar-panel-body.tsx`.
+1. **Path scoping**: sidebar tree paths are section-relative. Filesystem IPC paths (read/create/rename/delete/move) are project-relative at the boundary. The deep seam is `sidebar-path-scoping.ts`; `sidebar-panel-body.tsx` is only the outer adapter that invokes it.
 2. **Folder modeling**: the tree can derive folders from file path prefixes and can also consume explicit folder paths from scanner output.
 3. **Pane coordination**: sidebar `selectedPath` derives from `workspaceLayout.activePane` path, not from async-loading pane document path (see `lessons-learned/split-pane-sidebar-layout-vs-pane-path.md`).
 4. **Focus mode lock**: sidebar auto-collapses and is locked closed while focus mode is active.

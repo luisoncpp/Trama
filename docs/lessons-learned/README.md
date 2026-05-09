@@ -66,6 +66,7 @@ Avoid: "bug description + fix". Prefer: "what I learned that applies to future w
 | `index-reorder-payload-id-vs-path.md` | Reorder payloads for `.trama.index.json` must use same key/value identity model as reconciliation and downstream readers | 2026-04-19 |
 | `shared-sentinel-scope-root.md` | Shared `SCOPED_ROOT_KEY = ''` sentinel for section-root scope in `scopeCorkboardOrder` and `sortTreeRowsByOrder` — avoids silent ordering failure when only one file is updated | 2026-04-30 |
 | `corkboard-order-path-scoping.md` | `corkboardOrder` keys are project-relative; sidebar tree uses section-relative paths — conversion must happen at the boundary (`sidebar-panel-body.tsx`) | 2026-04-21 |
+| `sidebar-path-brands-deepen-the-seam.md` | Path scoping only becomes safe when the seam owns branded section-relative/project-relative types, not plain strings | 2026-05-08 |
 | `quill-getbounds-multiline-wrap.md` | Quill `getBounds()` returns a single bounding rect for wrapped ranges; use `Range.getClientRects()` via `editor.scroll.leaf()` for per-line geometry | 2026-05-01 |
 | `tag-overlay-stale-bounds-on-layout-change.md` | Quill `getBounds()` results are layout-dependent; never cache them across renders — compute fresh at render or event time | 2026-04-21 |
 | `find-overlay-scroll-stale-bounds.md` | Find overlay highlight must recompute bounds on every scroll; same stale-bounds pattern as tags, plus `getBoundingClientRect()` over `offsetTop/offsetLeft` | 2026-04-22 |

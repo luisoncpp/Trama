@@ -1,32 +1,7 @@
 import { useState } from 'preact/hooks'
 import type { SidebarSection } from '../../project-editor-types'
 import { SIDEBAR_SECTION_CONFIG, type ContentSidebarSection } from './sidebar-section-roots'
-
-export const SCOPED_ROOT_KEY = ''
-
-function normalizePath(path: string): string {
-  return path.replaceAll('\\', '/')
-}
-
-function getScopedFiles(files: string[], sectionRoot: string): string[] {
-  return files
-    .map(normalizePath)
-    .filter((path) => path.startsWith(sectionRoot))
-    .map((path) => path.slice(sectionRoot.length))
-    .filter((path) => path.length > 0)
-}
-
-function getScopedSelectedPath(selectedPath: string | null, sectionRoot: string): string | null {
-  if (!selectedPath) {
-    return null
-  }
-  const normalized = normalizePath(selectedPath)
-  if (!normalized.startsWith(sectionRoot)) {
-    return null
-  }
-  const scopedPath = normalized.slice(sectionRoot.length)
-  return scopedPath.length > 0 ? scopedPath : null
-}
+import { getScopedFiles, getScopedSelectedPath } from './sidebar-path-scoping'
 
 export function joinProjectPath(rootPath: string, sectionRoot: string): string {
   if (!rootPath) {

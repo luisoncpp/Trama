@@ -1,6 +1,6 @@
 # Project Index Architecture (`.trama.index.json`)
 
-> **Last updated:** 2026-04-21
+> **Last updated:** 2026-05-08
 
 ## Purpose
 
@@ -31,7 +31,7 @@ interface DocumentMeta {
 
 - `corkboardOrder` keys use **project-relative** paths (e.g. `"book"`, `"book/chapter-1"`, `"outline"`).
   - Both reconciliation and reorder now write project-relative keys.
-  - `scopeCorkboardOrder()` in `sidebar-panel-body.tsx` converts project-relative keys/IDs to section-relative for the sidebar tree; `buildScopedReorderHandler()` converts section-relative back to project-relative before IPC.
+  - `scopeCorkboardOrder()` in `sidebar-path-scoping.ts` converts project-relative keys/IDs to section-relative for the sidebar tree; `buildScopedReorderHandler()` converts section-relative back to project-relative before IPC.
 - `corkboardOrder` values are **project-relative file paths** (e.g. `"book/Act-01/scene-2.md"`).
   - Both reconciliation and reorder now write project-relative values.
   - For files with explicit `meta.id`, reconciliation uses the ID instead of the path; reorder always uses the project-relative path. This means reconciliation and reorder may use different identifiers for the same file when `meta.id` is present.
@@ -154,12 +154,12 @@ This means documents without an explicit `id` in their frontmatter use their **c
 1. The sidebar scopes `visibleFiles` to section-relative paths via `getScopedFiles()` (strips the section root prefix like `"book/"`).
 2. The sidebar tree is built from these section-relative paths.
 3. Drag-drop reorder derives `folderPath` from `sourceRow.path` (section-relative) in `use-sidebar-tree-drag-handlers.ts`.
-4. `buildScopedReorderHandler()` in `sidebar-panel-body.tsx` converts section-relative `folderPath` and `orderedIds` to project-relative before calling the IPC action.
+4. `buildScopedReorderHandler()` in `sidebar-path-scoping.ts` converts section-relative `folderPath` and `orderedIds` to project-relative before calling the IPC action.
 5. The project-relative `folderPath` and project-relative file-path `orderedIds` are sent to `trama:index:reorder` IPC.
 
 **Sidebar reading path:**
 
-6. `scopeCorkboardOrder()` in `sidebar-panel-body.tsx` converts project-relative `corkboardOrder` keys and IDs back to section-relative for the sidebar tree.
+6. `scopeCorkboardOrder()` in `sidebar-path-scoping.ts` converts project-relative `corkboardOrder` keys and IDs back to section-relative for the sidebar tree.
 7. `sortTreeRowsByOrder()` in `sidebar-tree-sort.ts` reorders the tree rows by the scoped order.
 
 **Remaining inconsistency:** reconciliation values use document IDs (preferring `meta.id` over path), while reorder values always use project-relative paths. For files without explicit `meta.id`, both writers use the same project-relative path and values match. For files with `meta.id`, the values differ and reconciliation overwrites reorder's path-based ordering with ID-based ordering on next run.
@@ -197,7 +197,7 @@ This means documents without an explicit `id` in their frontmatter use their **c
 | `electron/services/watcher-service.ts` | Chokidar wrapper + internal/external write classification; ignores `.trama.index.json` |
 | `electron/services/book-export-order.ts` | Book export ordering — reads project-relative `corkboardOrder` keys |
 | `src/shared/ipc.ts` | Schema definitions (`projectIndexSchema`, `documentMetaSchema`) |
-| `src/features/project-editor/components/sidebar/sidebar-panel-body.tsx` | `scopeCorkboardOrder()` converts project-relative → section-relative; `buildScopedReorderHandler()` converts section-relative → project-relative for reorder IPC |
+| `src/features/project-editor/components/sidebar/sidebar-path-scoping.ts` | Canonical path seam: `scopeCorkboardOrder()`, `buildScopedReorderHandler()`, `getScopedFiles()` |
+| `src/features/project-editor/components/sidebar/sidebar-panel-body.tsx` | Thin adapter that routes sidebar callbacks through the canonical path seam |
 | `src/features/project-editor/components/sidebar/sidebar-tree-sort.ts` | `sortTreeRowsByOrder()` — reorders tree rows by scoped `corkboardOrder` |
-| `src/features/project-editor/components/sidebar/sidebar-panel-logic.ts` | `getScopedFiles()` — strips section root prefix |
 | `tests/index-reconciliation.test.ts` | Reconciliation behavior tests |

@@ -1,6 +1,6 @@
 # Architecture Overview
 
-> **Last updated:** 2026-04-19
+> **Last updated:** 2026-05-08
 
 This document provides a cross-cutting summary of Trama's architecture. For subsystem-specific details, see individual files in this folder.
 
@@ -38,7 +38,7 @@ This document provides a cross-cutting summary of Trama's architecture. For subs
 
 1. **IPC channel names live only in `src/shared/ipc.ts`** — no hardcoded strings elsewhere.
 2. **All IPC handlers return envelope responses** — `{ ok: true, data: ... }` or `{ ok: false, error: ... }`.
-3. **Sidebar paths are section-relative**; IPC calls use project-relative paths. Conversion boundary is `sidebar-panel-body.tsx`.
+3. **Sidebar paths are section-relative**; IPC calls use project-relative paths. The deep seam is `sidebar-path-scoping.ts`, and `sidebar-panel-body.tsx` is only the outer adapter that invokes it.
 4. **Preload API surface** (`electron/preload.cts`) must match `src/types/trama-api.d.ts`.
 5. **Workspace commands travel via `WORKSPACE_CONTEXT_MENU_EVENT`** CustomEvent — never bypass this bridge.
 
@@ -69,7 +69,7 @@ Multi-section panel (Manuscript/Outline/Lore) sharing tree-building logic. Path 
 
 Conversion functions (`sidebar-path-scoping-model.md`):
 - `getScopedFiles()` — strips section root → sidebar paths
-- `makeRootPath()` — prepends section root → IPC paths
+- `toProjectPath()` / `toProjectFolderPath()` — prepend section root through branded conversions → IPC paths
 
 Tree building (`tree-building-and-implicit-folders.md`) derives folders from file path segments. Explicit empty folders use trailing slash notation.
 
@@ -147,7 +147,8 @@ File save
   → watcher marked internal to suppress re-event
 
 Drag-drop reorder
-  → IPC: trama:index:reorder (section-relative keys + values)
+  → sidebar-path-scoping.ts converts section-relative reorder payload
+  → IPC: trama:index:reorder (project-relative keys + values)
   → persisted to .trama.index.json
   → overwritten on next reconciliation
 

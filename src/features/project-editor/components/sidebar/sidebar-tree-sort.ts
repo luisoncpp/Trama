@@ -1,5 +1,5 @@
 import type { SidebarTreeRow } from './sidebar-tree-logic'
-import { SCOPED_ROOT_KEY } from './sidebar-panel-logic'
+import { SCOPED_ROOT_KEY } from './sidebar-path-scoping'
 
 export function sortTreeRowsByOrder(
   rows: SidebarTreeRow[],

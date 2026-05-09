@@ -3,7 +3,15 @@ import { SidebarExplorerContent } from './sidebar-explorer-content.tsx'
 import { SIDEBAR_SECTION_CONFIG, type ContentSidebarSection } from './sidebar-section-roots'
 import { SidebarSettingsContent } from './sidebar-settings-content.tsx'
 import { SidebarTransferContent } from './sidebar-transfer-content.tsx'
-import { joinProjectPath, SCOPED_ROOT_KEY } from './sidebar-panel-logic'
+import { joinProjectPath } from './sidebar-panel-logic'
+import {
+  buildScopedReorderHandler,
+  scopeCorkboardOrder,
+  toProjectFolderPath,
+  toProjectPath,
+  toSectionRelativeFolderPath,
+  toSectionRelativePath,
+} from './sidebar-path-scoping'
 import type {
   SidebarProjectContextProps,
   SidebarFileActions,
@@ -58,43 +66,11 @@ export interface SidebarPanelBodyProps {
     | 'rootPath'
   >
 }
-
-const makeRootPath = (root: string) => (path: string) => `${root}${path}`
-
-export function scopeCorkboardOrder(order: Record<string, string[]> | undefined, sectionRoot: string): Record<string, string[]> | undefined {
-  if (!order) return undefined
-  const result: Record<string, string[]> = {}
-  const rootPrefix = sectionRoot.replace(/\/+$/, '')
-
-  for (const [key, ids] of Object.entries(order)) {
-    const scopedKey = key === rootPrefix ? SCOPED_ROOT_KEY : key.startsWith(`${rootPrefix}/`) ? key.slice(rootPrefix.length + 1) : null
-    if (scopedKey === null) continue
-    const scopedIds = ids.map((id) => {
-      const prefix = key ? `${key}/` : `${rootPrefix}/`
-      return id.startsWith(prefix) ? id.slice(prefix.length) : id
-    })
-    result[scopedKey] = scopedIds
-  }
-
-  return result
-}
-
-export function buildScopedReorderHandler(
-  onReorderFiles: ((folderPath: string, orderedIds: string[]) => Promise<void>) | undefined,
-  withRoot: (path: string) => string,
-  sectionRoot: string,
-): ((folderPath: string, orderedIds: string[]) => Promise<void>) | undefined {
-  if (!onReorderFiles) return undefined
-  return (folderPath: string, orderedIds: string[]) => {
-    const projectFolder = folderPath ? withRoot(folderPath) : sectionRoot.replace(/\/+$/, '')
-    const projectIds = orderedIds.map((id) => withRoot(id))
-    return onReorderFiles(projectFolder, projectIds)
-  }
-}
-
-function loadFileTags(root: string) {
+function loadFileTags(sectionRoot: (typeof SIDEBAR_SECTION_CONFIG)[ContentSidebarSection]['root']) {
   return async (path: string): Promise<string[]> => {
-    const response = await window.tramaApi.readDocument({ path: `${root}${path}` })
+    const response = await window.tramaApi.readDocument({
+      path: toProjectPath(toSectionRelativePath(path), sectionRoot),
+    })
     if (!response.ok || !Array.isArray(response.data.meta.tags)) return []
     return response.data.meta.tags.filter((value): value is string => typeof value === 'string')
   }
@@ -108,7 +84,6 @@ function renderExplorer(props: SidebarPanelBodyProps) {
     onSelectFile, onReorderFiles, onMoveFile, onMoveFolder, corkboardOrder,
   } = props
   if (!sectionConfig) return null
-  const withRoot = makeRootPath(sectionConfig.root)
   return (
     <SidebarExplorerContent
       {...contentProps}
@@ -120,18 +95,30 @@ function renderExplorer(props: SidebarPanelBodyProps) {
       onFilterQueryChange={onFilterQueryChange}
       onCreateArticle={onCreateArticle}
       onCreateCategory={onCreateCategory}
-      onRenameFile={(path, newName) => onRenameFile(withRoot(path), newName)}
-      onRenameFolder={(path, newName) => onRenameFolder(withRoot(path), newName)}
-      onDeleteFolder={(path) => onDeleteFolder(withRoot(path))}
-      onDeleteFile={(path) => onDeleteFile(withRoot(path))}
-      onEditFileTags={(path, tags) => onEditFileTags(withRoot(path), tags)}
+      onRenameFile={(path, newName) => onRenameFile(toProjectPath(toSectionRelativePath(path), sectionConfig.root), newName)}
+      onRenameFolder={(path, newName) => onRenameFolder(toProjectPath(toSectionRelativePath(path), sectionConfig.root), newName)}
+      onDeleteFolder={(path) => onDeleteFolder(toProjectPath(toSectionRelativePath(path), sectionConfig.root))}
+      onDeleteFile={(path) => onDeleteFile(toProjectPath(toSectionRelativePath(path), sectionConfig.root))}
+      onEditFileTags={(path, tags) => onEditFileTags(toProjectPath(toSectionRelativePath(path), sectionConfig.root), tags)}
       onLoadFileTags={loadFileTags(sectionConfig.root)}
-      onSelectFile={(filePath) => onSelectFile(withRoot(filePath))}
+      onSelectFile={(filePath) => onSelectFile(toProjectPath(toSectionRelativePath(filePath), sectionConfig.root))}
       corkboardOrder={scopeCorkboardOrder(corkboardOrder, sectionConfig.root)}
-      onReorderFiles={buildScopedReorderHandler(onReorderFiles, withRoot, sectionConfig.root)}
-      onMoveFile={onMoveFile ? (s, t) => onMoveFile(withRoot(s), withRoot(t)) : undefined}
+      onReorderFiles={buildScopedReorderHandler(onReorderFiles, sectionConfig.root)}
+      onMoveFile={
+        onMoveFile
+          ? (sourcePath, targetFolder) => onMoveFile(
+            toProjectPath(toSectionRelativePath(sourcePath), sectionConfig.root),
+            toProjectFolderPath(toSectionRelativeFolderPath(targetFolder), sectionConfig.root),
+          )
+          : undefined
+      }
       onMoveFolder={
-        onMoveFolder ? (s, t) => onMoveFolder(withRoot(s), t ? withRoot(t) : sectionConfig.root.replace(/\/+$/, '')) : undefined
+        onMoveFolder
+          ? (sourcePath, targetParent) => onMoveFolder(
+            toProjectPath(toSectionRelativePath(sourcePath), sectionConfig.root),
+            toProjectFolderPath(toSectionRelativeFolderPath(targetParent), sectionConfig.root),
+          )
+          : undefined
       }
     />
   )

@@ -6,7 +6,7 @@ The user right-clicks a folder in the sidebar tree and selects "Delete", then co
 
 ## Entry point
 
-`onDeleteFolder(path)` in `src/features/project-editor/components/sidebar/sidebar-panel-body.tsx` — dispatches to `actions.deleteFolder(withRoot(path))`.
+`onDeleteFolder(path)` in `src/features/project-editor/components/sidebar/sidebar-panel-body.tsx` — dispatches to `actions.deleteFolder(toProjectPath(toSectionRelativePath(path), sectionConfig.root))`.
 
 ## Why this flow matters
 
@@ -20,7 +20,7 @@ This flow involves two IPC calls, two workspace layout updates, and a snapshot r
 
 3. **Confirmation dialog** — `useSidebarFolderActionsDialog.confirm()` calls `onDeleteFolder(targetPath)`. The path is **section-relative** (e.g. `Act-01/`).
 
-4. **Path conversion** — `sidebar-panel-body.tsx:125` wraps the callback: `(path) => onDeleteFolder(withRoot(path))`. `withRoot` prepends `sectionConfig.root` (e.g. `book/`), producing a **project-relative** path (e.g. `book/Act-01/`).
+4. **Path conversion** — `sidebar-panel-body.tsx` wraps the callback and immediately delegates to `sidebar-path-scoping.ts`: `(path) => onDeleteFolder(toProjectPath(toSectionRelativePath(path), sectionConfig.root))`. That produces the **project-relative** path (e.g. `book/Act-01/`).
 
 5. **`executeFolderDelete`** in `use-project-editor-folder-actions.ts:64`:
    - Calls `window.tramaApi.deleteFolder({ path })` — backend removes the folder from disk.
@@ -99,7 +99,8 @@ This flow involves two IPC calls, two workspace layout updates, and a snapshot r
 | `src/features/project-editor/use-project-editor-open-project.ts` | `applyOpenedProject` — applies snapshot to state |
 | `src/features/project-editor/use-project-editor-state.ts` | `getVisibleSidebarPaths` → `useMemo` chain |
 | `src/features/project-editor/components/sidebar/sidebar-panel-logic.ts` | `useSidebarContentSection` + `getScopedFiles` |
-| `src/features/project-editor/components/sidebar/sidebar-panel-body.tsx` | Path conversion via `withRoot` |
+| `src/features/project-editor/components/sidebar/sidebar-panel-body.tsx` | Thin adapter that converts raw dialog paths through the scoping seam |
+| `src/features/project-editor/components/sidebar/sidebar-path-scoping.ts` | `toSectionRelativePath()` + `toProjectPath()` used for delete-path conversion |
 | `src/features/project-editor/components/sidebar/sidebar-tree.tsx` | `useSidebarTreeData` → tree build → render |
 | `src/features/project-editor/components/sidebar/sidebar-tree-logic.ts` | `buildSidebarTree`, `parseSidebarPath` |
 | `src/features/project-editor/components/sidebar/use-sidebar-tree-expanded-folders.ts` | Expanded folder state cleanup |

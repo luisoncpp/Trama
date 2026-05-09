@@ -6,9 +6,8 @@
 
 **Why counter-intuitive:** Two files were coupled through a magic string literal with no named constant. Any refactor of the sentinel in one file but not the other produces silent data corruption (wrong sort order) rather than a compile error or runtime exception.
 
-**Solution:** Export `SCOPED_ROOT_KEY = ''` from `sidebar-panel-logic.ts` and use it in both `scopeCorkboardOrder()` (sidebar-panel-body.tsx) and `sortTreeRowsByOrder()` (sidebar-tree-sort.ts). Now a rename triggers compiler/IDE warnings across both call sites.
+**Solution:** Export `SCOPED_ROOT_KEY = ''` from `sidebar-path-scoping.ts` and use it in both `scopeCorkboardOrder()` and `sortTreeRowsByOrder()`. Now the root-folder sentinel lives in the same deep seam as the branded path conversions, so refactors trigger compiler/IDE warnings across both call sites.
 
 **Files involved:**
-- `src/features/project-editor/components/sidebar/sidebar-panel-logic.ts` — defines `SCOPED_ROOT_KEY`
-- `src/features/project-editor/components/sidebar/sidebar-panel-body.tsx` — `scopeCorkboardOrder()` uses it for the root-key conversion
+- `src/features/project-editor/components/sidebar/sidebar-path-scoping.ts` — defines `SCOPED_ROOT_KEY` and `scopeCorkboardOrder()`
 - `src/features/project-editor/components/sidebar/sidebar-tree-sort.ts` — `sortTreeRowsByOrder()` uses it for the root sentinel check
