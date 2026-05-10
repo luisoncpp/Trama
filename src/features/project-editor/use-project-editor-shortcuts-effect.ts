@@ -50,10 +50,6 @@ export function useProjectEditorShortcutsEffect({
       }
       const isCommandKey = (event.ctrlKey || event.metaKey);
 
-      if (isCommandKey) {
-        console.log('Key pressed with command key:', event.key, event.code);
-      }      
-
       if (isCommandKey && !event.altKey && event.code === 'Period') {
         event.preventDefault()
         onToggleSplitLayout()

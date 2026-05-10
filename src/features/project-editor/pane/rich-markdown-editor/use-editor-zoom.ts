@@ -11,7 +11,6 @@ interface UseEditorZoomParams {
 
 export function useEditorZoom({ editorRef, hostRef, zoomRef, triggerTagOverlayRender }: UseEditorZoomParams): void {
   useEffect(() => {
-    console.log('Applying editor zoom:', zoomRef.current);
     const zoomLevel = zoomRef.current
 
     const host = hostRef.current

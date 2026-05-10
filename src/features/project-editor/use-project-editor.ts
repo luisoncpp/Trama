@@ -147,7 +147,7 @@ export function useProjectEditor(): ProjectEditorModel {
 
   useEffect(() => {
     zoomRef.current = layoutState.workspaceLayout.zoomLevel ?? 1.0
-  }, [layoutState.workspaceLayout.zoomLevel, zoomRef])
+  }, [layoutState.workspaceLayout.zoomLevel])
 
   useProjectEditorEffects(uiState, projectState, documentState, layoutState, setters, actions, core, autoPickProjectFolderOnStart, paneWorkspace)
 

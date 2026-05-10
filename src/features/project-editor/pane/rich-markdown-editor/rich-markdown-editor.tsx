@@ -13,6 +13,8 @@ import { normalizeEditorDocumentValue } from './rich-markdown-editor-value-sync'
 import { createTramaTurndownService, TurndownServiceFlags } from '../../../../shared/turndown-service-factory'
 import { useEditorZoom } from './use-editor-zoom'
 
+const DEFAULT_ZOOM_REF: EditorZoomRef = { current: 1.0 }
+
 interface RichMarkdownEditorProps {
   documentId: string | null
   value: string
@@ -156,7 +158,7 @@ export function RichMarkdownEditor(props: RichMarkdownEditorProps) {
   useRichEditorLifecycle(lifecycleParams)
   useSyncToolbarControls({ documentId, hostRef, editorRef, saveDisabled, saveLabel, onSaveNow, revertDisabled, revertLabel, onRevertNow, syncState, syncStateLabel })
   useFocusModeScopeEffect(editorRef, hostRef, focusModeEnabled, focusScope, isActive)
-  useEditorZoom({ editorRef, hostRef, zoomRef: zoomRef ?? { current: 1.0 }, triggerTagOverlayRender })
+  useEditorZoom({ editorRef, hostRef, zoomRef: zoomRef ?? DEFAULT_ZOOM_REF, triggerTagOverlayRender })
 
   // Sync the serialization ref into the parent-provided prop ref.
   // Because registerEditorTextChangeHandler mutates serializationRef.current.flush
