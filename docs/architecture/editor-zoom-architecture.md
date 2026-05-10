@@ -12,7 +12,7 @@ Document the zoom feature for the rich markdown editor. Zoom is controlled via k
 
 3. **Keyboard-driven initial implementation** — Ctrl++ increases zoom by 0.1, Ctrl+- decreases by 0.1. Zoom is clamped to [0.5, 2.0].
 
-4. **Document-only zoom (not UI)** — Zoom applies `transform: scale()` to the Quill editor container only. The sidebar, toolbar, and other UI elements are unaffected.
+4. **Document-only zoom (not UI)** — Zoom applies `zoom` CSS to the Quill editor container only. The sidebar, toolbar, and other UI elements are unaffected.
 
 ## State Model
 
@@ -52,16 +52,12 @@ export function useEditorZoom({ editorRef, hostRef, zoomLevel }: UseEditorZoomPa
   useEffect(() => {
     const root = editor.root as HTMLElement
     const scale = clampZoomLevel(zoomLevel)
-    root.style.transform = `scale(${scale})`
-    root.style.transformOrigin = 'top left'
-    root.style.width = `${100 / scale}%`
-    root.style.height = 'auto'
-    root.style.overflow = 'hidden'
+    root.style.zoom = `${scale * 100}%`
   }, [editorRef, hostRef, zoomLevel])
 }
 ```
 
-Quill's `.ql-editor` receives the `transform: scale()` applied to its container. The `width` and `overflow` adjustments ensure content remains visible and properly clipped during zoom.
+**Why `zoom` instead of `transform: scale()`:** Using CSS `zoom` instead of `transform: scale()` is critical because `zoom` properly integrates with the browser's scroll calculations. When `transform: scale()` is applied, the browser miscalculates scroll dimensions because transformed content occupies visual space without affecting the element's layout metrics. This causes the scrollbar to disappear. CSS `zoom` maintains correct scrollbar behavior because it affects the element's actual size in the layout tree.
 
 The hook uses a `zoomStyleRef` to skip re-application when the zoom level hasn't changed, avoiding unnecessary DOM mutations.
 
@@ -125,7 +121,7 @@ Zoom persists via `trama.workspace.layout.v1` in localStorage, handled by `useWo
 | `src/features/project-editor/use-project-editor-shortcuts-effect.ts` | Ctrl++ / Ctrl+- key detection and callback invocation |
 | `src/features/project-editor/use-project-editor.ts` | `buildShortcutsEffectParams` wires zoom callbacks to `actions.setZoomLevel` |
 | `src/features/project-editor/use-project-editor-ui-actions-helpers.ts` | `setZoomLevel` action implementation |
-| `src/features/project-editor/pane/rich-markdown-editor/use-editor-zoom.ts` | DOM transform application via CSS `scale()` |
+| `src/features/project-editor/pane/rich-markdown-editor/use-editor-zoom.ts` | DOM zoom application via CSS `zoom` |
 | `src/features/project-editor/pane/rich-markdown-editor/rich-markdown-editor.tsx` | Hooks in `RichMarkdownEditor` |
 | `src/features/project-editor/pane/editor-panel.tsx` | Props drilling to editor |
 | `src/features/project-editor/pane/workspace-editor-panels.tsx` | Shares zoomLevel from layout to both panes |

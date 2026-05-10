@@ -28,23 +28,13 @@ export function useEditorZoom({ editorRef, hostRef, zoomLevel, triggerTagOverlay
       return
     }
 
+    const scale = clampedZoom
     const root = editor.root as HTMLElement
     if (!root) {
       return
     }
 
-    const scale = clampedZoom
-    root.style.transform = `scale(${scale})`
-    root.style.transformOrigin = 'top left'
-    root.style.width = `${100 / scale}%`
-    root.style.height = 'auto'
-    root.style.overflow = 'hidden'
-
-    const editorContainer = editor.container
-    if (editorContainer) {
-      editorContainer.style.overflow = 'hidden'
-      editorContainer.style.height = `${100 / scale}%`
-    }
+    root.style.zoom = `${scale * 100}%`
     zoomStyleRef.current = { scale, applied: true }
     triggerTagOverlayRender()
   }, [editorRef, hostRef, zoomLevel, triggerTagOverlayRender])

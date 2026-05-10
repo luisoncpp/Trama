@@ -83,14 +83,12 @@ export function useEditorZoom({ editorRef, hostRef, zoomLevel }: UseEditorZoomPa
   useEffect(() => {
     const clampedZoom = clampZoomLevel(zoomLevel)
     const root = editor.root as HTMLElement
-    root.style.transform = `scale(${clampedZoom})`
-    root.style.transformOrigin = 'top left'
-    root.style.width = `${100 / clampedZoom}%`
-    root.style.height = 'auto'
-    root.style.overflow = 'hidden'
+    root.style.zoom = `${clampedZoom * 100}%`
   }, [editorRef, hostRef, zoomLevel])
 }
 ```
+
+**Note:** Using `zoom` CSS instead of `transform: scale()` because `zoom` properly integrates with the browser's scroll calculations, ensuring the scrollbar remains visible and functional regardless of zoom level. Unlike `transform: scale()`, which causes the browser to miscalculate scroll dimensions, `zoom` maintains correct scrollbar behavior.
 
 ### Step 7: Persistence
 
@@ -112,8 +110,7 @@ On next app startup, `restoreWorkspaceLayoutState` reads the persisted value and
 | Target | File | What changes |
 |--------|------|--------------|
 | `workspaceLayout.zoomLevel` | `use-project-editor-ui-actions-helpers.ts` | Updated to clamped value (+/- 0.1) |
-| `editor.root.style.transform` | `use-editor-zoom.ts` | Set to `scale(newZoom)` |
-| `editor.root.style.width` | `use-editor-zoom.ts` | Set to `100/newZoom%` for proper overflow |
+| `editor.root.style.zoom` | `use-editor-zoom.ts` | Set to `${scale * 100}%` |
 | localStorage | `use-workspace-layout-state.ts` | Persisted via `JSON.stringify(normalizeWorkspaceLayoutState(...))` |
 
 ## Side Effects
