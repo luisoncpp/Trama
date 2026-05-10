@@ -92,6 +92,8 @@ Mandatory doc navigation for new chats: start with `docs/START-HERE.md` — it p
   - ZuluPad import service: parses `.zulu` XML content into pages, generates frontmatter with optional tags, and writes markdown files to the target folder.
 - `electron/services/book-export-service.ts`
   - Book export orchestrator: scans `book/`, builds ordered chapter models, sanitizes per format, dispatches renderer (`md/html/docx/epub/pdf`), and writes output artifact.
+- `electron/services/book-export-image-source-transform.ts`
+  - Shared markdown image-source rewriting helpers: converts local image references to embedded data URLs during chapter build and rewrites sources to EPUB-compatible `file://` URLs when packaging.
 - `electron/services/book-export-order.ts`
   - Book export ordering logic: derives base order from tree and applies per-folder `corkboardOrder` from index with stable fallback.
 - `electron/services/book-export-sanitize.ts`

@@ -20,6 +20,13 @@ export interface ParsedLine {
   text?: string
 }
 
+function isStandaloneImageLine(line: string): boolean {
+  const trimmed = line.trim()
+  return /^!\[([^\]]*)\]\(([^)]+)\)$/.test(trimmed)
+    || /^!\[([^\]]*)\]\[([^\]]+)\]$/.test(trimmed)
+    || /^!\[([^\]]+)\]$/.test(trimmed)
+}
+
 export function parseLine(line: string, references: Map<string, string>): ParsedLine {
   const directive = parseDirectiveLine(line)
   if (directive) {
@@ -31,7 +38,7 @@ export function parseLine(line: string, references: Map<string, string>): Parsed
   }
 
   const imageInfo = extractImageInfo(line, references)
-  if (imageInfo) {
+  if (imageInfo && isStandaloneImageLine(line)) {
     return { kind: 'image', imageInfo }
   }
 

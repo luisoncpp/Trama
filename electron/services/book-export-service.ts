@@ -14,6 +14,7 @@ import {
 import { renderDocxBook } from './book-export-docx-renderer.js'
 import { renderEpubBook } from './book-export-epub-renderer.js'
 import { renderPdfBook } from './book-export-pdf-renderer.js'
+import { convertMarkdownLocalImageSourcesToDataUrls } from './book-export-image-source-transform.js'
 
 interface ExportContext {
   projectRoot: string
@@ -48,10 +49,17 @@ async function buildBookChapters(
   for (const relativePath of bookPaths) {
     const absolutePath = path.resolve(projectRoot, relativePath)
     const content = await readFile(absolutePath, 'utf8')
+    const sanitizedContent = sanitizeForBookExport(content, format)
+    const chapterContent = format === 'markdown'
+      ? sanitizedContent
+      : await convertMarkdownLocalImageSourcesToDataUrls(sanitizedContent, projectRoot, relativePath)
+
+    console.warn(`[book-export] Prepared chapter image sources for ${relativePath}`)
+
     chapters.push({
       path: relativePath,
       title: chapterTitleFromPath(relativePath),
-      content: sanitizeForBookExport(content, format),
+      content: chapterContent,
     })
   }
 

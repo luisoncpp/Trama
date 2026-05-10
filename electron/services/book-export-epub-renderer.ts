@@ -1,11 +1,10 @@
-import { randomUUID } from 'node:crypto'
-import { mkdtemp, rm, writeFile } from 'node:fs/promises'
+import { mkdtemp, rm } from 'node:fs/promises'
 import os from 'node:os'
 import path from 'node:path'
 import { createRequire } from 'node:module'
 import type { BookExportChapter, BookExportMetadata } from './book-export-renderers.js'
 import { renderChapterHtmlFragment } from './book-export-renderers.js'
-import { parseDataUrl, resolveImagePath, extractImageReferences, extractImageInfo, escapeRegex } from './book-export-image-utils.js'
+import { convertMarkdownImageSourcesToEpubUrls } from './book-export-image-source-transform.js'
 
 const require = createRequire(import.meta.url)
 
@@ -42,48 +41,13 @@ async function convertChapterImagesToEpubSources(
   projectRoot: string,
   tempImageDir: string,
 ): Promise<string> {
-  const chapterDir = path.dirname(chapter.path)
-  let content = chapter.content
-  const references = extractImageReferences(content)
-
-  for (const line of content.split('\n')) {
-    const imageInfo = extractImageInfo(line, references)
-    if (!imageInfo) continue
-
-    const { alt, source } = imageInfo
-    if (source.startsWith('http://') || source.startsWith('https://') || source.startsWith('file://')) {
-      continue
-    }
-
-    try {
-      let imageFilePath: string | null = null
-      if (source.startsWith('data:image/')) {
-        const parsed = parseDataUrl(source)
-        if (!parsed.type || !parsed.bytes) {
-          continue
-        }
-        imageFilePath = path.join(tempImageDir, `${randomUUID()}.${parsed.type === 'png' ? 'png' : 'jpg'}`)
-        await writeFile(imageFilePath, parsed.bytes)
-      } else {
-        if (!projectRoot.trim()) {
-          continue
-        }
-        imageFilePath = await resolveImagePath(source, projectRoot, chapterDir)
-      }
-
-      const fileUrl = toEpubFileUrl(imageFilePath)
-      const inlineImage = `![${alt}](${fileUrl})`
-      const exactPattern = new RegExp(escapeRegex(line.trim()), 'g')
-      content = content.replace(exactPattern, () => inlineImage)
-    } catch (error) {
-      console.warn(
-        `Failed to prepare image source for EPUB: ${source}`,
-        error instanceof Error ? error.message : String(error),
-      )
-    }
-  }
-
-  return content
+  return convertMarkdownImageSourcesToEpubUrls(
+    chapter.content,
+    projectRoot,
+    chapter.path,
+    tempImageDir,
+    toEpubFileUrl,
+  )
 }
 
 async function buildEpubChapters(

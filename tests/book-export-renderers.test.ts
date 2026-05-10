@@ -186,6 +186,26 @@ describe('book export renderers', () => {
     expect(pdfWithRefImages.byteLength).toBeGreaterThan(100)
   })
 
+  it('renders pdf with project-root res images from nested chapters', async () => {
+    const projectRoot = await mkdtemp(path.join(os.tmpdir(), 'trama-book-res-images-'))
+    const resDir = path.join(projectRoot, 'res')
+    await mkdir(path.join(projectRoot, 'book', 'Act-01'), { recursive: true })
+    await mkdir(resDir, { recursive: true })
+    await writeFile(path.join(resDir, 'pixel.png'), Buffer.from(TINY_PNG_BASE64, 'base64'))
+
+    const pdfWithResImage = await renderPdfBook([
+      {
+        path: 'book/Act-01/chapter-images.md',
+        title: 'Images',
+        content: ['Texto', '![persisted](res/pixel.png)', 'Fin'].join('\n'),
+      },
+    ], projectRoot)
+
+    const doc = await PDFDocument.load(pdfWithResImage)
+    expect(doc.getPageCount()).toBeGreaterThanOrEqual(1)
+    expect(pdfWithResImage.byteLength).toBeGreaterThan(100)
+  })
+
   it('renders docx with embedded local images', async () => {
     const fixture = await createProjectWithImageFixture()
     const docx = await renderDocxBook([
@@ -381,6 +401,23 @@ describe('book export renderers', () => {
 
     const fileStats = await stat(outputPath)
     expect(fileStats.size).toBeGreaterThan(0)
+
+    const epubBytes = await readFile(outputPath)
+    expect(epubBytes.subarray(0, 2).toString()).toBe('PK')
+    expect(epubBytes.includes(Buffer.from('OEBPS/images/'))).toBe(true)
+  })
+
+  it('renders epub when local images are inline inside a paragraph', async () => {
+    const fixture = await createProjectWithImageFixture()
+    const outputPath = path.join(fixture.projectRoot, 'book-inline-local-images.epub')
+
+    await renderEpubBook([
+      {
+        path: 'book/Act-01/chapter-images.md',
+        title: 'Chapter Local Images',
+        content: `Texto inicial ![local-image](${fixture.imageRelativeFromChapter}) texto final`,
+      },
+    ], { title: 'EPUB Inline Local Image Test', author: 'QA Team' }, outputPath, fixture.projectRoot)
 
     const epubBytes = await readFile(outputPath)
     expect(epubBytes.subarray(0, 2).toString()).toBe('PK')

@@ -1,5 +1,5 @@
 import path from 'node:path'
-import { readFile } from 'node:fs/promises'
+import { access, readFile } from 'node:fs/promises'
 
 export interface ParsedDataUrl {
   type: 'png' | 'jpeg' | null
@@ -10,7 +10,25 @@ export async function resolveImagePath(imagePath: string, projectRoot: string, c
   if (imagePath.startsWith('data:image/')) {
     return imagePath
   }
-  return path.resolve(projectRoot, chapterDir, imagePath)
+
+  if (path.isAbsolute(imagePath)) {
+    return imagePath
+  }
+
+  const normalized = imagePath.replace(/\\/g, '/').replace(/^\/+/, '')
+  const chapterRelativePath = path.resolve(projectRoot, chapterDir, imagePath)
+  const projectRelativePath = path.resolve(projectRoot, normalized)
+
+  if (normalized.startsWith('res/')) {
+    return projectRelativePath
+  }
+
+  try {
+    await access(chapterRelativePath)
+    return chapterRelativePath
+  } catch {
+    return projectRelativePath
+  }
 }
 
 export function parseDataUrl(dataUrl: string): ParsedDataUrl {
@@ -77,14 +95,12 @@ export interface ExtractedImageInfo {
 }
 
 export function extractImageInfo(line: string, references: Map<string, string>): ExtractedImageInfo | null {
-  const trimmed = line.trim()
-
-  const inlineMatch = trimmed.match(/^!\[([^\]]*)\]\(([^)]+)\)$/)
+  const inlineMatch = line.match(/!\[([^\]]*)\]\(([^)]+)\)/)
   if (inlineMatch) {
     return { alt: inlineMatch[1], source: inlineMatch[2] }
   }
 
-  const refExplicitMatch = trimmed.match(/^!\[([^\]]*)\]\[([^\]]+)\]$/)
+  const refExplicitMatch = line.match(/!\[([^\]]*)\]\[([^\]]+)\]/)
   if (refExplicitMatch) {
     const ref = refExplicitMatch[2].toLowerCase()
     const url = references.get(ref)
@@ -94,7 +110,7 @@ export function extractImageInfo(line: string, references: Map<string, string>):
     return null
   }
 
-  const refImplicitMatch = trimmed.match(/^!\[([^\]]+)\]$/)
+  const refImplicitMatch = line.match(/!\[([^\]]+)\](?!\(|\[)/)
   if (refImplicitMatch) {
     const ref = refImplicitMatch[1].toLowerCase()
     const url = references.get(ref)

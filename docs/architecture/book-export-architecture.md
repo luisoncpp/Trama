@@ -156,10 +156,16 @@ El fallback a `StandardFonts` puede fallar con caracteres no-WinAnsi (ej. acento
 - NO pasan por `path.resolve()` — se parsean directamente
 - Se decodifican a bytes y se embed via `pdf.embedPng()` o `pdf.embedJpg()`
 
+**Preprocesado común antes del renderer**:
+- `buildBookChapters()` convierte referencias markdown a archivos locales en data URLs para `html`, `docx`, `epub` y `pdf`
+- Esto unifica la representación de imágenes entre formatos y evita depender de resolución de rutas distinta por renderer
+- `markdown` export conserva las rutas originales y no embebe base64
+
 **Archivos locales**:
 - `path.resolve(projectRoot, chapterDir, imagePath)` → ruta absoluta
 - `loadImageBytes()` → { type, bytes }
 - `embedPng` o `embedJpg` según el tipo
+- `res/*.png` se resuelve relativo a `projectRoot`, no al `chapterDir`, porque esa ruta viene de la capa de persistencia
 
 **Escalado**:
 ```
@@ -224,11 +230,13 @@ Línea nueva cuando cursorY < MARGIN → addPage() automático (ensureLineCapaci
 - Pagebreak + variante HTML (`<!-- pagebreak -->`)
 - Data URLs en PDF (base64 embebido)
 - Imágenes locales en PDF
+- Imágenes persistidas `res/*.png` en PDF desde capítulos anidados
 - Imágenes reference-style en PDF
 - Center directives en headings y párrafos
 - Heading levels en DOCX
 - Imágenes reference-style en DOCX (data URL y local path)
 - Imágenes reference-style en EPUB (data URL y local path)
+- Imágenes inline dentro de párrafos en EPUB
 
 `tests/book-export-image-utils.test.ts` cubre:
 - Lectura de dimensiones PNG/JPEG desde bytes

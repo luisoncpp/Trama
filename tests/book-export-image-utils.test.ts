@@ -55,6 +55,12 @@ describe('book-export-image-utils', () => {
     expect(info).toEqual({ alt: 'alt text', source: 'path/to/image.png' })
   })
 
+  it('extracts image info when image is inline within a paragraph', () => {
+    const refs = new Map<string, string>()
+    const info = extractImageInfo('Texto antes ![alt text](res/picture.png) y despues', refs)
+    expect(info).toEqual({ alt: 'alt text', source: 'res/picture.png' })
+  })
+
   it('extracts reference-style image with explicit reference', () => {
     const refs = new Map([['image1', 'data:image/png;base64,abc']])
     const info = extractImageInfo('![][image1]', refs)

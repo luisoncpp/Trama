@@ -42,6 +42,10 @@ export async function renderChapterHtmlFragmentWithProjectRoot(
   chapter: BookExportChapter,
   projectRoot: string,
 ): Promise<string> {
+  if (!projectRoot.trim()) {
+    return renderChapterHtmlFragment(chapter)
+  }
+
   let content = chapter.content
   const chapterDir = path.dirname(chapter.path)
   const IMAGE_PATTERN = /!\[([^\]]*)\]\(([^)]+)\)/g
