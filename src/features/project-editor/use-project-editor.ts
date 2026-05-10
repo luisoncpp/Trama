@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'preact/hooks'
 import type { DocumentMeta } from '../../shared/ipc'
-import type { EditorSerializationRefs, ProjectEditorModel } from './project-editor-types'
+import type { EditorSerializationRefs, EditorZoomRef, ProjectEditorModel } from './project-editor-types'
 import type { WorkspaceLayoutState } from './project-editor-types'
 import { useProjectEditorActions } from './use-project-editor-actions'
 import { useProjectEditorContextMenuEffect } from './use-project-editor-context-menu-effect'
@@ -122,6 +122,8 @@ export function useProjectEditor(): ProjectEditorModel {
 
   const saveDocumentNowRef = useRef<((path: string, content: string, meta: DocumentMeta) => Promise<void>) | null>(null)
 
+  const zoomRef: EditorZoomRef = { current: layoutState.workspaceLayout.zoomLevel ?? 1.0 }
+
   const paneWorkspace = usePaneWorkspace(
     layoutState.workspaceLayout,
     paneBindings,
@@ -143,6 +145,10 @@ export function useProjectEditor(): ProjectEditorModel {
     return () => paneWorkspace.destroy()
   }, [paneWorkspace])
 
+  useEffect(() => {
+    zoomRef.current = layoutState.workspaceLayout.zoomLevel ?? 1.0
+  }, [layoutState.workspaceLayout.zoomLevel, zoomRef])
+
   useProjectEditorEffects(uiState, projectState, documentState, layoutState, setters, actions, core, autoPickProjectFolderOnStart, paneWorkspace)
 
   return {
@@ -152,5 +158,6 @@ export function useProjectEditor(): ProjectEditorModel {
       primary: primarySerializationRef,
       secondary: secondarySerializationRef,
     },
+    zoomRef,
   }
 }

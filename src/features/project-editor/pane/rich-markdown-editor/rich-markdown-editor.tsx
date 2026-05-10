@@ -8,7 +8,7 @@ import { buildTagOverlayMatches, useTagOverlay, findMatchAtPosition } from './ri
 import { useCtrlKeyState } from './rich-markdown-editor-ctrl-key'
 import { TagHighlights } from './rich-markdown-editor-tag-highlights'
 import type { FocusScope } from '../../project-editor-types'
-import type { EditorSerializationRefs } from '../../project-editor-types'
+import type { EditorSerializationRefs, EditorZoomRef } from '../../project-editor-types'
 import { normalizeEditorDocumentValue } from './rich-markdown-editor-value-sync'
 import { createTramaTurndownService, TurndownServiceFlags } from '../../../../shared/turndown-service-factory'
 import { useEditorZoom } from './use-editor-zoom'
@@ -34,7 +34,7 @@ interface RichMarkdownEditorProps {
   isActive?: boolean
   editorSerializationRef?: { current: EditorSerializationRefs }
   onMarkDirty?: () => void
-  zoomLevel?: number
+  zoomRef?: EditorZoomRef
 }
 
 function useRichEditorRefs(
@@ -123,7 +123,7 @@ export function RichMarkdownEditor(props: RichMarkdownEditorProps) {
     syncState, syncStateLabel,
     focusModeEnabled = false, focusScope = 'paragraph', tagIndex,
     onTagClick, isActive = true, editorSerializationRef, onMarkDirty,
-    zoomLevel = 1.0,
+    zoomRef,
   } = props
   const safeTagIndex = tagIndex ?? null
   const [, setTagOverlayTick] = useState(0)
@@ -156,7 +156,7 @@ export function RichMarkdownEditor(props: RichMarkdownEditorProps) {
   useRichEditorLifecycle(lifecycleParams)
   useSyncToolbarControls({ documentId, hostRef, editorRef, saveDisabled, saveLabel, onSaveNow, revertDisabled, revertLabel, onRevertNow, syncState, syncStateLabel })
   useFocusModeScopeEffect(editorRef, hostRef, focusModeEnabled, focusScope, isActive)
-  useEditorZoom({ editorRef, hostRef, zoomLevel, triggerTagOverlayRender })
+  useEditorZoom({ editorRef, hostRef, zoomRef: zoomRef ?? { current: 1.0 }, triggerTagOverlayRender })
 
   // Sync the serialization ref into the parent-provided prop ref.
   // Because registerEditorTextChangeHandler mutates serializationRef.current.flush

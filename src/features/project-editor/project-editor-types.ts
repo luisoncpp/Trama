@@ -141,6 +141,10 @@ export interface EditorSerializationRefs {
   tagOverlayMatchesRef: { current: Array<{ tag: string; start: number; end: number; filePath: string }> }
 }
 
+export interface EditorZoomRef {
+  current: number
+}
+
 export interface ProjectEditorModel {
   state: ProjectEditorState
   actions: ProjectEditorActions
@@ -148,4 +152,5 @@ export interface ProjectEditorModel {
     primary: { current: EditorSerializationRefs }
     secondary: { current: EditorSerializationRefs }
   }
+  zoomRef: EditorZoomRef
 }

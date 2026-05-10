@@ -31,6 +31,18 @@ interface WorkspaceLayoutState {
 }
 ```
 
+### EditorZoomRef — Shared Zoom Reference
+
+Zoom uses a shared reference object (`EditorZoomRef`) so all editor panels read from the same source. This eliminates per-panel zoom copies and ensures both panes in split mode always render at the same zoom level without explicit synchronization.
+
+```typescript
+interface EditorZoomRef {
+  current: number
+}
+```
+
+`ProjectEditorModel` exposes a single `zoomRef` instance. All `RichMarkdownEditor` instances receive the same ref via prop drilling through `EditorPanel` → `PaneEditor` / `ActiveEditorPanel` → `workspace-editor-panels.tsx`.
+
 ### Zoom Utility Module (`editor-zoom.ts`)
 
 ```typescript
@@ -48,18 +60,17 @@ export function clampZoomLevel(value: number): number {
 The zoom is applied via `useEditorZoom` hook in the `RichMarkdownEditor` component:
 
 ```typescript
-export function useEditorZoom({ editorRef, hostRef, zoomLevel }: UseEditorZoomParams): void {
+export function useEditorZoom({ editorRef, hostRef, zoomRef, triggerTagOverlayRender }: UseEditorZoomParams): void {
   useEffect(() => {
+    const zoomLevel = zoomRef.current
     const root = editor.root as HTMLElement
-    const scale = clampZoomLevel(zoomLevel)
-    root.style.zoom = `${scale * 100}%`
-  }, [editorRef, hostRef, zoomLevel])
+    root.style.zoom = `${zoomLevel * 100}%`
+    triggerTagOverlayRender()
+  }, [editorRef, hostRef, zoomRef, triggerTagOverlayRender])
 }
 ```
 
-**Why `zoom` instead of `transform: scale()`:** Using CSS `zoom` instead of `transform: scale()` is critical because `zoom` properly integrates with the browser's scroll calculations. When `transform: scale()` is applied, the browser miscalculates scroll dimensions because transformed content occupies visual space without affecting the element's layout metrics. This causes the scrollbar to disappear. CSS `zoom` maintains correct scrollbar behavior because it affects the element's actual size in the layout tree.
-
-The hook uses a `zoomStyleRef` to skip re-application when the zoom level hasn't changed, avoiding unnecessary DOM mutations.
+**Why a shared ref instead of a primitive:** Each `useEditorZoom` instance reads directly from `zoomRef.current`. When `setZoomLevel` updates `layoutState.workspaceLayout.zoomLevel`, an effect in `use-project-editor.ts` synchronizes `zoomRef.current` to the new value. All editors observing the same ref object see the change without needing re-renders or explicit coordination.
 
 ## Keyboard Handling
 
@@ -115,18 +126,19 @@ Zoom persists via `trama.workspace.layout.v1` in localStorage, handled by `useWo
 
 | File | Responsibility |
 |------|----------------|
-| `src/features/project-editor/project-editor-types.ts` | `zoomLevel` field in `WorkspaceLayoutState` |
+| `src/features/project-editor/project-editor-types.ts` | `zoomLevel` field in `WorkspaceLayoutState`; `EditorZoomRef` interface; `zoomRef` in `ProjectEditorModel` |
 | `src/features/project-editor/project-editor-logic.ts` | `clampZoomLevel` for normalization in state persistence |
 | `src/features/project-editor/editor-zoom.ts` | Zoom constants and `clampZoomLevel` utility |
+| `src/features/project-editor/use-project-editor.ts` | Creates and exports `zoomRef`; synchronizes `zoomRef.current` when `layoutState.workspaceLayout.zoomLevel` changes |
 | `src/features/project-editor/use-project-editor-shortcuts-effect.ts` | Ctrl++ / Ctrl+- key detection and callback invocation |
-| `src/features/project-editor/use-project-editor.ts` | `buildShortcutsEffectParams` wires zoom callbacks to `actions.setZoomLevel` |
 | `src/features/project-editor/use-project-editor-ui-actions-helpers.ts` | `setZoomLevel` action implementation |
-| `src/features/project-editor/pane/rich-markdown-editor/use-editor-zoom.ts` | DOM zoom application via CSS `zoom` |
-| `src/features/project-editor/pane/rich-markdown-editor/rich-markdown-editor.tsx` | Hooks in `RichMarkdownEditor` |
-| `src/features/project-editor/pane/editor-panel.tsx` | Props drilling to editor |
-| `src/features/project-editor/pane/workspace-editor-panels.tsx` | Shares zoomLevel from layout to both panes |
+| `src/features/project-editor/pane/workspace-editor-panels.tsx` | Reads `model.zoomRef` and passes it to both `PaneEditor` instances in split mode |
+| `src/features/project-editor/pane/editor-panel.tsx` | Propagates `zoomRef` to `RichMarkdownEditor` |
+| `src/features/project-editor/pane/rich-markdown-editor/rich-markdown-editor.tsx` | Receives `zoomRef` and passes it to `useEditorZoom` |
+| `src/features/project-editor/pane/rich-markdown-editor/use-editor-zoom.ts` | DOM zoom application via CSS `zoom`; reads `zoomRef.current` on each effect run |
 
 ## Tests
 
 - `tests/workspace-keyboard-shortcuts.test.ts` — Zoom shortcut recognition and clamping logic
 - `tests/workspace-layout-persistence.test.ts` — Zoom persistence and clamping on restore
+- `tests/editor-zoom-ref.test.ts` — `EditorZoomRef` existence, initial value, shared instance, and synchronization with `setZoomLevel`
