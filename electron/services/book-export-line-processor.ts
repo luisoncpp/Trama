@@ -9,7 +9,11 @@ import {
 
 export type { ExtractedImageInfo }
 
-export type LineKind = 'directive' | 'referenceDefinition' | 'image' | 'heading' | 'paragraph'
+export type LineKind = 'directive' | 'referenceDefinition' | 'image' | 'heading' | 'paragraph' | 'paragraph-with-images'
+
+export type ParagraphSegment =
+  | { type: 'text'; text: string }
+  | { type: 'image'; imageInfo: ExtractedImageInfo }
 
 export interface ParsedLine {
   kind: LineKind
@@ -18,6 +22,7 @@ export interface ParsedLine {
   headingLevel?: 1 | 2 | 3 | 4 | 5 | 6
   headingText?: string
   text?: string
+  segments?: ParagraphSegment[]
 }
 
 function isStandaloneImageLine(line: string): boolean {
@@ -25,6 +30,44 @@ function isStandaloneImageLine(line: string): boolean {
   return /^!\[([^\]]*)\]\(([^)]+)\)$/.test(trimmed)
     || /^!\[([^\]]*)\]\[([^\]]+)\]$/.test(trimmed)
     || /^!\[([^\]]+)\]$/.test(trimmed)
+}
+
+function extractInlineImages(line: string, references: Map<string, string>): ParagraphSegment[] {
+  const segments: ParagraphSegment[] = []
+  const imagePattern = /!\[([^\]]*)\]\(([^)]+)\)|!\[([^\]]*)\]\[([^\]]+)\]/g
+
+  let lastIndex = 0
+  let match: RegExpExecArray | null
+
+  while ((match = imagePattern.exec(line)) !== null) {
+    if (match.index > lastIndex) {
+      const textBefore = line.slice(lastIndex, match.index)
+      if (textBefore) {
+        segments.push({ type: 'text', text: textBefore })
+      }
+    }
+
+    if (match[2] !== undefined) {
+      segments.push({ type: 'image', imageInfo: { alt: match[1] ?? '', source: match[2] } })
+    } else if (match[4] !== undefined) {
+      const ref = match[4].toLowerCase()
+      const url = references.get(ref)
+      if (url) {
+        segments.push({ type: 'image', imageInfo: { alt: match[3] ?? '', source: url } })
+      }
+    }
+
+    lastIndex = match.index + match[0].length
+  }
+
+  if (lastIndex < line.length) {
+    const textAfter = line.slice(lastIndex)
+    if (textAfter) {
+      segments.push({ type: 'text', text: textAfter })
+    }
+  }
+
+  return segments
 }
 
 export function parseLine(line: string, references: Map<string, string>): ParsedLine {
@@ -51,6 +94,11 @@ export function parseLine(line: string, references: Map<string, string>): Parsed
     }
   }
 
+  const segments = extractInlineImages(line, references)
+  if (segments.length > 0) {
+    return { kind: 'paragraph-with-images', segments }
+  }
+
   return { kind: 'paragraph', text: line }
 }
 
@@ -62,6 +110,7 @@ export async function processChapterContent(
     onImage?: (imageInfo: ExtractedImageInfo, chapterDir: string) => void | Promise<void>
     onHeading?: (level: number, text: string) => void | Promise<void>
     onParagraph?: (text: string) => void | Promise<void>
+    onParagraphWithImages?: (segments: ParagraphSegment[], chapterDir: string) => void | Promise<void>
     onReferenceDefinition?: () => void
   },
 ): Promise<void> {
@@ -85,6 +134,9 @@ export async function processChapterContent(
         break
       case 'paragraph':
         handlers.onParagraph?.(parsed.text!)
+        break
+      case 'paragraph-with-images':
+        await handlers.onParagraphWithImages?.(parsed.segments!, chapterDir)
         break
     }
   }

@@ -3,7 +3,7 @@ import { AlignmentType, Document, HeadingLevel, ImageRun, Packer, Paragraph, Tex
 import { type BookExportDirective } from './book-export-directives.js'
 import { getImageDimensions, calculateDocxImageSize } from './book-export-image-utils.js'
 import { resolveImagePath, loadImageBytes } from './book-export-image-utils.js'
-import { processChapterContent, type ExtractedImageInfo } from './book-export-line-processor.js'
+import { processChapterContent, type ExtractedImageInfo, type ParagraphSegment } from './book-export-line-processor.js'
 import type { BookExportChapter, BookExportMetadata } from './book-export-renderers.js'
 
 function stripInlineMarkdown(text: string): string {
@@ -98,6 +98,46 @@ function buildDocxHandlers(
         return
       }
       paragraphs.push(createTextParagraph(stripped, state.centered))
+    },
+    onParagraphWithImages: async (segments: ParagraphSegment[]) => {
+      const children: (TextRun | ImageRun)[] = []
+      for (const segment of segments) {
+        if (segment.type === 'text') {
+          const stripped = stripInlineMarkdown(segment.text)
+          if (stripped) {
+            children.push(new TextRun({ text: stripped }))
+          }
+        } else if (segment.type === 'image') {
+          const resolvedPath = await resolveImagePath(segment.imageInfo.source, projectRoot, dir)
+          const { bytes, type } = await loadImageBytes(resolvedPath)
+          if (bytes && type) {
+            try {
+              const docxType = type === 'png' ? 'png' : 'jpg'
+              const dimensions = getImageDimensions(bytes, type === 'png' ? 'png' : 'jpeg')
+              const size = dimensions ? calculateDocxImageSize(dimensions) : { width: 500, height: 300 }
+              children.push(
+                new ImageRun({
+                  data: bytes,
+                  type: docxType,
+                  transformation: { width: size.width, height: size.height },
+                }),
+              )
+            } catch (err) {
+              console.warn(`Failed to embed image in DOCX`, err instanceof Error ? err.message : String(err))
+            }
+          }
+        }
+      }
+      if (children.length === 0) {
+        paragraphs.push(new Paragraph({ text: '' }))
+        return
+      }
+      paragraphs.push(
+        new Paragraph({
+          children,
+          alignment: state.centered ? AlignmentType.CENTER : AlignmentType.LEFT,
+        }),
+      )
     },
     onReferenceDefinition: () => {},
   }

@@ -151,6 +151,12 @@ El fallback a `StandardFonts` puede fallar con caracteres no-WinAnsi (ej. acento
 - Las referencias se extraen una sola vez por capítulo (`extractImageReferences`)
 - Las líneas de definición `[ref]: url` se omiten del output
 
+**Imágenes inline dentro de párrafos**:
+- Líneas con formato `texto ![](img.png) más texto` se procesan como `paragraph-with-images`
+- `extractInlineImages()` divide la línea en segmentos: texto | imagen | texto | imagen | texto
+- Cada segmento se renderiza alternadamente: `drawParagraphLine` para texto, `drawImage` para imágenes
+- Esta segmentación aplica también a múltiples imágenes en la misma línea
+
 **Data URLs (base64)**:
 - Detectadas por prefijo `data:image/`
 - NO pasan por `path.resolve()` — se parsean directamente
@@ -185,6 +191,11 @@ Restricciones: no más ancho que el área printable, no más alto que 300px, sin
 - Se detectan tanto `![alt](url)` como `![][ref]` / `![alt][ref]` / `![ref]`
 - Las referencias se extraen una sola vez por capítulo (`extractImageReferences`)
 - Las líneas de definición `[ref]: url` se omiten del output
+
+**Imágenes inline dentro de párrafos**:
+- Líneas con formato `texto ![](img.png) más texto` se procesan como `paragraph-with-images`
+- El renderer crea párrafos con children mixtos: `TextRun` para texto, `ImageRun` para imágenes
+- Cada segmento de texto se envuelve en `TextRun`, cada imagen en `ImageRun`, todos dentro del mismo `Paragraph`
 
 **Dimensiones**:
 - Se leen los bytes reales del PNG/JPEG (`getImageDimensions`)

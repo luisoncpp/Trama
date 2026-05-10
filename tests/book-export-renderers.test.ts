@@ -165,7 +165,7 @@ describe('book export renderers', () => {
     expect(pdfWithImages.byteLength).toBeGreaterThan(100)
   })
 
-  it('renders pdf with reference-style images', async () => {
+it('renders pdf with reference-style images', async () => {
     const fixture = await createProjectWithImageFixture()
     const pdfWithRefImages = await renderPdfBook([
       {
@@ -184,6 +184,40 @@ describe('book export renderers', () => {
     const doc = await PDFDocument.load(pdfWithRefImages)
     expect(doc.getPageCount()).toBeGreaterThanOrEqual(1)
     expect(pdfWithRefImages.byteLength).toBeGreaterThan(100)
+  })
+
+  it('renders pdf with inline images inside a paragraph (text before and after image on same line)', async () => {
+    const fixture = await createProjectWithImageFixture()
+    const pdfWithInlineImages = await renderPdfBook([
+      {
+        path: 'book/Act-01/chapter-inline-images.md',
+        title: 'Inline Images',
+        content: [
+          `Start text ![inline](${fixture.imageRelativeFromChapter}) end text`,
+        ].join('\n'),
+      },
+    ], fixture.projectRoot)
+
+    const doc = await PDFDocument.load(pdfWithInlineImages)
+    expect(doc.getPageCount()).toBeGreaterThanOrEqual(1)
+    expect(pdfWithInlineImages.byteLength).toBeGreaterThan(100)
+  })
+
+  it('renders pdf with multiple inline images on same line', async () => {
+    const fixture = await createProjectWithImageFixture()
+    const pdfWithMultipleInline = await renderPdfBook([
+      {
+        path: 'book/Act-01/chapter-multiple-inline.md',
+        title: 'Multiple Inline',
+        content: [
+          `Before ![first](${fixture.imageRelativeFromChapter}) middle ![second](${fixture.imageRelativeFromChapter}) after`,
+        ].join('\n'),
+      },
+    ], fixture.projectRoot)
+
+    const doc = await PDFDocument.load(pdfWithMultipleInline)
+    expect(doc.getPageCount()).toBeGreaterThanOrEqual(1)
+    expect(pdfWithMultipleInline.byteLength).toBeGreaterThan(100)
   })
 
   it('renders pdf with project-root res images from nested chapters', async () => {
@@ -353,6 +387,58 @@ describe('book export renderers', () => {
     const documentXml = await zip.file('word/document.xml')?.async('string')
     expect(documentXml).toBeDefined()
     expect(documentXml).not.toContain('[pixel]:')
+  })
+
+  it('renders docx with inline images on same line as text', async () => {
+    const fixture = await createProjectWithImageFixture()
+    const docx = await renderDocxBook([
+      {
+        path: 'book/Act-01/chapter-inline.md',
+        title: 'Inline Images',
+        content: [
+          `Start text ![inline](${fixture.imageRelativeFromChapter}) end text`,
+        ].join('\n'),
+      },
+    ], {
+      title: 'DOCX Inline Image Test',
+      author: 'QA Team',
+    }, fixture.projectRoot)
+
+    const docxBuffer = Buffer.from(docx)
+    expect(docxBuffer.includes(Buffer.from('word/media/'))).toBe(true)
+
+    const { default: JSZip } = await import('jszip')
+    const zip = await JSZip.loadAsync(docx)
+    const documentXml = await zip.file('word/document.xml')?.async('string')
+    expect(documentXml).toBeDefined()
+    expect(documentXml).toContain('Start text')
+    expect(documentXml).toContain('end text')
+  })
+
+  it('renders docx with multiple inline images on same line', async () => {
+    const fixture = await createProjectWithImageFixture()
+    const docx = await renderDocxBook([
+      {
+        path: 'book/Act-01/chapter-multiple-inline.md',
+        title: 'Multiple Inline',
+        content: [
+          `Before ![first](${fixture.imageRelativeFromChapter}) middle ![second](${fixture.imageRelativeFromChapter}) after`,
+        ].join('\n'),
+      },
+    ], {
+      title: 'DOCX Multiple Inline Test',
+      author: 'QA Team',
+    }, fixture.projectRoot)
+
+    const docxBuffer = Buffer.from(docx)
+    expect(docxBuffer.includes(Buffer.from('word/media/'))).toBe(true)
+
+    const { default: JSZip } = await import('jszip')
+    const zip = await JSZip.loadAsync(docx)
+    const documentXml = await zip.file('word/document.xml')?.async('string')
+    expect(documentXml).toBeDefined()
+    expect(documentXml).toContain('Before')
+    expect(documentXml).toContain('after')
   })
 
   it('renders epub file to disk', async () => {

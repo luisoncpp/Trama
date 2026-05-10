@@ -2,7 +2,7 @@ import path from 'node:path'
 import type { BookExportChapter } from './book-export-renderers.js'
 import { type BookExportDirective } from './book-export-directives.js'
 import { resolveImagePath } from './book-export-image-utils.js'
-import { processChapterContent, type ExtractedImageInfo } from './book-export-line-processor.js'
+import { processChapterContent, type ExtractedImageInfo, type ParagraphSegment } from './book-export-line-processor.js'
 import type { PdfWriter, PdfLayoutState } from './book-export-pdf-utils.js'
 
 export async function renderPdfChapter(
@@ -39,6 +39,17 @@ export async function renderPdfChapter(
     },
     onParagraph: (text: string) => {
       writer.drawParagraphLine(text, state.centered)
+      lastWasPagebreak = false
+    },
+    onParagraphWithImages: async (segments: ParagraphSegment[]) => {
+      for (const segment of segments) {
+        if (segment.type === 'text') {
+          writer.drawParagraphLine(segment.text, state.centered)
+        } else if (segment.type === 'image') {
+          const resolvedPath = await resolveImagePath(segment.imageInfo.source, projectRoot, chapterDir)
+          await writer.drawImage(resolvedPath)
+        }
+      }
       lastWasPagebreak = false
     },
     onReferenceDefinition: () => {},
