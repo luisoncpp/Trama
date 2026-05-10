@@ -40,6 +40,55 @@ function getCopy(mode: SidebarFileActionMode) {
   }
 }
 
+function RenameField({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  return (
+    <label class="sidebar-create-dialog__field">
+      <span>New file name</span>
+      <input type="text" value={value} placeholder="Scene-002.md" onInput={(event) => onChange(event.currentTarget.value)} />
+    </label>
+  )
+}
+
+function EditTagsField({ value, onChange, loadingTags }: { value: string; onChange: (v: string) => void; loadingTags: boolean }) {
+  return (
+    <label class="sidebar-create-dialog__field">
+      <span>Tags (comma or newline separated)</span>
+      <textarea
+        value={value}
+        placeholder={'magic, north\nselene valeria'}
+        rows={4}
+        onInput={(event) => onChange(event.currentTarget.value)}
+        disabled={loadingTags}
+      />
+      <span>{loadingTags ? 'Loading tags...' : 'Duplicates are removed automatically.'}</span>
+    </label>
+  )
+}
+
+function DeleteImageCheckbox({
+  linkedImagePaths,
+  deleteAssociatedImages,
+  onDeleteAssociatedImagesChange,
+}: {
+  linkedImagePaths: string[]
+  deleteAssociatedImages: boolean
+  onDeleteAssociatedImagesChange?: (value: boolean) => void
+}) {
+  return (
+    <label class="sidebar-create-dialog__field">
+      <span>This action cannot be undone.</span>
+      <label>
+        <input
+          type="checkbox"
+          checked={deleteAssociatedImages}
+          onInput={(event) => onDeleteAssociatedImagesChange?.(event.currentTarget.checked)}
+        />
+        Delete {linkedImagePaths.length} associated image{linkedImagePaths.length === 1 ? '' : 's'} from res/
+      </label>
+    </label>
+  )
+}
+
 function SidebarFileActionsDialogField({
   mode,
   renameValue,
@@ -55,51 +104,26 @@ function SidebarFileActionsDialogField({
   SidebarFileActionsDialogProps,
   'mode' | 'renameValue' | 'tagsValue' | 'loadingTags' | 'loadingDeleteInfo' | 'linkedImagePaths' | 'deleteAssociatedImages' | 'onRenameValueChange' | 'onTagsValueChange' | 'onDeleteAssociatedImagesChange'
 >) {
-  const safeLinkedImagePaths = linkedImagePaths ?? []
-  const safeDeleteAssociatedImages = deleteAssociatedImages ?? false
-
   if (mode === 'rename') {
-    return (
-      <label class="sidebar-create-dialog__field">
-        <span>New file name</span>
-        <input type="text" value={renameValue} placeholder="Scene-002.md" onInput={(event) => onRenameValueChange(event.currentTarget.value)} />
-      </label>
-    )
+    return <RenameField value={renameValue} onChange={onRenameValueChange} />
   }
 
   if (mode === 'edit-tags') {
-    return (
-      <label class="sidebar-create-dialog__field">
-        <span>Tags (comma or newline separated)</span>
-        <textarea
-          value={tagsValue}
-          placeholder={'magic, north\nselene valeria'}
-          rows={4}
-          onInput={(event) => onTagsValueChange(event.currentTarget.value)}
-          disabled={loadingTags}
-        />
-        <span>{loadingTags ? 'Loading tags...' : 'Duplicates are removed automatically.'}</span>
-      </label>
-    )
+    return <EditTagsField value={tagsValue} onChange={onTagsValueChange} loadingTags={loadingTags} />
   }
 
   if (loadingDeleteInfo) {
     return <p class="sidebar-create-dialog__hint">Checking for associated images...</p>
   }
 
+  const safeLinkedImagePaths = linkedImagePaths ?? []
   if (safeLinkedImagePaths.length > 0) {
     return (
-      <label class="sidebar-create-dialog__field">
-        <span>This action cannot be undone.</span>
-        <label>
-          <input
-            type="checkbox"
-            checked={safeDeleteAssociatedImages}
-            onInput={(event) => onDeleteAssociatedImagesChange?.(event.currentTarget.checked)}
-          />
-          Delete {safeLinkedImagePaths.length} associated image{safeLinkedImagePaths.length === 1 ? '' : 's'} from res/
-        </label>
-      </label>
+      <DeleteImageCheckbox
+        linkedImagePaths={safeLinkedImagePaths}
+        deleteAssociatedImages={deleteAssociatedImages ?? false}
+        onDeleteAssociatedImagesChange={onDeleteAssociatedImagesChange}
+      />
     )
   }
 

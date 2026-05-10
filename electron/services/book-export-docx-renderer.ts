@@ -55,6 +55,65 @@ function addSpacing(paragraphs: Paragraph[], count: number): void {
   }
 }
 
+async function buildDocxImageChild(
+  segment: ParagraphSegment,
+  projectRoot: string,
+  dir: string,
+): Promise<ImageRun | null> {
+  if (segment.type !== 'image') return null
+  const resolvedPath = await resolveImagePath(segment.imageInfo.source, projectRoot, dir)
+  const { bytes, type } = await loadImageBytes(resolvedPath)
+  if (!bytes || !type) return null
+  try {
+    const docxType = type === 'png' ? 'png' : 'jpg'
+    const dimensions = getImageDimensions(bytes, type === 'png' ? 'png' : 'jpeg')
+    const size = dimensions ? calculateDocxImageSize(dimensions) : { width: 500, height: 300 }
+    return new ImageRun({ data: bytes, type: docxType, transformation: { width: size.width, height: size.height } })
+  } catch (err) {
+    console.warn(`Failed to embed image in DOCX`, err instanceof Error ? err.message : String(err))
+    return null
+  }
+}
+
+function buildDocxDirectiveHandler(
+  state: { centered: boolean; lastWasPagebreak: boolean },
+  paragraphs: Paragraph[],
+) {
+  return (directive: BookExportDirective) => {
+    if (directive.kind === 'pagebreak') {
+      paragraphs.push(new Paragraph({ pageBreakBefore: true }))
+      state.lastWasPagebreak = true
+    } else if (directive.kind === 'spacer') {
+      for (let i = 0; i < directive.lines; i += 1) {
+        paragraphs.push(new Paragraph({ text: '' }))
+      }
+    } else if (directive.kind === 'centerStart') {
+      state.centered = true
+    } else if (directive.kind === 'centerEnd') {
+      state.centered = false
+    }
+  }
+}
+
+function buildDocxImageHandler(
+  paragraphs: Paragraph[],
+  projectRoot: string,
+  dir: string,
+) {
+  return async (imageInfo: ExtractedImageInfo) => {
+    if (!imageInfo) return
+    const resolvedPath = await resolveImagePath(imageInfo.source, projectRoot, dir)
+    const { bytes, type } = await loadImageBytes(resolvedPath)
+    if (bytes && type) {
+      try {
+        paragraphs.push(createImageParagraph(bytes, type))
+      } catch (err) {
+        console.warn(`Failed to embed image in DOCX`, err instanceof Error ? err.message : String(err))
+      }
+    }
+  }
+}
+
 function buildDocxHandlers(
   paragraphs: Paragraph[],
   projectRoot: string,
@@ -62,32 +121,8 @@ function buildDocxHandlers(
   state: { centered: boolean; lastWasPagebreak: boolean },
 ) {
   return {
-    onDirective: (directive: BookExportDirective) => {
-      if (directive.kind === 'pagebreak') {
-        paragraphs.push(new Paragraph({ pageBreakBefore: true }))
-        state.lastWasPagebreak = true
-      } else if (directive.kind === 'spacer') {
-        for (let i = 0; i < directive.lines; i += 1) {
-          paragraphs.push(new Paragraph({ text: '' }))
-        }
-      } else if (directive.kind === 'centerStart') {
-        state.centered = true
-      } else if (directive.kind === 'centerEnd') {
-        state.centered = false
-      }
-    },
-    onImage: async (imageInfo: ExtractedImageInfo) => {
-      if (!imageInfo) return
-      const resolvedPath = await resolveImagePath(imageInfo.source, projectRoot, dir)
-      const { bytes, type } = await loadImageBytes(resolvedPath)
-      if (bytes && type) {
-        try {
-          paragraphs.push(createImageParagraph(bytes, type))
-        } catch (err) {
-          console.warn(`Failed to embed image in DOCX`, err instanceof Error ? err.message : String(err))
-        }
-      }
-    },
+    onDirective: buildDocxDirectiveHandler(state, paragraphs),
+    onImage: buildDocxImageHandler(paragraphs, projectRoot, dir),
     onHeading: (level: number, text: string) => {
       paragraphs.push(createHeadingParagraph(text, level as 1 | 2 | 3 | 4 | 5 | 6, state.centered))
     },
@@ -104,28 +139,10 @@ function buildDocxHandlers(
       for (const segment of segments) {
         if (segment.type === 'text') {
           const stripped = stripInlineMarkdown(segment.text)
-          if (stripped) {
-            children.push(new TextRun({ text: stripped }))
-          }
-        } else if (segment.type === 'image') {
-          const resolvedPath = await resolveImagePath(segment.imageInfo.source, projectRoot, dir)
-          const { bytes, type } = await loadImageBytes(resolvedPath)
-          if (bytes && type) {
-            try {
-              const docxType = type === 'png' ? 'png' : 'jpg'
-              const dimensions = getImageDimensions(bytes, type === 'png' ? 'png' : 'jpeg')
-              const size = dimensions ? calculateDocxImageSize(dimensions) : { width: 500, height: 300 }
-              children.push(
-                new ImageRun({
-                  data: bytes,
-                  type: docxType,
-                  transformation: { width: size.width, height: size.height },
-                }),
-              )
-            } catch (err) {
-              console.warn(`Failed to embed image in DOCX`, err instanceof Error ? err.message : String(err))
-            }
-          }
+          if (stripped) children.push(new TextRun({ text: stripped }))
+        } else {
+          const imageRun = await buildDocxImageChild(segment, projectRoot, dir)
+          if (imageRun) children.push(imageRun)
         }
       }
       if (children.length === 0) {
@@ -133,10 +150,7 @@ function buildDocxHandlers(
         return
       }
       paragraphs.push(
-        new Paragraph({
-          children,
-          alignment: state.centered ? AlignmentType.CENTER : AlignmentType.LEFT,
-        }),
+        new Paragraph({ children, alignment: state.centered ? AlignmentType.CENTER : AlignmentType.LEFT }),
       )
     },
     onReferenceDefinition: () => {},

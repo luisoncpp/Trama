@@ -5,20 +5,18 @@ import { resolveImagePath } from './book-export-image-utils.js'
 import { processChapterContent, type ExtractedImageInfo, type ParagraphSegment } from './book-export-line-processor.js'
 import type { PdfWriter, PdfLayoutState } from './book-export-pdf-utils.js'
 
-export async function renderPdfChapter(
-  chapter: BookExportChapter,
+function makePdfChapterCallbacks(
   writer: PdfWriter,
   state: PdfLayoutState,
+  lastWasPagebreakRef: { current: boolean },
+  chapterDir: string,
   projectRoot: string,
-): Promise<boolean> {
-  const chapterDir = path.dirname(chapter.path)
-  let lastWasPagebreak = false
-
-  const chapterLineCallbacks = {
+) {
+  return {
     onDirective: (directive: BookExportDirective) => {
       if (directive.kind === 'pagebreak') {
         writer.addPage()
-        lastWasPagebreak = true
+        lastWasPagebreakRef.current = true
       } else if (directive.kind === 'spacer') {
         writer.addSpacer(directive.lines)
       } else if (directive.kind === 'centerStart') {
@@ -27,19 +25,19 @@ export async function renderPdfChapter(
         state.centered = false
       }
     },
-    onImage: async (imageInfo: ExtractedImageInfo, chapterDir: string) => {
+    onImage: async (imageInfo: ExtractedImageInfo) => {
       if (!imageInfo) return
       const resolvedPath = await resolveImagePath(imageInfo.source, projectRoot, chapterDir)
       await writer.drawImage(resolvedPath)
-      lastWasPagebreak = false
+      lastWasPagebreakRef.current = false
     },
     onHeading: (level: number, text: string) => {
       writer.drawHeading(text, state.centered)
-      lastWasPagebreak = false
+      lastWasPagebreakRef.current = false
     },
     onParagraph: (text: string) => {
       writer.drawParagraphLine(text, state.centered)
-      lastWasPagebreak = false
+      lastWasPagebreakRef.current = false
     },
     onParagraphWithImages: async (segments: ParagraphSegment[]) => {
       for (const segment of segments) {
@@ -50,12 +48,26 @@ export async function renderPdfChapter(
           await writer.drawImage(resolvedPath)
         }
       }
-      lastWasPagebreak = false
+      lastWasPagebreakRef.current = false
     },
     onReferenceDefinition: () => {},
   }
+}
 
-  await processChapterContent(chapter.content, chapterDir, chapterLineCallbacks)
+export async function renderPdfChapter(
+  chapter: BookExportChapter,
+  writer: PdfWriter,
+  state: PdfLayoutState,
+  projectRoot: string,
+): Promise<boolean> {
+  const chapterDir = path.dirname(chapter.path)
+  const lastWasPagebreakRef = { current: false }
 
-  return lastWasPagebreak
+  await processChapterContent(
+    chapter.content,
+    chapterDir,
+    makePdfChapterCallbacks(writer, state, lastWasPagebreakRef, chapterDir, projectRoot),
+  )
+
+  return lastWasPagebreakRef.current
 }

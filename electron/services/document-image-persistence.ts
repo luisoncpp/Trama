@@ -131,6 +131,45 @@ export async function resolveMarkdownImageSources(
   return { markdown: output, linkedImagePaths }
 }
 
+async function processMaterializeMatch(
+  match: { match: string; alt: string; source: string; index: number },
+  existingLinked: string[],
+  nextLinked: Set<string>,
+  affectedImagePaths: Set<string>,
+  fileBaseName: string,
+  projectRoot: string,
+  nextImageIndexRef: { current: number },
+  reusedImageIndexRef: { current: number },
+  outputParts: string[],
+  cursorRef: { current: number },
+): Promise<void> {
+  const { alt, source, index } = match
+  const normalizedSource = normalizeRelativePath(source)
+
+  if (normalizedSource.startsWith('data:image/')) {
+    const reusedPath = existingLinked[reusedImageIndexRef.current]
+    const targetPath = reusedPath ?? `res/${fileBaseName}${nextImageIndexRef.current++}.png`
+    const absoluteImagePath = path.join(projectRoot, targetPath)
+
+    await mkdir(path.dirname(absoluteImagePath), { recursive: true })
+    await writeFile(absoluteImagePath, decodePngDataUrl(normalizedSource))
+
+    nextLinked.add(targetPath)
+    affectedImagePaths.add(targetPath)
+    outputParts.push(`![${alt}](${targetPath})`)
+    reusedImageIndexRef.current += 1
+    cursorRef.current = index + match.match.length
+    return
+  }
+
+  if (isProjectImagePath(normalizedSource)) {
+    nextLinked.add(normalizedSource)
+  }
+
+  outputParts.push(match.match)
+  cursorRef.current = index + match.match.length
+}
+
 export async function materializeMarkdownImages(
   projectRoot: string,
   relativePath: string,
@@ -148,49 +187,27 @@ export async function materializeMarkdownImages(
   const nextLinked = new Set<string>()
   const affectedImagePaths = new Set<string>()
   const fileBaseName = `${sanitizeDocumentPathForFileName(relativePath)}_`
-  let nextImageIndex = await getNextImageIndex(projectRoot, fileBaseName)
-  let reusedImageIndex = 0
-  let cursor = 0
-  let output = ''
+  const nextImageIndexRef = { current: await getNextImageIndex(projectRoot, fileBaseName) }
+  const reusedImageIndexRef = { current: 0 }
+  const outputParts: string[] = []
+  const cursorRef = { current: 0 }
 
   for (const match of matches) {
-    output += markdown.slice(cursor, match.index)
-    const normalizedSource = normalizeRelativePath(match.source)
-
-    if (normalizedSource.startsWith('data:image/')) {
-      const reusedPath = existingLinked[reusedImageIndex]
-      const targetPath = reusedPath ?? `res/${fileBaseName}${nextImageIndex++}.png`
-      const absoluteImagePath = path.join(projectRoot, targetPath)
-
-      await mkdir(path.dirname(absoluteImagePath), { recursive: true })
-      await writeFile(absoluteImagePath, decodePngDataUrl(normalizedSource))
-
-      nextLinked.add(targetPath)
-      affectedImagePaths.add(targetPath)
-      output += `![${match.alt}](${targetPath})`
-      reusedImageIndex += 1
-      cursor = match.index + match.match.length
-      continue
-    }
-
-    if (isProjectImagePath(normalizedSource)) {
-      nextLinked.add(normalizedSource)
-    }
-
-    output += match.match
-    cursor = match.index + match.match.length
+    outputParts.push(markdown.slice(cursorRef.current, match.index))
+    await processMaterializeMatch(
+      match, existingLinked, nextLinked, affectedImagePaths,
+      fileBaseName, projectRoot, nextImageIndexRef, reusedImageIndexRef, outputParts, cursorRef,
+    )
   }
 
-  output += markdown.slice(cursor)
+  outputParts.push(markdown.slice(cursorRef.current))
 
   for (const oldImagePath of existingLinked) {
-    if (nextLinked.has(oldImagePath)) {
-      continue
+    if (!nextLinked.has(oldImagePath)) {
+      await rm(path.join(projectRoot, oldImagePath), { force: true })
+      affectedImagePaths.add(oldImagePath)
     }
-
-    await rm(path.join(projectRoot, oldImagePath), { force: true })
-    affectedImagePaths.add(oldImagePath)
   }
 
-  return { markdown: output, affectedImagePaths: Array.from(affectedImagePaths) }
+  return { markdown: outputParts.join(''), affectedImagePaths: Array.from(affectedImagePaths) }
 }

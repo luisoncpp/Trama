@@ -16,7 +16,6 @@ function isFormFieldTarget(target: EventTarget | null): boolean {
   if (!(target instanceof HTMLElement)) {
     return false
   }
-
   const tagName = target.tagName.toLowerCase()
   return tagName === 'input' || tagName === 'textarea' || tagName === 'select'
 }
@@ -25,82 +24,106 @@ function hasOpenModal(): boolean {
   return document.querySelector('[aria-modal="true"]') !== null
 }
 
-export function useProjectEditorShortcutsEffect({
-  onToggleSplitLayout,
-  onToggleFullscreen,
-  onToggleFocusMode,
-  onSwitchActivePane,
-  onSaveNow,
-  onEscapePressed,
-  onZoomIn,
-  onZoomOut,
-  onZoomReset
-}: UseProjectEditorShortcutsEffectParams): void {
+function handleZoomIn(onZoomIn: () => void, event: KeyboardEvent) {
+  event.preventDefault()
+  onZoomIn()
+}
+
+function handleZoomOut(onZoomOut: () => void, event: KeyboardEvent) {
+  event.preventDefault()
+  onZoomOut()
+}
+
+function handleZoomReset(onZoomReset: () => void, event: KeyboardEvent) {
+  event.preventDefault()
+  onZoomReset()
+}
+
+function handleSave(onSaveNow: () => void, event: KeyboardEvent) {
+  event.preventDefault()
+  onSaveNow()
+}
+
+function handleSwitchPane(onSwitchActivePane: () => void, event: KeyboardEvent) {
+  event.preventDefault()
+  onSwitchActivePane()
+}
+
+function handleToggleFocusMode(onToggleFocusMode: () => void, event: KeyboardEvent) {
+  event.preventDefault()
+  onToggleFocusMode()
+}
+
+function handleToggleFullscreen(onToggleFullscreen: () => void, event: KeyboardEvent) {
+  event.preventDefault()
+  onToggleFullscreen()
+}
+
+function handleToggleSplitLayout(onToggleSplitLayout: () => void, event: KeyboardEvent) {
+  event.preventDefault()
+  onToggleSplitLayout()
+}
+
+function makeKeydownHandler(params: UseProjectEditorShortcutsEffectParams) {
+  return (event: KeyboardEvent) => {
+    if (isFormFieldTarget(event.target)) return
+
+    if (event.key === 'Escape' && !hasOpenModal()) {
+      event.preventDefault()
+      params.onEscapePressed()
+      return
+    }
+
+    const isCommandKey = event.ctrlKey || event.metaKey
+
+    if (isCommandKey && !event.altKey && event.code === 'Period') {
+      handleToggleSplitLayout(params.onToggleSplitLayout, event)
+      return
+    }
+
+    if (isCommandKey && event.shiftKey && event.code === 'KeyF') {
+      handleToggleFullscreen(params.onToggleFullscreen, event)
+      return
+    }
+
+    if (isCommandKey && event.shiftKey && event.code === 'KeyM') {
+      handleToggleFocusMode(params.onToggleFocusMode, event)
+      return
+    }
+
+    if (isCommandKey && event.shiftKey && event.code === 'Tab') {
+      handleSwitchPane(params.onSwitchActivePane, event)
+      return
+    }
+
+    if (isCommandKey && !event.altKey && !event.shiftKey && event.code === 'KeyS') {
+      handleSave(params.onSaveNow, event)
+      return
+    }
+
+    if (isCommandKey && !event.altKey && !event.shiftKey && (event.code === 'Equal' || event.key === '+')) {
+      handleZoomIn(params.onZoomIn, event)
+      return
+    }
+
+    if (isCommandKey && !event.altKey && !event.shiftKey && (event.code === 'Minus' || event.key === '-')) {
+      handleZoomOut(params.onZoomOut, event)
+      return
+    }
+
+    if (isCommandKey && !event.altKey && !event.shiftKey && event.key === '0') {
+      handleZoomReset(params.onZoomReset, event)
+      return
+    }
+  }
+}
+
+export function useProjectEditorShortcutsEffect(params: UseProjectEditorShortcutsEffectParams): void {
   useEffect(/* registerWorkspaceShortcuts */ () => {
-    const onWindowKeyDown = (event: KeyboardEvent) => {
-      
-      if (isFormFieldTarget(event.target)) {
-        return
-      }
-
-      if (event.key === 'Escape' && !hasOpenModal()) {
-        event.preventDefault()
-        onEscapePressed()
-        return
-      }
-      const isCommandKey = (event.ctrlKey || event.metaKey);
-
-      if (isCommandKey && !event.altKey && event.code === 'Period') {
-        event.preventDefault()
-        onToggleSplitLayout()
-      }
-
-      if (isCommandKey && event.shiftKey && event.code === 'KeyF') {
-        event.preventDefault()
-        onToggleFullscreen()
-      }
-
-      if (isCommandKey && event.shiftKey && event.code === 'KeyM') {
-        event.preventDefault()
-        onToggleFocusMode()
-      }
-
-      if (isCommandKey && event.shiftKey && event.code === 'Tab') {
-        event.preventDefault()
-        onSwitchActivePane()
-      }
-
-      if (isCommandKey && !event.altKey && !event.shiftKey && event.code === 'KeyS') {
-        event.preventDefault()
-        onSaveNow()
-        return
-      }
-
-      // Ctrl/Cmd++: Zoom in (English: Ctrl+=, Spanish: Ctrl++ tecla propia)
-      if (isCommandKey && !event.altKey && !event.shiftKey && (event.code === 'Equal' || event.key === '+')) {
-        event.preventDefault()
-        onZoomIn()
-        return
-      }
-
-      // Ctrl/Cmd+-: Zoom out
-      if (isCommandKey && !event.altKey && !event.shiftKey && (event.code === 'Minus' || event.key === '-')) {
-        event.preventDefault()
-        onZoomOut()
-        return
-      }
-
-      if (isCommandKey && !event.altKey && !event.shiftKey && event.key == '0') {
-        event.preventDefault()
-        onZoomReset();
-        return
-      }      
-
-    }
-
+    const onWindowKeyDown = makeKeydownHandler(params)
     window.addEventListener('keydown', onWindowKeyDown)
-    return () => {
-      window.removeEventListener('keydown', onWindowKeyDown)
-    }
-  }, [onSaveNow, onSwitchActivePane, onToggleFocusMode, onToggleFullscreen, onToggleSplitLayout, onEscapePressed, onZoomIn, onZoomOut] /*Inputs for registerWorkspaceShortcuts*/)
+    return () => window.removeEventListener('keydown', onWindowKeyDown)
+  }, [params.onSaveNow, params.onSwitchActivePane, params.onToggleFocusMode, params.onToggleFullscreen,
+      params.onToggleSplitLayout, params.onEscapePressed, params.onZoomIn, params.onZoomOut,
+      params.onZoomReset] /*Inputs for registerWorkspaceShortcuts*/)
 }

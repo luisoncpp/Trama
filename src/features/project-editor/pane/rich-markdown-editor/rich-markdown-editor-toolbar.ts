@@ -165,6 +165,17 @@ function ensureToolbarControls(toolbar: HTMLElement): ToolbarControls {
   return { centerButton, pagebreakButton, saveButton, revertButton, syncIcon }
 }
 
+function syncButton(
+  button: HTMLButtonElement,
+  options: { disabled: boolean; label?: string; ariaLabel?: string; title?: string; onClick?: () => void },
+) {
+  button.disabled = options.disabled
+  if (options.label) button.textContent = options.label
+  if (options.ariaLabel) button.setAttribute('aria-label', options.ariaLabel)
+  if (options.title) button.title = options.title
+  if (options.onClick) button.onclick = options.onClick
+}
+
 export function useSyncToolbarControls({
   documentId,
   hostRef,
@@ -180,14 +191,10 @@ export function useSyncToolbarControls({
 }: SyncToolbarControlsParams): void {
   useEffect(() => {
     const host = hostRef.current
-    if (!host) {
-      return
-    }
+    if (!host) return
 
     const toolbar = host.querySelector('.ql-toolbar')
-    if (!(toolbar instanceof HTMLElement)) {
-      return
-    }
+    if (!(toolbar instanceof HTMLElement)) return
 
     const { centerButton, pagebreakButton, saveButton, revertButton, syncIcon } = ensureToolbarControls(toolbar)
     const editor = editorRef.current
@@ -209,14 +216,8 @@ export function useSyncToolbarControls({
       insertPagebreakDirective(currentEditor)
     }
 
-    saveButton.disabled = saveDisabled
-    saveButton.textContent = saveLabel
-    saveButton.onclick = onSaveNow
-
-    revertButton.disabled = revertDisabled
-    revertButton.title = revertLabel
-    revertButton.setAttribute('aria-label', revertLabel)
-    revertButton.onclick = onRevertNow
+    syncButton(saveButton, { disabled: saveDisabled, label: saveLabel, onClick: onSaveNow })
+    syncButton(revertButton, { disabled: revertDisabled, title: revertLabel, ariaLabel: revertLabel, onClick: onRevertNow })
 
     syncIcon.className = `rich-toolbar-sync is-${syncState}`
     syncIcon.setAttribute('aria-label', syncStateLabel)
