@@ -12,24 +12,35 @@ Trama is designed for managing long-form manuscripts and complex lore through a 
 -   **Rich Markdown Editor**: A Quill-based editing experience with full Markdown persistence, YAML frontmatter integration, and inline find.
 -   **Split Pane Workspace**: Multi-pane support to keep notes, lore, and manuscript side-by-side.
 -   **Focus Mode & Fullscreen**: Zero-distraction writing environment with native fullscreen and configurable line, sentence, or paragraph focus scope.
+-   **Document Zoom**: Zoom in/out via Ctrl++/Ctrl+- shared across twin panes.
 -   **Appearance**: Support for **Light, Dark, and System** themes.
 -   **AI Import / Export**: Structured clipboard import and multi-file export flows for working with LLMs without leaving the file-first model.
 -   **Paste Markdown**: Convert Markdown from the clipboard directly into the rich editor.
 -   **Wiki Tag Navigation**: Tag index refreshes after saves so Ctrl/Cmd+Click tag navigation remains reliable.
 -   **Smart Conflict Resolution**: Built-in watcher detects external changes and helps resolve edit conflicts.
+-   **Folder Operations**: Safe rename, delete, and move workflows with subtree tracking and index reconciliation.
+-   **Drag-and-Drop Reorder**: Reorder files and move them between folders with visual drop indicators and corkboard order persistence.
+-   **Book Export**: Multi-format export (Markdown, HTML, DOCX, EPUB, PDF) with layout directives and image support.
+-   **ZuluPad Import**: Import ZuluPad `.zulu` documents into your project structure.
+-   **Spellcheck**: Configurable spellcheck with language selection and optimistic UI sync.
 
 ### ⏳ Planned / In Progress
--   **Folder Operations**: Safer folder rename, delete, and move workflows are planned for a later phase.
--   **Corkboard View**: Drag-and-drop cards for planning and reorganizing scenes or ideas.
 -   **Project Templates**: Pre-defined schemas for characters, locations, and world-building notes.
+
+### ❌ Cancelled
+-   **Corkboard View**: Drag-and-drop cards for planning and reorganizing scenes or ideas.
 
 ## 🛠️ Tech Stack
 
--   **Backend**: [Electron](https://www.electronjs.org/) (Node.js for native FS access)
--   **Frontend**: [Preact](https://preactjs.com/) + [Vite](https://vitejs.dev/)
--   **Styling**: [Tailwind CSS](https://tailwindcss.com/)
--   **Editor**: [Quill](https://quilljs.com/) (Custom Markdown integration)
--   **Validation**: [Zod](https://zod.dev/) for IPC contracts
+-   **Backend**: [Electron](https://www.electronjs.org/) 41.x (Node.js for native FS access)
+-   **Frontend**: [Preact](https://preactjs.com/) 10.x + [Vite](https://vitejs.dev/) 8.x
+-   **Styling**: [Tailwind CSS](https://tailwindcss.com/) 4.x
+-   **Editor**: [Quill](https://quilljs.com/) 2.x (Custom Markdown integration)
+-   **Validation**: [Zod](https://zod.dev/) 3.x for IPC contracts
+-   **PDF Generation**: [pdf-lib](https://pdf-lib.js.org/) 1.x
+-   **DOCX Generation**: [docx](https://docx.js.org/) 9.x
+-   **EPUB Generation**: [epub-gen](https://github.com/zipweb/epub-gen) 0.1.x
+-   **YAML Parsing**: [yaml](https://eemeli.github.io/yaml/) 2.x
 
 ## 📦 Getting Started
 
@@ -42,7 +53,7 @@ Trama is designed for managing long-form manuscripts and complex lore through a 
 
 1.  Clone the repository:
     ```bash
-    git clone https://github.com/your-username/trama.git
+    git clone https://github.com/luisoncpp/trama.git
     cd trama
     ```
 2.  Install dependencies:
@@ -57,18 +68,6 @@ Run the development server (starts both Vite and Electron):
 npm run dev
 ```
 
-### 📂 Creating Your Project Structure
-To use Trama, you should point it to a project directory. Trama recognizes the following semantic structure to organize your manuscript and lore:
-
-```text
-/MyProject
-  /book/     (Manuscript scenes and chapters)
-  /lore/     (Worldbuilding notes, characters, etc.)
-  /outline/  (Planning documents)
-```
-
-You can use the example project located in [example-fantasia](example-fantasia) as a reference for the expected folder layout.
-
 ### Testing
 
 Run the test suite (Vitest):
@@ -80,8 +79,6 @@ In agent or sandboxed environments, prefer the PowerShell runner:
 ```powershell
 powershell -ExecutionPolicy Bypass -File scripts/run-tests.ps1
 ```
-
-In VS Code you can also run the task `Run Tests & Report`, which writes the output to `reports/test-report.txt`.
 
 For smoke tests (requires build):
 ```bash
@@ -95,14 +92,21 @@ To create a production-ready Windows installer:
 npm run dist:win
 ```
 
+To build without packaging:
+```bash
+npm run pack:win
+```
+
 ## 📂 Project Structure
 
--   `electron/`: Main process and IPC handlers (TypeScript).
+-   `electron/`: Main process, IPC handlers, and services (TypeScript).
+    -   `ipc/handlers/`: Typed IPC handler modules (project, AI, book export, Zulu).
+    -   `services/`: Document repository, index service, watcher, book export pipeline.
 -   `src/`: Preact renderer source code.
-    -   `features/`: Domain-driven feature modules (Editor, Sidebar, Project logic).
-    -   `shared/`: Shared types and constants between Main and Renderer.
--   `docs/`: Design specifications, implementation plans, and lessons learned.
--   `tests/`: Comprehensive test suite (Unit, Integration, and Smoke tests).
+    -   `features/project-editor/`: Domain-driven feature modules (Editor, Sidebar, Pane workspace).
+    -   `shared/`: Shared IPC types and constants between Main and Renderer.
+-   `docs/`: Design specifications, architecture docs, implementation plans, and lessons learned.
+-   `tests/`: Comprehensive test suite (unit, integration, and smoke tests).
 
 ## 🧭 Developer Documentation Entry
 
@@ -115,6 +119,10 @@ This entrypoint routes to the mandatory docs that are often missed:
 -   [docs/live/file-map.md](docs/live/file-map.md)
 -   [docs/lessons-learned/README.md](docs/lessons-learned/README.md)
 -   [docs/dev-workflow.md](docs/dev-workflow.md)
+
+## 🤝 Contributing
+
+Contributions are welcome. Please read [docs/dev-workflow.md](docs/dev-workflow.md) for the development workflow, testing requirements, and documentation update protocol.
 
 ## 📄 License
 
