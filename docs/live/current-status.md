@@ -6,7 +6,7 @@
 
 Phase 2, Phase 3 (WS1–WS5), and Phase 4 WS1/wiki-tag-links, WS2/folder-operations, WS5/AI-import-export are complete.
 
-**Implemented:** Electron + Vite + Preact shell, typed IPC (Zod/envelope), project open flow with folder-structure validation, recursive markdown scan, read/save via repository layer, YAML frontmatter, `.trama.index.json` reconciliation, external-file-watch conflict detection, rich markdown visual editor (Quill-based), sidebar (hierarchical tree, filter, create/rename/delete, collapse), workspace split mode (dual pane, drag divider, click-to-activate, persistence), theme system (light/dark/system, WCAG AA, matchMedia sync), fullscreen/focus mode (line/sentence/paragraph scope dimming, CSS Highlights API + fallback), UX hardening (context menu controls, smart typography, Paste from Markdown, in-document Find), editor serialization debounce, spellcheck controls, Wiki tag links (TagIndexService, implicit matching, Ctrl+click navigation), folder rename/delete/move (end-to-end including DnD), drag-and-drop file reorder/move with corkboardOrder integration, AI import/export (clipboard pipeline, multi-file, replace/append modes), book export (multi-format: markdown/html/docx/epub/pdf with directives and images), ZuluPad import, revert changes button in editor toolbar (recarga desde disco, descarta cambios sucios), document zoom via Ctrl++/Ctrl+- (shared across twin panes)
+**Implemented:** Electron + Vite + Preact shell, typed IPC (Zod/envelope), project open flow with folder-structure validation, recursive markdown scan, read/save via repository layer, YAML frontmatter, `.trama.index.json` reconciliation, external-file-watch conflict detection, rich markdown visual editor (Quill-based), sidebar (hierarchical tree, filter, create/rename/delete, collapse), workspace split mode (dual pane, drag divider, click-to-activate, persistence), theme system (light/dark/system, WCAG AA, matchMedia sync), fullscreen/focus mode (line/sentence/paragraph scope dimming, CSS Highlights API + fallback), UX hardening (context menu controls, smart typography, Paste from Markdown, in-document Find), editor serialization debounce, spellcheck controls, Wiki tag links (TagIndexService, implicit matching, Ctrl+click navigation), folder rename/delete/move (end-to-end including DnD), drag-and-drop file reorder/move with corkboardOrder integration, AI import/export (clipboard pipeline, multi-file, replace/append modes), book export (multi-format: markdown/html/docx/epub/pdf with directives and images), ZuluPad import, revert changes button in editor toolbar (recarga desde disco, descarta cambios sucios), document zoom via Ctrl++/Ctrl+- (shared across twin panes), markdown image persistence via project-local `res/*.png` files with backward-compatible loading of legacy embedded-image documents and optional linked-image deletion on article remove
 
 **Not implemented:** Templates (WS3).
 
@@ -19,7 +19,7 @@ Phase 2, Phase 3 (WS1–WS5), and Phase 4 WS1/wiki-tag-links, WS2/folder-operati
 
 - `npm run build` ✅
 - `npm run lint` ✅
-- `npm run test` ✅ (68 suites, 558 tests)
+- `npm run test` ✅ (71 suites, 599 tests)
 - `npm run test:smoke` ✅
 
 In sandboxed agent environments use the PowerShell script — see `docs/dev-workflow.md`.

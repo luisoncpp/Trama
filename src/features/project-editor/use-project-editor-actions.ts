@@ -6,6 +6,7 @@ import type { PaneWorkspace } from './pane'
 import { useOpenProject } from './use-project-editor-open-project'
 import { useProjectEditorUiActions } from './use-project-editor-ui-actions'
 import { hydrateMarkdownImages, stripBase64ImagesFromMarkdown } from '../../shared/markdown-image-placeholder'
+import { ensureMarkdownEmbeddedImagesArePng } from './project-editor-image-save'
 
 interface CoreProjectEditorActions {
   clearEditor: () => void
@@ -94,7 +95,8 @@ function useSaveDocumentNow(
 
       try {
         const hydratedContent = hydrateMarkdownImages(content, path)
-        const response = await window.tramaApi.saveDocument({ path, content: hydratedContent, meta })
+        const pngNormalizedContent = await ensureMarkdownEmbeddedImagesArePng(hydratedContent)
+        const response = await window.tramaApi.saveDocument({ path, content: pngNormalizedContent, meta })
         if (!response.ok) {
           setters.setStatusMessage(`Error saving ${path}: ${response.error.message}`)
           return

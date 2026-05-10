@@ -110,7 +110,7 @@ export interface ProjectEditorActions {
   renameFile: (input: SidebarRenameInput) => Promise<void>
   renameFolder: (input: SidebarRenameInput) => Promise<void>
   deleteFolder: (path: string) => Promise<void>
-  deleteFile: (path: string) => Promise<void>
+  deleteFile: (path: string, options?: { deleteAssociatedImages?: boolean }) => Promise<void>
   editFileTags: (path: string, tags: string[]) => Promise<void>
   reorderFiles: (folderPath: string, orderedIds: string[]) => Promise<void>
   moveFile: (sourcePath: string, targetFolder: string) => Promise<void>

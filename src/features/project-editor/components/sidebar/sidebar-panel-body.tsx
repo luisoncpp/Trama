@@ -76,6 +76,15 @@ function loadFileTags(sectionRoot: (typeof SIDEBAR_SECTION_CONFIG)[ContentSideba
   }
 }
 
+function loadFileDeleteInfo(sectionRoot: (typeof SIDEBAR_SECTION_CONFIG)[ContentSidebarSection]['root']) {
+  return async (path: string): Promise<{ linkedImagePaths: string[] }> => {
+    const response = await window.tramaApi.readDocument({
+      path: toProjectPath(toSectionRelativePath(path), sectionRoot),
+    })
+    return { linkedImagePaths: response.ok ? (response.data.linkedImagePaths ?? []) : [] }
+  }
+}
+
 function renderExplorer(props: SidebarPanelBodyProps) {
   const {
     contentProps, sectionConfig, rootPath, scopedFiles, scopedSelectedPath,
@@ -98,9 +107,10 @@ function renderExplorer(props: SidebarPanelBodyProps) {
       onRenameFile={(path, newName) => onRenameFile(toProjectPath(toSectionRelativePath(path), sectionConfig.root), newName)}
       onRenameFolder={(path, newName) => onRenameFolder(toProjectPath(toSectionRelativePath(path), sectionConfig.root), newName)}
       onDeleteFolder={(path) => onDeleteFolder(toProjectPath(toSectionRelativePath(path), sectionConfig.root))}
-      onDeleteFile={(path) => onDeleteFile(toProjectPath(toSectionRelativePath(path), sectionConfig.root))}
+      onDeleteFile={(path, options) => onDeleteFile(toProjectPath(toSectionRelativePath(path), sectionConfig.root), options)}
       onEditFileTags={(path, tags) => onEditFileTags(toProjectPath(toSectionRelativePath(path), sectionConfig.root), tags)}
       onLoadFileTags={loadFileTags(sectionConfig.root)}
+      onLoadFileDeleteInfo={loadFileDeleteInfo(sectionConfig.root)}
       onSelectFile={(filePath) => onSelectFile(toProjectPath(toSectionRelativePath(filePath), sectionConfig.root))}
       corkboardOrder={scopeCorkboardOrder(corkboardOrder, sectionConfig.root)}
       onReorderFiles={buildScopedReorderHandler(onReorderFiles, sectionConfig.root)}

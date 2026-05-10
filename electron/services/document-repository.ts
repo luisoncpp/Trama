@@ -1,11 +1,17 @@
 import path from 'node:path'
 import { mkdir, readFile, rename, rm, stat, writeFile } from 'node:fs/promises'
 import { parseMarkdownWithFrontmatter, serializeMarkdownWithFrontmatter } from './frontmatter.js'
+import {
+  collectLinkedImagePaths,
+  materializeMarkdownImages,
+  resolveMarkdownImageSources,
+} from './document-image-persistence.js'
 
 export interface DocumentRecord {
   path: string
   content: string
   meta: Record<string, unknown>
+  linkedImagePaths?: string[]
 }
 
 function normalizeRelative(relativePath: string): string {
@@ -88,14 +94,33 @@ export class DocumentRepository {
     const fullPath = resolveProjectPath(projectRoot, relativePath)
     const markdown = await readFile(fullPath, 'utf8')
     const parsed = parseMarkdownWithFrontmatter(markdown)
-    return { path: normalizeRelative(relativePath), content: parsed.content, meta: parsed.meta }
+    const resolved = await resolveMarkdownImageSources(projectRoot, parsed.content)
+    return {
+      path: normalizeRelative(relativePath),
+      content: resolved.markdown,
+      meta: parsed.meta,
+      linkedImagePaths: resolved.linkedImagePaths,
+    }
   }
 
-  async saveDocument(projectRoot: string, relativePath: string, content: string, meta: Record<string, unknown>): Promise<{ path: string; version: string }> {
+  async saveDocument(projectRoot: string, relativePath: string, content: string, meta: Record<string, unknown>): Promise<{ path: string; version: string; affectedImagePaths?: string[] }> {
     if (!relativePath.endsWith('.md')) throw new Error('Only markdown files are supported')
     const fullPath = resolveProjectPath(projectRoot, relativePath)
-    await writeFile(fullPath, serializeMarkdownWithFrontmatter(meta, content), 'utf8')
-    return { path: normalizeRelative(relativePath), version: new Date().toISOString() }
+    let existingContent = ''
+
+    try {
+      existingContent = parseMarkdownWithFrontmatter(await readFile(fullPath, 'utf8')).content
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error
+    }
+
+    const materialized = await materializeMarkdownImages(projectRoot, relativePath, content, existingContent)
+    await writeFile(fullPath, serializeMarkdownWithFrontmatter(meta, materialized.markdown), 'utf8')
+    return {
+      path: normalizeRelative(relativePath),
+      version: new Date().toISOString(),
+      affectedImagePaths: materialized.affectedImagePaths,
+    }
   }
 
   async createDocument(projectRoot: string, relativePath: string, initialContent = ''): Promise<{ path: string; createdAt: string }> {
@@ -145,12 +170,20 @@ export class DocumentRepository {
     return buildRenameResult(normalizedPath, nextRelativePath)
   }
 
-  async deleteDocument(projectRoot: string, relativePath: string): Promise<{ path: string; deletedAt: string }> {
+  async deleteDocument(projectRoot: string, relativePath: string, options?: { deleteAssociatedImages?: boolean }): Promise<{ path: string; deletedAt: string; deletedImagePaths?: string[] }> {
     const normalizedPath = validateRelativePath(relativePath)
     if (!normalizedPath.endsWith('.md')) throw new Error('Only markdown files are supported')
     const fullPath = resolveProjectPath(projectRoot, normalizedPath)
+    let deletedImagePaths: string[] | undefined
+
+    if (options?.deleteAssociatedImages) {
+      const markdown = await readFile(fullPath, 'utf8')
+      deletedImagePaths = collectLinkedImagePaths(parseMarkdownWithFrontmatter(markdown).content)
+      await Promise.all(deletedImagePaths.map(async (imagePath) => rm(resolveProjectPath(projectRoot, imagePath), { force: true })))
+    }
+
     await rm(fullPath)
-    return { path: normalizeRelative(normalizedPath), deletedAt: new Date().toISOString() }
+    return { path: normalizeRelative(normalizedPath), deletedAt: new Date().toISOString(), deletedImagePaths }
   }
 
   async moveDocument(projectRoot: string, sourceRelativePath: string, targetFolder: string): Promise<{ path: string; renamedTo: string; updatedAt: string }> {

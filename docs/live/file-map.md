@@ -74,6 +74,9 @@ Mandatory doc navigation for new chats: start with `docs/START-HERE.md` — it p
   - Recursive markdown scan + tree data (including empty folders).
 - `electron/services/document-repository.ts`
   - Read/save/create/rename/delete markdown files + folder rename/create.
+  - Persists markdown images to project-local `res/*.png` files on save and resolves them back to embedded data URLs on read.
+- `electron/services/document-image-persistence.ts`
+  - Repository helper for markdown image persistence: rewrites embedded images to `res/*.png`, rehydrates local image links back to embedded PNG data URLs, and collects associated image paths for delete flows.
 - `electron/services/frontmatter.ts`
   - YAML frontmatter parse/serialize.
 - `electron/services/index-service.ts`
@@ -131,6 +134,9 @@ Mandatory doc navigation for new chats: start with `docs/START-HERE.md` — it p
   - Fullscreen/focus-mode action hooks. When enabling focus, auto-collapses the sidebar.
 - `src/features/project-editor/use-project-editor-file-actions.ts`
   - Rename/delete file actions.
+  - For file delete, forwards the optional `deleteAssociatedImages` choice to IPC.
+- `src/features/project-editor/project-editor-image-save.ts`
+  - Renderer-side save helper that converts any non-PNG embedded image data URLs into PNG data URLs before persistence, matching the `res/*.png` storage contract.
 - `src/features/project-editor/use-project-editor-folder-actions.ts`
   - Folder rename action with dirty-subtree guard and split-layout remap before project reopen.
 - `src/features/project-editor/project-editor-folder-logic.ts`
@@ -338,8 +344,10 @@ Mandatory doc navigation for new chats: start with `docs/START-HERE.md` — it p
   - Folder context-menu state/handlers.
 - `src/features/project-editor/components/sidebar/sidebar-file-actions-dialog.tsx`
   - Rename/delete confirmation/input dialog.
+  - File delete dialog optionally offers deleting linked `res/*.png` images.
 - `src/features/project-editor/components/sidebar/use-sidebar-file-actions-dialog.ts`
   - Rename/delete dialog state.
+  - Loads linked image info before file delete confirmation so the user can choose whether associated images are removed.
 - `src/features/project-editor/components/sidebar/sidebar-folder-actions-dialog.tsx`
   - Folder rename input dialog.
 - `src/features/project-editor/components/sidebar/use-sidebar-folder-actions-dialog.ts`

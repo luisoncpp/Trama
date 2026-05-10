@@ -77,7 +77,13 @@ async function runSmokeTest(win: BrowserWindow): Promise<void> {
 
     if (pass) {
       console.log('SMOKE_TEST_PASS')
+      if (!win.isDestroyed()) {
+        win.destroy()
+      }
       app.exit(0)
+      setTimeout(() => {
+        process.exit(0)
+      }, 0)
       return
     }
 

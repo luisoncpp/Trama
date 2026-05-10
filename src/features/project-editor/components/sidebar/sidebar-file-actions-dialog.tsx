@@ -6,8 +6,12 @@ interface SidebarFileActionsDialogProps {
   renameValue: string
   tagsValue: string
   loadingTags: boolean
+  loadingDeleteInfo?: boolean
+  linkedImagePaths?: string[]
+  deleteAssociatedImages?: boolean
   onRenameValueChange: (value: string) => void
   onTagsValueChange: (value: string) => void
+  onDeleteAssociatedImagesChange?: (value: boolean) => void
   onConfirm: () => void
   onCancel: () => void
 }
@@ -41,12 +45,19 @@ function SidebarFileActionsDialogField({
   renameValue,
   tagsValue,
   loadingTags,
+  loadingDeleteInfo,
+  linkedImagePaths,
+  deleteAssociatedImages,
   onRenameValueChange,
   onTagsValueChange,
+  onDeleteAssociatedImagesChange,
 }: Pick<
   SidebarFileActionsDialogProps,
-  'mode' | 'renameValue' | 'tagsValue' | 'loadingTags' | 'onRenameValueChange' | 'onTagsValueChange'
+  'mode' | 'renameValue' | 'tagsValue' | 'loadingTags' | 'loadingDeleteInfo' | 'linkedImagePaths' | 'deleteAssociatedImages' | 'onRenameValueChange' | 'onTagsValueChange' | 'onDeleteAssociatedImagesChange'
 >) {
+  const safeLinkedImagePaths = linkedImagePaths ?? []
+  const safeDeleteAssociatedImages = deleteAssociatedImages ?? false
+
   if (mode === 'rename') {
     return (
       <label class="sidebar-create-dialog__field">
@@ -72,6 +83,26 @@ function SidebarFileActionsDialogField({
     )
   }
 
+  if (loadingDeleteInfo) {
+    return <p class="sidebar-create-dialog__hint">Checking for associated images...</p>
+  }
+
+  if (safeLinkedImagePaths.length > 0) {
+    return (
+      <label class="sidebar-create-dialog__field">
+        <span>This action cannot be undone.</span>
+        <label>
+          <input
+            type="checkbox"
+            checked={safeDeleteAssociatedImages}
+            onInput={(event) => onDeleteAssociatedImagesChange?.(event.currentTarget.checked)}
+          />
+          Delete {safeLinkedImagePaths.length} associated image{safeLinkedImagePaths.length === 1 ? '' : 's'} from res/
+        </label>
+      </label>
+    )
+  }
+
   return <p class="sidebar-create-dialog__hint">This action cannot be undone.</p>
 }
 
@@ -81,8 +112,12 @@ export function SidebarFileActionsDialog({
   renameValue,
   tagsValue,
   loadingTags,
+  loadingDeleteInfo,
+  linkedImagePaths,
+  deleteAssociatedImages,
   onRenameValueChange,
   onTagsValueChange,
+  onDeleteAssociatedImagesChange,
   onConfirm,
   onCancel,
 }: SidebarFileActionsDialogProps) {
@@ -102,8 +137,12 @@ export function SidebarFileActionsDialog({
           renameValue={renameValue}
           tagsValue={tagsValue}
           loadingTags={loadingTags}
+          loadingDeleteInfo={loadingDeleteInfo}
+          linkedImagePaths={linkedImagePaths}
+          deleteAssociatedImages={deleteAssociatedImages}
           onRenameValueChange={onRenameValueChange}
           onTagsValueChange={onTagsValueChange}
+          onDeleteAssociatedImagesChange={onDeleteAssociatedImagesChange}
         />
         <div class="sidebar-create-dialog__actions">
           <button type="button" class="editor-button editor-button--secondary editor-button--inline" onClick={onCancel}>

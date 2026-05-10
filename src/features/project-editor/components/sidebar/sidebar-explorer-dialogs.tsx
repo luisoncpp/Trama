@@ -25,8 +25,12 @@ interface SidebarExplorerDialogsProps {
   renameValue: string
   tagsValue: string
   loadingTags: boolean
+  loadingDeleteInfo?: boolean
+  linkedImagePaths?: string[]
+  deleteAssociatedImages?: boolean
   onRenameValueChange: (value: string) => void
   onTagsValueChange: (value: string) => void
+  onDeleteAssociatedImagesChange?: (value: boolean) => void
   confirmFileActionDialog: () => void
   closeFileActionDialog: () => void
   fileContextMenu: FileContextMenuResult
@@ -60,8 +64,12 @@ function ActionDialogs(props: SidebarExplorerDialogsProps) {
         renameValue={props.renameValue}
         tagsValue={props.tagsValue}
         loadingTags={props.loadingTags}
+        loadingDeleteInfo={props.loadingDeleteInfo ?? false}
+        linkedImagePaths={props.linkedImagePaths ?? []}
+        deleteAssociatedImages={props.deleteAssociatedImages ?? false}
         onRenameValueChange={props.onRenameValueChange}
         onTagsValueChange={props.onTagsValueChange}
+        onDeleteAssociatedImagesChange={props.onDeleteAssociatedImagesChange ?? (() => undefined)}
         confirmFileActionDialog={props.confirmFileActionDialog}
         closeFileActionDialog={props.closeFileActionDialog}
       />

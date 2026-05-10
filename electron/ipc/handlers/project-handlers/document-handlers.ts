@@ -54,6 +54,10 @@ export async function handleSaveDocument(rawPayload: unknown): Promise<IpcEnvelo
       payload.data.meta,
     )
 
+    for (const imagePath of result.affectedImagePaths ?? []) {
+      markInternalWrite(imagePath)
+    }
+
     await reconcileActiveProjectIndex(projectRoot)
 
     return {
@@ -144,8 +148,13 @@ export async function handleDeleteDocument(rawPayload: unknown): Promise<IpcEnve
 
   try {
     const projectRoot = getActiveProjectRoot()
-    const result = await documentRepository.deleteDocument(projectRoot, payload.data.path)
+    const result = await documentRepository.deleteDocument(projectRoot, payload.data.path, {
+      deleteAssociatedImages: payload.data.deleteAssociatedImages,
+    })
     markInternalWrite(result.path)
+    for (const imagePath of result.deletedImagePaths ?? []) {
+      markInternalWrite(imagePath)
+    }
     await reconcileActiveProjectIndex(projectRoot)
 
     return {

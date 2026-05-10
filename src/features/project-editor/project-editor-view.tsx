@@ -95,7 +95,7 @@ function buildSidebarSectionProps(model: ProjectEditorModel, props: SidebarExtra
     onRenameFile: (path: string, newName: string) => void actions.renameFile({ path, newName }),
     onRenameFolder: (path: string, newName: string) => void actions.renameFolder({ path, newName }),
     onDeleteFolder: (path: string) => void actions.deleteFolder(path),
-    onDeleteFile: (path: string) => void actions.deleteFile(path),
+    onDeleteFile: (path: string, options?: { deleteAssociatedImages?: boolean }) => void actions.deleteFile(path, options),
     onEditFileTags: (path: string, tags: string[]) => void actions.editFileTags(path, tags),
     onReorderFiles: (folderPath: string, orderedIds: string[]) => actions.reorderFiles(folderPath, orderedIds),
     onMoveFile: (sourcePath: string, targetFolder: string) => actions.moveFile(sourcePath, targetFolder),

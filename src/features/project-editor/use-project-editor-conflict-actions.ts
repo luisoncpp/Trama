@@ -1,6 +1,7 @@
 import { useCallback } from 'preact/hooks'
 import { buildConflictCopyPath } from './project-editor-logic'
 import { PROJECT_EDITOR_STRINGS } from './project-editor-strings'
+import { ensureMarkdownEmbeddedImagesArePng } from './project-editor-image-save'
 import type { ProjectEditorActions } from './project-editor-types'
 import type {
   ProjectEditorDocumentState,
@@ -73,9 +74,10 @@ export function useResolveConflictSaveAsCopyAction({
 
     const copyPath = buildConflictCopyPath(documentState.selectedPath, projectState.visibleFiles)
     void (async () => {
+      const pngNormalizedContent = await ensureMarkdownEmbeddedImagesArePng(documentState.editorValue)
       const response = await window.tramaApi.saveDocument({
         path: copyPath,
-        content: documentState.editorValue,
+        content: pngNormalizedContent,
         meta: documentState.editorMeta,
       })
 

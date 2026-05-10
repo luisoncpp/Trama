@@ -42,6 +42,7 @@ interface SidebarExplorerContentProps {
   onDeleteFile: SidebarExplorerCommonProps['onDeleteFile']
   onEditFileTags: SidebarExplorerCommonProps['onEditFileTags']
   onLoadFileTags: (path: string) => Promise<string[]>
+  onLoadFileDeleteInfo?: (path: string) => Promise<{ linkedImagePaths: string[] }>
   onPickFolder: SidebarExplorerCommonProps['onPickFolder']
   corkboardOrder?: Record<string, string[]>
   onReorderFiles?: (folderPath: string, orderedIds: string[]) => Promise<void>
@@ -61,6 +62,7 @@ function useSidebarExplorerDialogs(props: SidebarExplorerContentProps) {
     onDeleteFile: props.onDeleteFile,
     onEditFileTags: props.onEditFileTags,
     onLoadFileTags: props.onLoadFileTags,
+    onLoadFileDeleteInfo: props.onLoadFileDeleteInfo ?? (async () => ({ linkedImagePaths: [] })),
   })
   const folderDialog = useSidebarFolderActionsDialog({
     onRenameFolder: props.onRenameFolder,
@@ -114,6 +116,8 @@ export function SidebarExplorerContent(props: SidebarExplorerContentProps) {
     closeFileActionDialog: fileDialog.closeDialog, confirmFileActionDialog: fileDialog.confirm,
     onRenameValueChange: fileDialog.setRenameValue, tagsValue: fileDialog.tagsValue,
     loadingTags: fileDialog.loadingTags, onTagsValueChange: fileDialog.setTagsValue,
+    loadingDeleteInfo: fileDialog.loadingDeleteInfo, linkedImagePaths: fileDialog.linkedImagePaths,
+    deleteAssociatedImages: fileDialog.deleteAssociatedImages, onDeleteAssociatedImagesChange: fileDialog.setDeleteAssociatedImages,
     folderActionMode: folderDialog.mode, folderRenameValue: folderDialog.renameValue,
     folderActionTargetPath: folderDialog.targetPath,
     onFolderRenameValueChange: folderDialog.setRenameValue,

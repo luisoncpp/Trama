@@ -409,6 +409,7 @@ describe('sidebar panels', () => {
         path: 'book/Act-01/Chapter-01/Scene-001.md',
         content: '# Scene',
         meta: { tags: ['magic', 'north'] },
+        linkedImagePaths: ['res/book_act_01_chapter_01_scene_001_0.png'],
       },
     }))
 
@@ -511,21 +512,33 @@ describe('sidebar panels', () => {
 
     expect(deleteMenuItem).toBeTruthy()
 
-    act(() => {
+    await act(async () => {
       deleteMenuItem.click()
+      await Promise.resolve()
     })
 
     const deleteConfirm = Array.from(container.querySelectorAll('.sidebar-create-dialog .editor-button')).find((node) =>
       node.textContent?.includes('Delete'),
     ) as HTMLButtonElement
+    const deleteImagesCheckbox = container.querySelector('.sidebar-create-dialog input[type="checkbox"]') as HTMLInputElement
 
     expect(deleteConfirm).toBeTruthy()
+
+    if (deleteImagesCheckbox) {
+      act(() => {
+        deleteImagesCheckbox.checked = true
+        deleteImagesCheckbox.dispatchEvent(new Event('input', { bubbles: true }))
+      })
+    }
 
     act(() => {
       deleteConfirm.click()
     })
 
-    expect(onDeleteFile).toHaveBeenCalledWith('book/Act-01/Chapter-01/Scene-001.md')
+    expect(onDeleteFile).toHaveBeenCalledWith(
+      'book/Act-01/Chapter-01/Scene-001.md',
+      deleteImagesCheckbox ? { deleteAssociatedImages: true } : undefined,
+    )
   })
 
   it('triggers rename and delete callbacks from folder context menu', () => {

@@ -2,6 +2,7 @@ import { useCallback } from 'preact/hooks'
 import { PROJECT_EDITOR_STRINGS } from './project-editor-strings'
 import { notifyTagIndexRefresh } from './tag-index-events'
 import { normalizeName, isInvalidRenameInput, deduplicateTags } from '../../shared/sidebar-utils'
+import { ensureMarkdownEmbeddedImagesArePng } from './project-editor-image-save'
 import type { ProjectEditorActions, SidebarRenameInput } from './project-editor-types'
 import type { ProjectEditorProjectState } from './project-editor-types'
 import type { PaneWorkspace } from './pane'
@@ -50,13 +51,16 @@ function useDeleteFileAction({
   setters,
   openProject,
 }: UseProjectEditorFileActionsParams): ProjectEditorActions['deleteFile'] {
-  return useCallback(/* deleteFileAction */ async (path: string): Promise<void> => {
+  return useCallback(/* deleteFileAction */ async (path: string, options?: { deleteAssociatedImages?: boolean }): Promise<void> => {
     if (!projectState.rootPath) {
       setters.setStatusMessage(PROJECT_EDITOR_STRINGS.initialStatus)
       return
     }
 
-    const response = await window.tramaApi.deleteDocument({ path })
+    const response = await window.tramaApi.deleteDocument({
+      path,
+      deleteAssociatedImages: options?.deleteAssociatedImages,
+    })
     if (!response.ok) {
       setters.setStatusMessage(`Could not delete file: ${response.error.message}`)
       return
@@ -96,9 +100,10 @@ function useEditFileTagsAction({ workspace, projectState, setters }: UseProjectE
       nextMeta.tags = normalizedTags
     }
 
+    const pngNormalizedContent = await ensureMarkdownEmbeddedImagesArePng(readResponse.data.content)
     const saveResponse = await window.tramaApi.saveDocument({
       path,
-      content: readResponse.data.content,
+      content: pngNormalizedContent,
       meta: nextMeta,
     })
     if (!saveResponse.ok) {

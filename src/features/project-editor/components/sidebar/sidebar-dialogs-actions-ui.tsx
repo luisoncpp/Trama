@@ -56,8 +56,12 @@ interface FileActionsDialogProps {
   renameValue: string
   tagsValue: string
   loadingTags: boolean
+  loadingDeleteInfo: boolean
+  linkedImagePaths: string[]
+  deleteAssociatedImages: boolean
   onRenameValueChange: (value: string) => void
   onTagsValueChange: (value: string) => void
+  onDeleteAssociatedImagesChange: (value: boolean) => void
   confirmFileActionDialog: () => void
   closeFileActionDialog: () => void
 }
@@ -68,8 +72,12 @@ export function FileActionsDialog({
   renameValue,
   tagsValue,
   loadingTags,
+  loadingDeleteInfo,
+  linkedImagePaths,
+  deleteAssociatedImages,
   onRenameValueChange,
   onTagsValueChange,
+  onDeleteAssociatedImagesChange,
   confirmFileActionDialog,
   closeFileActionDialog,
 }: FileActionsDialogProps) {
@@ -80,8 +88,12 @@ export function FileActionsDialog({
       renameValue={renameValue}
       tagsValue={tagsValue}
       loadingTags={loadingTags}
+      loadingDeleteInfo={loadingDeleteInfo}
+      linkedImagePaths={linkedImagePaths}
+      deleteAssociatedImages={deleteAssociatedImages}
       onRenameValueChange={onRenameValueChange}
       onTagsValueChange={onTagsValueChange}
+      onDeleteAssociatedImagesChange={onDeleteAssociatedImagesChange}
       onConfirm={confirmFileActionDialog}
       onCancel={closeFileActionDialog}
     />

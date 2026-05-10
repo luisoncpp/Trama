@@ -272,6 +272,11 @@ When such a document is edited and saved, it is rewritten in the new standard fo
 - Edit document with existing image → placeholder preserved
 - Document without images → no placeholder pollution
 
+`tests/folder-delete-repository.test.ts` — repository coverage for:
+- rewriting embedded PNG markdown images to `res/*.png`
+- hydrating `res/*.png` links back to embedded PNG markdown on read
+- optional deletion of linked images during article delete
+
 ---
 
 ## References
