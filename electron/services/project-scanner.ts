@@ -1,6 +1,7 @@
 import { readdir } from 'node:fs/promises'
 import path from 'node:path'
 import type { TreeItem } from '../../src/shared/ipc.js'
+import { isRelevantPath } from '../../src/shared/project-sections.js'
 
 const IGNORED_DIRECTORIES = new Set([
   '.git',
@@ -65,6 +66,6 @@ export async function scanProject(projectRoot: string): Promise<{ tree: TreeItem
 
   return {
     tree,
-    markdownFiles: markdownFiles.sort((left, right) => left.localeCompare(right, 'es')),
+    markdownFiles: markdownFiles.sort((left, right) => left.localeCompare(right, 'es')).filter(isRelevantPath),
   }
 }

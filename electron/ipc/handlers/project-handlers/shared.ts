@@ -15,13 +15,12 @@ export async function reconcileActiveProjectIndex(projectRoot: string): Promise<
   }
 
   const { markdownFiles } = await scanProject(projectRoot)
-  const relevantFiles = markdownFiles.filter(isRelevantPath)
-  const metaByPath = await readMetaByPath(projectRoot, relevantFiles)
+  const metaByPath = await readMetaByPath(projectRoot, markdownFiles)
   if (indexService) {
-    await indexService.reconcileIndex(relevantFiles, metaByPath)
+    await indexService.reconcileIndex(markdownFiles, metaByPath)
   }
   if (tagIndexService) {
-    await tagIndexService.buildIndex(relevantFiles, metaByPath)
+    await tagIndexService.buildIndex(markdownFiles, metaByPath)
   }
 }
 

@@ -1,4 +1,4 @@
-import path from 'node:path'
+import path, { relative } from 'node:path'
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import type { BookExportRequest, BookExportResponse, ProjectIndex } from '../../src/shared/ipc.js'
 import { scanProject } from './project-scanner.js'
@@ -52,10 +52,7 @@ async function buildBookChapters(
     const sanitizedContent = sanitizeForBookExport(content, format)
     const chapterContent = format === 'markdown'
       ? sanitizedContent
-      : await convertMarkdownLocalImageSourcesToDataUrls(sanitizedContent, projectRoot, relativePath)
-
-    console.warn(`[book-export] Prepared chapter image sources for ${relativePath}`)
-
+      : await convertMarkdownLocalImageSourcesToDataUrls(sanitizedContent, projectRoot, relativePath)    
     chapters.push({
       path: relativePath,
       title: chapterTitleFromPath(relativePath),
