@@ -29,12 +29,13 @@ export async function handleOpenProject(rawPayload: unknown): Promise<IpcEnvelop
       data: {
         rootPath: projectRoot,
         tree,
-        markdownFiles,
+        markdownFiles : markdownFiles,
         index,
       },
     }
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unable to open project'
+    console.error(`Error opening project: ${message}`);
     return errorEnvelope('PROJECT_OPEN_FAILED', message)
   }
 }

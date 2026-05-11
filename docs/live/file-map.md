@@ -375,6 +375,9 @@ Mandatory doc navigation for new chats: start with `docs/START-HERE.md` — it p
 
 - `src/shared/ipc.ts`
   - IPC channel constants, Zod schemas, shared envelope/types.
+- `src/shared/project-sections.ts`
+  - Single source of truth for relevant project sections (`book`, `outline`, `lore`).
+  - Exports `RELEVANT_SECTION_NAMES`, `RELEVANT_SECTION_ROOTS` and `isRelevantPath()` helper.
 - `src/shared/workspace-context-menu.ts`
   - Event bridge contract between Electron context menu and the renderer: `WORKSPACE_CONTEXT_MENU_EVENT` constant and `WorkspaceContextCommand` union type.
   - The `WorkspaceContextCommand` includes the `{ type: 'paste-markdown' }` case used by the native menu and editor listeners.

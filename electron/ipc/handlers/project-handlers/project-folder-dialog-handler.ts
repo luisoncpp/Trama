@@ -2,13 +2,12 @@ import { dialog } from 'electron'
 import path from 'node:path'
 import { mkdir, stat } from 'node:fs/promises'
 import type { IpcEnvelope, SelectProjectFolderResponse } from '../../../../src/shared/ipc.js'
+import { RELEVANT_SECTION_NAMES } from '../../../../src/shared/project-sections.js'
 import { errorEnvelope } from '../../../ipc-errors.js'
-
-const REQUIRED_PROJECT_FOLDERS = ['book', 'lore', 'outline'] as const
 
 async function getMissingProjectFolders(rootPath: string): Promise<string[]> {
   const checks = await Promise.all(
-    REQUIRED_PROJECT_FOLDERS.map(async (folder) => {
+    RELEVANT_SECTION_NAMES.map(async (folder) => {
       try {
         const folderStats = await stat(path.join(rootPath, folder))
         return folderStats.isDirectory() ? null : folder
@@ -19,7 +18,7 @@ async function getMissingProjectFolders(rootPath: string): Promise<string[]> {
   )
 
   return checks.filter(
-    (folder): folder is (typeof REQUIRED_PROJECT_FOLDERS)[number] => folder !== null,
+    (folder): folder is (typeof RELEVANT_SECTION_NAMES)[number] => folder !== null,
   )
 }
 

@@ -1,5 +1,6 @@
 import type { SidebarSection } from '../../project-editor-types'
 import { defineSidebarSectionRoot, type SidebarSectionRoot } from './sidebar-path-scoping'
+import { RELEVANT_SECTION_ROOTS } from '../../../../shared/project-sections'
 
 export type ContentSidebarSection = Exclude<SidebarSection, 'settings' | 'transfer'>
 
@@ -9,7 +10,7 @@ export interface SidebarSectionConfig {
 }
 
 export const SIDEBAR_SECTION_CONFIG: Record<ContentSidebarSection, SidebarSectionConfig> = {
-  explorer: { title: 'Manuscript', root: defineSidebarSectionRoot('book/') },
-  outline: { title: 'Outline', root: defineSidebarSectionRoot('outline/') },
-  lore: { title: 'Lore', root: defineSidebarSectionRoot('lore/') },
+  explorer: { title: 'Manuscript', root: defineSidebarSectionRoot(RELEVANT_SECTION_ROOTS[0]) },
+  outline: { title: 'Outline', root: defineSidebarSectionRoot(RELEVANT_SECTION_ROOTS[1]) },
+  lore: { title: 'Lore', root: defineSidebarSectionRoot(RELEVANT_SECTION_ROOTS[2]) },
 }

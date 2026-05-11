@@ -3,6 +3,7 @@ import path from 'node:path'
 import { DocumentRepository } from '../../../services/document-repository.js'
 import { getActiveIndexService, getActiveTagIndexService } from '../../../ipc-runtime.js'
 import { scanProject } from '../../../services/project-scanner.js'
+import { isRelevantPath } from '../../../../src/shared/project-sections.js'
 
 const documentRepository = new DocumentRepository()
 
@@ -14,12 +15,13 @@ export async function reconcileActiveProjectIndex(projectRoot: string): Promise<
   }
 
   const { markdownFiles } = await scanProject(projectRoot)
-  const metaByPath = await readMetaByPath(projectRoot, markdownFiles)
+  const relevantFiles = markdownFiles.filter(isRelevantPath)
+  const metaByPath = await readMetaByPath(projectRoot, relevantFiles)
   if (indexService) {
-    await indexService.reconcileIndex(markdownFiles, metaByPath)
+    await indexService.reconcileIndex(relevantFiles, metaByPath)
   }
   if (tagIndexService) {
-    await tagIndexService.buildIndex(markdownFiles, metaByPath)
+    await tagIndexService.buildIndex(relevantFiles, metaByPath)
   }
 }
 
