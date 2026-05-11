@@ -812,6 +812,35 @@ describe('RichMarkdownEditor', () => {
     expect(centeredParagraph?.textContent).toContain('Texto centrado')
   })
 
+  it('centra imagenes dentro de bloques center:start y center:end', async () => {
+    const tinyPng = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8DwDwAFBQIAX8jx0gAAAABJRU5ErkJggg=='
+    const source = [
+      '<!-- trama:center:start -->',
+      `<img src="${tinyPng}" alt="img_0">`,
+      '<!-- trama:center:end -->',
+      'Texto normal',
+    ].join('\n')
+
+    act(() => {
+      render(
+        h(RichMarkdownEditor, buildEditorProps({
+          documentId: 'layout-centering-image-doc',
+          value: source,
+        })),
+        container,
+      )
+    })
+
+    await sleep(80)
+
+    const centeredImage = container.querySelector('.ql-editor img.trama-centered-media') as HTMLImageElement | null
+    expect(centeredImage).toBeTruthy()
+    expect(centeredImage?.closest('.trama-centered-content')).toBeTruthy()
+
+    const normalText = Array.from(container.querySelectorAll('.ql-editor p')).find((node) => node.textContent?.includes('Texto normal'))
+    expect(normalText?.classList.contains('trama-centered-content')).toBe(false)
+  })
+
   it('inserta directivas center desde boton de toolbar', async () => {
     let lastMarkdown = ''
     const serializationRef = { current: { flush: () => null as string | null, tagOverlayRecalcRef: { current: false }, tagOverlayMatchesRef: { current: [] as Array<{ tag: string; start: number; end: number; filePath: string }> } } }

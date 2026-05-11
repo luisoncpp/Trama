@@ -262,7 +262,7 @@ Mandatory doc navigation for new chats: start with `docs/START-HERE.md` — it p
 - `src/features/project-editor/components/rich-markdown-editor-layout-actions.ts`
   - Toolbar-triggered insertion helpers for center boundaries, spacer directives, and pagebreak directives.
 - `src/features/project-editor/components/rich-markdown-editor-layout-centering.ts`
-  - Synchronizes centered styling for editor blocks located between `center:start` and `center:end` boundary artifacts.
+  - Synchronizes centered styling for editor blocks located between `center:start` and `center:end` boundary artifacts, and marks descendant images for explicit block-level centering.
 - `src/features/project-editor/components/rich-markdown-editor-commands.ts`
   - Handles workspace context-menu commands (`paste-markdown`, `copy-as-markdown`) and clipboard serialization/paste flow for the rich editor.
 - `src/features/project-editor/components/rich-markdown-editor-find.tsx`
