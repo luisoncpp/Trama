@@ -2182,6 +2182,11 @@ select {
   text-align: center;
 }
 
+.rich-editor .ql-editor .trama-centered-content img {
+  margin-left: auto;
+  margin-right: auto;
+}
+
 .rich-editor .ql-editor .trama-spacer {
   min-height: 1lh;
 }
