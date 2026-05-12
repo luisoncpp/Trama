@@ -1954,6 +1954,28 @@ select {
   color: var(--quill-active);
 }
 
+.rich-editor .ql-toolbar.ql-snow select.ql-zoom-level {
+  height: 24px;
+  padding: 0 6px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--toolbar-bg);
+  color: var(--text-main);
+  font-size: 12px;
+  cursor: pointer;
+  outline: none;
+}
+
+.rich-editor .ql-toolbar.ql-snow select.ql-zoom-level:hover,
+.rich-editor .ql-toolbar.ql-snow select.ql-zoom-level:focus {
+  border-color: var(--quill-active);
+}
+
+.rich-editor .ql-toolbar.ql-snow select.ql-zoom-level option {
+  background-color: Field;
+  color: FieldText;
+}
+
 .rich-toolbar-sync {
   width: 17px;
   height: 17px;

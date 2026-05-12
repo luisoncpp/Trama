@@ -37,6 +37,8 @@ interface RichMarkdownEditorProps {
   editorSerializationRef?: { current: EditorSerializationRefs }
   onMarkDirty?: () => void
   zoomRef?: EditorZoomRef
+  zoomLevel?: number
+  onZoomChange?: (level: number) => void
 }
 
 function useRichEditorRefs(
@@ -125,7 +127,7 @@ export function RichMarkdownEditor(props: RichMarkdownEditorProps) {
     syncState, syncStateLabel,
     focusModeEnabled = false, focusScope = 'paragraph', tagIndex,
     onTagClick, isActive = true, editorSerializationRef, onMarkDirty,
-    zoomRef,
+    zoomRef, zoomLevel = 1.0, onZoomChange,
   } = props
   const safeTagIndex = tagIndex ?? null
   const [, setTagOverlayTick] = useState(0)
@@ -156,7 +158,7 @@ export function RichMarkdownEditor(props: RichMarkdownEditorProps) {
     triggerTagOverlayRender,
   }
   useRichEditorLifecycle(lifecycleParams)
-  useSyncToolbarControls({ documentId, hostRef, editorRef, saveDisabled, saveLabel, onSaveNow, revertDisabled, revertLabel, onRevertNow, syncState, syncStateLabel })
+  useSyncToolbarControls({ documentId, hostRef, editorRef, saveDisabled, saveLabel, onSaveNow, revertDisabled, revertLabel, onRevertNow, syncState, syncStateLabel, zoomLevel, onZoomChange })
   useFocusModeScopeEffect(editorRef, hostRef, focusModeEnabled, focusScope, isActive)
   useEditorZoom({ editorRef, hostRef, zoomRef: zoomRef ?? DEFAULT_ZOOM_REF, triggerTagOverlayRender })
 

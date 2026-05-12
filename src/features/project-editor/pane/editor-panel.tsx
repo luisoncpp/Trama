@@ -22,6 +22,8 @@ interface EditorPanelProps {
   editorSerializationRef?: { current: EditorSerializationRefs }
   onMarkDirty?: () => void
   zoomRef?: EditorZoomRef
+  zoomLevel?: number
+  onZoomChange?: (level: number) => void
 }
 
 function computeSyncStateLabel(selectedPath: string | null, loadingDocument: boolean, saving: boolean, isDirty: boolean): string {
@@ -82,6 +84,8 @@ export function EditorPanel({
   editorSerializationRef,
   onMarkDirty,
   zoomRef,
+  zoomLevel,
+  onZoomChange,
 }: EditorPanelProps) {
   const { saveDisabled, saveLabel, revertDisabled, revertLabel, syncState, syncStateLabel } = useEditorPanelLabels(selectedPath, loadingDocument, saving, isDirty)
 
@@ -102,6 +106,8 @@ export function EditorPanel({
           editorSerializationRef={editorSerializationRef}
           onMarkDirty={onMarkDirty}
           zoomRef={zoomRef}
+          zoomLevel={zoomLevel}
+          onZoomChange={onZoomChange}
         />
       </div>
     </article>

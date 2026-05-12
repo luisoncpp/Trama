@@ -49,11 +49,11 @@ function buildShortcutsEffectParams(
     },
     onZoomIn: () => {
       const current = workspaceLayout.zoomLevel ?? 1.0
-      actions.setZoomLevel(current + 0.1)
+      actions.setZoomLevel(current + 0.25)
     },
     onZoomOut: () => {
       const current = workspaceLayout.zoomLevel ?? 1.0
-      actions.setZoomLevel(current - 0.1)
+      actions.setZoomLevel(current - 0.25)
     },
     onZoomReset: () => {
       actions.setZoomLevel(1.0)

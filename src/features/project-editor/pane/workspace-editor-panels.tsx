@@ -29,9 +29,11 @@ interface PaneEditorProps {
   tagIndex: Record<string, string> | null
   onTagClick: (filePath: string) => void
   zoomRef: EditorZoomRef
+  zoomLevel: number
+  onZoomChange: (level: number) => void
 }
 
-function PaneEditor({ model, spellcheckEnabled, pane, tagIndex, onTagClick, zoomRef }: PaneEditorProps) {
+function PaneEditor({ model, spellcheckEnabled, pane, tagIndex, onTagClick, zoomRef, zoomLevel, onZoomChange }: PaneEditorProps) {
   const { state, actions, serializationRefs } = model
   const paneState = pane === 'secondary' ? state.secondaryPane : state.primaryPane
   const isActive = state.workspaceLayout.activePane === pane
@@ -74,6 +76,8 @@ function PaneEditor({ model, spellcheckEnabled, pane, tagIndex, onTagClick, zoom
           editorSerializationRef={serializationRef}
           onMarkDirty={onMarkDirty}
           zoomRef={zoomRef}
+          zoomLevel={zoomLevel}
+          onZoomChange={onZoomChange}
         />
       </div>
     </section>
@@ -86,9 +90,11 @@ interface ActiveEditorPanelProps {
   tagIndex: Record<string, string> | null
   onTagClick: (filePath: string) => void
   zoomRef: EditorZoomRef
+  zoomLevel: number
+  onZoomChange: (level: number) => void
 }
 
-function ActiveEditorPanel({ model, spellcheckEnabled, tagIndex, onTagClick, zoomRef }: ActiveEditorPanelProps) {
+function ActiveEditorPanel({ model, spellcheckEnabled, tagIndex, onTagClick, zoomRef, zoomLevel, onZoomChange }: ActiveEditorPanelProps) {
   const { state, actions, serializationRefs } = model
 
   const onMarkDirty = () => {
@@ -113,6 +119,8 @@ function ActiveEditorPanel({ model, spellcheckEnabled, tagIndex, onTagClick, zoo
       editorSerializationRef={serializationRefs.primary}
       onMarkDirty={onMarkDirty}
       zoomRef={zoomRef}
+      zoomLevel={zoomLevel}
+      onZoomChange={onZoomChange}
     />
   )
 }
@@ -123,9 +131,11 @@ interface WorkspaceSplitEditorPanelsProps {
   tagIndex: Record<string, string> | null
   onTagClick: (filePath: string) => void
   zoomRef: EditorZoomRef
+  zoomLevel: number
+  onZoomChange: (level: number) => void
 }
 
-function WorkspaceSplitEditorPanels({ model, spellcheckEnabled, tagIndex, onTagClick, zoomRef }: WorkspaceSplitEditorPanelsProps) {
+function WorkspaceSplitEditorPanels({ model, spellcheckEnabled, tagIndex, onTagClick, zoomRef, zoomLevel, onZoomChange }: WorkspaceSplitEditorPanelsProps) {
   const { state, actions } = model
   const splitRef = useRef<HTMLDivElement | null>(null)
 
@@ -158,7 +168,7 @@ function WorkspaceSplitEditorPanels({ model, spellcheckEnabled, tagIndex, onTagC
 
   return (
     <div class="workspace-split" ref={splitRef} style={{ '--split-ratio': `${Math.round(state.workspaceLayout.ratio * 100)}%` }}>
-      <PaneEditor model={model} spellcheckEnabled={spellcheckEnabled} pane="primary" tagIndex={tagIndex} onTagClick={onTagClick} zoomRef={zoomRef} />
+      <PaneEditor model={model} spellcheckEnabled={spellcheckEnabled} pane="primary" tagIndex={tagIndex} onTagClick={onTagClick} zoomRef={zoomRef} zoomLevel={zoomLevel} onZoomChange={onZoomChange} />
       <div
         class="workspace-split-divider"
         role="separator"
@@ -169,7 +179,7 @@ function WorkspaceSplitEditorPanels({ model, spellcheckEnabled, tagIndex, onTagC
           startResizeDrag(event.clientX)
         }}
       />
-      <PaneEditor model={model} spellcheckEnabled={spellcheckEnabled} pane="secondary" tagIndex={tagIndex} onTagClick={onTagClick} zoomRef={zoomRef} />
+      <PaneEditor model={model} spellcheckEnabled={spellcheckEnabled} pane="secondary" tagIndex={tagIndex} onTagClick={onTagClick} zoomRef={zoomRef} zoomLevel={zoomLevel} onZoomChange={onZoomChange} />
     </div>
   )
 }
@@ -180,10 +190,30 @@ export function WorkspaceEditorPanels({ model, spellcheckEnabled }: LayoutContro
     model.actions.openFileInPane(filePath, 'secondary')
   }
   const zoomRef = model.zoomRef
+  const zoomLevel = model.state.workspaceLayout.zoomLevel
+  const onZoomChange = (level: number) => {
+    model.actions.setZoomLevel(level)
+  }
 
   return model.state.workspaceLayout.mode === 'split'
-    ? <WorkspaceSplitEditorPanels model={model} spellcheckEnabled={spellcheckEnabled} tagIndex={tagIndex} onTagClick={handleTagClick} zoomRef={zoomRef} />
-    : <ActiveEditorPanel model={model} spellcheckEnabled={spellcheckEnabled} tagIndex={tagIndex} onTagClick={handleTagClick} zoomRef={zoomRef} />
+    ? <WorkspaceSplitEditorPanels
+        model={model}
+        spellcheckEnabled={spellcheckEnabled}
+        tagIndex={tagIndex}
+        onTagClick={handleTagClick}
+        zoomRef={zoomRef}
+        zoomLevel={zoomLevel}
+        onZoomChange={onZoomChange}
+      />
+    : <ActiveEditorPanel
+        model={model}
+        spellcheckEnabled={spellcheckEnabled}
+        tagIndex={tagIndex}
+        onTagClick={handleTagClick}
+        zoomRef={zoomRef}
+        zoomLevel={zoomLevel}
+        onZoomChange={onZoomChange}
+      />
 }
 
 export function WorkspaceLayoutPanel({ model, spellcheckEnabled }: LayoutControlsProps) {
