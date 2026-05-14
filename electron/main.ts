@@ -179,7 +179,7 @@ async function createMainWindow(): Promise<void> {
     showWindow(win)
   }
   setupContextMenu(win)
-  setupApplicationMenu()
+  setupApplicationMenu(win)
 
   win.on('closed', () => {
     mainWindow = null

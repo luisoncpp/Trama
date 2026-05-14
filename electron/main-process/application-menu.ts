@@ -1,6 +1,15 @@
-import { Menu } from 'electron'
+import { BrowserWindow, Menu } from 'electron'
+import { WORKSPACE_CONTEXT_MENU_EVENT } from '../../src/shared/workspace-context-menu.js'
 
-export function setupApplicationMenu(): void {
+function dispatchWorkspaceCommand(win: BrowserWindow, command: { type: 'toggle-split' } | { type: 'toggle-fullscreen' } | { type: 'toggle-focus' }): void {
+  const commandPayload = JSON.stringify(command)
+  void win.webContents.executeJavaScript(
+    `window.dispatchEvent(new CustomEvent(${JSON.stringify(WORKSPACE_CONTEXT_MENU_EVENT)}, { detail: ${commandPayload} }));`,
+    true,
+  )
+}
+
+export function setupApplicationMenu(win: BrowserWindow): void {
   const template: Electron.MenuItemConstructorOptions[] = [
     {
       label: 'File',
@@ -23,7 +32,11 @@ export function setupApplicationMenu(): void {
       submenu: [
         { role: 'toggleDevTools' },
         { type: 'separator' },
-        { role: 'togglefullscreen' },
+        {
+          label: 'Toggle Fullscreen',
+          accelerator: 'CmdOrCtrl+Shift+F',
+          click: () => dispatchWorkspaceCommand(win, { type: 'toggle-fullscreen' }),
+        },
       ],
     },
     { role: 'help' },
