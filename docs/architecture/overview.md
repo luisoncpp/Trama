@@ -111,6 +111,10 @@ Clipboard-based file transfer using `=== FILE: path ===` delimited format. Impor
 
 Path validation blocks traversal, reserved names, and invalid characters. Both services operate within project root boundaries.
 
+### Application Menu (`docs/architecture/application-menu-architecture.md`)
+
+Replaces Electron's default menu bar (shown on Alt press) with a custom template that removes zoom controls. Keeps File (close), Edit, View (devtools/fullscreen), and Help. The `autoHideMenuBar: true` setting is preserved — menu appears on Alt but without zoom options that conflict with Trama's custom zoom.
+
 ### Spellcheck (`docs/architecture/spellcheck-architecture.md`)
 
 Electron session API controlled via IPC. `spellcheckEnabled` passed to Quill init but **not in the dependency array** — prevents editor re-init on toggle. `useSyncSpellcheckEnabled` handles all post-mount toggles.

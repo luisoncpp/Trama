@@ -32,6 +32,8 @@ Mandatory doc navigation for new chats: start with `docs/START-HERE.md` — it p
   - Startup smoke hooks.
 - `electron/main-process/window-close.ts`
   - Window close handler: intercepts `close` event, checks cached dirty state, shows native save dialog, and calls `win.destroy()` to force close.
+- `electron/main-process/application-menu.ts`
+  - Custom application menu setup: replaces Electron's default menu bar with a trimmed-down version (File, Edit, View, Help) that removes zoom controls to avoid confusion with Trama's custom zoom in the toolbar.
 - `electron/ipc.ts`
   - Thin IPC registration/orchestration.
 - `electron/ipc/spellcheck.ts`

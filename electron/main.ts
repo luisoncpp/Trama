@@ -6,6 +6,7 @@ import { setupContextMenu } from './main-process/context-menu.js'
 import { setupSmokeTestHooks } from './main-process/smoke-hooks.js'
 import { configureWindowCloseBehavior } from './main-process/window-close.js'
 import { createMainWindowOptions } from './window-config.js'
+import { setupApplicationMenu } from './main-process/application-menu.js'
 import { IPC_CHANNELS } from '../src/shared/ipc.js'
 
 const __filename = fileURLToPath(import.meta.url)
@@ -178,6 +179,7 @@ async function createMainWindow(): Promise<void> {
     showWindow(win)
   }
   setupContextMenu(win)
+  setupApplicationMenu()
 
   win.on('closed', () => {
     mainWindow = null
