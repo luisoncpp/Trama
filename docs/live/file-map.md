@@ -263,6 +263,8 @@ Mandatory doc navigation for new chats: start with `docs/START-HERE.md` — it p
   - Registers explicit ArrowLeft/ArrowRight keyboard bindings so pagebreak embeds are traversed atomically in one cursor step.
 - `src/features/project-editor/components/rich-markdown-editor-layout-actions.ts`
   - Toolbar-triggered insertion helpers for center boundaries, spacer directives, and pagebreak directives.
+- `src/features/project-editor/pane/rich-markdown-editor/rich-markdown-editor-layout-center-ranges.ts`
+  - Center-range utility module for Quill Delta: extracts center boundaries from ops, derives center segments, detects whether an index is inside a segment, and normalizes a selection to full line boundaries.
 - `src/features/project-editor/components/rich-markdown-editor-layout-centering.ts`
   - Synchronizes centered styling for editor blocks located between `center:start` and `center:end` boundary artifacts.
 - `src/features/project-editor/components/rich-markdown-editor-commands.ts`
@@ -457,6 +459,8 @@ Core and regression suites:
   - Sidebar drag-drop logic coverage (folder vs file drop targets, before/after position reorder logic, tree row filtering).
 - `tests/markdown-layout-directives.test.ts`
   - Unit coverage for directive extraction, warning behavior, artifact rendering, and canonical serialization helpers.
+- `tests/rich-markdown-editor-center-toggle.test.ts`
+  - Center-range utility coverage for Slice 1: boundary extraction from Delta ops, center segment derivation (single/multiple/malformed), index-in-segment lookup, and line-range selection normalization.
 - `tests/ai-import-service.test.ts`
   - Import service coverage: replace mode overwrites existing file content, append mode appends with separator, preview correctly classifies new vs existing files.
 - `tests/ai-import-ipc-handler.test.ts`
