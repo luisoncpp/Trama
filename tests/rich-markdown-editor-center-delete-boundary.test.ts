@@ -142,6 +142,25 @@ function createMutableEditorStub(
 }
 
 describe('center boundary-safe deletion', () => {
+  it('moves center:start up one line on Backspace at the first centered line', () => {
+    const editor = createMutableEditorStub([
+      { insert: 'A\n' },
+      { insert: { 'trama-directive': { directive: 'center', role: 'start' } } },
+      { insert: 'B\nC\n' },
+      { insert: { 'trama-directive': { directive: 'center', role: 'end' } } },
+    ])
+
+    const handled = handleCenterBoundaryDelete(editor, { index: 3, length: 0 }, 'backspace')
+
+    expect(handled).toBe(false)
+    expect(serializeOps(editor.getContents().ops)).toEqual([
+      '[center:start]',
+      'A\nB\nC\n',
+      '[center:end]',
+    ])
+    expect(editor.selection).toEqual({ index: 2, length: 0 })
+  })
+
   it('moves center:end after the first non-centered line on Backspace seam delete', () => {
     const editor = createMutableEditorStub([
       { insert: { 'trama-directive': { directive: 'center', role: 'start' } } },

@@ -73,7 +73,6 @@ export function handleCenterBoundaryDelete(
   direction: CenterDeleteDirection,
 ): boolean {
   const nextContents = buildBoundarySafeDeleteContents(editor, range, direction)
-  console.debug('[center-boundary-delete]', { direction, index: range.index, length: range.length, applied: Boolean(nextContents) })
   if (!nextContents) {
     return true
   }

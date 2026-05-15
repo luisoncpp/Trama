@@ -2,6 +2,7 @@ import type Quill from 'quill'
 import Delta from 'quill-delta'
 import { LAYOUT_DIRECTIVE_BLOT_NAME, type LayoutDirectiveEmbedValue } from './rich-markdown-editor-layout-blots'
 import {
+  getCenterSegments,
   findCenterSegmentAtIndex,
   normalizeSelectionToLineRange,
   type CenterSegment,
@@ -95,6 +96,42 @@ function buildToggledCenterContents(editor: Quill, segment: CenterSegment, lineR
   return next.concat(suffix)
 }
 
+function buildExtendedCenterContents(editor: Quill, lineRange: LineRange): Delta | null {
+  const contents = editor.getContents() as Delta
+  const segments = getCenterSegments(editor)
+  const previousSegment = segments.find((candidate) => candidate.endBoundaryIndex === lineRange.startIndex - 1) ?? null
+  if (previousSegment && previousSegment.endBoundaryIndex === lineRange.startIndex - 1) {
+    const prefix = contents.slice(0, previousSegment.endBoundaryIndex)
+    const selected = contents.slice(lineRange.startIndex, lineRange.endIndexExclusive)
+    const endBoundary = contents.slice(previousSegment.endBoundaryIndex, previousSegment.endBoundaryIndex + 1)
+    const suffix = contents.slice(lineRange.endIndexExclusive)
+
+    return new Delta()
+      .concat(prefix)
+      .concat(selected)
+      .concat(endBoundary)
+      .concat(suffix)
+  }
+
+  const nextSegment = segments.find((candidate) => candidate.startBoundaryIndex === lineRange.endIndexExclusive) ?? null
+  if (nextSegment && nextSegment.startBoundaryIndex === lineRange.endIndexExclusive) {
+    const prefix = contents.slice(0, lineRange.startIndex)
+    const startBoundary = contents.slice(nextSegment.startBoundaryIndex, nextSegment.startBoundaryIndex + 1)
+    const selected = contents.slice(lineRange.startIndex, lineRange.endIndexExclusive)
+    const centered = contents.slice(nextSegment.contentStartIndex, nextSegment.endBoundaryIndex + 1)
+    const suffix = contents.slice(nextSegment.endBoundaryIndex + 1)
+
+    return new Delta()
+      .concat(prefix)
+      .concat(startBoundary)
+      .concat(selected)
+      .concat(centered)
+      .concat(suffix)
+  }
+
+  return null
+}
+
 export function insertPagebreakDirective(editor: Quill): void {
   const selection = editor.getSelection()
   const currentIndex = selection?.index ?? editor.getLength() - 1
@@ -127,6 +164,13 @@ export function toggleCenterDirectives(editor: Quill): void {
   const segment = findToggleTargetSegment(editor, lineRange)
 
   if (!segment) {
+    const extendedContents = buildExtendedCenterContents(editor, lineRange)
+    if (extendedContents) {
+      editor.setContents(extendedContents, 'user')
+      editor.setSelection(Math.max(0, lineRange.endIndexExclusive - 1), 0, 'silent')
+      return
+    }
+
     insertCenterDirectives(editor)
     return
   }

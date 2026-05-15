@@ -154,6 +154,48 @@ describe('Copy as Markdown workspace command', () => {
     return found
   }
 
+  function findDirectiveIndex(editor: Quill, directiveName: string, role?: 'start' | 'end'): number {
+    const ops = editor.getContents().ops ?? []
+    let runningIndex = 0
+
+    for (const op of ops) {
+      const isDirectiveEmbed = typeof op.insert === 'object' && op.insert !== null && 'trama-directive' in op.insert
+      if (isDirectiveEmbed) {
+        const value = (op.insert as Record<string, unknown>)['trama-directive'] as {
+          directive?: string
+          role?: 'start' | 'end'
+        }
+        if (value?.directive === directiveName && (role === undefined || value.role === role)) {
+          return runningIndex
+        }
+      }
+
+      runningIndex += typeof op.insert === 'string' ? op.insert.length : 1
+    }
+
+    return -1
+  }
+
+  function findTextIndex(editor: Quill, needle: string): number {
+    const ops = editor.getContents().ops ?? []
+    let runningIndex = 0
+
+    for (const op of ops) {
+      if (typeof op.insert === 'string') {
+        const localIndex = op.insert.indexOf(needle)
+        if (localIndex >= 0) {
+          return runningIndex + localIndex
+        }
+        runningIndex += op.insert.length
+        continue
+      }
+
+      runningIndex += 1
+    }
+
+    return -1
+  }
+
   beforeEach(() => {
     if (typeof Range !== 'undefined' && !Range.prototype.getBoundingClientRect) {
       ;(Range.prototype as unknown as { getBoundingClientRect: () => DOMRect }).getBoundingClientRect =
@@ -322,6 +364,94 @@ describe('Copy as Markdown workspace command', () => {
     expect(writtenText).toContain('<!-- trama:custom mode=soft -->')
   })
 
+  it('copia center toggleado como split canonico', async () => {
+    const source = [
+      '<!-- trama:center:start -->',
+      'A',
+      '',
+      'B',
+      '',
+      'C',
+      '',
+      '<!-- trama:center:end -->',
+      'D',
+    ].join('\n')
+
+    act(() => {
+      render(
+        h(RichMarkdownEditor, {
+          documentId: 'copy-md-center-toggle-split',
+          value: source,
+          disabled: false,
+          onChange: noop,
+          saveDisabled: false,
+          saveLabel: 'Guardar',
+          onSaveNow: noop,
+          revertDisabled: true,
+          revertLabel: '',
+          onRevertNow: noop,
+          syncState: 'clean',
+          syncStateLabel: 'Sin cambios',
+        }),
+        container,
+      )
+    })
+
+    await sleep(80)
+
+    const editor = getQuillInstance(container)
+    const centerButton = container.querySelector('button.ql-center-layout') as HTMLButtonElement
+    const bIndexInDocument = findTextIndex(editor, 'B')
+    expect(bIndexInDocument).toBeGreaterThanOrEqual(0)
+
+    act(() => {
+      editor.focus()
+      editor.setSelection(bIndexInDocument, 0, 'silent')
+      centerButton.click()
+    })
+
+    await sleep(40)
+
+    let writtenText = ''
+    ;(navigator as any)._origClipboard = (navigator as any).clipboard
+    ;(navigator as any).clipboard = { writeText: async (text: string) => { writtenText = text } }
+
+    act(() => {
+      editor.focus()
+      window.dispatchEvent(new CustomEvent(WORKSPACE_CONTEXT_MENU_EVENT, { detail: { type: 'copy-as-markdown' } }))
+    })
+
+    await sleep(60)
+
+    try {
+      if ((navigator as any)._origClipboard) {
+        ;(navigator as any).clipboard = (navigator as any)._origClipboard
+      }
+    } catch { /* ignore */ }
+
+    const centerStarts = writtenText.match(/<!-- trama:center:start -->/g) ?? []
+    const centerEnds = writtenText.match(/<!-- trama:center:end -->/g) ?? []
+    expect(centerStarts).toHaveLength(2)
+    expect(centerEnds).toHaveLength(2)
+
+    const firstStartIndex = writtenText.indexOf('<!-- trama:center:start -->')
+    const firstEndIndex = writtenText.indexOf('<!-- trama:center:end -->')
+    const secondStartIndex = writtenText.indexOf('<!-- trama:center:start -->', firstStartIndex + 1)
+    const secondEndIndex = writtenText.indexOf('<!-- trama:center:end -->', firstEndIndex + 1)
+    const aIndex = writtenText.indexOf('A')
+    const bIndex = writtenText.indexOf('B')
+    const cIndex = writtenText.indexOf('C')
+    const dIndex = writtenText.indexOf('D')
+
+    expect(firstStartIndex).toBeLessThan(aIndex)
+    expect(aIndex).toBeLessThan(firstEndIndex)
+    expect(firstEndIndex).toBeLessThan(bIndex)
+    expect(bIndex).toBeLessThan(secondStartIndex)
+    expect(secondStartIndex).toBeLessThan(cIndex)
+    expect(cIndex).toBeLessThan(secondEndIndex)
+    expect(secondEndIndex).toBeLessThan(dIndex)
+  })
+
   it('copia solo la seleccion cuando existe', async () => {
     act(() => {
       render(
@@ -446,6 +576,84 @@ describe('Copy as Markdown workspace command', () => {
     } catch { /* ignore */ }
 
     expect(writtenText).toContain('<!-- trama:pagebreak -->')
+  })
+
+  it('copia center:end desplazado tras delete en la costura', async () => {
+    const source = [
+      '<!-- trama:center:start -->',
+      'A',
+      '',
+      '<!-- trama:center:end -->',
+      'B',
+      '',
+      'C',
+    ].join('\n')
+
+    act(() => {
+      render(
+        h(RichMarkdownEditor, {
+          documentId: 'copy-md-center-delete-seam',
+          value: source,
+          disabled: false,
+          onChange: noop,
+          saveDisabled: false,
+          saveLabel: 'Guardar',
+          onSaveNow: noop,
+          revertDisabled: true,
+          revertLabel: '',
+          onRevertNow: noop,
+          syncState: 'clean',
+          syncStateLabel: 'Sin cambios',
+        }),
+        container,
+      )
+    })
+
+    await sleep(80)
+
+    const editor = getQuillInstance(container)
+    const endBoundaryIndex = findDirectiveIndex(editor, 'center', 'end')
+    expect(endBoundaryIndex).toBeGreaterThanOrEqual(0)
+
+    act(() => {
+      editor.focus()
+      editor.setSelection(endBoundaryIndex, 0, 'silent')
+      editor.root.dispatchEvent(new KeyboardEvent('keydown', { key: 'Delete', bubbles: true }))
+    })
+
+    await sleep(40)
+
+    let writtenText = ''
+    ;(navigator as any)._origClipboard = (navigator as any).clipboard
+    ;(navigator as any).clipboard = { writeText: async (text: string) => { writtenText = text } }
+
+    act(() => {
+      window.dispatchEvent(new CustomEvent(WORKSPACE_CONTEXT_MENU_EVENT, { detail: { type: 'copy-as-markdown' } }))
+    })
+
+    await sleep(60)
+
+    try {
+      if ((navigator as any)._origClipboard) {
+        ;(navigator as any).clipboard = (navigator as any)._origClipboard
+      }
+    } catch { /* ignore */ }
+
+    const centerStarts = writtenText.match(/<!-- trama:center:start -->/g) ?? []
+    const centerEnds = writtenText.match(/<!-- trama:center:end -->/g) ?? []
+    expect(centerStarts).toHaveLength(1)
+    expect(centerEnds).toHaveLength(1)
+
+    const startIndex = writtenText.indexOf('<!-- trama:center:start -->')
+    const endIndex = writtenText.indexOf('<!-- trama:center:end -->')
+    const aIndex = writtenText.indexOf('A')
+    const bIndex = writtenText.indexOf('B')
+    const cIndex = writtenText.indexOf('C')
+
+    expect(startIndex).toBeLessThan(aIndex)
+    expect(aIndex).toBeLessThan(bIndex)
+    expect(bIndex).toBeLessThan(endIndex)
+    expect(endIndex).toBeLessThan(cIndex)
   })
 
 })

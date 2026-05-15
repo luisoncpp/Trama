@@ -106,6 +106,25 @@ function buildSegmentWithShiftedEndBoundary(
     .concat(suffix)
 }
 
+function buildSegmentWithShiftedStartBoundary(
+  contents: Delta,
+  segment: CenterSegment,
+  movedContentStartIndex: number,
+): Delta {
+  const prefix = contents.slice(0, movedContentStartIndex)
+  const startBoundary = contents.slice(segment.startBoundaryIndex, segment.startBoundaryIndex + 1)
+  const shiftedContent = contents.slice(movedContentStartIndex, segment.startBoundaryIndex)
+  const centeredContent = contents.slice(segment.contentStartIndex, segment.endBoundaryIndex + 1)
+  const suffix = contents.slice(segment.endBoundaryIndex + 1)
+
+  return new Delta()
+    .concat(prefix)
+    .concat(startBoundary)
+    .concat(shiftedContent)
+    .concat(centeredContent)
+    .concat(suffix)
+}
+
 export function extractCenterBoundariesFromOps(ops: readonly DeltaOp[]): CenterBoundary[] {
   const boundaries: CenterBoundary[] = []
   let offset = 0
@@ -204,6 +223,15 @@ export function buildBoundarySafeDeleteContents(
       return null
     }
 
+    const startSegment = segments.find((candidate) => selection.index === candidate.startBoundaryIndex + 1)
+    if (startSegment && getLineStartIndex(editor, selection.index) === selection.index && startSegment.startBoundaryIndex > 0) {
+      const shiftedContentStartIndex = getLineStartIndex(editor, startSegment.startBoundaryIndex - 1)
+      const shiftedContent = contents.slice(shiftedContentStartIndex, startSegment.startBoundaryIndex)
+      if (startsWithTextInsert(shiftedContent)) {
+        return buildSegmentWithShiftedStartBoundary(contents, startSegment, shiftedContentStartIndex)
+      }
+    }
+
     const segment = segments.find((candidate) => selection.index === candidate.endBoundaryIndex + 1)
     if (!segment || getLineStartIndex(editor, selection.index) !== selection.index) {
       return null
@@ -216,6 +244,15 @@ export function buildBoundarySafeDeleteContents(
     }
 
     return buildSegmentWithShiftedEndBoundary(contents, segment, selection.index, shiftedContentEndIndexExclusive)
+  }
+
+  const startSegment = segments.find((candidate) => selection.index === candidate.startBoundaryIndex)
+  if (startSegment && startSegment.startBoundaryIndex > 0) {
+    const shiftedContentStartIndex = getLineStartIndex(editor, startSegment.startBoundaryIndex - 1)
+    const shiftedContent = contents.slice(shiftedContentStartIndex, startSegment.startBoundaryIndex)
+    if (startsWithTextInsert(shiftedContent)) {
+      return buildSegmentWithShiftedStartBoundary(contents, startSegment, shiftedContentStartIndex)
+    }
   }
 
   const segment = segments.find((candidate) => selection.index === candidate.endBoundaryIndex)

@@ -261,11 +261,11 @@ Mandatory doc navigation for new chats: start with `docs/START-HERE.md` — it p
   - Adds clipboard matcher logic that maps directive artifact nodes into embed Delta ops consumed by layout directive blots.
 - `src/features/project-editor/pane/rich-markdown-editor/rich-markdown-editor-layout-keyboard.ts`
   - Registers explicit ArrowLeft/ArrowRight keyboard bindings so pagebreak embeds are traversed atomically in one cursor step.
-  - Intercepts narrow Backspace/Delete seam cases around `center:end` so deletion shifts the boundary to the next line instead of leaking centering.
+  - Intercepts narrow Backspace/Delete seam cases around `center:start` and `center:end` so deletion shifts the nearest boundary instead of leaking or truncating centering.
 - `src/features/project-editor/pane/rich-markdown-editor/rich-markdown-editor-layout-actions.ts`
-  - Toolbar-triggered layout helpers for pagebreak/spacer insertion and center toggle behavior; inside centered content the action rebuilds canonical non-nested center boundaries around the untoggled lines.
+  - Toolbar-triggered layout helpers for pagebreak/spacer insertion and center toggle behavior; inside centered content the action rebuilds canonical non-nested center boundaries around the untoggled lines, and when toggling an adjacent line it extends the existing centered segment instead of creating a second pair.
 - `src/features/project-editor/pane/rich-markdown-editor/rich-markdown-editor-layout-center-ranges.ts`
-  - Center-range utility module for Quill Delta: extracts center boundaries from ops, derives center segments, detects whether an index is inside a segment, normalizes a selection to full line boundaries, and builds seam-safe center-end shifts for keyboard deletion.
+  - Center-range utility module for Quill Delta: extracts center boundaries from ops, derives center segments, detects whether an index is inside a segment, normalizes a selection to full line boundaries, and builds seam-safe `center:start`/`center:end` boundary shifts for keyboard deletion.
 - `src/features/project-editor/pane/rich-markdown-editor/rich-markdown-editor-layout-centering.ts`
   - Synchronizes centered styling for editor blocks located between `center:start` and `center:end` boundary artifacts.
 - `src/features/project-editor/components/rich-markdown-editor-commands.ts`
@@ -461,9 +461,9 @@ Core and regression suites:
 - `tests/markdown-layout-directives.test.ts`
   - Unit coverage for directive extraction, warning behavior, artifact rendering, and canonical serialization helpers.
 - `tests/rich-markdown-editor-center-toggle.test.ts`
-  - Center-range and Slice 2 toggle coverage: boundary extraction from Delta ops, center segment derivation (single/multiple/malformed), line-range selection normalization, inside-center split/left-only toggle behavior, outside-center insertion, and no-nesting idempotence checks.
+  - Center-range and center toggle coverage: boundary extraction from Delta ops, center segment derivation (single/multiple/malformed), line-range selection normalization, inside-center split/left-only toggle behavior, outside-center insertion, adjacent-segment extension, and no-nesting idempotence checks.
 - `tests/rich-markdown-editor-center-delete-boundary.test.ts`
-  - Slice 3 center seam deletion coverage: Backspace/Delete around `center:end` shift the boundary to the first following non-centered line and leave unrelated deletes to Quill's default behavior.
+  - Slice 3 center seam deletion coverage: Backspace/Delete around `center:start`/`center:end` shift the nearest boundary across the seam and leave unrelated deletes to Quill's default behavior.
 - `tests/ai-import-service.test.ts`
   - Import service coverage: replace mode overwrites existing file content, append mode appends with separator, preview correctly classifies new vs existing files.
 - `tests/ai-import-ipc-handler.test.ts`

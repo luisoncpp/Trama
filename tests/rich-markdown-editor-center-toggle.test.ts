@@ -97,7 +97,7 @@ function textIndexToQuillIndex(
     const insert = op.insert
     if (typeof insert === 'string') {
       const nextTextIndex = currentTextIndex + insert.length
-      if (textIndex <= nextTextIndex) {
+      if (textIndex < nextTextIndex) {
         return docIndex + Math.max(0, textIndex - currentTextIndex)
       }
       currentTextIndex = nextTextIndex
@@ -342,6 +342,27 @@ describe('rich-markdown-editor-layout-center-ranges', () => {
       'A\n',
       '[center:start]',
       'B\n',
+      '[center:end]',
+    ])
+  })
+
+  it('extends the previous centered segment instead of creating a new pair below it', () => {
+    const editor = createMutableEditorStub({
+      ops: [
+        { insert: { 'trama-directive': { directive: 'center', role: 'start' } } },
+        { insert: 'A\n' },
+        { insert: { 'trama-directive': { directive: 'center', role: 'end' } } },
+        { insert: 'B\n' },
+      ],
+      text: 'A\nB\n',
+      selection: { index: 4, length: 0 },
+    })
+
+    toggleCenterDirectives(editor)
+
+    expect(serializeOps(editor.getContents().ops)).toEqual([
+      '[center:start]',
+      'A\nB\n',
       '[center:end]',
     ])
   })

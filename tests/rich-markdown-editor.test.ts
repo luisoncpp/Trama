@@ -66,6 +66,26 @@ describe('RichMarkdownEditor', () => {
     return -1
   }
 
+  function findTextIndex(editor: Quill, needle: string): number {
+    const ops = editor.getContents().ops ?? []
+    let runningIndex = 0
+
+    for (const op of ops) {
+      if (typeof op.insert === 'string') {
+        const localIndex = op.insert.indexOf(needle)
+        if (localIndex >= 0) {
+          return runningIndex + localIndex
+        }
+        runningIndex += op.insert.length
+        continue
+      }
+
+      runningIndex += 1
+    }
+
+    return -1
+  }
+
   beforeEach(() => {
     if (typeof Range !== 'undefined' && !Range.prototype.getBoundingClientRect) {
       ;(Range.prototype as unknown as { getBoundingClientRect: () => DOMRect }).getBoundingClientRect =
@@ -845,6 +865,79 @@ describe('RichMarkdownEditor', () => {
 
     expect(lastMarkdown).toContain('<!-- trama:center:start -->')
     expect(lastMarkdown).toContain('<!-- trama:center:end -->')
+  })
+
+  it('togglea una linea centrada y mantiene serializacion canonica con clases visuales correctas', async () => {
+    let lastMarkdown = ''
+    const serializationRef = { current: { flush: () => null as string | null, tagOverlayRecalcRef: { current: false }, tagOverlayMatchesRef: { current: [] as Array<{ tag: string; start: number; end: number; filePath: string }> } } }
+    const source = [
+      '<!-- trama:center:start -->',
+      'A',
+      '',
+      'B',
+      '',
+      'C',
+      '',
+      '<!-- trama:center:end -->',
+      'D',
+    ].join('\n')
+
+    act(() => {
+      render(
+        h(RichMarkdownEditor, buildEditorProps({
+          documentId: 'layout-toggle-centered-line-doc',
+          value: source,
+          onChange: (markdown) => {
+            lastMarkdown = markdown
+          },
+          editorSerializationRef: serializationRef,
+        })),
+        container,
+      )
+    })
+
+    await sleep(80)
+
+    const editor = getQuillInstance(container)
+    const centerButton = container.querySelector('button.ql-center-layout') as HTMLButtonElement
+    const bIndexInDocument = findTextIndex(editor, 'B')
+    expect(bIndexInDocument).toBeGreaterThanOrEqual(0)
+
+    act(() => {
+      editor.focus()
+      editor.setSelection(bIndexInDocument, 0, 'silent')
+      centerButton.click()
+    })
+
+    await sleep(40)
+    serializationRef.current.flush()
+
+    const centeredParagraphs = Array.from(container.querySelectorAll('.ql-editor .trama-centered-content')).map((node) => node.textContent?.trim())
+    expect(centeredParagraphs).toEqual(expect.arrayContaining(['A', 'C']))
+    expect(centeredParagraphs).not.toContain('B')
+    expect(centeredParagraphs).not.toContain('D')
+
+    const centerStarts = lastMarkdown.match(/<!-- trama:center:start -->/g) ?? []
+    const centerEnds = lastMarkdown.match(/<!-- trama:center:end -->/g) ?? []
+    expect(centerStarts).toHaveLength(2)
+    expect(centerEnds).toHaveLength(2)
+
+    const firstStartIndex = lastMarkdown.indexOf('<!-- trama:center:start -->')
+    const firstEndIndex = lastMarkdown.indexOf('<!-- trama:center:end -->')
+    const secondStartIndex = lastMarkdown.indexOf('<!-- trama:center:start -->', firstStartIndex + 1)
+    const secondEndIndex = lastMarkdown.indexOf('<!-- trama:center:end -->', firstEndIndex + 1)
+    const aIndex = lastMarkdown.indexOf('A')
+    const bIndex = lastMarkdown.indexOf('B')
+    const cIndex = lastMarkdown.indexOf('C')
+    const dIndex = lastMarkdown.indexOf('D')
+
+    expect(firstStartIndex).toBeLessThan(aIndex)
+    expect(aIndex).toBeLessThan(firstEndIndex)
+    expect(firstEndIndex).toBeLessThan(bIndex)
+    expect(bIndex).toBeLessThan(secondStartIndex)
+    expect(secondStartIndex).toBeLessThan(cIndex)
+    expect(cIndex).toBeLessThan(secondEndIndex)
+    expect(secondEndIndex).toBeLessThan(dIndex)
   })
 
   it('mueve center:end una linea hacia abajo al hacer Backspace en la primera linea no centrada', async () => {

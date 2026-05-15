@@ -1,7 +1,7 @@
 # Center Tag Editor Behavior - Implementation Plan
 
 Date: 2026-05-14  
-Status: Slice 3 complete; Slice 4 pending  
+Status: Slice 4 complete; Slice 5 pending  
 Depends on: `docs/plan/center-tag-editor-behavior-tech-design.md`
 
 ## 0. Objective
@@ -76,7 +76,10 @@ Modify:
 3. If cursor/selection inside centered scope:
    - remove centering from selected line(s)
    - split remaining centered content into canonical segments before/after selection when needed.
-4. Update toolbar center button click handler to call toggle function.
+4. If cursor/selection is immediately adjacent to an existing centered segment:
+   - extend that existing segment by moving the nearest boundary
+   - do not create a second adjacent `center:start/end` pair.
+5. Update toolbar center button click handler to call toggle function.
 
 ### Verification
 
@@ -84,6 +87,7 @@ Modify:
    - inside centered middle line (split into two segments)
    - inside centered last line (left segment only)
    - outside centered line (new centered segment)
+   - line directly below centered content extends the existing centered segment
    - repeated click is idempotent (no nested boundaries)
 2. Run:
 
@@ -123,12 +127,13 @@ Possibly modify (if helper reuse needed):
 2. Detect seam patterns around cursor where raw deletion would remove/stray a center boundary.
 3. Replace raw deletion with boundary move/split operation:
    - merge intended paragraphs
-   - re-place `center:end` boundary after merged centered block
+   - re-place `center:start` or `center:end` after the merged centered block depending on seam side
 4. Return `false` in keyboard handler when custom behavior applied (to prevent default).
 
 ### Verification
 
 1. Add tests in `tests/rich-markdown-editor-center-delete-boundary.test.ts` for:
+   - backspace seam between non-centered A and centered B -> expected transformed structure
    - delete seam between centered A and non-centered B -> expected transformed structure
    - ensure center does not leak to rest of document
    - delete in unrelated contexts still behaves normally
@@ -180,6 +185,13 @@ npx vitest run tests/rich-markdown-editor.test.ts tests/paste-markdown.test.ts
 ```
 
 Expected: all pass; no regression in pagebreak/spacer behaviors.
+
+Slice status: completed on 2026-05-15.
+
+Implemented in:
+
+- `tests/rich-markdown-editor.test.ts`
+- `tests/paste-markdown.test.ts`
 
 ## Slice 5 - Full quality gates
 
