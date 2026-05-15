@@ -28,6 +28,7 @@ Avoid: "bug description + fix". Prefer: "what I learned that applies to future w
 | File | Topic | Date |
 |------|-------|------|
 | `docx-imagerun-pixel-units.md` | `docx` `ImageRun.transformation` expects pixels, not EMU; passing EMU causes invisible/gigantic images | 2026-04-25 |
+| `quill-center-segment-identity-vs-structure.md` | Recomputed Quill center segments must be compared structurally by boundary indexes, not by object identity | 2026-05-14 |
 | `pdf-renderer-split.md` | Split barrel file to fix `max-lines` lint error; update order when splitting | 2026-04-17 |
 | `docx-heading-centered-regression.md` | Heading styles must propagate layout state (centered) through all rendering paths | 2026-04-16 |
 | `quill-text-vs-delta-index-mismatch.md` | Quill text offsets don't map 1:1 to document indexes when embeds exist; use Delta ops | 2026-04-16 |

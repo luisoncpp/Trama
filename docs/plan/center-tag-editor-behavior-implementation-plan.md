@@ -1,7 +1,7 @@
 # Center Tag Editor Behavior - Implementation Plan
 
 Date: 2026-05-14  
-Status: Ready for implementation  
+Status: Slice 2 complete; Slice 3 pending  
 Depends on: `docs/plan/center-tag-editor-behavior-tech-design.md`
 
 ## 0. Objective
@@ -92,6 +92,14 @@ npx vitest run tests/rich-markdown-editor-center-toggle.test.ts
 ```
 
 Expected: no nested center boundaries and canonical output in all cases.
+
+Slice status: completed on 2026-05-14.
+
+Implemented in:
+
+- `src/features/project-editor/pane/rich-markdown-editor/rich-markdown-editor-layout-actions.ts`
+- `src/features/project-editor/pane/rich-markdown-editor/rich-markdown-editor-toolbar-controls.ts`
+- `tests/rich-markdown-editor-center-toggle.test.ts`
 
 ## Slice 3 - Implement boundary-safe deletion behavior
 

@@ -1,8 +1,4 @@
 import type Quill from 'quill'
-import {
-  insertCenterDirectives,
-  insertPagebreakDirective,
-} from './rich-markdown-editor-layout-actions'
 
 export type RichEditorSyncState = 'clean' | 'dirty' | 'saving' | 'disabled'
 

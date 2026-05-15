@@ -7,8 +7,8 @@ import {
 } from './rich-markdown-editor-toolbar-helpers'
 import type Quill from 'quill'
 import {
-  insertCenterDirectives,
   insertPagebreakDirective,
+  toggleCenterDirectives,
 } from './rich-markdown-editor-layout-actions'
 import type { RichEditorSyncState } from './rich-markdown-editor-toolbar-helpers'
 import { syncZoomSelect } from './zoom-select-sync'
@@ -172,7 +172,7 @@ export function syncLayoutButtons(
   centerButton.onclick = () => {
     if (!currentEditor) return
     currentEditor.focus()
-    insertCenterDirectives(currentEditor)
+    toggleCenterDirectives(currentEditor)
   }
 
   pagebreakButton.disabled = !canUseLayoutActions
