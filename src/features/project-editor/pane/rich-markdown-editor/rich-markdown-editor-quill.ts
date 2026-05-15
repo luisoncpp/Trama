@@ -4,7 +4,7 @@ import { marked } from 'marked'
 import { renderDirectiveArtifactsToMarkdown } from '../../../../shared/markdown-layout-directives'
 import { registerLayoutDirectiveBlots } from './rich-markdown-editor-layout-blots'
 import { registerLayoutDirectiveClipboardMatchers } from './rich-markdown-editor-layout-clipboard'
-import { registerLayoutDirectiveKeyboardBindings } from './rich-markdown-editor-layout-keyboard'
+import { createLayoutDirectiveKeyboardBindings } from './rich-markdown-editor-layout-keyboard'
 import { syncCenteredLayoutArtifacts } from './rich-markdown-editor-layout-centering'
 import {
   hydrateMarkdownImages,
@@ -39,10 +39,12 @@ export function createQuillEditor(host: HTMLDivElement): Quill {
       history: {
         userOnly: true,
       },
+      keyboard: {
+        bindings: createLayoutDirectiveKeyboardBindings(),
+      },
     },
   })
   registerLayoutDirectiveClipboardMatchers(editor)
-  registerLayoutDirectiveKeyboardBindings(editor)
   return editor
 }
 

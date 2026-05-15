@@ -255,17 +255,18 @@ Mandatory doc navigation for new chats: start with `docs/START-HERE.md` — it p
   - Editor debounced serialization session: registers text-change listener, manages debounce timer and flush lifecycle, and hydrates image placeholders before forwarding to parent state via `onChange`.
 - `src/features/project-editor/components/rich-markdown-editor-value-sync.ts`
   - Canonical editor-value helpers: normalize image-bearing markdown into placeholder form and compare equivalent external/editor values without triggering destructive re-renders.
-- `src/features/project-editor/components/rich-markdown-editor-layout-blots.ts`
+- `src/features/project-editor/pane/rich-markdown-editor/rich-markdown-editor-layout-blots.ts`
   - Registers Quill `BlockEmbed`-based layout directive blots (`center`, `spacer`, `pagebreak`, unknown) so directive objects survive Quill canonicalization.
-- `src/features/project-editor/components/rich-markdown-editor-layout-clipboard.ts`
+- `src/features/project-editor/pane/rich-markdown-editor/rich-markdown-editor-layout-clipboard.ts`
   - Adds clipboard matcher logic that maps directive artifact nodes into embed Delta ops consumed by layout directive blots.
-- `src/features/project-editor/components/rich-markdown-editor-layout-keyboard.ts`
+- `src/features/project-editor/pane/rich-markdown-editor/rich-markdown-editor-layout-keyboard.ts`
   - Registers explicit ArrowLeft/ArrowRight keyboard bindings so pagebreak embeds are traversed atomically in one cursor step.
-- `src/features/project-editor/components/rich-markdown-editor-layout-actions.ts`
+  - Intercepts narrow Backspace/Delete seam cases around `center:end` so deletion shifts the boundary to the next line instead of leaking centering.
+- `src/features/project-editor/pane/rich-markdown-editor/rich-markdown-editor-layout-actions.ts`
   - Toolbar-triggered layout helpers for pagebreak/spacer insertion and center toggle behavior; inside centered content the action rebuilds canonical non-nested center boundaries around the untoggled lines.
 - `src/features/project-editor/pane/rich-markdown-editor/rich-markdown-editor-layout-center-ranges.ts`
-  - Center-range utility module for Quill Delta: extracts center boundaries from ops, derives center segments, detects whether an index is inside a segment, and normalizes a selection to full line boundaries.
-- `src/features/project-editor/components/rich-markdown-editor-layout-centering.ts`
+  - Center-range utility module for Quill Delta: extracts center boundaries from ops, derives center segments, detects whether an index is inside a segment, normalizes a selection to full line boundaries, and builds seam-safe center-end shifts for keyboard deletion.
+- `src/features/project-editor/pane/rich-markdown-editor/rich-markdown-editor-layout-centering.ts`
   - Synchronizes centered styling for editor blocks located between `center:start` and `center:end` boundary artifacts.
 - `src/features/project-editor/components/rich-markdown-editor-commands.ts`
   - Handles workspace context-menu commands (`paste-markdown`, `copy-as-markdown`) and clipboard serialization/paste flow for the rich editor.
@@ -461,6 +462,8 @@ Core and regression suites:
   - Unit coverage for directive extraction, warning behavior, artifact rendering, and canonical serialization helpers.
 - `tests/rich-markdown-editor-center-toggle.test.ts`
   - Center-range and Slice 2 toggle coverage: boundary extraction from Delta ops, center segment derivation (single/multiple/malformed), line-range selection normalization, inside-center split/left-only toggle behavior, outside-center insertion, and no-nesting idempotence checks.
+- `tests/rich-markdown-editor-center-delete-boundary.test.ts`
+  - Slice 3 center seam deletion coverage: Backspace/Delete around `center:end` shift the boundary to the first following non-centered line and leave unrelated deletes to Quill's default behavior.
 - `tests/ai-import-service.test.ts`
   - Import service coverage: replace mode overwrites existing file content, append mode appends with separator, preview correctly classifies new vs existing files.
 - `tests/ai-import-ipc-handler.test.ts`

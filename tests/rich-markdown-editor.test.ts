@@ -847,6 +847,112 @@ describe('RichMarkdownEditor', () => {
     expect(lastMarkdown).toContain('<!-- trama:center:end -->')
   })
 
+  it('mueve center:end una linea hacia abajo al hacer Backspace en la primera linea no centrada', async () => {
+    let lastMarkdown = ''
+    const serializationRef = { current: { flush: () => null as string | null, tagOverlayRecalcRef: { current: false }, tagOverlayMatchesRef: { current: [] as Array<{ tag: string; start: number; end: number; filePath: string }> } } }
+    const source = [
+      '<!-- trama:center:start -->',
+      'A',
+      '',
+      '<!-- trama:center:end -->',
+      'B',
+      '',
+      'C',
+    ].join('\n')
+
+    act(() => {
+      render(
+        h(RichMarkdownEditor, buildEditorProps({
+          documentId: 'layout-center-seam-backspace-doc',
+          value: source,
+          onChange: (markdown) => {
+            lastMarkdown = markdown
+          },
+          editorSerializationRef: serializationRef,
+        })),
+        container,
+      )
+    })
+
+    await sleep(80)
+
+    const editor = getQuillInstance(container)
+    const endBoundaryIndex = findDirectiveIndex(editor, 'center', 'end')
+    expect(endBoundaryIndex).toBeGreaterThanOrEqual(0)
+
+    act(() => {
+      editor.focus()
+      editor.setSelection(endBoundaryIndex + 1, 0, 'silent')
+      editor.root.dispatchEvent(new KeyboardEvent('keydown', { key: 'Backspace', bubbles: true }))
+    })
+
+    await sleep(40)
+    serializationRef.current.flush()
+
+    const centeredParagraphs = Array.from(container.querySelectorAll('.ql-editor p.trama-centered-content')).map((node) => node.textContent?.trim())
+    expect(centeredParagraphs).toEqual(expect.arrayContaining(['A', 'B']))
+    expect(centeredParagraphs).not.toContain('C')
+    const endMarkerIndex = lastMarkdown.indexOf('<!-- trama:center:end -->')
+    const bIndex = lastMarkdown.indexOf('B')
+    const cIndex = lastMarkdown.indexOf('C')
+    expect(bIndex).toBeGreaterThanOrEqual(0)
+    expect(endMarkerIndex).toBeGreaterThan(bIndex)
+    expect(cIndex).toBeGreaterThan(endMarkerIndex)
+  })
+
+  it('mueve center:end una linea hacia abajo al hacer Delete sobre la costura', async () => {
+    let lastMarkdown = ''
+    const serializationRef = { current: { flush: () => null as string | null, tagOverlayRecalcRef: { current: false }, tagOverlayMatchesRef: { current: [] as Array<{ tag: string; start: number; end: number; filePath: string }> } } }
+    const source = [
+      '<!-- trama:center:start -->',
+      'A',
+      '',
+      '<!-- trama:center:end -->',
+      'B',
+      '',
+      'C',
+    ].join('\n')
+
+    act(() => {
+      render(
+        h(RichMarkdownEditor, buildEditorProps({
+          documentId: 'layout-center-seam-delete-doc',
+          value: source,
+          onChange: (markdown) => {
+            lastMarkdown = markdown
+          },
+          editorSerializationRef: serializationRef,
+        })),
+        container,
+      )
+    })
+
+    await sleep(80)
+
+    const editor = getQuillInstance(container)
+    const endBoundaryIndex = findDirectiveIndex(editor, 'center', 'end')
+    expect(endBoundaryIndex).toBeGreaterThanOrEqual(0)
+
+    act(() => {
+      editor.focus()
+      editor.setSelection(endBoundaryIndex, 0, 'silent')
+      editor.root.dispatchEvent(new KeyboardEvent('keydown', { key: 'Delete', bubbles: true }))
+    })
+
+    await sleep(40)
+    serializationRef.current.flush()
+
+    const centeredParagraphs = Array.from(container.querySelectorAll('.ql-editor p.trama-centered-content')).map((node) => node.textContent?.trim())
+    expect(centeredParagraphs).toEqual(expect.arrayContaining(['A', 'B']))
+    expect(centeredParagraphs).not.toContain('C')
+    const endMarkerIndex = lastMarkdown.indexOf('<!-- trama:center:end -->')
+    const bIndex = lastMarkdown.indexOf('B')
+    const cIndex = lastMarkdown.indexOf('C')
+    expect(bIndex).toBeGreaterThanOrEqual(0)
+    expect(endMarkerIndex).toBeGreaterThan(bIndex)
+    expect(cIndex).toBeGreaterThan(endMarkerIndex)
+  })
+
   it('inserta directiva pagebreak desde toolbar', async () => {
     let lastMarkdown = ''
     const serializationRef = { current: { flush: () => null as string | null, tagOverlayRecalcRef: { current: false }, tagOverlayMatchesRef: { current: [] as Array<{ tag: string; start: number; end: number; filePath: string }> } } }

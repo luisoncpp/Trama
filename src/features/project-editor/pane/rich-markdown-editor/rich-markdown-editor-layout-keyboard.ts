@@ -1,9 +1,19 @@
 import type Quill from 'quill'
+import Delta from 'quill-delta'
 import { LAYOUT_DIRECTIVE_BLOT_NAME } from './rich-markdown-editor-layout-blots'
+import { buildBoundarySafeDeleteContents, type CenterDeleteDirection } from './rich-markdown-editor-layout-center-ranges'
 
 interface SelectionRange {
   index: number
   length: number
+}
+
+type KeyboardHandler = (this: { quill: Quill }, range: SelectionRange) => boolean
+
+interface KeyboardBindingConfig {
+  key: string
+  collapsed?: boolean
+  handler: KeyboardHandler
 }
 
 function isPagebreakEmbedAt(editor: Quill, index: number): boolean {
@@ -57,7 +67,51 @@ function moveAcrossPagebreakLeft(editor: Quill, range: SelectionRange): boolean 
   return false
 }
 
-export function registerLayoutDirectiveKeyboardBindings(editor: Quill): void {
-  editor.keyboard.addBinding({ key: 'ArrowRight' }, (range: SelectionRange) => moveAcrossPagebreakRight(editor, range))
-  editor.keyboard.addBinding({ key: 'ArrowLeft' }, (range: SelectionRange) => moveAcrossPagebreakLeft(editor, range))
+export function handleCenterBoundaryDelete(
+  editor: Quill,
+  range: SelectionRange,
+  direction: CenterDeleteDirection,
+): boolean {
+  const nextContents = buildBoundarySafeDeleteContents(editor, range, direction)
+  console.debug('[center-boundary-delete]', { direction, index: range.index, length: range.length, applied: Boolean(nextContents) })
+  if (!nextContents) {
+    return true
+  }
+
+  const currentContents = editor.getContents() as Delta
+  editor.updateContents(currentContents.diff(nextContents), 'user')
+  const nextSelectionIndex = direction === 'backspace' ? Math.max(0, range.index - 1) : range.index
+  editor.setSelection(nextSelectionIndex, 0, 'silent')
+  return false
+}
+
+export function createLayoutDirectiveKeyboardBindings(): Record<string, KeyboardBindingConfig> {
+  return {
+    centerBoundaryBackspace: {
+      key: 'Backspace',
+      collapsed: true,
+      handler(this: { quill: Quill }, range: SelectionRange) {
+        return handleCenterBoundaryDelete(this.quill, range, 'backspace')
+      },
+    },
+    centerBoundaryDelete: {
+      key: 'Delete',
+      collapsed: true,
+      handler(this: { quill: Quill }, range: SelectionRange) {
+        return handleCenterBoundaryDelete(this.quill, range, 'delete')
+      },
+    },
+    pagebreakArrowRight: {
+      key: 'ArrowRight',
+      handler(this: { quill: Quill }, range: SelectionRange) {
+        return moveAcrossPagebreakRight(this.quill, range)
+      },
+    },
+    pagebreakArrowLeft: {
+      key: 'ArrowLeft',
+      handler(this: { quill: Quill }, range: SelectionRange) {
+        return moveAcrossPagebreakLeft(this.quill, range)
+      },
+    },
+  }
 }

@@ -1,4 +1,5 @@
 import type Quill from 'quill'
+import Delta from 'quill-delta'
 import { LAYOUT_DIRECTIVE_BLOT_NAME } from './rich-markdown-editor-layout-blots'
 
 type DeltaInsert = string | Record<string, unknown>
@@ -11,6 +12,8 @@ interface SelectionRange {
   index: number
   length: number
 }
+
+export type CenterDeleteDirection = 'backspace' | 'delete'
 
 export interface CenterBoundary {
   index: number
@@ -79,6 +82,28 @@ function getLineEndIndexExclusive(editor: Quill, index: number): number {
 
   const lineStart = getLineStartIndex(editor, index)
   return lineStart + line.length()
+}
+
+function startsWithTextInsert(delta: Delta): boolean {
+  return typeof delta.ops[0]?.insert === 'string'
+}
+
+function buildSegmentWithShiftedEndBoundary(
+  contents: Delta,
+  segment: CenterSegment,
+  movedContentStartIndex: number,
+  movedContentEndIndexExclusive: number,
+): Delta {
+  const prefix = contents.slice(0, segment.endBoundaryIndex)
+  const shiftedContent = contents.slice(movedContentStartIndex, movedContentEndIndexExclusive)
+  const endBoundary = contents.slice(segment.endBoundaryIndex, segment.endBoundaryIndex + 1)
+  const suffix = contents.slice(movedContentEndIndexExclusive)
+
+  return new Delta()
+    .concat(prefix)
+    .concat(shiftedContent)
+    .concat(endBoundary)
+    .concat(suffix)
 }
 
 export function extractCenterBoundariesFromOps(ops: readonly DeltaOp[]): CenterBoundary[] {
@@ -160,4 +185,54 @@ export function normalizeSelectionToLineRange(editor: Quill, selection: Selectio
     startIndex,
     endIndexExclusive,
   }
+}
+
+export function buildBoundarySafeDeleteContents(
+  editor: Quill,
+  selection: SelectionRange | null,
+  direction: CenterDeleteDirection,
+): Delta | null {
+  if (!selection || selection.length !== 0) {
+    return null
+  }
+
+  const segments = getCenterSegments(editor)
+  const contents = editor.getContents() as Delta
+
+  if (direction === 'backspace') {
+    if (selection.index <= 0) {
+      return null
+    }
+
+    const segment = segments.find((candidate) => selection.index === candidate.endBoundaryIndex + 1)
+    if (!segment || getLineStartIndex(editor, selection.index) !== selection.index) {
+      return null
+    }
+
+    const shiftedContentEndIndexExclusive = getLineEndIndexExclusive(editor, selection.index)
+    const shiftedContent = contents.slice(selection.index, shiftedContentEndIndexExclusive)
+    if (!startsWithTextInsert(shiftedContent)) {
+      return null
+    }
+
+    return buildSegmentWithShiftedEndBoundary(contents, segment, selection.index, shiftedContentEndIndexExclusive)
+  }
+
+  const segment = segments.find((candidate) => selection.index === candidate.endBoundaryIndex)
+  const shiftedContentStartIndex = selection.index + 1
+  if (!segment || shiftedContentStartIndex >= editor.getLength()) {
+    return null
+  }
+
+  if (getLineStartIndex(editor, shiftedContentStartIndex) !== shiftedContentStartIndex) {
+    return null
+  }
+
+  const shiftedContentEndIndexExclusive = getLineEndIndexExclusive(editor, shiftedContentStartIndex)
+  const shiftedContent = contents.slice(shiftedContentStartIndex, shiftedContentEndIndexExclusive)
+  if (!startsWithTextInsert(shiftedContent)) {
+    return null
+  }
+
+  return buildSegmentWithShiftedEndBoundary(contents, segment, shiftedContentStartIndex, shiftedContentEndIndexExclusive)
 }

@@ -1,7 +1,7 @@
 # Center Tag Editor Behavior - Implementation Plan
 
 Date: 2026-05-14  
-Status: Slice 2 complete; Slice 3 pending  
+Status: Slice 3 complete; Slice 4 pending  
 Depends on: `docs/plan/center-tag-editor-behavior-tech-design.md`
 
 ## 0. Objective
@@ -139,6 +139,14 @@ npx vitest run tests/rich-markdown-editor-center-delete-boundary.test.ts
 ```
 
 Expected: seam deletion preserves intuitive center scope.
+
+Slice status: completed on 2026-05-14.
+
+Implemented in:
+
+- `src/features/project-editor/pane/rich-markdown-editor/rich-markdown-editor-layout-center-ranges.ts`
+- `src/features/project-editor/pane/rich-markdown-editor/rich-markdown-editor-layout-keyboard.ts`
+- `tests/rich-markdown-editor-center-delete-boundary.test.ts`
 
 ## Slice 4 - Integration hardening and regressions
 

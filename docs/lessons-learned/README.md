@@ -28,6 +28,8 @@ Avoid: "bug description + fix". Prefer: "what I learned that applies to future w
 | File | Topic | Date |
 |------|-------|------|
 | `docx-imagerun-pixel-units.md` | `docx` `ImageRun.transformation` expects pixels, not EMU; passing EMU causes invisible/gigantic images | 2026-04-25 |
+| `center-end-seam-delete-uses-boundary-adjacency.md` | Center seam-safe Backspace/Delete in Quill must guard on document indexes adjacent to the `center:end` embed, not inferred deleted text | 2026-05-14 |
+| `quill-keyboard-defaults-need-init-bindings.md` | Quill default `Backspace`/`Delete` behavior can only be preempted by keyboard bindings provided at editor initialization, not late `addBinding()` calls | 2026-05-14 |
 | `quill-center-segment-identity-vs-structure.md` | Recomputed Quill center segments must be compared structurally by boundary indexes, not by object identity | 2026-05-14 |
 | `pdf-renderer-split.md` | Split barrel file to fix `max-lines` lint error; update order when splitting | 2026-04-17 |
 | `docx-heading-centered-regression.md` | Heading styles must propagate layout state (centered) through all rendering paths | 2026-04-16 |

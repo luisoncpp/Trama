@@ -131,7 +131,7 @@ If you need the shortest path to the editor's risky seams instead of the full su
 | `rich-markdown-editor-ctrl-key.ts` | Ctrl/Meta key state for tag overlay activation |
 | `rich-markdown-editor-layout-blots.ts` | Custom blots for layout directives |
 | `rich-markdown-editor-layout-clipboard.ts` | Clipboard matchers for layout directives |
-| `rich-markdown-editor-layout-keyboard.ts` | Keyboard bindings for navigating pagebreaks |
+| `rich-markdown-editor-layout-keyboard.ts` | Keyboard bindings for atomic pagebreak traversal and center-boundary seam-safe Backspace/Delete transforms |
 | `rich-markdown-editor-layout-actions.ts` | Insert center/spacer/pagebreak |
 | `rich-markdown-editor-layout-centering.ts` | Centered content CSS sync |
 | `rich-markdown-editor-tag-overlay.ts` | Wiki tag click detection |
