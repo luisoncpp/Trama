@@ -2,7 +2,7 @@ import { SidebarPanelBody, buildSidebarPanelBodyProps } from './sidebar-panel-bo
 import { SidebarRail } from './sidebar-rail'
 import { useSidebarContentSection } from './sidebar-panel-logic'
 import type { SidebarPanelCommonProps } from './sidebar-types'
-import { useSidebarResponsiveCollapse } from './use-sidebar-responsive-collapse'
+import { useSidebarResponsiveCollapse } from './sidebar-explorer-hooks'
 
 type SidebarPanelProps = SidebarPanelCommonProps & {
   onReorderFiles?: (folderPath: string, orderedIds: string[]) => Promise<void>

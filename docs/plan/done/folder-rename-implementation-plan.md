@@ -235,8 +235,8 @@ New files:
 
 - `src/features/project-editor/components/sidebar/sidebar-folder-context-menu.tsx`
 - `src/features/project-editor/components/sidebar/sidebar-folder-actions-dialog.tsx`
-- `src/features/project-editor/components/sidebar/use-sidebar-folder-context-menu.ts`
-- `src/features/project-editor/components/sidebar/use-sidebar-folder-actions-dialog.ts`
+- `src/features/project-editor/components/sidebar/sidebar-explorer-hooks.ts` (contains `useSidebarFolderContextMenu`)
+- `src/features/project-editor/components/sidebar/sidebar-dialog-hooks.ts` (contains `useSidebarFolderActionsDialog`)
 
 Rationale for separate folder components:
 
@@ -369,8 +369,8 @@ Cases:
 - `src/features/project-editor/use-project-editor-folder-actions.ts`
 - `src/features/project-editor/components/sidebar/sidebar-folder-context-menu.tsx`
 - `src/features/project-editor/components/sidebar/sidebar-folder-actions-dialog.tsx`
-- `src/features/project-editor/components/sidebar/use-sidebar-folder-context-menu.ts`
-- `src/features/project-editor/components/sidebar/use-sidebar-folder-actions-dialog.ts`
+- `src/features/project-editor/components/sidebar/sidebar-explorer-hooks.ts` (contains `useSidebarFolderContextMenu`)
+- `src/features/project-editor/components/sidebar/sidebar-dialog-hooks.ts` (contains `useSidebarFolderActionsDialog`)
 - `tests/folder-rename-repository.test.ts`
 - `tests/folder-rename-ipc-handler.test.ts`
 - `tests/folder-rename-watcher-regression.test.ts`

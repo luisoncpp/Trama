@@ -1,7 +1,7 @@
 import type { SidebarSection } from '../../project-editor-types'
 import { SidebarExplorerContent } from './sidebar-explorer-content.tsx'
 import { SIDEBAR_SECTION_CONFIG, type ContentSidebarSection } from './sidebar-section-roots'
-import { SidebarSettingsContent } from './sidebar-settings-content.tsx'
+import { SidebarSettingsContent } from './sidebar-settings.tsx'
 import { SidebarTransferContent } from './sidebar-transfer-content.tsx'
 import { joinProjectPath } from './sidebar-panel-logic'
 import {

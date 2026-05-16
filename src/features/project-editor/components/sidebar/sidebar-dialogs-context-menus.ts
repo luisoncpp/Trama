@@ -1,5 +1,7 @@
-import { useSidebarFileContextMenu } from './use-sidebar-file-context-menu'
-import { useSidebarFolderContextMenu } from './use-sidebar-folder-context-menu'
+import {
+  useSidebarFileContextMenu,
+  useSidebarFolderContextMenu,
+} from './sidebar-explorer-hooks'
 
 export { useSidebarFileContextMenu }
 export { useSidebarFolderContextMenu }

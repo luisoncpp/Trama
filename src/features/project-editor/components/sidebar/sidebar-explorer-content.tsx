@@ -1,9 +1,8 @@
 import { useRef } from 'preact/hooks'
 import { SidebarExplorerBody } from './sidebar-explorer-body.tsx'
 import type { SidebarExplorerCommonProps } from './sidebar-types'
-import { useSidebarCreateDialog } from './use-sidebar-create-dialog'
 import { useSidebarFileActionsDialog } from './use-sidebar-file-actions-dialog'
-import { useSidebarFolderActionsDialog } from './use-sidebar-folder-actions-dialog'
+import { useSidebarCreateDialog, useSidebarFolderActionsDialog } from './sidebar-dialog-hooks'
 
 function SelectProjectFolderIcon() {
   return (

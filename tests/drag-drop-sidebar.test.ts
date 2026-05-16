@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 import { buildSidebarTree, getVisibleSidebarRows } from '../src/features/project-editor/components/sidebar/sidebar-tree-logic'
-import type { SidebarTreeRow } from '../src/features/project-editor/components/sidebar/sidebar-tree-types'
+import type { SidebarTreeRow } from '../src/features/project-editor/components/sidebar/sidebar-tree-logic'
 import type { DropIndicatorPosition } from '../src/features/project-editor/components/sidebar/drop-indicator'
 import { calculateDropPosition } from '../src/features/project-editor/components/sidebar/use-sidebar-tree-drag-handlers'
 import { handleFileCrossFolderDrop, handleFileSameFolderReorder } from '../src/features/project-editor/components/sidebar/sidebar-file-drop-logic'

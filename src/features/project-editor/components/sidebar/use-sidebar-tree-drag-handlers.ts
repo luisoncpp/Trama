@@ -1,5 +1,5 @@
 import type { DropIndicatorPosition } from './drop-indicator'
-import type { SidebarTreeRow } from './sidebar-tree-types'
+import type { SidebarTreeRow } from './sidebar-tree-logic'
 import { handleFileCrossFolderDrop, handleFileSameFolderReorder } from './sidebar-file-drop-logic'
 
 const FOLDER_ZONE_RATIO = 0.5

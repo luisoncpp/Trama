@@ -333,22 +333,16 @@ Mandatory doc navigation for new chats: start with `docs/START-HERE.md` — it p
   - One-shot folder rename event bridge used to remap expanded folder state after refresh.
 - `src/features/project-editor/components/sidebar/sidebar-filter.tsx`
   - Filter input UI.
-- `src/features/project-editor/components/sidebar/use-sidebar-filter-shortcut.ts`
-  - Legacy sidebar filter shortcut helper (Ctrl/Cmd+F), currently not wired after in-document find shortcut reassignment.
-- `src/features/project-editor/components/sidebar/use-sidebar-responsive-collapse.ts`
-  - Auto-collapse on narrow viewport.
+- `src/features/project-editor/components/sidebar/sidebar-explorer-hooks.ts`
+  - Consolidated explorer hooks: filter shortcut, responsive collapse, file context menu, folder context menu.
+- `src/features/project-editor/components/sidebar/sidebar-dialog-hooks.ts`
+  - Consolidated dialog hooks: create dialog state, folder actions dialog state.
 - `src/features/project-editor/components/sidebar/sidebar-create-dialog.tsx`
   - Create modal dialog.
-- `src/features/project-editor/components/sidebar/use-sidebar-create-dialog.ts`
-  - Create modal state logic.
 - `src/features/project-editor/components/sidebar/sidebar-file-context-menu.tsx`
   - Right-click file action menu.
-- `src/features/project-editor/components/sidebar/use-sidebar-file-context-menu.ts`
-  - Context menu state/handlers.
 - `src/features/project-editor/components/sidebar/sidebar-folder-context-menu.tsx`
   - Right-click folder action menu (rename in V1).
-- `src/features/project-editor/components/sidebar/use-sidebar-folder-context-menu.ts`
-  - Folder context-menu state/handlers.
 - `src/features/project-editor/components/sidebar/sidebar-file-actions-dialog.tsx`
   - Rename/delete confirmation/input dialog.
   - File delete dialog optionally offers deleting linked `res/*.png` images.
@@ -361,18 +355,8 @@ Mandatory doc navigation for new chats: start with `docs/START-HERE.md` — it p
   - Folder rename dialog state.
 - `src/features/project-editor/components/sidebar/sidebar-footer-actions.tsx`
   - Create buttons (`+Article`, `+Category`).
-- `src/features/project-editor/components/sidebar/sidebar-settings-content.tsx`
-  - Sidebar settings panel (width slider, theme/focus controls, and spellcheck settings UI).
-- `src/features/project-editor/components/sidebar/sidebar-settings-subcomponents.tsx`
-  - Split-out sub-components for settings: theme preference buttons, focus scope select, spellcheck language select, spellcheck controls, panel width control.
-- `src/features/project-editor/components/sidebar/theme-setting.tsx`
-  - Theme settings section (theme preference buttons with resolved theme display).
-- `src/features/project-editor/components/sidebar/spellcheck-setting.tsx`
-  - Spellcheck settings section (spellcheck controls wrapper).
-- `src/features/project-editor/components/sidebar/focus-scope-setting.tsx`
-  - Focus scope settings section (focus scope select wrapper).
-- `src/features/project-editor/components/sidebar/panel-width-setting.tsx`
-  - Panel width settings section (panel width control wrapper).
+- `src/features/project-editor/components/sidebar/sidebar-settings.tsx`
+  - Sidebar settings panel with `SettingsField` layout component and all control subcomponents (theme preference buttons, focus scope select, spellcheck controls, spellcheck language select, panel width control).
 - `src/features/project-editor/components/sidebar/sidebar-transfer-content.tsx`
   - Transfer section composition: separate `Project interchange` (AI import/export) and `Book export` blocks with format selector + export trigger.
 

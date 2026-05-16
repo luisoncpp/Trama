@@ -6,7 +6,7 @@ import { useSidebarTreeExpandedFolders } from './use-sidebar-tree-expanded-folde
 import { createContainerDragOverHandler, createContainerDropHandler, useSidebarTreeDragHandlers } from './use-sidebar-tree-drag-handlers'
 import { SidebarTreeRowButton } from './sidebar-tree-row-button'
 import type { DropIndicatorPosition } from './drop-indicator'
-import type { SidebarTreeRow } from './sidebar-tree-types'
+import type { SidebarTreeRow } from './sidebar-tree-logic'
 
 export interface SidebarTreeProps {
   visibleFiles: string[]

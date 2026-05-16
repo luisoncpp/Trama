@@ -25,22 +25,7 @@ Lista de archivos con errores de lint (`max-lines` y `max-lines-per-function`).
 | 5 | `src/features/project-editor/use-project-editor.ts` | `useProjectEditorEffects` | 64 | +14 |
 | 6 | `src/features/project-editor/project-editor-view.tsx` | `buildSidebarSectionProps` | 51 | +1 |
 | 7 | `src/features/project-editor/components/sidebar/sidebar-explorer-content.tsx` | `SidebarExplorerContent` | 54 | +4 |
-| 8 | `src/features/project-editor/components/sidebar/sidebar-settings-content.tsx` | `SidebarSettingsContent` | 55 | +5 |
-
-## Total: 13 problemas (1 corregido, 12 pendientes)
-
-- 6 archivos con exceso de líneas (1 corregido, 5 pendientes)
-- 8 funciones con exceso de líneas
-
-## Arquitectura PDF renderer (refactorizado)
-
-```
-book-export-pdf-font-utils.ts   (~40 líneas) — normalizeForFont, safeTextForFont, normalizeRunsForFonts
-book-export-pdf-utils.ts         (~180 líneas) — createPdfWriter, PdfWriter, PdfLayoutState, drawing functions
-book-export-pdf-renderer.ts      (3 líneas)    — barril de re-export
-book-export-pdf-chapters.ts     — importa de book-export-pdf-utils.ts
-book-export-service.ts           — importa de book-export-pdf-renderer.ts
-```
+| 8 | `src/features/project-editor/components/sidebar/sidebar-settings.tsx` | `SidebarSettingsContent` | 48 | -2 |
 
 ## Orden sugerido para refactorizar (pendientes)
 
@@ -49,9 +34,8 @@ book-export-service.ts           — importa de book-export-pdf-renderer.ts
 3. `use-project-editor.ts` (64 líneas)
 4. `sidebar-explorer-body.tsx` (2 funciones + archivo)
 5. `sidebar-explorer-content.tsx` (54 líneas)
-6. `sidebar-settings-content.tsx` (55 líneas)
-7. `project-editor-view.tsx` (51 líneas)
-8. `document-repository.ts` (210 líneas)
-9. `sidebar-tree.tsx` (206 líneas)
-10. `rich-markdown-editor-core.ts` (202 líneas)
-11. `use-project-editor-state.ts` (202 líneas)
+6. `project-editor-view.tsx` (51 líneas)
+7. `document-repository.ts` (210 líneas)
+8. `sidebar-tree.tsx` (206 líneas)
+9. `rich-markdown-editor-core.ts` (202 líneas)
+10. `use-project-editor-state.ts` (202 líneas)

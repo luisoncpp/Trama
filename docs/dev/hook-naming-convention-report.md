@@ -130,15 +130,13 @@ useCallback(async (...) => { ... }, [deps])
   ```
   → needs `/*Inputs for persistWorkspaceLayout*/`
 
-### 13. `src/features/project-editor/components/sidebar/use-sidebar-filter-shortcut.ts` (1 hook)
-- **Line 25** — `useSidebarFilterShortcut` effect
+### 13. `src/features/project-editor/components/sidebar/sidebar-explorer-hooks.ts` (4 hooks)
+- **Line 24** — `useSidebarFilterShortcut` effect
   ```typescript
   }, [enabled, focusFilterInput])
   ```
   → needs `/*Inputs for registerFilterShortcut*/`
-
-### 14. `src/features/project-editor/components/sidebar/use-sidebar-responsive-collapse.ts` (1 hook)
-- **Line 21** — `useSidebarResponsiveCollapse` effect
+- **Line 33** — `useSidebarResponsiveCollapse` effect
   ```typescript
   }, [])
   ```

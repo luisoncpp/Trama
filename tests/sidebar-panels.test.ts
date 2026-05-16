@@ -3,7 +3,7 @@ import { h, render } from 'preact'
 import { act } from 'preact/test-utils'
 import { SidebarPanel } from '../src/features/project-editor/components/sidebar/sidebar-panel.tsx'
 import { SidebarExplorerContent } from '../src/features/project-editor/components/sidebar/sidebar-explorer-content.tsx'
-import { SidebarSettingsContent } from '../src/features/project-editor/components/sidebar/sidebar-settings-content.tsx'
+import { SidebarSettingsContent } from '../src/features/project-editor/components/sidebar/sidebar-settings.tsx'
 import type { ThemePreference } from '../src/theme/theme-types'
 
 function buildPanelProps(
