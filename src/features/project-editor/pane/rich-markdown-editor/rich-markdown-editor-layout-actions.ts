@@ -74,7 +74,7 @@ function findToggleTargetSegment(editor: Quill, lineRange: LineRange): CenterSeg
   return startSegment
 }
 
-function buildToggledCenterContents(editor: Quill, segment: CenterSegment, lineRange: LineRange): Delta {
+function buildToggledCenterContents(editor: Quill, segment: CenterSegment, lineRange: LineRange): { delta: Delta; cursorIndex: number } {
   const contents = editor.getContents() as Delta
   const prefix = contents.slice(0, segment.startBoundaryIndex)
   const left = contents.slice(segment.contentStartIndex, lineRange.startIndex)
@@ -82,8 +82,10 @@ function buildToggledCenterContents(editor: Quill, segment: CenterSegment, lineR
   const right = contents.slice(lineRange.endIndexExclusive, segment.contentEndIndexExclusive)
   const suffix = contents.slice(segment.endBoundaryIndex + 1)
 
+  const leftLength = getDeltaLength(left)
+
   let next = new Delta().concat(prefix)
-  if (getDeltaLength(left) > 0) {
+  if (leftLength > 0) {
     next = next.concat(createCenterBoundaryDelta('start')).concat(left).concat(createCenterBoundaryDelta('end'))
   }
 
@@ -93,10 +95,14 @@ function buildToggledCenterContents(editor: Quill, segment: CenterSegment, lineR
     next = next.concat(createCenterBoundaryDelta('start')).concat(right).concat(createCenterBoundaryDelta('end'))
   }
 
-  return next.concat(suffix)
+  const cursorIndex = leftLength > 0
+    ? Math.max(0, segment.startBoundaryIndex + leftLength)
+    : Math.max(0, segment.startBoundaryIndex)
+
+  return { delta: next.concat(suffix), cursorIndex }
 }
 
-function buildExtendedCenterContents(editor: Quill, lineRange: LineRange): Delta | null {
+function buildExtendedCenterContents(editor: Quill, lineRange: LineRange): { delta: Delta; cursorIndex: number } | null {
   const contents = editor.getContents() as Delta
   const segments = getCenterSegments(editor)
   const previousSegment = segments.find((candidate) => candidate.endBoundaryIndex === lineRange.startIndex - 1) ?? null
@@ -106,11 +112,15 @@ function buildExtendedCenterContents(editor: Quill, lineRange: LineRange): Delta
     const endBoundary = contents.slice(previousSegment.endBoundaryIndex, previousSegment.endBoundaryIndex + 1)
     const suffix = contents.slice(lineRange.endIndexExclusive)
 
-    return new Delta()
+    const delta = new Delta()
       .concat(prefix)
       .concat(selected)
       .concat(endBoundary)
       .concat(suffix)
+
+    const cursorIndex = Math.max(0, previousSegment.endBoundaryIndex + getDeltaLength(selected) - 1)
+
+    return { delta, cursorIndex }
   }
 
   const nextSegment = segments.find((candidate) => candidate.startBoundaryIndex === lineRange.endIndexExclusive) ?? null
@@ -121,12 +131,16 @@ function buildExtendedCenterContents(editor: Quill, lineRange: LineRange): Delta
     const centered = contents.slice(nextSegment.contentStartIndex, nextSegment.endBoundaryIndex + 1)
     const suffix = contents.slice(nextSegment.endBoundaryIndex + 1)
 
-    return new Delta()
+    const delta = new Delta()
       .concat(prefix)
       .concat(startBoundary)
       .concat(selected)
       .concat(centered)
       .concat(suffix)
+
+    const cursorIndex = Math.max(0, lineRange.startIndex + 1 + getDeltaLength(selected) - 1)
+
+    return { delta, cursorIndex }
   }
 
   return null
@@ -164,10 +178,10 @@ export function toggleCenterDirectives(editor: Quill): void {
   const segment = findToggleTargetSegment(editor, lineRange)
 
   if (!segment) {
-    const extendedContents = buildExtendedCenterContents(editor, lineRange)
-    if (extendedContents) {
-      editor.setContents(extendedContents, 'user')
-      editor.setSelection(Math.max(0, lineRange.endIndexExclusive - 1), 0, 'silent')
+    const result = buildExtendedCenterContents(editor, lineRange)
+    if (result) {
+      editor.setContents(result.delta, 'user')
+      editor.setSelection(result.cursorIndex, 0, 'silent')
       return
     }
 
@@ -175,6 +189,7 @@ export function toggleCenterDirectives(editor: Quill): void {
     return
   }
 
-  editor.setContents(buildToggledCenterContents(editor, segment, lineRange), 'user')
-  editor.setSelection(Math.max(segment.startBoundaryIndex, lineRange.startIndex - 1), 0, 'silent')
+  const toggleResult = buildToggledCenterContents(editor, segment, lineRange)
+  editor.setContents(toggleResult.delta, 'user')
+  editor.setSelection(toggleResult.cursorIndex, 0, 'silent')
 }

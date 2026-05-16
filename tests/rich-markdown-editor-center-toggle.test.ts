@@ -113,6 +113,23 @@ function textIndexToQuillIndex(
   return docIndex
 }
 
+function isIndexOnText(ops: Array<{ insert?: string | Record<string, unknown> }>, index: number): boolean {
+  const totalLength = ops.reduce((sum, op) => sum + getInsertLength(op.insert), 0)
+  const isAtEnd = index >= totalLength
+  let docIndex = 0
+  for (const op of ops) {
+    const insert = op.insert
+    if (typeof insert === 'string') {
+      if (index >= docIndex && index < docIndex + insert.length) return true
+      docIndex += insert.length
+    } else if (insert) {
+      if (index === docIndex) return false
+      docIndex += 1
+    }
+  }
+  return isAtEnd
+}
+
 function createLineAwareEditorStub({ ops, text = '' }: StubEditorOptions): Quill {
   const getLine = (index: number): [StubLine | null, number] => {
     const safeText = text.length > 0 ? text : '\n'
@@ -305,6 +322,10 @@ describe('rich-markdown-editor-layout-center-ranges', () => {
       '[center:end]',
       '\n',
     ])
+
+    const cursor = editor.getSelection()
+    expect(cursor).toBeDefined()
+    expect(isIndexOnText(editor.getContents().ops, cursor!.index)).toBe(true)
   })
 
   it('toggles the last centered line into a left-only segment', () => {
@@ -327,6 +348,10 @@ describe('rich-markdown-editor-layout-center-ranges', () => {
       '[center:end]',
       'B\n\n',
     ])
+
+    const cursor = editor.getSelection()
+    expect(cursor).toBeDefined()
+    expect(isIndexOnText(editor.getContents().ops, cursor!.index)).toBe(true)
   })
 
   it('toggles an outside line by creating a centered segment', () => {
@@ -365,6 +390,10 @@ describe('rich-markdown-editor-layout-center-ranges', () => {
       'A\nB\n',
       '[center:end]',
     ])
+
+    const cursor = editor.getSelection()
+    expect(cursor).toBeDefined()
+    expect(isIndexOnText(editor.getContents().ops, cursor!.index)).toBe(true)
   })
 
   it('keeps repeated center insertion idempotent through toggle behavior', () => {
@@ -388,5 +417,46 @@ describe('rich-markdown-editor-layout-center-ranges', () => {
     ])
     expect(serialized.filter((token) => token === '[center:start]')).toHaveLength(1)
     expect(serialized.filter((token) => token === '[center:end]')).toHaveLength(1)
+  })
+
+  it('extends the next centered segment instead of creating a new pair above it', () => {
+    const editor = createMutableEditorStub({
+      ops: [
+        { insert: 'A\n' },
+        { insert: { 'trama-directive': { directive: 'center', role: 'start' } } },
+        { insert: 'B\n' },
+        { insert: { 'trama-directive': { directive: 'center', role: 'end' } } },
+        { insert: '\n' },
+      ],
+      text: 'A\nB\n\n',
+      selection: { index: 0, length: 0 },
+    })
+
+    toggleCenterDirectives(editor)
+
+    expect(serializeOps(editor.getContents().ops)).toEqual([
+      '[center:start]',
+      'A\nB\n',
+      '[center:end]',
+      '\n',
+    ])
+
+    const cursor = editor.getSelection()
+    expect(cursor).toBeDefined()
+    expect(isIndexOnText(editor.getContents().ops, cursor!.index)).toBe(true)
+  })
+
+  it('places cursor on text after toggling an outside line', () => {
+    const editor = createMutableEditorStub({
+      ops: [{ insert: 'A\nB\n' }],
+      text: 'A\nB\n',
+      selection: { index: 2, length: 0 },
+    })
+
+    toggleCenterDirectives(editor)
+
+    const cursor = editor.getSelection()
+    expect(cursor).toBeDefined()
+    expect(isIndexOnText(editor.getContents().ops, cursor!.index)).toBe(true)
   })
 })
