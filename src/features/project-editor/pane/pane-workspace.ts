@@ -25,6 +25,7 @@ export interface PaneBindings {
 
 export class PaneWorkspace {
   private autosaveTimer: number | null = null
+  private lastSavedContentMap: Map<string, string> = new Map()
 
   constructor(
     private layoutState: WorkspaceLayoutState,
@@ -60,6 +61,11 @@ export class PaneWorkspace {
 
   destroy(): void {
     this.cancelAutosave()
+    this.lastSavedContentMap.clear()
+  }
+
+  getLastSavedContent(path: string): string | null {
+    return this.lastSavedContentMap.get(path) ?? null
   }
 
   private getSerializationRefForPane(pane: WorkspacePane): { current: EditorSerializationRefs } {
@@ -77,8 +83,9 @@ export class PaneWorkspace {
       return
     }
     const flushResult = this.flushPane(pane)
+    const contentToSave = flushResult ?? paneDocument.content
     await executePaneSave(paneDocument, flushResult, this.saveDocumentFn)
-    this.markPaneSaved(pane, paneDocument.path)
+    this.markPaneSaved(pane, paneDocument.path, contentToSave)
   }
 
   async saveAllDirtyPanes(): Promise<void> {
@@ -149,12 +156,21 @@ export class PaneWorkspace {
     this.paneBindings.setSecondaryPane((prev) => prev.path === path ? { ...prev, meta } : prev)
   }
 
-  private markPaneSaved(pane: WorkspacePane, path: string): void {
+  private markPaneSaved(pane: WorkspacePane, path: string, content: string): void {
+    this.lastSavedContentMap.set(path, content)
     if (pane === 'secondary') {
       this.paneBindings.setSecondaryPane((prev) => prev.path === path ? { ...prev, isDirty: false } : prev)
     } else {
       this.paneBindings.setPrimaryPane((prev) => prev.path === path ? { ...prev, isDirty: false } : prev)
     }
+  }
+
+  async checkExternalChangeMatchesSavedSnapshot(path: string, externalContent: string): Promise<boolean> {
+    const savedContent = this.getLastSavedContent(path)
+    if (savedContent === null) {
+      return false
+    }
+    return savedContent === externalContent
   }
 
   get layout(): Readonly<WorkspaceLayoutState> {

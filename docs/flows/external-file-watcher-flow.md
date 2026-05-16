@@ -146,6 +146,36 @@ WatcherService (classify as internal/external)
 
 3. **Debounced renders competing with state updates** — if an external event triggers `openProject` while another `openProject` is already in-flight, both may try to `setSnapshot`. The last one wins. If the last one has a stale snapshot (e.g. before a folder delete completed), the sidebar shows old data.
 
+## Google Drive sync false conflict prevention
+
+When using cloud sync services like Google Drive, a file save triggers a file change event after the save completes. Due to sync delays, this can cause false conflict triggers even though no actual external edit occurred — the file on disk is identical to what was just saved.
+
+### Solution: Saved snapshot comparison
+
+`PaneWorkspace` maintains a `lastSavedContentMap` that stores the file content at the moment of each save:
+
+1. **Snapshot storage** — When `markPaneSaved()` is called after a successful `savePaneIfDirty()`, the current pane content is stored in the map keyed by file path.
+
+2. **Async comparison on external change** — When a `change` event is detected on a dirty file:
+   - The conflict path is set immediately (synchronous UI feedback)
+   - An async block reads the external file content via `readDocument`
+   - The external content is compared against the stored snapshot using `checkExternalChangeMatchesSavedSnapshot()`
+   - If contents match, the conflict is dismissed and the document is reloaded normally
+   - If contents differ, the conflict panel remains visible
+
+3. **Session scope** — The saved snapshot is stored per path and cleared:
+   - On project close via `PaneWorkspace.destroy()`
+   - When explicitly overwriting by subsequent saves
+
+This approach prevents unnecessary conflict panels when cloud sync re-saves the same content, while still correctly handling genuine external edits.
+
+### Files involved in snapshot comparison
+
+| File | Role |
+|------|------|
+| `src/features/project-editor/pane/pane-workspace.ts` | `lastSavedContentMap`, `getLastSavedContent()`, `checkExternalChangeMatchesSavedSnapshot()` |
+| `src/features/project-editor/use-project-editor-external-events-effect.ts` | Async comparison logic in `handleExternalEvent` |
+
 ## Files to inspect
 
 | File | Role |

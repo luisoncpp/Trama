@@ -88,6 +88,8 @@ function useProjectEditorEffects(
     setExternalConflictPath: setters.setExternalConflictPath,
     setConflictComparisonContent: setters.setConflictComparisonContent,
     setStatusMessage: setters.setStatusMessage,
+    checkExternalChangeMatchesSavedSnapshot: (path: string, externalContent: string) =>
+      paneWorkspace.checkExternalChangeMatchesSavedSnapshot(path, externalContent),
   })
   useReloadProjectShortcutEffect(projectState.rootPath, () => { if (projectState.rootPath) void core.openProject(projectState.rootPath) })
   useProjectEditorFullscreenEffect({ setIsFullscreen: setters.setIsFullscreen })

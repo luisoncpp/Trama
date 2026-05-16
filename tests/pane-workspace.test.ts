@@ -271,6 +271,94 @@ describe('PaneWorkspace', () => {
     })
   })
 
+  describe('getLastSavedContent', () => {
+    it('returns null when no snapshot exists', () => {
+      const ws = makeWs('primary', primaryClean, secondaryClean)
+
+      expect(ws.getLastSavedContent('docs/a.md')).toBeNull()
+    })
+
+    it('returns null for path not in snapshot map', () => {
+      const ws = makeWs('primary', primaryDirty, secondaryClean)
+
+      ws.getLastSavedContent('docs/a.md')
+
+      expect(ws.getLastSavedContent('docs/nonexistent.md')).toBeNull()
+    })
+
+    it('returns stored snapshot after savePaneIfDirty', async () => {
+      const ws = makeWs('primary', primaryDirty, secondaryClean)
+
+      await ws.savePaneIfDirty('primary')
+
+      expect(ws.getLastSavedContent('docs/a.md')).toBe('# flushed')
+    })
+
+    it('stores different snapshots for different paths', async () => {
+      const ws = makeWs('primary', primaryDirty, secondaryDirty)
+
+      await ws.saveAllDirtyPanes()
+
+      expect(ws.getLastSavedContent('docs/a.md')).toBe('# flushed')
+      expect(ws.getLastSavedContent('docs/b.md')).toBe('# flushed')
+    })
+  })
+
+  describe('checkExternalChangeMatchesSavedSnapshot', () => {
+    it('returns false when no snapshot exists', async () => {
+      const ws = makeWs('primary', primaryClean, secondaryClean)
+
+      const result = await ws.checkExternalChangeMatchesSavedSnapshot('docs/a.md', '# external content')
+
+      expect(result).toBe(false)
+    })
+
+    it('returns true when external content matches saved snapshot', async () => {
+      const ws = makeWs('primary', primaryDirty, secondaryClean)
+
+      await ws.savePaneIfDirty('primary')
+
+      const result = await ws.checkExternalChangeMatchesSavedSnapshot('docs/a.md', '# flushed')
+
+      expect(result).toBe(true)
+    })
+
+    it('returns false when external content differs from saved snapshot', async () => {
+      const ws = makeWs('primary', primaryDirty, secondaryClean)
+
+      await ws.savePaneIfDirty('primary')
+
+      const result = await ws.checkExternalChangeMatchesSavedSnapshot('docs/a.md', '# different content')
+
+      expect(result).toBe(false)
+    })
+
+    it('uses exact string comparison', async () => {
+      const ws = makeWs('primary', primaryDirty, secondaryClean)
+
+      await ws.savePaneIfDirty('primary')
+
+      expect(await ws.checkExternalChangeMatchesSavedSnapshot('docs/a.md', '#flushed')).toBe(false)
+      expect(await ws.checkExternalChangeMatchesSavedSnapshot('docs/a.md', '# flushed ')).toBe(false)
+    })
+  })
+
+  describe('destroy', () => {
+    beforeEach(() => { vi.useFakeTimers() })
+    afterEach(() => { vi.useRealTimers() })
+
+    it('clears saved content map on destroy', async () => {
+      const ws = makeWs('primary', primaryDirty, secondaryClean)
+
+      await ws.savePaneIfDirty('primary')
+      expect(ws.getLastSavedContent('docs/a.md')).toBe('# flushed')
+
+      ws.destroy()
+
+      expect(ws.getLastSavedContent('docs/a.md')).toBeNull()
+    })
+  })
+
   describe('scheduleAutosave / cancelAutosave / destroy', () => {
     beforeEach(() => { vi.useFakeTimers() })
     afterEach(() => { vi.useRealTimers() })
