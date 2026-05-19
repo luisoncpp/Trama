@@ -106,6 +106,22 @@ function useProjectEditorEffects(
   })
 }
 
+function usePaneWorkspaceLifecycle(
+  paneWorkspace: ReturnType<typeof usePaneWorkspace>,
+  lastSavedContentMapRef: { current: Map<string, string> },
+  rootPath: string | null,
+): void {
+  useEffect(() => {
+    return () => paneWorkspace.destroy()
+  }, [paneWorkspace])
+
+  useEffect(() => {
+    if (!rootPath) {
+      lastSavedContentMapRef.current.clear()
+    }
+  }, [rootPath])
+}
+
 export function useProjectEditor(): ProjectEditorModel {
   const autoPickProjectFolderOnStart = import.meta.env.MODE !== 'test'
   const state = useProjectEditorState()
@@ -123,6 +139,7 @@ export function useProjectEditor(): ProjectEditorModel {
   })
 
   const saveDocumentNowRef = useRef<((path: string, content: string, meta: DocumentMeta) => Promise<void>) | null>(null)
+  const lastSavedContentMapRef = useRef(new Map<string, string>())
 
   const zoomRef: EditorZoomRef = { current: layoutState.workspaceLayout.zoomLevel ?? 1.0 }
 
@@ -131,7 +148,10 @@ export function useProjectEditor(): ProjectEditorModel {
     paneBindings,
     { primary: primarySerializationRef, secondary: secondarySerializationRef },
     (path, content, meta) => saveDocumentNowRef.current?.(path, content, meta) ?? Promise.resolve(),
+    lastSavedContentMapRef.current,
   )
+
+  usePaneWorkspaceLifecycle(paneWorkspace, lastSavedContentMapRef, projectState.rootPath)
 
   const { actions, core } = useProjectEditorActions({
     layoutState,
@@ -142,10 +162,6 @@ export function useProjectEditor(): ProjectEditorModel {
     paneWorkspace,
   })
   saveDocumentNowRef.current = core.saveDocumentNow
-
-  useEffect(() => {
-    return () => paneWorkspace.destroy()
-  }, [paneWorkspace])
 
   useEffect(() => {
     zoomRef.current = layoutState.workspaceLayout.zoomLevel ?? 1.0

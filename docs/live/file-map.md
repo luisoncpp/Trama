@@ -198,6 +198,7 @@ Mandatory doc navigation for new chats: start with `docs/START-HERE.md` — it p
   - `pane/pane-workspace.ts` — coordinator class with read methods (`getPaneDocument`, `isPaneDirty`) and write methods (`savePaneIfDirty`, `saveAllDirtyPanes`, `scheduleAutosave`, `updatePaneContent`, etc.); `markPaneSaved` is private
   - `pane/use-pane-workspace.ts` — factory hook that encapsulates Preact setter injection, creating a `PaneWorkspace` instance via `useMemo`
   - `pane/pane-save-logic.ts` — `executePaneSave` (internal, not exported from barrel)
+  - `pane/snapshot-compare-logger.ts` — `logSnapshotComparison` helper for diagnosing false-positive external-change conflicts
 - `src/features/project-editor/use-project-editor-external-events-effect.ts`
   - Subscribes to external file events (watcher) and handles reloads/conflicts/tree refresh.
 - `src/features/project-editor/use-project-editor-context-menu-effect.ts`

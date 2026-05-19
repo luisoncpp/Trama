@@ -1,6 +1,7 @@
 import type { DocumentMeta } from '../../../shared/ipc'
 import type { EditorSerializationRefs, PaneDocumentState, WorkspaceLayoutState, WorkspacePane } from '../project-editor-types'
 import { executePaneSave } from './pane-save-logic'
+import { logSnapshotComparison } from './snapshot-compare-logger'
 
 export type { WorkspacePane }
 
@@ -25,7 +26,8 @@ export interface PaneBindings {
 
 export class PaneWorkspace {
   private autosaveTimer: number | null = null
-  private lastSavedContentMap: Map<string, string> = new Map()
+  private lastSavedContentMap: Map<string, string>
+  private ownsSavedContentMap: boolean
 
   constructor(
     private layoutState: WorkspaceLayoutState,
@@ -39,7 +41,11 @@ export class PaneWorkspace {
       content: string,
       meta: DocumentMeta
     ) => Promise<void>,
-  ) {}
+    savedContentMap?: Map<string, string>,
+  ) {
+    this.lastSavedContentMap = savedContentMap ?? new Map()
+    this.ownsSavedContentMap = !savedContentMap
+  }
 
   scheduleAutosave(pane: WorkspacePane, delay: number): void {
     this.cancelAutosave()
@@ -61,7 +67,9 @@ export class PaneWorkspace {
 
   destroy(): void {
     this.cancelAutosave()
-    this.lastSavedContentMap.clear()
+    if (this.ownsSavedContentMap) {
+      this.lastSavedContentMap.clear()
+    }
   }
 
   getLastSavedContent(path: string): string | null {
@@ -167,10 +175,9 @@ export class PaneWorkspace {
 
   async checkExternalChangeMatchesSavedSnapshot(path: string, externalContent: string): Promise<boolean> {
     const savedContent = this.getLastSavedContent(path)
-    if (savedContent === null) {
-      return false
-    }
-    return savedContent === externalContent
+    const matches = savedContent !== null && savedContent === externalContent
+    logSnapshotComparison(path, savedContent, externalContent, matches)
+    return matches
   }
 
   get layout(): Readonly<WorkspaceLayoutState> {

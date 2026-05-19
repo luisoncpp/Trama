@@ -20,9 +20,10 @@ export function usePaneWorkspace(
     content: string,
     meta: DocumentMeta
   ) => Promise<void>,
+  savedContentMap?: Map<string, string>,
 ): PaneWorkspace {
   return useMemo(
-    () => new PaneWorkspace(layoutState, paneBindings, serializationRefs, saveDocumentFn),
-    [layoutState, paneBindings, serializationRefs, saveDocumentFn],
+    () => new PaneWorkspace(layoutState, paneBindings, serializationRefs, saveDocumentFn, savedContentMap),
+    [layoutState, paneBindings, serializationRefs, saveDocumentFn, savedContentMap],
   )
 }

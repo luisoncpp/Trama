@@ -152,7 +152,7 @@ When using cloud sync services like Google Drive, a file save triggers a file ch
 
 ### Solution: Saved snapshot comparison
 
-`PaneWorkspace` maintains a `lastSavedContentMap` that stores the file content at the moment of each save:
+A `lastSavedContentMap` stores the file content at the moment of each save. The map is owned by a stable ref in `useProjectEditor` and passed into `PaneWorkspace`, so it survives instance recreations:
 
 1. **Snapshot storage** — When `markPaneSaved()` is called after a successful `savePaneIfDirty()`, the current pane content is stored in the map keyed by file path.
 
@@ -164,16 +164,18 @@ When using cloud sync services like Google Drive, a file save triggers a file ch
    - If contents differ, the conflict panel remains visible
 
 3. **Session scope** — The saved snapshot is stored per path and cleared:
-   - On project close via `PaneWorkspace.destroy()`
+   - On project close (when `rootPath` becomes `null` in `useProjectEditor`)
    - When explicitly overwriting by subsequent saves
 
-This approach prevents unnecessary conflict panels when cloud sync re-saves the same content, while still correctly handling genuine external edits.
+**Why the map is external:** `PaneWorkspace` is recreated every render because its `useMemo` dependencies (pane state objects) change on every keystroke. If the map were internal, `destroy()` on the old instance would clear it before the external sync event arrives, causing false positives. The external ref keeps the map alive across instance lifetimes.
 
 ### Files involved in snapshot comparison
 
 | File | Role |
 |------|------|
-| `src/features/project-editor/pane/pane-workspace.ts` | `lastSavedContentMap`, `getLastSavedContent()`, `checkExternalChangeMatchesSavedSnapshot()` |
+| `src/features/project-editor/pane/pane-workspace.ts` | Receives external `lastSavedContentMap`; `getLastSavedContent()`, `checkExternalChangeMatchesSavedSnapshot()` |
+| `src/features/project-editor/pane/snapshot-compare-logger.ts` | `logSnapshotComparison` — diagnostic logging for debugging mismatches |
+| `src/features/project-editor/use-project-editor.ts` | Owns the stable `lastSavedContentMap` ref; clears it on project close |
 | `src/features/project-editor/use-project-editor-external-events-effect.ts` | Async comparison logic in `handleExternalEvent` |
 
 ## Files to inspect

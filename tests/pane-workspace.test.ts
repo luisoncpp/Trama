@@ -305,12 +305,18 @@ describe('PaneWorkspace', () => {
   })
 
   describe('checkExternalChangeMatchesSavedSnapshot', () => {
+    let logSpy: ReturnType<typeof vi.spyOn>
+
+    beforeEach(() => { logSpy = vi.spyOn(console, 'log').mockImplementation(() => {}) })
+    afterEach(() => { logSpy.mockRestore() })
+
     it('returns false when no snapshot exists', async () => {
       const ws = makeWs('primary', primaryClean, secondaryClean)
 
       const result = await ws.checkExternalChangeMatchesSavedSnapshot('docs/a.md', '# external content')
 
       expect(result).toBe(false)
+      expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('no saved snapshot exists'))
     })
 
     it('returns true when external content matches saved snapshot', async () => {
@@ -321,6 +327,7 @@ describe('PaneWorkspace', () => {
       const result = await ws.checkExternalChangeMatchesSavedSnapshot('docs/a.md', '# flushed')
 
       expect(result).toBe(true)
+      expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('match: true'))
     })
 
     it('returns false when external content differs from saved snapshot', async () => {
@@ -331,6 +338,8 @@ describe('PaneWorkspace', () => {
       const result = await ws.checkExternalChangeMatchesSavedSnapshot('docs/a.md', '# different content')
 
       expect(result).toBe(false)
+      expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('match: false'))
+      expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('first difference at index'))
     })
 
     it('uses exact string comparison', async () => {
@@ -340,6 +349,7 @@ describe('PaneWorkspace', () => {
 
       expect(await ws.checkExternalChangeMatchesSavedSnapshot('docs/a.md', '#flushed')).toBe(false)
       expect(await ws.checkExternalChangeMatchesSavedSnapshot('docs/a.md', '# flushed ')).toBe(false)
+      expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('match: false'))
     })
   })
 
@@ -347,7 +357,31 @@ describe('PaneWorkspace', () => {
     beforeEach(() => { vi.useFakeTimers() })
     afterEach(() => { vi.useRealTimers() })
 
-    it('clears saved content map on destroy', async () => {
+    it('does not clear an external saved content map on destroy', async () => {
+      const sharedMap = new Map<string, string>()
+      const paneBindings: PaneBindings = {
+        primaryPane: primaryDirty,
+        secondaryPane: secondaryClean,
+        setPrimaryPane: () => {},
+        setSecondaryPane: () => {},
+      }
+      const ws = new PaneWorkspace(
+        makeLayout('primary', primaryDirty.path, secondaryClean.path),
+        paneBindings,
+        makeRefs(),
+        saveDocumentFn,
+        sharedMap,
+      )
+
+      await ws.savePaneIfDirty('primary')
+      expect(ws.getLastSavedContent('docs/a.md')).toBe('# flushed')
+
+      ws.destroy()
+
+      expect(sharedMap.get('docs/a.md')).toBe('# flushed')
+    })
+
+    it('clears its own saved content map on destroy when no external map is provided', async () => {
       const ws = makeWs('primary', primaryDirty, secondaryClean)
 
       await ws.savePaneIfDirty('primary')

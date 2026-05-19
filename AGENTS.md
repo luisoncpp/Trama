@@ -1,3 +1,5 @@
+* Check @docs/START-HERE.md
+
 * Follow all the instructions included on the initial docs, don't skip any of them by "eagerness" to solve the task **DO NOT SKIP THEM DO NOT SKIP THEM DO NOT SKIP THEM**
 **DO NOT SKIP THEM DO NOT SKIP THEM DO NOT SKIP THEM**
 **DO NOT SKIP THEM DO NOT SKIP THEM DO NOT SKIP THEM**

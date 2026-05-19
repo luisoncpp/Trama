@@ -60,8 +60,7 @@ function handleSelectedPath(
           if (matches) {
             setExternalConflictPath(null)
             setConflictComparisonContent(null)
-            void loadDocument(event.path, activePane)
-            setStatusMessage(`File reloaded after sync: ${event.path}`)
+            setStatusMessage(`External change matched last save; keeping your edits: ${event.path}`)
           }
         }
       })()

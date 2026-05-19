@@ -27,6 +27,8 @@ IMPORTANT: **DO NOT** write `# === FILE:` nor `## === FILE:`, the correct format
 
 Files can include YAML frontmatter at the beginning to include tags(each article can have multiple tags, but no tag should be in multiple articles, tags are aliases for the internal wikilink-like system, they may have spaces and they are not case sensitive):
 
+**DO NOT DUPLICATE TAGS, DO NOT TAG INDIVIDUALS WITH THE NAME OF THEIR ORGANIZATION, DO NOT TAG INDIVIDUALS WITH THE NAME WHERE THEY LIVE, DO NOT TAG PLACES WITH NAMES OF LARGER PLACES WHERE THEY ARE**
+
 ```markdown
 === FILE: lore/characters/link.md ===
 ---
@@ -34,6 +36,8 @@ tags:
   - Link
   - Hero of Time
 ---
+
+This way of specifying the tags is YAML, so DO NOT USE `*` instead of `-`.
 
 # Link
 
