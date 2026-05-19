@@ -11,7 +11,6 @@ import {
   toggleCenterDirectives,
 } from './rich-markdown-editor-layout-actions'
 import type { RichEditorSyncState } from './rich-markdown-editor-toolbar-helpers'
-import { syncZoomSelect } from './zoom-select-sync'
 
 export function ensureLayoutButtonsInListGroup(toolbar: HTMLElement): {
   centerButton: HTMLButtonElement

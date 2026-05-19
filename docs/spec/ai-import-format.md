@@ -13,6 +13,8 @@ Each file must be delimited by a special header:
 file content goes here
 ```
 
+IMPORTANT: **DO NOT** write `# === FILE:` nor `## === FILE:`, the correct format is `=== FILE:`.
+
 ### Important Rules
 
 1. **File header**: It must start with `=== FILE:` followed by the relative path inside the project
