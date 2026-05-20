@@ -2,33 +2,151 @@ import { describe, expect, it, vi } from 'vitest'
 import { buildSidebarTree, getVisibleSidebarRows } from '../src/features/project-editor/components/sidebar/sidebar-tree-logic'
 import type { SidebarTreeRow } from '../src/features/project-editor/components/sidebar/sidebar-tree-logic'
 import type { DropIndicatorPosition } from '../src/features/project-editor/components/sidebar/drop-indicator'
-import { calculateDropPosition } from '../src/features/project-editor/components/sidebar/use-sidebar-tree-drag-handlers'
-import { handleFileCrossFolderDrop, handleFileSameFolderReorder } from '../src/features/project-editor/components/sidebar/sidebar-file-drop-logic'
+import { calculateDropPosition } from '../src/features/project-editor/components/sidebar/sidebar-drop-logic'
+import {
+  handleFileCrossFolderDrop,
+  handleFileSameFolderReorder,
+} from '../src/features/project-editor/components/sidebar/sidebar-drop-logic'
+import {
+  createContainerDragOverHandler,
+  createContainerDropHandler,
+} from '../src/features/project-editor/components/sidebar/sidebar-drop-logic'
+import type { RowGeometry } from '../src/features/project-editor/components/sidebar/sidebar-drop-logic'
 
 describe('drag-drop-sidebar', () => {
   describe('calculateDropPosition', () => {
-    it('identifies folder drop target when hovering over folder row', () => {
-      const tree = buildSidebarTree(['outline/scene-1.md', 'outline/scene-2.md', 'outline/folder/'])
-      const rows = getVisibleSidebarRows(tree, new Set(['outline', 'outline/folder']))
+    it('returns onFolder when hovering folder center while dragging file', () => {
+      const rows: SidebarTreeRow[] = [
+        { nodeId: 'a', name: 'scene-1', path: 'outline/scene-1.md', type: 'file', depth: 1, isExpanded: false },
+        { nodeId: 'b', name: 'characters', path: 'outline/characters', type: 'folder', depth: 1, isExpanded: false },
+      ]
+      const geometries: RowGeometry[] = [
+        { path: 'outline/scene-1.md', type: 'file', top: 0, height: 40 },
+        { path: 'outline/characters', type: 'folder', top: 40, height: 40 },
+      ]
+      const pos = calculateDropPosition(rows, 'outline/scene-1.md', 'outline/characters', 60, geometries)
 
-      const folderRow = rows.find((r) => r.path === 'outline/folder')
-      expect(folderRow?.type).toBe('folder')
+      expect(pos).toEqual({ type: 'onFolder', targetPath: 'outline/characters' })
     })
 
-    it('returns between position for file rows', () => {
-      const tree = buildSidebarTree(['outline/scene-1.md', 'outline/scene-2.md'])
-      const rows = getVisibleSidebarRows(tree, new Set(['outline']))
+    it('returns before when hovering top edge of file row while dragging file', () => {
+      const rows: SidebarTreeRow[] = [
+        { nodeId: 'a', name: 'scene-1', path: 'outline/scene-1.md', type: 'file', depth: 1, isExpanded: false },
+        { nodeId: 'b', name: 'scene-2', path: 'outline/scene-2.md', type: 'file', depth: 1, isExpanded: false },
+      ]
+      const geometries: RowGeometry[] = [
+        { path: 'outline/scene-1.md', type: 'file', top: 0, height: 40 },
+        { path: 'outline/scene-2.md', type: 'file', top: 40, height: 40 },
+      ]
+      const pos = calculateDropPosition(rows, 'outline/scene-1.md', 'outline/scene-2.md', 45, geometries)
 
-      const fileRows = rows.filter((r) => r.type === 'file')
-      expect(fileRows.length).toBe(2)
+      expect(pos).toEqual({ type: 'before', targetIndex: 1, targetPath: 'outline/scene-2.md' })
     })
 
-    it('handles reordering within folder correctly', () => {
-      const tree = buildSidebarTree(['outline/scene-1.md', 'outline/scene-2.md', 'outline/scene-3.md'])
-      const rows = getVisibleSidebarRows(tree, new Set(['outline']))
+    it('returns null for before/after when dragging folder (no reorder for folders)', () => {
+      const rows: SidebarTreeRow[] = [
+        { nodeId: 'a', name: 'characters', path: 'outline/characters', type: 'folder', depth: 1, isExpanded: false },
+        { nodeId: 'b', name: 'locations', path: 'outline/locations', type: 'folder', depth: 1, isExpanded: false },
+      ]
+      const geometries: RowGeometry[] = [
+        { path: 'outline/characters', type: 'folder', top: 0, height: 40 },
+        { path: 'outline/locations', type: 'folder', top: 40, height: 40 },
+      ]
+      const pos = calculateDropPosition(rows, 'outline/characters', 'outline/locations', 45, geometries)
 
-      const filePaths = rows.filter((r) => r.type === 'file').map((r) => r.path)
-      expect(filePaths).toEqual(['outline/scene-1.md', 'outline/scene-2.md', 'outline/scene-3.md'])
+      expect(pos).toBeNull()
+    })
+
+    it('returns onFolder when dragging folder onto another folder center', () => {
+      const rows: SidebarTreeRow[] = [
+        { nodeId: 'a', name: 'characters', path: 'outline/characters', type: 'folder', depth: 1, isExpanded: false },
+        { nodeId: 'b', name: 'locations', path: 'outline/locations', type: 'folder', depth: 1, isExpanded: false },
+      ]
+      const geometries: RowGeometry[] = [
+        { path: 'outline/characters', type: 'folder', top: 0, height: 40 },
+        { path: 'outline/locations', type: 'folder', top: 40, height: 40 },
+      ]
+      const pos = calculateDropPosition(rows, 'outline/characters', 'outline/locations', 60, geometries)
+
+      expect(pos).toEqual({ type: 'onFolder', targetPath: 'outline/locations' })
+    })
+
+    it('returns after when hovering bottom half of file row', () => {
+      const rows: SidebarTreeRow[] = [
+        { nodeId: 'a', name: 'scene-1', path: 'outline/scene-1.md', type: 'file', depth: 1, isExpanded: false },
+        { nodeId: 'b', name: 'scene-2', path: 'outline/scene-2.md', type: 'file', depth: 1, isExpanded: false },
+      ]
+      const geometries: RowGeometry[] = [
+        { path: 'outline/scene-1.md', type: 'file', top: 0, height: 40 },
+        { path: 'outline/scene-2.md', type: 'file', top: 40, height: 40 },
+      ]
+      const pos = calculateDropPosition(rows, 'outline/scene-1.md', 'outline/scene-2.md', 65, geometries)
+
+      expect(pos).toEqual({ type: 'after', targetIndex: 1, targetPath: 'outline/scene-2.md' })
+    })
+
+    it('returns onFolder for expanded folder even on bottom edge', () => {
+      const rows: SidebarTreeRow[] = [
+        { nodeId: 'a', name: 'scene-1', path: 'outline/scene-1.md', type: 'file', depth: 1, isExpanded: false },
+        { nodeId: 'b', name: 'characters', path: 'outline/characters', type: 'folder', depth: 1, isExpanded: true },
+      ]
+      const geometries: RowGeometry[] = [
+        { path: 'outline/scene-1.md', type: 'file', top: 0, height: 40 },
+        { path: 'outline/characters', type: 'folder', top: 40, height: 40 },
+      ]
+      // Bottom edge of expanded folder row — should still be onFolder
+      const pos = calculateDropPosition(rows, 'outline/scene-1.md', 'outline/characters', 75, geometries)
+      expect(pos).toEqual({ type: 'onFolder', targetPath: 'outline/characters' })
+    })
+
+    it('returns onFolder for expanded folder even on top edge', () => {
+      const rows: SidebarTreeRow[] = [
+        { nodeId: 'a', name: 'scene-1', path: 'outline/scene-1.md', type: 'file', depth: 1, isExpanded: false },
+        { nodeId: 'b', name: 'characters', path: 'outline/characters', type: 'folder', depth: 1, isExpanded: true },
+      ]
+      const geometries: RowGeometry[] = [
+        { path: 'outline/scene-1.md', type: 'file', top: 0, height: 40 },
+        { path: 'outline/characters', type: 'folder', top: 40, height: 40 },
+      ]
+      // Top edge of expanded folder row — should still be onFolder
+      const pos = calculateDropPosition(rows, 'outline/scene-1.md', 'outline/characters', 45, geometries)
+      expect(pos).toEqual({ type: 'onFolder', targetPath: 'outline/characters' })
+    })
+
+    it('returns after on bottom edge of collapsed folder', () => {
+      const rows: SidebarTreeRow[] = [
+        { nodeId: 'a', name: 'scene-1', path: 'outline/scene-1.md', type: 'file', depth: 1, isExpanded: false },
+        { nodeId: 'b', name: 'characters', path: 'outline/characters', type: 'folder', depth: 1, isExpanded: false },
+      ]
+      const geometries: RowGeometry[] = [
+        { path: 'outline/scene-1.md', type: 'file', top: 0, height: 40 },
+        { path: 'outline/characters', type: 'folder', top: 40, height: 40 },
+      ]
+      // Bottom edge of collapsed folder row — should be after (same parent)
+      const pos = calculateDropPosition(rows, 'outline/scene-1.md', 'outline/characters', 75, geometries)
+      expect(pos).toEqual({ type: 'after', targetIndex: 1, targetPath: 'outline/characters' })
+    })
+
+    it('returns onFolder for folder dragged onto expanded folder edge', () => {
+      const rows: SidebarTreeRow[] = [
+        { nodeId: 'a', name: 'src', path: 'outline/src', type: 'folder', depth: 1, isExpanded: false },
+        { nodeId: 'b', name: 'dst', path: 'outline/dst', type: 'folder', depth: 1, isExpanded: true },
+      ]
+      const geometries: RowGeometry[] = [
+        { path: 'outline/src', type: 'folder', top: 0, height: 40 },
+        { path: 'outline/dst', type: 'folder', top: 40, height: 40 },
+      ]
+      // Edge of expanded folder — folder drag should still be onFolder
+      const pos = calculateDropPosition(rows, 'outline/src', 'outline/dst', 45, geometries)
+      expect(pos).toEqual({ type: 'onFolder', targetPath: 'outline/dst' })
+    })
+
+    it('returns null when hovered geometry is missing', () => {
+      const rows: SidebarTreeRow[] = [
+        { nodeId: 'a', name: 'scene-1', path: 'outline/scene-1.md', type: 'file', depth: 1, isExpanded: false },
+      ]
+      const pos = calculateDropPosition(rows, 'outline/scene-1.md', 'outline/missing.md', 10, [])
+      expect(pos).toBeNull()
     })
   })
 
@@ -64,79 +182,6 @@ describe('drag-drop-sidebar', () => {
       const position: DropIndicatorPosition = { type: 'after', targetIndex: 1, targetPath: 'outline/b.md' }
       expect(position.type).toBe('after')
       expect(position.targetIndex).toBe(1)
-    })
-  })
-
-  describe('calculateDropPosition', () => {
-    function mockContainer(rowHeights: Record<string, number> = {}) {
-      const container = document.createElement('div')
-      container.innerHTML = `
-        <button data-sidebar-row-index="0" data-path="outline/scene-1.md"></button>
-        <button data-sidebar-row-index="1" data-path="outline/scene-2.md"></button>
-        <button data-sidebar-row-index="2" data-path="outline/characters"></button>
-        <button data-sidebar-row-index="3" data-path="outline/locations"></button>
-      `
-      const buttons = Array.from(container.querySelectorAll('button'))
-      for (const btn of buttons) {
-        const pathAttr = btn.getAttribute('data-path') ?? ''
-        const height = rowHeights[pathAttr] ?? 40
-        btn.getBoundingClientRect = () => ({
-          top: 0,
-          left: 0,
-          right: 200,
-          bottom: height,
-          width: 200,
-          height,
-          x: 0,
-          y: 0,
-          toJSON: () => '',
-        })
-      }
-      return { current: container }
-    }
-
-    it('returns onFolder when hovering folder center while dragging file', () => {
-      const rows: SidebarTreeRow[] = [
-        { nodeId: 'a', name: 'scene-1', path: 'outline/scene-1.md', type: 'file', depth: 1, isExpanded: false },
-        { nodeId: 'b', name: 'characters', path: 'outline/characters', type: 'folder', depth: 1, isExpanded: false },
-      ]
-      const containerRef = mockContainer()
-      const pos = calculateDropPosition(rows, 'outline/scene-1.md', 'outline/characters', 20, containerRef)
-
-      expect(pos).toEqual({ type: 'onFolder', targetPath: 'outline/characters' })
-    })
-
-    it('returns before when hovering top edge of file row while dragging file', () => {
-      const rows: SidebarTreeRow[] = [
-        { nodeId: 'a', name: 'scene-1', path: 'outline/scene-1.md', type: 'file', depth: 1, isExpanded: false },
-        { nodeId: 'b', name: 'scene-2', path: 'outline/scene-2.md', type: 'file', depth: 1, isExpanded: false },
-      ]
-      const containerRef = mockContainer()
-      const pos = calculateDropPosition(rows, 'outline/scene-1.md', 'outline/scene-2.md', 5, containerRef)
-
-      expect(pos).toEqual({ type: 'before', targetIndex: 1, targetPath: 'outline/scene-2.md' })
-    })
-
-    it('returns null for before/after when dragging folder (no reorder for folders)', () => {
-      const rows: SidebarTreeRow[] = [
-        { nodeId: 'a', name: 'characters', path: 'outline/characters', type: 'folder', depth: 1, isExpanded: false },
-        { nodeId: 'b', name: 'locations', path: 'outline/locations', type: 'folder', depth: 1, isExpanded: false },
-      ]
-      const containerRef = mockContainer()
-      const pos = calculateDropPosition(rows, 'outline/characters', 'outline/locations', 5, containerRef)
-
-      expect(pos).toBeNull()
-    })
-
-    it('returns onFolder when dragging folder onto another folder center', () => {
-      const rows: SidebarTreeRow[] = [
-        { nodeId: 'a', name: 'characters', path: 'outline/characters', type: 'folder', depth: 1, isExpanded: false },
-        { nodeId: 'b', name: 'locations', path: 'outline/locations', type: 'folder', depth: 1, isExpanded: false },
-      ]
-      const containerRef = mockContainer()
-      const pos = calculateDropPosition(rows, 'outline/characters', 'outline/locations', 20, containerRef)
-
-      expect(pos).toEqual({ type: 'onFolder', targetPath: 'outline/locations' })
     })
   })
 
@@ -305,6 +350,90 @@ describe('drag-drop-sidebar', () => {
       await handleFileSameFolderReorder(rows, sourceRow, 'other/file-x.md', dropPosition, 'folder', onReorderFiles)
 
       expect(onReorderFiles).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('createContainerDragOverHandler', () => {
+    it('sets onSection when dragging folder over container background', () => {
+      const setDropPosition = vi.fn()
+      const handler = createContainerDragOverHandler(
+        [{ nodeId: 'a', path: 'f', type: 'folder', depth: 0, isExpanded: false, name: 'f' }],
+        'f',
+        setDropPosition,
+      )
+      const container = document.createElement('div')
+      const event = { target: container, currentTarget: container, preventDefault: vi.fn() } as unknown as DragEvent
+      handler(event)
+      expect(setDropPosition).toHaveBeenCalledWith({ type: 'onSection' })
+      expect(event.preventDefault).toHaveBeenCalled()
+    })
+
+    it('ignores when event bubbled from a row (target !== currentTarget)', () => {
+      const setDropPosition = vi.fn()
+      const handler = createContainerDragOverHandler(
+        [{ nodeId: 'a', path: 'f', type: 'folder', depth: 0, isExpanded: false, name: 'f' }],
+        'f',
+        setDropPosition,
+      )
+      const container = document.createElement('div')
+      const row = document.createElement('button')
+      const event = { target: row, currentTarget: container, preventDefault: vi.fn() } as unknown as DragEvent
+      handler(event)
+      expect(setDropPosition).not.toHaveBeenCalled()
+      expect(event.preventDefault).not.toHaveBeenCalled()
+    })
+
+    it('ignores when dragging a file (not a folder)', () => {
+      const setDropPosition = vi.fn()
+      const handler = createContainerDragOverHandler(
+        [{ nodeId: 'a', path: 'f', type: 'file', depth: 0, isExpanded: false, name: 'f' }],
+        'f',
+        setDropPosition,
+      )
+      const container = document.createElement('div')
+      const event = { target: container, currentTarget: container, preventDefault: vi.fn() } as unknown as DragEvent
+      handler(event)
+      expect(setDropPosition).not.toHaveBeenCalled()
+      expect(event.preventDefault).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('createContainerDropHandler', () => {
+    it('moves folder to section root when dropping on container background with onSection', () => {
+      const onMoveFolder = vi.fn().mockResolvedValue(undefined)
+      const setDraggingPath = vi.fn()
+      const setDropPosition = vi.fn()
+      const handler = createContainerDropHandler('f', { type: 'onSection' }, onMoveFolder, setDraggingPath, setDropPosition)
+      const container = document.createElement('div')
+      const event = { target: container, currentTarget: container, preventDefault: vi.fn() } as unknown as DragEvent
+      handler(event)
+      expect(onMoveFolder).toHaveBeenCalledWith('f', '')
+      expect(setDraggingPath).toHaveBeenCalledWith(null)
+      expect(setDropPosition).toHaveBeenCalledWith(null)
+      expect(event.preventDefault).toHaveBeenCalled()
+    })
+
+    it('ignores when event bubbled from a row', () => {
+      const onMoveFolder = vi.fn().mockResolvedValue(undefined)
+      const setDraggingPath = vi.fn()
+      const setDropPosition = vi.fn()
+      const handler = createContainerDropHandler('f', { type: 'onSection' }, onMoveFolder, setDraggingPath, setDropPosition)
+      const container = document.createElement('div')
+      const row = document.createElement('button')
+      const event = { target: row, currentTarget: container, preventDefault: vi.fn() } as unknown as DragEvent
+      handler(event)
+      expect(onMoveFolder).not.toHaveBeenCalled()
+    })
+
+    it('ignores when dropPosition is not onSection', () => {
+      const onMoveFolder = vi.fn().mockResolvedValue(undefined)
+      const setDraggingPath = vi.fn()
+      const setDropPosition = vi.fn()
+      const handler = createContainerDropHandler('f', { type: 'before', targetIndex: 0, targetPath: 'a' }, onMoveFolder, setDraggingPath, setDropPosition)
+      const container = document.createElement('div')
+      const event = { target: container, currentTarget: container, preventDefault: vi.fn() } as unknown as DragEvent
+      handler(event)
+      expect(onMoveFolder).not.toHaveBeenCalled()
     })
   })
 })

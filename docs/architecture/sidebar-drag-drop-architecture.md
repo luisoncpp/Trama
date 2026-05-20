@@ -1,6 +1,6 @@
 # Sidebar Drag & Drop Architecture
 
-> **Last updated:** 2026-05-08
+> **Last updated:** 2026-05-19
 
 Goal: document the sidebar drag-and-drop system end-to-end so contributors understand the drop position model, path scoping rules, IPC contracts, and state management without tracing code across multiple files.
 
@@ -32,7 +32,7 @@ export type DropIndicatorPosition =
 
 ### Calculation
 
-`calculateDropPosition()` in `use-sidebar-tree-drag-handlers.ts` resolves the drop target:
+`calculateDropPosition()` in `sidebar-drop-logic/private/drop-position.ts` resolves the drop target using cached `RowGeometry[]`:
 
 1. Find the `closestRow` above the cursor's midpoint (`clientY < rect.top + rect.height / 2`)
 2. If `closestRow` is a folder → return `onFolder` with that folder's path
@@ -47,7 +47,7 @@ The rows passed to `calculateDropPosition` are already sorted by `corkboardOrder
 ```
 User drags file
   → calculateDropPosition(type: 'between', beforeIndex)
-  → executeDrop() [use-sidebar-tree-drag-handlers.ts]
+  → executeDrop() [sidebar-drop-logic/private/drop-execution.ts]
     → builds sibling file list (rows already sorted by corkboardOrder)
     → splice source out, insert at target index
     → calls onReorderFiles(folderPath, orderedIds)
@@ -67,7 +67,7 @@ onReorderFiles [use-project-editor-ui-actions.ts]
 ```
 User drags file onto folder
   → calculateDropPosition(type: 'onFolder', folderPath)
-  → executeDrop() [use-sidebar-tree-drag-handlers.ts]
+  → executeDrop() [sidebar-drop-logic/private/drop-execution.ts]
     → calls onMoveFile(sourcePath, targetFolder)
 
 onMoveFile [use-project-editor-ui-actions.ts]
@@ -170,7 +170,7 @@ Response: { sourcePath: string, renamedTo: string, updatedAt: string }
 ```
 User drags folder onto another folder / section root
   → calculateDropPosition(type: 'onFolder' | 'onSection')
-  → executeDrop() [use-sidebar-tree-drag-handlers.ts]
+  → executeDrop() [sidebar-drop-logic/private/drop-execution.ts]
     → if folder source + onFolder → onMoveFolder(sourcePath, targetPath)
     → if folder source + onSection → onMoveFolder(sourcePath, '')
 
@@ -194,7 +194,7 @@ const [draggingPath, setDraggingPath] = useState<string | null>(null)
 const [dropPosition, setDropPosition] = useState<DropIndicatorPosition | null>(null)
 ```
 
-This state is passed down to `SidebarTreeRows` via `dragState` prop and consumed by `useSidebarTreeDragHandlers`. The state is intentionally local to the tree — no global state or IPC notification.
+This state is passed down to `SidebarTreeRows` via `dragState` prop and consumed by the drop logic module. The state is intentionally local to the tree — no global state or IPC notification.
 
 ## Component Hierarchy
 
@@ -202,22 +202,27 @@ This state is passed down to `SidebarTreeRows` via `dragState` prop and consumed
 SidebarTree
 ├── SidebarTreeRows
 │   ├── SidebarTreeRowButton (per row, draggable)
-│   │   └── onDragStart → handleDragStart
-│   │   └── onDragOver → handleDragOver
-│   │   └── onDrop → handleDrop
+│   │   └── onDragStart → buildRowGeometries() + setDraggingPath
+│   │   └── onDragOver → calculateDropPosition()
+│   │   └── onDrop → executeDrop()
 │   └── DropIndicator (positioned overlay)
-└── useSidebarTreeDragHandlers
-    ├── calculateDropPosition()
-    └── executeDrop()
+└── sidebar-drop-logic (deep module)
+    ├── private/drop-position.ts — calculateDropPosition()
+    ├── private/drop-execution.ts — executeDrop()
+    └── private/container-handlers.ts — background drop detection
 ```
 
-`SidebarTreeRows` is a pure render component. All drag logic lives in `useSidebarTreeDragHandlers`.
+`SidebarTreeRows` owns the one-time DOM geometry read at drag start. All position math and execution logic lives in `sidebar-drop-logic`.
 
 ## Key Files
 
 | File | Responsibility |
 |------|---------------|
-| `src/features/project-editor/components/sidebar/use-sidebar-tree-drag-handlers.ts` | `calculateDropPosition()`, `executeDrop()`, drag handler hook |
+| `src/features/project-editor/components/sidebar/sidebar-drop-logic/index.ts` | Public facade — exports `calculateDropPosition()`, `executeDrop()`, container handlers. Do not import from `private/` directly. |
+| `src/features/project-editor/components/sidebar/sidebar-drop-logic/private/drop-position.ts` | Pure `calculateDropPosition(rows, draggingPath, hoveredPath, clientY, rowGeometries)` |
+| `src/features/project-editor/components/sidebar/sidebar-drop-logic/private/drop-execution.ts` | `executeDrop()` — routes folder drops and file drops (move vs reorder) |
+| `src/features/project-editor/components/sidebar/sidebar-drop-logic/private/file-reorder.ts` | `handleFileCrossFolderDrop()`, `handleFileSameFolderReorder()` |
+| `src/features/project-editor/components/sidebar/sidebar-drop-logic/private/container-handlers.ts` | Background drop detection via `e.target !== e.currentTarget` |
 | `src/features/project-editor/components/sidebar/sidebar-tree-sort.ts` | `sortTreeRowsByOrder()` — reorders rows by corkboardOrder |
 | `src/features/project-editor/components/sidebar/sidebar-path-scoping.ts` | `scopeCorkboardOrder()`, `buildScopedReorderHandler()`, `toProjectPath()`, `toProjectFolderPath()` — canonical path scoping seam |
 | `src/features/project-editor/components/sidebar/sidebar-panel-body.tsx` | Thin adapter that invokes the canonical path scoping seam from raw UI callbacks |
@@ -258,8 +263,8 @@ npm run test -- tests/sidebar-panel-body.test.ts
 ### Adding a new drop target type
 
 1. Add the type to `DropIndicatorPosition` in `drop-indicator.tsx`
-2. Update `calculateDropPosition()` to detect the new target
-3. Update `executeDrop()` to route to the new operation
+2. Update `calculateDropPosition()` in `sidebar-drop-logic/private/drop-position.ts` to detect the new target
+3. Update `executeDrop()` in `sidebar-drop-logic/private/drop-execution.ts` to route to the new operation
 4. Add a new IPC channel if needed
 
 ### Adding drag to folder rows

@@ -313,7 +313,7 @@ Mandatory doc navigation for new chats: start with `docs/START-HERE.md` — it p
 - `src/features/project-editor/components/sidebar/sidebar-explorer-body.tsx`
   - Explorer body (path, filter, tree, state hints, menus/dialogs).
 - `src/features/project-editor/components/sidebar/sidebar-tree.tsx`
-  - Interactive tree rows, keyboard nav, right-click file hook, and drag-and-drop reorder state. Drag handler logic lives in `use-sidebar-tree-drag-handlers.ts`.
+  - Interactive tree rows, keyboard nav, right-click file hook, and drag-and-drop reorder state. Measures row geometry once at drag start and delegates position calculation to `sidebar-drop-logic`.
 - `src/features/project-editor/components/sidebar/sidebar-tree-logic.ts`
   - Pure tree build/flatten helpers.
 - `src/features/project-editor/components/sidebar/sidebar-tree-sort.ts`
@@ -326,10 +326,18 @@ Mandatory doc navigation for new chats: start with `docs/START-HERE.md` — it p
   - Drop indicator position type model (`before` | `after` | `onFolder` | `onSection`). Visual rendering is handled by CSS classes on `SidebarTreeRowButton`.
 - `src/features/project-editor/components/sidebar/use-sidebar-tree-expanded-folders.ts`
   - Expanded folder state management, including rename remap consumption via sidebar folder-rename events.
-- `src/features/project-editor/components/sidebar/use-sidebar-tree-drag-handlers.ts`
-  - Drag-and-drop handler logic (dragStart, dragOver, drop) and drop position calculation, extracted from `sidebar-tree.tsx`.
-- `src/features/project-editor/components/sidebar/sidebar-file-drop-logic.ts`
-  - Pure helpers for file drop handling: cross-folder move + reorder (`handleFileCrossFolderDrop`) and same-folder reorder (`handleFileSameFolderReorder`).
+- `src/features/project-editor/components/sidebar/sidebar-drop-logic/index.ts`
+  - Public facade for drag-and-drop position calculation and execution. Do not import from `private/` directly.
+- `src/features/project-editor/components/sidebar/sidebar-drop-logic/private/drop-position.ts`
+  - Pure `calculateDropPosition(rows, draggingPath, hoveredPath, clientY, rowGeometries)` — no DOM queries.
+- `src/features/project-editor/components/sidebar/sidebar-drop-logic/private/drop-execution.ts`
+  - `executeDrop()` — routes folder drops and file drops (move vs reorder) behind a single interface.
+- `src/features/project-editor/components/sidebar/sidebar-drop-logic/private/file-reorder.ts`
+  - Pure helpers for cross-folder move + reorder (`handleFileCrossFolderDrop`) and same-folder reorder (`handleFileSameFolderReorder`).
+- `src/features/project-editor/components/sidebar/sidebar-drop-logic/private/container-handlers.ts`
+  - Container-level `onDragOver` / `onDrop` handlers that detect background drops geometrically via `e.target !== e.currentTarget`.
+- `src/features/project-editor/components/sidebar/use-sidebar-tree-rows-drag.ts`
+  - Adapter hook: builds `RowGeometry[]` once at drag start via `buildRowGeometries()`, then delegates position math and execution to `sidebar-drop-logic`.
 - `src/features/project-editor/components/sidebar/sidebar-folder-rename-events.ts`
   - One-shot folder rename event bridge used to remap expanded folder state after refresh.
 - `src/features/project-editor/components/sidebar/sidebar-filter.tsx`

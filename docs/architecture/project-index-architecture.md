@@ -153,7 +153,7 @@ This means documents without an explicit `id` in their frontmatter use their **c
 
 1. The sidebar scopes `visibleFiles` to section-relative paths via `getScopedFiles()` (strips the section root prefix like `"book/"`).
 2. The sidebar tree is built from these section-relative paths.
-3. Drag-drop reorder derives `folderPath` from `sourceRow.path` (section-relative) in `use-sidebar-tree-drag-handlers.ts`.
+3. Drag-drop reorder derives `folderPath` from `sourceRow.path` (section-relative) in `sidebar-drop-logic/private/drop-execution.ts`.
 4. `buildScopedReorderHandler()` in `sidebar-path-scoping.ts` converts section-relative `folderPath` and `orderedIds` to project-relative before calling the IPC action.
 5. The project-relative `folderPath` and project-relative file-path `orderedIds` are sent to `trama:index:reorder` IPC.
 

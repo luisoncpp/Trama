@@ -3,7 +3,11 @@ import { PROJECT_EDITOR_STRINGS } from '../../project-editor-strings'
 import { filterSidebarTree } from './sidebar-filter-logic'
 import { buildSidebarTree, getVisibleSidebarRows, sortTreeRowsByOrder } from './sidebar-tree-logic'
 import { useSidebarTreeExpandedFolders } from './use-sidebar-tree-expanded-folders'
-import { createContainerDragOverHandler, createContainerDropHandler, useSidebarTreeDragHandlers } from './use-sidebar-tree-drag-handlers'
+import {
+  createContainerDragOverHandler,
+  createContainerDropHandler,
+} from './sidebar-drop-logic'
+import { useSidebarTreeRowsDrag } from './use-sidebar-tree-rows-drag'
 import { SidebarTreeRowButton } from './sidebar-tree-row-button'
 import type { DropIndicatorPosition } from './drop-indicator'
 import type { SidebarTreeRow } from './sidebar-tree-logic'
@@ -94,7 +98,7 @@ export function SidebarTreeRows({
   dragState,
 }: SidebarTreeRowsProps) {
   const { draggingPath, dropPosition, setDraggingPath, setDropPosition } = dragState
-  const { handleDragStart, handleDragOver, handleDrop } = useSidebarTreeDragHandlers({
+  const { handleDragStart, handleDragOver, handleDrop } = useSidebarTreeRowsDrag({
     rows,
     draggingPath,
     dropPosition,

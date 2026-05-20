@@ -88,7 +88,7 @@ export function SidebarTreeRowButton({
       onDragStart={(e) => { onDragStart?.(row.path, e) }}
       onDragOver={(e) => { e.preventDefault(); onDragOver?.(row.path, e) }}
       onDragEnter={(e) => { e.preventDefault(); onDragOver?.(row.path, e) }}
-      onDrop={(e) => { e.preventDefault(); onDrop?.(row.path, e) }}
+      onDrop={(e) => { e.preventDefault(); e.stopPropagation(); onDrop?.(row.path, e) }}
     >
       {isFolder ? <TreeChevron expanded={row.isExpanded} /> : <span class='sidebar-tree__chevron is-file' />}
       <TreeNodeIcon type={row.type} />

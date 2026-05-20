@@ -19,7 +19,7 @@ The `scopeCorkboardOrder()` function converts project-relative `corkboardOrder` 
 3. `sidebar-path-scoping.ts` converts keys/IDs to section-relative before the tree sees them
 4. Scoped order → `sidebar-explorer-content` → `sidebar-explorer-body` → `sidebar-tree`
 5. `sidebar-tree` calls `sortTreeRowsByOrder()` to reorder rows before rendering
-6. On drag-drop, `use-sidebar-tree-drag-handlers` builds section-relative reorder payload
+6. On drag-drop, `sidebar-drop-logic/private/drop-execution.ts` builds section-relative reorder payload
 7. `buildScopedReorderHandler()` in `sidebar-path-scoping.ts` converts back to project-relative before IPC
 
 ## Key files
@@ -28,7 +28,7 @@ The `scopeCorkboardOrder()` function converts project-relative `corkboardOrder` 
 |------|---------------|
 | `sidebar-tree-sort.ts` | `sortTreeRowsByOrder()` — pure sort by order map |
 | `sidebar-path-scoping.ts` | `scopeCorkboardOrder()`, `buildScopedReorderHandler()` — canonical path conversion seam |
-| `use-sidebar-tree-drag-handlers.ts` | `executeDrop()` — builds section-relative reorder payload |
+| `sidebar-drop-logic/private/drop-execution.ts` | `executeDrop()` — builds section-relative reorder payload |
 
 ## Focused test
 

@@ -1,3 +1,79 @@
+1. Project Editor action-hook fragmentation
+Files use-project-editor-sub-state-hooks.ts, use-project-editor-focus-actions.ts, use-project-editor-sidebar-actions.ts, use-project-editor-layout-actions.ts, use-project-editor-actions.ts, use-project-editor-ui-actions.ts, use-project-editor-ui-actions-helpers.ts, use-project-editor-ui-actions-helpers-core.ts
+
+Problem The Project Editor surface is sliced into ~15 tiny hook files whose interfaces are larger than their implementations. useLayoutState, useSidebarSt, useProjectSt, and useUiSt are one-line useMemo wrappers. Action hooks are useCallback shells around 3–10 lines of setter logic. buildProjectEditorActions is an identity function. The deletion test fails: deleting any of these files does not concentrate complexity, it just forces the same one-line wrappers back into callers. There is almost no independent test coverage for the individual hooks; real coverage comes from integration tests like use-project-editor.test.ts.
+
+Solution Collapse the sub-state builders into use-project-editor-state.ts and merge the tiny action wrappers into 2–3 cohesive action modules (workspace/layout, sidebar/file, conflict/dialog). Stop extracting single useCallback wrappers unless they earn their keep with independent tests and a stable interface.
+
+Benefits
+
+Locality: A bug in file-selection logic currently bounces across use-project-editor-layout-actions.ts, use-project-editor-ui-actions-helpers-core.ts, and use-project-editor-ui-actions.ts. After merging, the logic lives in one module.
+Leverage: Callers consume 3 action surfaces instead of 15.
+Tests: The interface becomes the real test surface. Integration tests already cover the behavior; deepening makes those tests hit the actual module rather than a shallow pass-through.
+2. Rich editor focus-mode cluster
+Files rich-markdown-editor-focus-scope.ts, rich-markdown-editor-focus-scope-helpers.ts, rich-markdown-editor-focus-scope-geometry.ts, rich-markdown-editor-focus-scope-scroll.ts
+
+Problem Understanding “how focus mode renders” requires reading four files plus CSS. geometry.ts has pure text-boundary functions, but the real bugs (scroll jumping after padding changes, stale selection rects, CSS Highlights API fallback coordination, inactive-pane dimming) live in focus-scope.ts, which wires helpers together via useEffect and requestAnimationFrame. The seam between the files is artificial: the geometry helpers have no stable contract independent of how focus-scope.ts calls them, and the scroll module is tightly coupled to the classList manipulations in the helpers.
+
+Solution Merge into one or two modules. Keep the pure geometry functions as internal helpers, but stop pretending they form an independent module. Colocate the scroll logic with the effect that schedules it.
+
+Benefits
+
+Locality: Change, bugs, and knowledge about focus-mode rendering concentrate in one place.
+Leverage: Callers (the editor component) deal with one focus-mode interface instead of four.
+Tests: The current integration tests already exercise the whole cluster; deepening aligns the module boundary with the test surface.
+3. Sidebar drag-and-drop DOM leakage
+Files use-sidebar-tree-drag-handlers.ts, sidebar-file-drop-logic.ts, drop-indicator.tsx, sidebar-tree.tsx, sidebar-tree-row-button.tsx
+
+Problem calculateDropPosition queries containerRef.current.querySelectorAll('[data-sidebar-row-index]') and mocks getBoundingClientRect in tests. The drop logic is tightly coupled to the DOM attribute contract of the tree row button component. Path conversions then happen in three places: sidebar-path-scoping.ts, the tree callback adapter, and the drag handler itself.
+
+Solution Extract a DropPositionCalculator that accepts a RowGeometry[] array (no DOM). Let sidebar-tree.tsx build that array from its own rendered rows. This eliminates the DOM leak and makes the drop logic unit-testable without mocking getBoundingClientRect.
+
+Benefits
+
+Locality: The geometric math and path-scoping logic concentrate behind one seam.
+Leverage: The tree component controls its own geometry; the calculator only knows rectangles and indices.
+Tests: The calculator becomes a pure, deep module testable with simple data inputs.
+4. Book export PDF barrel and font-utils indirection
+Files book-export-pdf-renderer.ts (2-line re-export barrel), book-export-pdf-font-utils.ts (37 lines, only called from book-export-pdf-utils.ts and book-export-pdf-inline.ts)
+
+Problem book-export-pdf-renderer.ts is a pure barrel with zero logic; its only purpose is a name, but the architecture doc already points to book-export-pdf-utils.ts as canonical. book-export-pdf-font-utils.ts contains normalizeForFont and safeTextForFont, which are only called from two files. Its entire interface is its entire implementation. The deletion test fails: deleting the barrel changes nothing but import paths, and deleting font-utils would just move two small functions into their only callers.
+
+Solution Remove the barrel. Inline book-export-pdf-font-utils.ts into book-export-pdf-utils.ts or book-export-pdf-inline.ts (the only callers).
+
+Benefits
+
+Locality: PDF rendering knowledge lives in the modules that actually render PDFs.
+Leverage: Fewer files to traverse when debugging font issues in export.
+Tests: No behavioral change; the existing tests already exercise the inlined functions.
+5. Markdown layout directive duplication across renderer and export seams
+Files src/shared/markdown-layout-directives.ts, src/shared/markdown-layout-directives-artifact-node.ts, electron/services/book-export-directives.ts
+
+Problem The shared module owns parsing and serialization of trama:center, trama:spacer, and trama:pagebreak for the editor. But book-export-directives.ts reimplements the exact same regex patterns and HTML artifact parsing for book export. Both files know how to parse <!-- trama:spacer lines=N --> and map center:start/center:end boundaries. If a new directive is added, three files must change. This is a leaky seam: the export layer should not reimplement what the shared layer already knows.
+
+Solution Move the directive AST/parsing into src/shared/markdown-layout-directives.ts and have book-export-directives.ts become a thin format-specific serializer, or disappear entirely. The shared module already has the canonical regexes; the export layer should consume them.
+
+Benefits
+
+Locality: Directive parsing knowledge lives in one shared module.
+Leverage: Adding a new directive requires changing one interface, not three implementations.
+Tests: The shared parser tests become the single source of truth; export tests only need to verify format-specific output.
+6. Pane save logic and snapshot-logger pass-throughs
+Files src/features/project-editor/pane/pane-save-logic.ts, src/features/project-editor/pane/snapshot-compare-logger.ts
+
+Problem executePaneSave checks if (!paneDocument.isDirty || !paneDocument.path) return, then calls saveDocumentNow. But PaneWorkspace.savePaneIfDirty already performs the exact same guard before calling executePaneSave. The file exists to be “testable,” yet its only test is indirect through PaneWorkspace tests. The snapshot logger is a debug-only utility with a 5-parameter interface and trivial implementation.
+
+Solution Inline executePaneSave into PaneWorkspace.savePaneIfDirty. Absorb the logger as a private helper inside PaneWorkspace or inline it.
+
+Benefits
+
+Locality: The save-or-skip decision lives in the module that owns pane state.
+Leverage: Callers still interact with PaneWorkspace; nothing leaks across the seam.
+Tests: PaneWorkspace tests already cover this behavior; removing the pass-through makes those tests hit the real module.
+Which of these would you like to explore?
+
+
+
 Architectural Deepening Opportunities
 Candidate 1 — Action hooks have no isolated tests
 Files: use-project-editor-create-actions.ts, use-project-editor-file-actions.ts, use-project-editor-focus-actions.ts, use-project-editor-folder-actions.ts, use-project-editor-picker-actions.ts, use-project-editor-sidebar-actions.ts, use-project-editor-conflict-actions.ts (7 files, ~650 lines total)
@@ -78,6 +154,18 @@ Tests: Two test files replace one — pure logic test (no Electron) and handler 
 **Net result:** 51 → 35 sidebar files. Lint passes; all tests pass.
 
 **Key insight preserved:** `SettingsField` provides a small interface (`label`, `children`, `note?`) behind which all settings layout behavior lives. Controls no longer need to know whether they have their own label wrapper — the layout component owns that concern. This is the same "layout component" pattern used successfully in `sidebar-explorer-body.tsx`.
+
+~~Candidate 3 — Sidebar drag-and-drop DOM leakage~~ ✅ **IMPLEMENTED**
+
+**What changed:**
+- Extracted `sidebar-drop-logic/` deep module with `index.ts` public facade and `private/` implementation helpers.
+- `calculateDropPosition()` is now pure: accepts `RowGeometry[]` instead of querying `containerRef` DOM on every `dragOver`.
+- `SidebarTreeRows` builds `RowGeometry[]` once at `dragStart` via `buildRowGeometries()`; no per-drag-over measurement overhead.
+- Container handlers detect background drops via `e.target !== e.currentTarget` instead of `closest('[data-sidebar-row-index]')`.
+- `executeDrop()`, `handleFileCrossFolderDrop()`, `handleFileSameFolderReorder()` moved behind the new module seam.
+- Deleted `use-sidebar-tree-drag-handlers.ts` and `sidebar-file-drop-logic.ts`.
+
+**Net result:** Drag-and-drop math is fully pure and testable without DOM mocks. The seam between DOM ownership (tree component) and position math (deep module) is clean. Lint passes; all tests pass.
 
 
 

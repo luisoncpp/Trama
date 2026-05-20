@@ -155,7 +155,7 @@ Los culpables habituales, en orden:
 1. ¿Problema de rutas? → `sidebar-panel-logic.ts` (scoping) y `sidebar-panel-body.tsx` (conversión).
 2. ¿Carpetas vacías no aparecen? → `project-scanner.ts` + `sidebar-tree-logic.ts`.
 3. ¿El filtro no funciona? → `sidebar-filter.tsx` + `sidebar-panel-logic.ts`.
-4. ¿Drag and drop raro? → `use-sidebar-tree-drag-handlers.ts` + `sidebar-file-drop-logic.ts`.
+4. ¿Drag and drop raro? → `sidebar-drop-logic/` (deep module: `private/drop-position.ts`, `private/drop-execution.ts`, `private/file-reorder.ts`).
 5. ¿Se expanden carpetas solas? → `use-sidebar-tree-expanded-folders.ts`.
 
 ### El split pane no sincroniza bien
