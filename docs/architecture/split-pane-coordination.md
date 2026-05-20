@@ -187,7 +187,7 @@ if (!canSelectFile(values.isDirty, values.selectedPath, filePath)) {
 
 **Why it matters:** This protects the currently active document from unsaved-work loss. Both panes being dirty is fine — the guard only blocks if navigating away from the active dirty document.
 
-**File:** `src/features/project-editor/use-project-editor-layout-actions.ts:143-145`
+**File:** `src/features/project-editor/workspace-actions.ts:openFileInPane`
 
 ### Contract 5: `openProject(root, preferredFilePath?, preferredPane?)` with explicit pane handling
 
@@ -212,7 +212,7 @@ The `preferredPane` parameter exists so conflict-resolution flows (save-as-copy)
 
 **No implicit mode changes.** Split mode only enters via explicit action.
 
-**File:** `src/features/project-editor/use-project-editor-layout-actions.ts:47-70`
+**File:** `src/features/project-editor/workspace-actions.ts:toggleWorkspaceLayoutMode`
 
 ### Contract 7: Test setup must normalize layout before asserting
 
@@ -248,7 +248,7 @@ The active pane is determined by `workspaceLayout.activePane` and then used to s
 
 ## Sub-State Decomposition (Memoized)
 
-To prevent false re-render cascades caused by a single `values` object changing on every render, `useProjectEditorState` now returns six stable sub-state objects via `use-project-editor-sub-state-hooks.ts`:
+To prevent false re-render cascades caused by a single `values` object changing on every render, `useProjectEditorState` returns six stable sub-state objects built with inlined memo projections:
 
 | Sub-state | Type | Contains | Consumed by |
 |---|---|---|---|
@@ -259,9 +259,9 @@ To prevent false re-render cascades caused by a single `values` object changing 
 | `projectState` | `ProjectEditorProjectState` | `rootPath`, `snapshot`, `visibleFiles`, `corkboardOrder` | File/folder/create actions, layout actions |
 | `uiState` | `ProjectEditorUiState` | `apiAvailable`, `loadingProject`, `loadingDocument`, `saving`, `isFullscreen`, `externalConflictPath`, `conflictComparisonContent`, `statusMessage` | Conflict actions, editor view actions |
 
-**Rule:** Action hooks must consume only the sub-states they need, not the monolithic `values` object. This keeps `useCallback`/`useEffect` dependency arrays stable and prevents unrelated state changes from re-creating callbacks.
+**Rule:** The thin adapter in `use-project-editor-actions.ts` builds the full `ProjectEditorActions` surface via one `useMemo` over the three deep modules. Callers receive a stable `actions` object instead of 15 independent callbacks.
 
-**Source:** `src/features/project-editor/use-project-editor-sub-state-hooks.ts` + `src/features/project-editor/use-project-editor-state.ts`
+**Source:** `src/features/project-editor/use-project-editor-state.ts`
 
 ## Key Implementation Files
 
@@ -274,9 +274,9 @@ To prevent false re-render cascades caused by a single `values` object changing 
 | `src/features/project-editor/pane/pane-save-logic.ts` | `executePaneSave` helper (internal, not in barrel) |
 | `src/features/project-editor/use-project-editor.ts` | Composition root: builds `paneBindings` from `paneState` + setters, creates `PaneWorkspace` via `usePaneWorkspace`, wires `serializationRefs` and `saveDocumentFn` |
 | `src/features/project-editor/use-project-editor-state.ts` | `buildValues()` — projection from layout+document layers to shared state; returns 6 memoized sub-states; `ProjectEditorStateSetters` excludes `setPrimaryPane`/`setSecondaryPane` from public API |
-| `src/features/project-editor/use-project-editor-sub-state-hooks.ts` | Memoized sub-state builders (`useDocumentState`, `usePaneState`, `useLayoutState`, `useSidebarSt`, `useProjectSt`, `useUiSt`) |
-| `src/features/project-editor/use-project-editor-layout-actions.ts` | `openFileInPane`, `setWorkspaceActivePane`, `toggleWorkspaceLayoutMode` |
-| `src/features/project-editor/use-project-editor-ui-actions.ts` | `updateEditorValue(pane?)` delegates to `workspace.updatePaneContent`; `saveNow(pane?)` delegates to `workspace.savePaneIfDirty`; composes primary + secondary (conflict) action sets |
+| `src/features/project-editor/workspace-actions.ts` | Deep module for workspace layout, pane activation, focus, fullscreen, editor view, save, and revert |
+| `src/features/project-editor/sidebar-file-actions/index.ts` | Deep module facade for sidebar UI and file/folder CRUD |
+| `src/features/project-editor/conflict-actions.ts` | Deep module for external-edit conflict resolution |
 | `src/features/project-editor/use-project-editor-open-project.ts` | `applyOpenedProject` with `preferredPane` handling |
 | `src/features/project-editor/project-editor-logic.ts` | `reconcileWorkspaceLayout`, `canSelectFile` |
 | `src/features/project-editor/components/workspace-editor-panels.tsx` | Split UI with explicit pane routing in `PaneEditor` |

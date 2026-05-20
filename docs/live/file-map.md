@@ -130,31 +130,20 @@ Mandatory doc navigation for new chats: start with `docs/START-HERE.md` — it p
   - Screen-level composition (sidebar + editor + status).
 - `src/features/project-editor/project-editor-dialogs.tsx`
   - Centralized overlay/dialog composition for AI import/export and markdown book export modals plus toast notifications.
-- `src/features/project-editor/use-project-editor-ui-actions.ts`
-  - Composes UI actions.
-  - `updateEditorValue(value, pane?)` supports pane-targeted updates; split-pane call sites should pass explicit pane.
-  - `revertChanges(pane?)` — Discards unsaved changes and reloads the file from disk. Reuses `loadDocument` under the hood.
-- `src/features/project-editor/use-project-editor-focus-actions.ts`
-  - Fullscreen/focus-mode action hooks. When enabling focus, auto-collapses the sidebar.
-- `src/features/project-editor/use-project-editor-file-actions.ts`
-  - Rename/delete file actions.
-  - For file delete, forwards the optional `deleteAssociatedImages` choice to IPC.
-- `src/features/project-editor/project-editor-image-save.ts`
-  - Renderer-side save helper that converts any non-PNG embedded image data URLs into PNG data URLs before persistence, matching the `res/*.png` storage contract.
-- `src/features/project-editor/use-project-editor-folder-actions.ts`
-  - Folder rename action with dirty-subtree guard and split-layout remap before project reopen.
 - `src/features/project-editor/project-editor-folder-logic.ts`
   - Pure helpers for folder-prefix path remap (`isPathInsideFolder`, `remapFolderPrefix`, layout remap).
 - `src/features/project-editor/project-editor-logic.ts`
   - Pure workspace helpers: `deriveActivePaneDocument` (active pane projection), `canSelectFile`, `reconcileWorkspaceLayout`, `buildConflictCopyPath`, and layout persistence.
-- `src/features/project-editor/use-project-editor-ui-actions-helpers.ts`
-  - Helper hooks for editor view actions: `useSelectFileAction`, `useRevertChangesAction` (calls `loadDocument` when pane is dirty, discarding unsaved changes), `useEditorViewActions`, `useWorkspaceLayoutActions`.
-- `src/features/project-editor/use-project-editor-create-actions.ts`
-  - Create article/category actions.
-- `src/features/project-editor/use-project-editor-sidebar-actions.ts`
-  - Sidebar UI actions. Blocks sidebar expand while focus mode is active.
-- `src/features/project-editor/use-project-editor-layout-actions.ts`
-  - Workspace split and pane activation actions.
+- `src/features/project-editor/workspace-actions.ts`
+  - Deep module for workspace layout, pane activation, focus, fullscreen, editor view, and save/revert actions.
+  - Plain functions — no hooks. Caller applies setters.
+- `src/features/project-editor/sidebar-file-actions/`
+  - Deep module for sidebar UI and file/folder CRUD.
+  - `index.ts` — public facade re-exporting all actions.
+  - `private/` — implementation helpers (sidebar UI, project picker, file select/create/crud/move, folder crud). Do not import from `private/` directly.
+- `src/features/project-editor/conflict-actions.ts`
+  - Deep module for external-edit conflict resolution (reload, keep, save-as-copy, compare, close-compare).
+  - Plain functions — no hooks.
 - `src/features/project-editor/use-project-editor-open-project.ts`
   - Open-project flow and pane/layout reconciliation.
 - `src/features/project-editor/use-project-editor-fullscreen-effect.ts`
@@ -184,11 +173,13 @@ Mandatory doc navigation for new chats: start with `docs/START-HERE.md` — it p
   - Core local state for the editor feature (panes, loading/saving flags, conflict state, status messages).
   - Derives active editor state (`selectedPath` / `editorValue` / `isDirty`) from `workspaceLayout.activePane`.
   - Returns 6 memoized sub-states (`documentState`, `paneState`, `layoutState`, `sidebarState`, `projectState`, `uiState`) alongside the legacy `values` object for granular dependency tracking in action hooks.
-- `src/features/project-editor/use-project-editor-sub-state-hooks.ts`
-  - Memoized sub-state builders extracted from `useProjectEditorState` to prevent false re-render cascades.
-  - Exports `useDocumentState`, `usePaneState`, `useLayoutState`, `useSidebarSt`, `useProjectSt`, `useUiSt`, and `getVisibleSidebarPaths`.
+- `src/features/project-editor/use-project-editor-state.ts`
+  - Core local state for the editor feature (panes, loading/saving flags, conflict state, status messages).
+  - Derives active editor state (`selectedPath` / `editorValue` / `isDirty`) from `workspaceLayout.activePane`.
+  - Returns 6 memoized sub-states (`documentState`, `paneState`, `layoutState`, `sidebarState`, `projectState`, `uiState`) alongside the legacy `values` object.
+  - Sub-state builders are inlined; `setters` object uses stable individual setter dependencies.
 - `src/features/project-editor/use-project-editor-actions.ts`
-  - Composes UI actions and core operations (load/save/open/clear) and wires them into the state.
+  - Thin adapter: keeps core operations (clear, load, save, open) and builds the `ProjectEditorActions` surface via one `useMemo` over the three deep modules (`workspace-actions`, `sidebar-file-actions`, `conflict-actions`).
   - Receives `paneWorkspace` from `useProjectEditor`.
 - `src/features/project-editor/use-project-editor-autosave-effect.ts`
   - Minimal Preact adapter: detects dirty → calls `paneWorkspace.scheduleAutosave`, detects clean/unmount → calls `paneWorkspace.cancelAutosave`. Timer logic lives in `PaneWorkspace`.
@@ -209,18 +200,15 @@ Mandatory doc navigation for new chats: start with `docs/START-HERE.md` — it p
   - Global keyboard shortcuts handling for editor workspace actions.
 - `src/features/project-editor/use-project-editor-open-project.ts`
   - Orchestrates opening a project: load snapshot, reconcile layout, preload inactive pane.
-- `src/features/project-editor/use-project-editor-ui-actions.ts`
-  - High-level UI action builders used by components (pick folder, select file, save, create, rename, delete, focus/fullscreen toggles).
-- `src/features/project-editor/use-project-editor-create-actions.ts`
-  - Helpers to create new articles and category folders in the project.
-- `src/features/project-editor/use-project-editor-file-actions.ts`
-  - File operations (rename, delete) with status updates and project reopen flows.
-- `src/features/project-editor/use-project-editor-conflict-actions.ts`
-  - Actions to resolve external edit conflicts (reload, keep, save-as-copy, compare).
-- `src/features/project-editor/use-project-editor-layout-actions.ts`
-  - Workspace layout actions (assign file to pane, toggle split, set ratio, switch active pane).
-- `src/features/project-editor/use-project-editor-focus-actions.ts`
-  - Focus-mode controls (enable/disable, set scope: line/sentence/paragraph). Auto-collapses sidebar on focus enable.
+- `src/features/project-editor/workspace-actions.ts`
+  - Deep module for workspace/layout, pane, focus, fullscreen, editor view, save, and revert actions.
+  - Plain functions. Callers pass setters/state and apply results.
+- `src/features/project-editor/sidebar-file-actions/`
+  - Deep module for sidebar UI and file/folder CRUD.
+  - `index.ts` — public facade. `private/` — implementation helpers.
+- `src/features/project-editor/conflict-actions.ts`
+  - Deep module for external-edit conflict resolution.
+  - Plain functions. Callers pass setters/state and apply results.
 
 ### Editor workspace components
 

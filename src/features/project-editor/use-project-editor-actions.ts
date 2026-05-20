@@ -1,12 +1,12 @@
-import { useCallback } from 'preact/hooks'
+import { useCallback, useMemo } from 'preact/hooks'
 import type { DocumentMeta } from '../../shared/ipc'
 import type { ProjectEditorActions, ProjectEditorUiState, WorkspacePane } from './project-editor-types'
 import type { ProjectEditorLayoutState, ProjectEditorProjectState, ProjectEditorSidebarState } from './project-editor-types'
 import type { PaneWorkspace } from './pane'
 import { useOpenProject } from './use-project-editor-open-project'
-import { useProjectEditorUiActions } from './use-project-editor-ui-actions'
 import { hydrateMarkdownImages, stripBase64ImagesFromMarkdown } from '../../shared/markdown-image-placeholder'
 import { ensureMarkdownEmbeddedImagesArePng } from './project-editor-image-save'
+import { buildActions } from './use-project-editor-actions-builder'
 
 interface CoreProjectEditorActions {
   clearEditor: () => void
@@ -40,6 +40,7 @@ export interface UseProjectEditorActionsParams {
     setSidebarPanelCollapsed: (value: boolean) => void
     setSidebarActiveSection: (value: import('./project-editor-types').SidebarSection) => void
     setSidebarPanelWidth: (value: number) => void
+    setIsFullscreen?: (value: boolean) => void
   }
   paneWorkspace: PaneWorkspace
 }
@@ -48,7 +49,7 @@ function useClearEditor(
   setters: UseProjectEditorActionsParams['setters'],
   paneWorkspace: PaneWorkspace,
 ): () => void {
-  return useCallback(/* clearEditorAction */ () => {
+  return useCallback(() => {
     paneWorkspace.clearPanes()
     setters.setExternalConflictPath(null)
     setters.setConflictComparisonContent(null)
@@ -59,55 +60,53 @@ function useClearEditor(
       activePane: 'primary',
       mode: 'single',
     }))
-  }, [setters, paneWorkspace] /*Inputs for clearEditorAction*/)
+  }, [setters, paneWorkspace])
 }
 
 function useLoadDocument(
   setters: UseProjectEditorActionsParams['setters'],
   paneWorkspace: PaneWorkspace,
 ): (path: string, targetPane: WorkspacePane) => Promise<void> {
-  return useCallback(/* loadDocumentAction */ async (filePath: string, targetPane: WorkspacePane): Promise<void> => {
-      setters.setLoadingDocument(true)
+  return useCallback(async (filePath: string, targetPane: WorkspacePane): Promise<void> => {
+    setters.setLoadingDocument(true)
 
-      try {
-        const response = await window.tramaApi.readDocument({ path: filePath })
-        if (!response.ok) {
-          setters.setStatusMessage(`Could not read ${filePath}: ${response.error.message}`)
-          return
-        }
-
-        const { markdownWithoutImages } = stripBase64ImagesFromMarkdown(response.data.content, response.data.path)
-
-        paneWorkspace.loadPaneDocument(targetPane, response.data.path, markdownWithoutImages, response.data.meta)
-        setters.setStatusMessage(`Loaded document: ${response.data.path}`)
-      } finally {
-        setters.setLoadingDocument(false)
+    try {
+      const response = await window.tramaApi.readDocument({ path: filePath })
+      if (!response.ok) {
+        setters.setStatusMessage(`Could not read ${filePath}: ${response.error.message}`)
+        return
       }
-    },
-    [setters, paneWorkspace] /*Inputs for loadDocumentAction*/)
+
+      const { markdownWithoutImages } = stripBase64ImagesFromMarkdown(response.data.content, response.data.path)
+
+      paneWorkspace.loadPaneDocument(targetPane, response.data.path, markdownWithoutImages, response.data.meta)
+      setters.setStatusMessage(`Loaded document: ${response.data.path}`)
+    } finally {
+      setters.setLoadingDocument(false)
+    }
+  }, [setters, paneWorkspace])
 }
 
 function useSaveDocumentNow(
   setters: UseProjectEditorActionsParams['setters'],
 ): (path: string, content: string, meta: DocumentMeta) => Promise<void> {
-  return useCallback(/* saveDocumentNowAction */ async (path: string, content: string, meta: DocumentMeta): Promise<void> => {
-      setters.setSaving(true)
+  return useCallback(async (path: string, content: string, meta: DocumentMeta): Promise<void> => {
+    setters.setSaving(true)
 
-      try {
-        const hydratedContent = hydrateMarkdownImages(content, path)
-        const pngNormalizedContent = await ensureMarkdownEmbeddedImagesArePng(hydratedContent)
-        const response = await window.tramaApi.saveDocument({ path, content: pngNormalizedContent, meta })
-        if (!response.ok) {
-          setters.setStatusMessage(`Error saving ${path}: ${response.error.message}`)
-          return
-        }
-
-        setters.setStatusMessage(`Saved: ${response.data.path} (${response.data.version})`)
-      } finally {
-        setters.setSaving(false)
+    try {
+      const hydratedContent = hydrateMarkdownImages(content, path)
+      const pngNormalizedContent = await ensureMarkdownEmbeddedImagesArePng(hydratedContent)
+      const response = await window.tramaApi.saveDocument({ path, content: pngNormalizedContent, meta })
+      if (!response.ok) {
+        setters.setStatusMessage(`Error saving ${path}: ${response.error.message}`)
+        return
       }
-    },
-    [setters] /*Inputs for saveDocumentNowAction*/)
+
+      setters.setStatusMessage(`Saved: ${response.data.path} (${response.data.version})`)
+    } finally {
+      setters.setSaving(false)
+    }
+  }, [setters])
 }
 
 export function useProjectEditorActions({
@@ -122,16 +121,17 @@ export function useProjectEditorActions({
   const loadDocument = useLoadDocument(setters, paneWorkspace)
   const openProject = useOpenProject(setters, clearEditor, loadDocument)
   const saveDocumentNow = useSaveDocumentNow(setters)
-  const actions = useProjectEditorUiActions({
-    layoutState,
-    projectState,
-    uiState,
-    sidebarState,
-    setters,
-    openProject,
-    loadDocument,
-    paneWorkspace,
-  })
+
+  const actions = useMemo<ProjectEditorActions>(
+    () => buildActions({
+      layoutState, projectState, uiState, sidebarState,
+      setters, paneWorkspace, loadDocument, openProject,
+    }),
+    [
+      layoutState, projectState, uiState, sidebarState,
+      setters, paneWorkspace, loadDocument, openProject, saveDocumentNow, clearEditor,
+    ],
+  )
 
   return {
     actions,

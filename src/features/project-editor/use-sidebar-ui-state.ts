@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'preact/hooks'
+import { useCallback, useEffect, useMemo, useState } from 'preact/hooks'
 import type { SidebarSection } from './project-editor-types'
 
 const SIDEBAR_UI_STORAGE_KEY = 'trama.sidebar.ui.v1'
@@ -79,16 +79,24 @@ export function useSidebarUiState(): { values: SidebarUiStateValues; setters: Si
     }
   }, [activeSection, panelCollapsed, panelWidth])
 
-  return {
-    values: {
-      activeSection,
-      panelCollapsed,
-      panelWidth,
-    },
-    setters: {
-      setActiveSection,
-      setPanelCollapsed,
-      setPanelWidth: (width: number) => setPanelWidth(clampSidebarWidth(width)),
-    },
-  }
+  const setPanelWidthStable = useCallback(
+    (width: number) => setPanelWidth(clampSidebarWidth(width)),
+    [setPanelWidth],
+  )
+
+  return useMemo(
+    () => ({
+      values: {
+        activeSection,
+        panelCollapsed,
+        panelWidth,
+      },
+      setters: {
+        setActiveSection,
+        setPanelCollapsed,
+        setPanelWidth: setPanelWidthStable,
+      },
+    }),
+    [activeSection, panelCollapsed, panelWidth, setActiveSection, setPanelCollapsed, setPanelWidthStable],
+  )
 }

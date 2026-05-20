@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
 import { h, render } from 'preact'
 import { act } from 'preact/test-utils'
-import { useRevertChangesAction } from '../src/features/project-editor/use-project-editor-ui-actions-helpers'
+import { revertChanges } from '../src/features/project-editor/workspace-actions'
 import { usePaneWorkspace, type PaneBindings } from '../src/features/project-editor/pane'
 import type { EditorSerializationRefs, PaneDocumentState, WorkspaceLayoutState, ProjectEditorUiState } from '../src/features/project-editor/project-editor-types'
 
@@ -58,7 +58,7 @@ function makePaneBindings(primary: PaneDocumentState, secondary: PaneDocumentSta
   }
 }
 
-describe('useRevertChangesAction', () => {
+describe('revertChanges', () => {
   it('calls loadDocument when pane is dirty and has a path', () => {
     const layout = makeLayout('primary')
     const primary = makePane('docs/a.md', '# dirty content', true)
@@ -72,19 +72,25 @@ describe('useRevertChangesAction', () => {
     const uiState = makeUiState()
 
     const loadDocument = vi.fn().mockResolvedValue(undefined)
-    let revertAction: ((pane?: 'primary' | 'secondary') => void) | null = null
+    let wsRef: ReturnType<typeof usePaneWorkspace> | null = null
 
     function Harness() {
-      const ws = usePaneWorkspace(layout, paneBindings, serializationRefs, noopSaveDocumentFn)
-      const revert = useRevertChangesAction({ workspace: ws, loadDocument, setters, uiState })
-      revertAction = revert
+      wsRef = usePaneWorkspace(layout, paneBindings, serializationRefs, noopSaveDocumentFn)
       return null
     }
 
     const container = document.createElement('div')
     act(() => { render(h(Harness, {}), container) })
 
-    act(() => { revertAction!() })
+    act(() => {
+      revertChanges(undefined, {
+        workspace: wsRef!,
+        loadDocument,
+        setExternalConflictPath: setters.setExternalConflictPath,
+        setConflictComparisonContent: setters.setConflictComparisonContent,
+        uiState,
+      })
+    })
 
     expect(loadDocument).toHaveBeenCalledTimes(1)
     expect(loadDocument).toHaveBeenCalledWith('docs/a.md', 'primary')
@@ -103,19 +109,25 @@ describe('useRevertChangesAction', () => {
     const uiState = makeUiState()
 
     const loadDocument = vi.fn().mockResolvedValue(undefined)
-    let revertAction: ((pane?: 'primary' | 'secondary') => void) | null = null
+    let wsRef: ReturnType<typeof usePaneWorkspace> | null = null
 
     function Harness() {
-      const ws = usePaneWorkspace(layout, paneBindings, serializationRefs, noopSaveDocumentFn)
-      const revert = useRevertChangesAction({ workspace: ws, loadDocument, setters, uiState })
-      revertAction = revert
+      wsRef = usePaneWorkspace(layout, paneBindings, serializationRefs, noopSaveDocumentFn)
       return null
     }
 
     const container = document.createElement('div')
     act(() => { render(h(Harness, {}), container) })
 
-    act(() => { revertAction!() })
+    act(() => {
+      revertChanges(undefined, {
+        workspace: wsRef!,
+        loadDocument,
+        setExternalConflictPath: setters.setExternalConflictPath,
+        setConflictComparisonContent: setters.setConflictComparisonContent,
+        uiState,
+      })
+    })
 
     expect(loadDocument).not.toHaveBeenCalled()
   })
@@ -133,19 +145,25 @@ describe('useRevertChangesAction', () => {
     const uiState = makeUiState()
 
     const loadDocument = vi.fn().mockResolvedValue(undefined)
-    let revertAction: ((pane?: 'primary' | 'secondary') => void) | null = null
+    let wsRef: ReturnType<typeof usePaneWorkspace> | null = null
 
     function Harness() {
-      const ws = usePaneWorkspace(layout, paneBindings, serializationRefs, noopSaveDocumentFn)
-      const revert = useRevertChangesAction({ workspace: ws, loadDocument, setters, uiState })
-      revertAction = revert
+      wsRef = usePaneWorkspace(layout, paneBindings, serializationRefs, noopSaveDocumentFn)
       return null
     }
 
     const container = document.createElement('div')
     act(() => { render(h(Harness, {}), container) })
 
-    act(() => { revertAction!() })
+    act(() => {
+      revertChanges(undefined, {
+        workspace: wsRef!,
+        loadDocument,
+        setExternalConflictPath: setters.setExternalConflictPath,
+        setConflictComparisonContent: setters.setConflictComparisonContent,
+        uiState,
+      })
+    })
 
     expect(loadDocument).not.toHaveBeenCalled()
   })
@@ -163,19 +181,25 @@ describe('useRevertChangesAction', () => {
     const uiState = makeUiState()
 
     const loadDocument = vi.fn().mockResolvedValue(undefined)
-    let revertAction: ((pane?: 'primary' | 'secondary') => void) | null = null
+    let wsRef: ReturnType<typeof usePaneWorkspace> | null = null
 
     function Harness() {
-      const ws = usePaneWorkspace(layout, paneBindings, serializationRefs, noopSaveDocumentFn)
-      const revert = useRevertChangesAction({ workspace: ws, loadDocument, setters, uiState })
-      revertAction = revert
+      wsRef = usePaneWorkspace(layout, paneBindings, serializationRefs, noopSaveDocumentFn)
       return null
     }
 
     const container = document.createElement('div')
     act(() => { render(h(Harness, {}), container) })
 
-    act(() => { revertAction!('secondary') })
+    act(() => {
+      revertChanges('secondary', {
+        workspace: wsRef!,
+        loadDocument,
+        setExternalConflictPath: setters.setExternalConflictPath,
+        setConflictComparisonContent: setters.setConflictComparisonContent,
+        uiState,
+      })
+    })
 
     expect(loadDocument).toHaveBeenCalledTimes(1)
     expect(loadDocument).toHaveBeenCalledWith('docs/b.md', 'secondary')

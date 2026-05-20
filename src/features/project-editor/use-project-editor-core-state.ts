@@ -1,4 +1,4 @@
-import { useState } from 'preact/hooks'
+import { useMemo, useState } from 'preact/hooks'
 import type { ProjectSnapshot } from '../../shared/ipc'
 import type { PaneDocumentState } from './project-editor-types'
 import { PROJECT_EDITOR_STRINGS } from './project-editor-strings'
@@ -26,30 +26,37 @@ function useProjectEditorCoreState() {
   const [conflictComparisonContent, setConflictComparisonContent] = useState<string | null>(null)
   const [statusMessage, setStatusMessage] = useState<string>(PROJECT_EDITOR_STRINGS.initialStatus)
 
-  return {
-    rootPath,
-    setRootPath,
-    snapshot,
-    setSnapshot,
-    primaryPane,
-    setPrimaryPane,
-    secondaryPane,
-    setSecondaryPane,
-    loadingProject,
-    setLoadingProject,
-    loadingDocument,
-    setLoadingDocument,
-    saving,
-    setSaving,
-    isFullscreen,
-    setIsFullscreen,
-    externalConflictPath,
-    setExternalConflictPath,
-    conflictComparisonContent,
-    setConflictComparisonContent,
-    statusMessage,
-    setStatusMessage,
-  }
+  return useMemo(
+    () => ({
+      rootPath,
+      setRootPath,
+      snapshot,
+      setSnapshot,
+      primaryPane,
+      setPrimaryPane,
+      secondaryPane,
+      setSecondaryPane,
+      loadingProject,
+      setLoadingProject,
+      loadingDocument,
+      setLoadingDocument,
+      saving,
+      setSaving,
+      isFullscreen,
+      setIsFullscreen,
+      externalConflictPath,
+      setExternalConflictPath,
+      conflictComparisonContent,
+      setConflictComparisonContent,
+      statusMessage,
+      setStatusMessage,
+    }),
+    [
+      rootPath, snapshot, primaryPane, secondaryPane,
+      loadingProject, loadingDocument, saving, isFullscreen,
+      externalConflictPath, conflictComparisonContent, statusMessage,
+    ],
+  )
 }
 
 export type ProjectEditorCoreState = ReturnType<typeof useProjectEditorCoreState>

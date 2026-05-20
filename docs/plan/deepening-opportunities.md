@@ -1,3 +1,13 @@
+useProjectEditor being called every keystroke
+
+> If you want to fix the keystroke churn, the next deepening candidate is PaneWorkspace itself.
+
+> PaneWorkspace is currently a useMemo over mutable pane bindings. To make it stable, you'd need to:
+
+> Store PaneWorkspace in a useRef (so its identity survives renders).
+> Mutate its internal layout/pane state in place inside effects or callbacks, rather than recreating it.
+> Or, adopt the pull-based snapshot model from ADR-0001 (discarded) — make PaneWorkspace subscribe to changes and expose getSnapshot().
+
 1. Project Editor action-hook fragmentation
 Files use-project-editor-sub-state-hooks.ts, use-project-editor-focus-actions.ts, use-project-editor-sidebar-actions.ts, use-project-editor-layout-actions.ts, use-project-editor-actions.ts, use-project-editor-ui-actions.ts, use-project-editor-ui-actions-helpers.ts, use-project-editor-ui-actions-helpers-core.ts
 
