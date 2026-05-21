@@ -44,7 +44,15 @@ export const documentMetaSchema = z.object({ id: z.string().trim().min(1).option
 export const treeItemSchema: z.ZodType<TreeItem> = z.lazy(() => z.object({ id: z.string(), title: z.string(), path: z.string(), type: z.enum(['file', 'folder']), children: z.array(treeItemSchema).optional() }))
 export const projectIndexSchema = z.object({ version: z.string(), corkboardOrder: z.record(z.string(), z.array(z.string())), cache: z.record(z.string(), documentMetaSchema) })
 export const projectSnapshotSchema = z.object({ rootPath: z.string(), tree: z.array(treeItemSchema), markdownFiles: z.array(z.string()), index: projectIndexSchema })
-export const openProjectRequestSchema = z.object({ rootPath: z.string().trim().min(1) })
+export const incrementalUpdateSchema = z.object({
+  createdFiles: z.array(z.string()).optional(),
+  deletedFiles: z.array(z.string()).optional(),
+  renamedFiles: z.array(z.object({ from: z.string(), to: z.string() })).optional(),
+  createdFolders: z.array(z.string()).optional(),
+  deletedFolders: z.array(z.string()).optional(),
+  renamedFolders: z.array(z.object({ from: z.string(), to: z.string() })).optional(),
+}).optional()
+export const openProjectRequestSchema = z.object({ rootPath: z.string().trim().min(1), incrementalUpdate: incrementalUpdateSchema })
 export const selectProjectFolderResponseSchema = z.object({ rootPath: z.string().nullable() })
 export const readDocumentRequestSchema = z.object({ path: z.string().trim().min(1) })
 export const readDocumentResponseSchema = z.object({ path: z.string(), content: z.string(), meta: documentMetaSchema, linkedImagePaths: z.array(z.string()).optional() })
@@ -151,6 +159,7 @@ export type DocumentMeta = z.infer<typeof documentMetaSchema>
 export type TreeItem = { id: string; title: string; path: string; type: 'file' | 'folder'; children?: TreeItem[] }
 export type ProjectIndex = z.infer<typeof projectIndexSchema>
 export type ProjectSnapshot = z.infer<typeof projectSnapshotSchema>
+export type IncrementalUpdate = z.infer<typeof incrementalUpdateSchema>
 export type OpenProjectRequest = z.infer<typeof openProjectRequestSchema>
 export type SelectProjectFolderResponse = z.infer<typeof selectProjectFolderResponseSchema>
 export type ReadDocumentRequest = z.infer<typeof readDocumentRequestSchema>

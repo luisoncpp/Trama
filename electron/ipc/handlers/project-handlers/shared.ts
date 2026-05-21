@@ -3,21 +3,50 @@ import path from 'node:path'
 import { DocumentRepository } from '../../../services/document-repository.js'
 import { getActiveIndexService, getActiveTagIndexService } from '../../../ipc-runtime.js'
 import { scanProject } from '../../../services/project-scanner.js'
+import { getProjectCache, setProjectCache } from '../../../services/project-state-cache.js'
 import { isRelevantPath } from '../../../../src/shared/project-sections.js'
 
 const documentRepository = new DocumentRepository()
 
-export async function reconcileActiveProjectIndex(projectRoot: string): Promise<void> {
+export async function reconcileActiveProjectIndex(
+  projectRoot: string,
+  options?: { changedFiles?: string[] },
+): Promise<void> {
   const indexService = getActiveIndexService()
   const tagIndexService = getActiveTagIndexService()
   if (!indexService && !tagIndexService) {
     return
   }
 
-  const { markdownFiles } = await scanProject(projectRoot)
-  const metaByPath = await readMetaByPath(projectRoot, markdownFiles)
+  let markdownFiles: string[]
+  let metaByPath: Record<string, Record<string, unknown>>
+
+  const cache = getProjectCache(projectRoot)
+  if (options?.changedFiles && cache) {
+    metaByPath = { ...cache.metaByPath }
+    for (const filePath of options.changedFiles) {
+      try {
+        const doc = await documentRepository.readDocument(projectRoot, filePath)
+        metaByPath[filePath] = doc.meta
+      } catch {
+        delete metaByPath[filePath]
+      }
+    }
+    markdownFiles = cache.markdownFiles
+    setProjectCache(projectRoot, cache.tree, markdownFiles, metaByPath)
+  } else {
+    const scanResult = await scanProject(projectRoot)
+    markdownFiles = scanResult.markdownFiles
+    metaByPath = await readMetaByPath(projectRoot, markdownFiles)
+    setProjectCache(projectRoot, scanResult.tree, markdownFiles, metaByPath)
+  }
+
   if (indexService) {
-    await indexService.reconcileIndex(markdownFiles, metaByPath)
+    if (options?.changedFiles) {
+      await indexService.updateCache(options.changedFiles, metaByPath)
+    } else {
+      await indexService.reconcileIndex(markdownFiles, metaByPath)
+    }
   }
   if (tagIndexService) {
     await tagIndexService.buildIndex(markdownFiles, metaByPath)

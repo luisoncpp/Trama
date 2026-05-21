@@ -22,16 +22,16 @@ This flow involves two IPC calls, two workspace layout updates, and a snapshot r
 
 4. **Path conversion** — `sidebar-panel-body.tsx` wraps the callback and immediately delegates to `sidebar-path-scoping.ts`: `(path) => onDeleteFolder(toProjectPath(toSectionRelativePath(path), sectionConfig.root))`. That produces the **project-relative** path (e.g. `book/Act-01/`).
 
-5. **`executeFolderDelete`** in `use-project-editor-folder-actions.ts:64`:
+5. **`executeFolderDelete`** in `sidebar-file-actions/private/folder-crud.ts:61`:
    - Calls `window.tramaApi.deleteFolder({ path })` — backend removes the folder from disk.
-   - Backend handler (`folder-handlers.ts:62`) marks deleted files as internal writes. Index reconciliation is **deferred** to `openProject` (chokidar holds a `ReadDirectoryChangesW` handle on Windows that causes stale directory listings in `scanProject`, producing `EPERM` on deleted paths — see common failure mode 5).
+   - Backend handler (`folder-handlers.ts:62`) marks deleted files as internal writes. Index reconciliation is **deferred** to `openProject`.
    - `pruneWorkspaceLayoutPathsForFolderDelete` removes paths inside the deleted folder from the workspace layout.
    - Calls `setters.setWorkspaceLayout(nextLayout)` — **first layout update, triggers re-render**.
-   - Calls `openProject(values.rootPath, preferredPath, activePane)`.
+   - Calls `openProject(rootPath, { preferredFilePath, preferredPane, incrementalUpdate: { deletedFolders: [path] } })`.
 
-6. **`openProject`** in `use-project-editor-open-project.ts:86`:
+6. **`openProject`** in `use-project-editor-open-project.ts`:
    - Calls `setters.setLoadingProject(true)`.
-   - Calls `window.tramaApi.openProject({ rootPath })` — **backend rescans disk**, returns a fresh snapshot without the deleted folder.
+   - Calls `window.tramaApi.openProject({ rootPath, incrementalUpdate: { deletedFolders: [path] } })` — **backend uses the incremental cache** to remove the folder from the cached tree and `markdownFiles` without rescanning the disk.
    - Calls `applyOpenedProject`.
 
 7. **`applyOpenedProject`** in `use-project-editor-open-project.ts:35`:

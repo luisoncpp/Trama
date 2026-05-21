@@ -134,7 +134,7 @@ WatcherService (classify as internal/external)
 
 3. **External events re-subscribe frequently** — the effect depends on `openProject`, `loadDocument`, etc., which change every render. This means the event listener is re-registered on every render cycle. This is wasteful but safe.
 
-4. **Tree refresh on add/unlink** — when a non-selected file is added or removed externally, the entire project tree is refreshed via `openProject`. This ensures the sidebar stays in sync with the actual filesystem.
+4. **Tree refresh on add/unlink** — when a non-selected file is added or removed externally, the entire project tree is refreshed via `openProject`. This call does **not** include `incrementalUpdate` parameters, so it always performs a full filesystem scan. This is intentional: external events are uncontrolled, so the safest path is to re-verify the entire filesystem state.
 
 ## Common failure modes
 

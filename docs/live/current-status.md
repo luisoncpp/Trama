@@ -19,7 +19,7 @@ Phase 2, Phase 3 (WS1–WS5), and Phase 4 WS1/wiki-tag-links, WS2/folder-operati
 
 - `npm run build` ✅
 - `npm run lint` ✅
-- `npm run test` ✅ (74 suites, 643 tests)
+- `npm run test` ✅ (76 suites, 668 tests)
 - `npm run test:smoke` ✅
 
 In sandboxed agent environments use the PowerShell script — see `docs/dev-workflow.md`.
@@ -27,7 +27,7 @@ In sandboxed agent environments use the PowerShell script — see `docs/dev-work
 ## Known tradeoffs
 
 - `sandbox: false` for preload stability.
-- Index refresh still does full reconciliation in several write flows (safe, optimizable later).
+- Index refresh now uses incremental updates for create/rename/delete/move/reorder; only save uses `updateCache`; full reconciliation still runs on initial open and cache miss.
 - External change handling favors safety over convenience (prevents overwrite when dirty).
 - PDF export prefers Unicode system serif fonts, falls back to `pdf-lib` standard fonts.
 

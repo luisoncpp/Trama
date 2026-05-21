@@ -82,8 +82,14 @@ Mandatory doc navigation for new chats: start with `docs/START-HERE.md` — it p
 - `electron/services/frontmatter.ts`
   - YAML frontmatter parse/serialize.
 - `electron/services/index-service.ts`
-  - `.trama.index.json` load/save/reconcile.
+  - `.trama.index.json` load/save/reconcile/updateCache.
   - Architecture: `docs/architecture/project-index-architecture.md`.
+- `electron/services/project-state-cache.ts`
+  - In-memory cache for `tree`, `markdownFiles`, and `metaByPath` scoped to a project root.
+  - Used by `handleOpenProject` to avoid full filesystem rescans on incremental updates.
+- `electron/services/incremental-project-updater.ts`
+  - Pure logic to mutate a cached `ProjectSnapshot` for file/folder create, delete, and rename.
+  - Reads frontmatter only for newly created files; all other operations are in-memory.
 - `electron/services/watcher-service.ts`
   - Chokidar wrapper + internal/external write classification.
 - `electron/services/ai-import-service.ts`
@@ -407,6 +413,11 @@ Core and regression suites:
 - `tests/workspace-keyboard-shortcuts.test.ts`
 - `tests/frontmatter-parser.test.ts`
 - `tests/index-reconciliation.test.ts`
+  - Reconciliation and `updateCache` behavior tests.
+- `tests/incremental-project-updater.test.ts`
+  - Unit tests for `incremental-project-updater.ts`: file/folder create, delete, rename operations on cached tree state.
+- `tests/incremental-open-project.test.ts`
+  - Integration tests for `handleOpenProject` with `incrementalUpdate`: cache hits, cache invalidation on root change, empty-incremental reorder path.
 - `tests/theme-preference.test.ts`
 - `tests/startup-smoke.test.ts`
 - `tests/electron-smoke.test.ts`

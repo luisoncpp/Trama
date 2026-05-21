@@ -8,18 +8,6 @@ useProjectEditor being called every keystroke
 > Mutate its internal layout/pane state in place inside effects or callbacks, rather than recreating it.
 > Or, adopt the pull-based snapshot model from ADR-0001 (discarded) — make PaneWorkspace subscribe to changes and expose getSnapshot().
 
-1. Project Editor action-hook fragmentation
-Files use-project-editor-sub-state-hooks.ts, use-project-editor-focus-actions.ts, use-project-editor-sidebar-actions.ts, use-project-editor-layout-actions.ts, use-project-editor-actions.ts, use-project-editor-ui-actions.ts, use-project-editor-ui-actions-helpers.ts, use-project-editor-ui-actions-helpers-core.ts
-
-Problem The Project Editor surface is sliced into ~15 tiny hook files whose interfaces are larger than their implementations. useLayoutState, useSidebarSt, useProjectSt, and useUiSt are one-line useMemo wrappers. Action hooks are useCallback shells around 3–10 lines of setter logic. buildProjectEditorActions is an identity function. The deletion test fails: deleting any of these files does not concentrate complexity, it just forces the same one-line wrappers back into callers. There is almost no independent test coverage for the individual hooks; real coverage comes from integration tests like use-project-editor.test.ts.
-
-Solution Collapse the sub-state builders into use-project-editor-state.ts and merge the tiny action wrappers into 2–3 cohesive action modules (workspace/layout, sidebar/file, conflict/dialog). Stop extracting single useCallback wrappers unless they earn their keep with independent tests and a stable interface.
-
-Benefits
-
-Locality: A bug in file-selection logic currently bounces across use-project-editor-layout-actions.ts, use-project-editor-ui-actions-helpers-core.ts, and use-project-editor-ui-actions.ts. After merging, the logic lives in one module.
-Leverage: Callers consume 3 action surfaces instead of 15.
-Tests: The interface becomes the real test surface. Integration tests already cover the behavior; deepening makes those tests hit the actual module rather than a shallow pass-through.
 2. Rich editor focus-mode cluster
 Files rich-markdown-editor-focus-scope.ts, rich-markdown-editor-focus-scope-helpers.ts, rich-markdown-editor-focus-scope-geometry.ts, rich-markdown-editor-focus-scope-scroll.ts
 
@@ -32,18 +20,7 @@ Benefits
 Locality: Change, bugs, and knowledge about focus-mode rendering concentrate in one place.
 Leverage: Callers (the editor component) deal with one focus-mode interface instead of four.
 Tests: The current integration tests already exercise the whole cluster; deepening aligns the module boundary with the test surface.
-3. Sidebar drag-and-drop DOM leakage
-Files use-sidebar-tree-drag-handlers.ts, sidebar-file-drop-logic.ts, drop-indicator.tsx, sidebar-tree.tsx, sidebar-tree-row-button.tsx
 
-Problem calculateDropPosition queries containerRef.current.querySelectorAll('[data-sidebar-row-index]') and mocks getBoundingClientRect in tests. The drop logic is tightly coupled to the DOM attribute contract of the tree row button component. Path conversions then happen in three places: sidebar-path-scoping.ts, the tree callback adapter, and the drag handler itself.
-
-Solution Extract a DropPositionCalculator that accepts a RowGeometry[] array (no DOM). Let sidebar-tree.tsx build that array from its own rendered rows. This eliminates the DOM leak and makes the drop logic unit-testable without mocking getBoundingClientRect.
-
-Benefits
-
-Locality: The geometric math and path-scoping logic concentrate behind one seam.
-Leverage: The tree component controls its own geometry; the calculator only knows rectangles and indices.
-Tests: The calculator becomes a pure, deep module testable with simple data inputs.
 4. Book export PDF barrel and font-utils indirection
 Files book-export-pdf-renderer.ts (2-line re-export barrel), book-export-pdf-font-utils.ts (37 lines, only called from book-export-pdf-utils.ts and book-export-pdf-inline.ts)
 

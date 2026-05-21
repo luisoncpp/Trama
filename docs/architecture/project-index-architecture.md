@@ -1,6 +1,6 @@
 # Project Index Architecture (`.trama.index.json`)
 
-> **Last updated:** 2026-05-08
+> **Last updated:** 2026-05-20
 
 ## Purpose
 
@@ -55,7 +55,7 @@ Serializes the index to `.trama.index.json` with 2-space indentation.
 
 ### `reconcileIndex(markdownFiles: string[], metaByPath: Record<string, DocumentMeta>): Promise<ProjectIndex>`
 
-This is the core function. It runs on every project open and after every file mutation (create, save, rename, delete, move).
+This is the full-rebuild function. It runs on **initial project open** and when no incremental cache is available. It rebuilds both `cache` and `corkboardOrder` from scratch.
 
 **Algorithm:**
 
@@ -78,32 +78,78 @@ This is the core function. It runs on every project open and after every file mu
 | Folder renamed | `cache` paths updated (filesystem scan finds new paths); `corkboardOrder` old folder key entry dropped, IDs appear under new project-relative folder key in **filesystem scan order** (custom order is NOT carried over — `current.corkboardOrder[newFolderKey]` does not exist) |
 | External file added (watcher) | Reconciliation appends it to `corkboardOrder` and `cache` |
 
+### `updateCache(changedFiles: string[], metaByPath: Record<string, DocumentMeta>): Promise<ProjectIndex>`
+
+**Added 2026-05-20.** This is a lightweight alternative to `reconcileIndex` that only updates `cache` entries without touching `corkboardOrder`. Used when the caller knows the file list has not changed structurally (e.g., after a document save).
+
+**Algorithm:**
+
+1. Load the current index from disk.
+2. For each path in `changedFiles`:
+   - If `metaByPath` has an entry → update `cache[path]`.
+   - Otherwise → delete `cache[path]`.
+3. Persist and return.
+
+This avoids the O(n) `corkboardOrder` rebuild that `reconcileIndex` performs.
+
 ## When reconciliation runs
 
-| Trigger | Handler | Calls `reconcileIndex`? |
-|---------|---------|------------------------|
-| Project open | `handleOpenProject` | ✅ |
-| Save document | `handleSaveDocument` | ✅ via `reconcileActiveProjectIndex` |
-| Create document | `handleCreateDocument` | ✅ via `reconcileActiveProjectIndex` |
-| Rename document | `handleRenameDocument` | ✅ via `reconcileActiveProjectIndex` |
-| Delete document | `handleDeleteDocument` | ✅ via `reconcileActiveProjectIndex` |
-| Rename folder | `handleRenameFolder` | ✅ via `reconcileActiveProjectIndex` |
-| Delete folder | `handleDeleteFolder` | ✅ via `reconcileActiveProjectIndex` |
-| Create folder | `handleCreateFolder` | ✅ via `reconcileActiveProjectIndex` |
-| Move file | `handleMoveFile` | ✅ via `reconcileActiveProjectIndex` |
-| Reorder files (drag-drop) | `handleReorderFiles` | ❌ (only updates `corkboardOrder`) |
+### Backend handlers
 
-The shared reconciliation logic lives in `electron/ipc/handlers/project-handlers/shared.ts`:
+| Trigger | Handler | Reconciles index? | Notes |
+|---------|---------|-------------------|-------|
+| Project open (full) | `handleOpenProject` | ✅ `reconcileIndex` | Only when no cache exists or root changed |
+| Project open (incremental) | `handleOpenProject` | ✅ `reconcileIndex` | Uses cached `markdownFiles`; skips filesystem scan |
+| Save document | `handleSaveDocument` | ✅ `updateCache` | Incremental: only re-reads saved file's meta |
+| Create document | `handleCreateDocument` | ❌ | Frontend calls `openProject` with `createdFiles` |
+| Rename document | `handleRenameDocument` | ❌ | Frontend calls `openProject` with `renamedFiles` |
+| Delete document | `handleDeleteDocument` | ❌ | Frontend calls `openProject` with `deletedFiles` |
+| Rename folder | `handleRenameFolder` | ❌ | Frontend calls `openProject` with `renamedFolders` |
+| Delete folder | `handleDeleteFolder` | ❌ | Already skipped due to chokidar EPERM |
+| Create folder | `handleCreateFolder` | ❌ | Frontend calls `openProject` with `createdFolders` |
+| Move file | `handleMoveFile` | ❌ | Frontend calls `openProject` with `renamedFiles` |
+| Move folder | `handleMoveFolder` | ❌ | Frontend calls `openProject` with `renamedFolders` |
+| Reorder files (drag-drop) | `handleReorderFiles` | ❌ | Only updates `corkboardOrder` directly |
+
+### Shared reconciliation logic
+
+`reconcileActiveProjectIndex` lives in `electron/ipc/handlers/project-handlers/shared.ts`:
 
 ```typescript
-export async function reconcileActiveProjectIndex(projectRoot: string): Promise<void>
+export async function reconcileActiveProjectIndex(
+  projectRoot: string,
+  options?: { changedFiles?: string[] },
+): Promise<void>
 ```
 
-This function:
-1. Scans the project filesystem for all `.md` files.
-2. Reads frontmatter for each file.
-3. Calls `IndexService.reconcileIndex()` with the scan results.
-4. Also calls `TagIndexService.buildIndex()` for tag resolution consistency.
+This function has two paths:
+
+1. **Incremental path** (`options?.changedFiles` provided and cache exists):
+   - Reads meta only for the changed files.
+   - Calls `IndexService.updateCache()` (fast, preserves `corkboardOrder`).
+   - Calls `TagIndexService.buildIndex()` with updated meta.
+
+2. **Full path** (no `changedFiles` or no cache):
+   - Scans the project filesystem for all `.md` files.
+   - Reads frontmatter for each file.
+   - Calls `IndexService.reconcileIndex()` with the scan results.
+   - Calls `TagIndexService.buildIndex()` for tag resolution consistency.
+
+### Frontend `openProject` incremental updates
+
+The renderer now passes an `incrementalUpdate` object to `openProject` after every file/folder mutation:
+
+| Action | `incrementalUpdate` payload |
+|--------|----------------------------|
+| Create article | `{ createdFiles: [path] }` |
+| Create category | `{ createdFolders: [path] }` |
+| Rename file | `{ renamedFiles: [{ from, to }] }` |
+| Delete file | `{ deletedFiles: [path] }` |
+| Rename folder | `{ renamedFolders: [{ from, to }] }` |
+| Delete folder | `{ deletedFolders: [path] }` |
+| Move file | `{ renamedFiles: [{ from, to }] }` |
+| Move folder | `{ renamedFolders: [{ from, to }] }` |
+| Reorder files | `{ }` (empty — uses cache without fs scan) |
 
 ## IPC Channels
 
@@ -120,15 +166,15 @@ To prevent the file watcher from triggering reconciliation loops on internally-i
 **Timing varies by handler:**
 - **Save**: `markInternalWrite(payload.data.path)` is called **before** the repository write (the path is known from the request).
 - **Create / Rename / Delete / Move**: `markInternalWrite(result.path)` is called **after** the repository write (the path comes from the result).
-- **Folder rename / delete**: each file in the subtree is marked individually before reconciliation.
+- **Folder rename / delete**: each file in the subtree is marked individually.
 
-In all cases, the mark is set **before** `reconcileActiveProjectIndex`, which ensures the watcher won't re-process the mutation.
+For **save**, the mark is set before `reconcileActiveProjectIndex` (which now calls `updateCache`). For all other handlers, `reconcileActiveProjectIndex` is no longer called; the frontend calls `openProject` with incremental parameters, which uses the backend cache and also sets internal write marks implicitly by not rescanning.
 
 **Example (rename document):**
 ```typescript
 markInternalWrite(result.path)
 markInternalWrite(result.renamedTo)
-await reconcileActiveProjectIndex(projectRoot)
+// reconcileActiveProjectIndex removed; frontend calls openProject with incrementalUpdate
 ```
 
 ## ID resolution
@@ -169,35 +215,43 @@ This means documents without an explicit `id` in their frontmatter use their **c
 | Risk | Mitigation |
 |------|-----------|
 | Index bloat from deleted files | Reconciliation prunes missing entries on every run |
-| Split-brain (index vs filesystem) | Reconciliation always re-scans filesystem; index is rebuilt, not incrementally updated |
+| Split-brain (index vs filesystem) | Full reconciliation still runs on initial open and cache miss; incremental updates only apply when frontend and backend state are in sync |
+| Stale cache after external mutation | External file events currently trigger `openProject` without incremental params, forcing a full scan (safe fallback) |
 | Stale IDs after rename without explicit `id` | Reconciliation uses current `meta.id` or path; old path entries are pruned |
 | Watcher-triggered reconciliation loop | `markInternalWrite()` prevents re-processing internal mutations |
 | Corrupted index file | `loadIndex()` catches parse errors and returns a safe default |
 | CorkboardOrder value mismatch (meta.id vs path) | Reorder writes project-relative paths; reconciliation writes document IDs (preferring `meta.id`). For files without `meta.id` both use the same path. Reconciliation overwrites reorder values on next run, so custom order is preserved only until the next file mutation. |
 | Folder rename loses custom order | Reconciliation creates new folder key with no previous order; files appear in filesystem scan order |
+| Cache invalidation on project switch | `getProjectCache` returns `null` when `rootPath` changes, forcing a full scan |
 
 ## Current test coverage
 
 - `tests/order-handlers.test.ts` verifies `handleReorderFiles()` with project-relative payloads.
 - `tests/sidebar-tree.test.ts` verifies `sortTreeRowsByOrder()` and `scopeCorkboardOrder()` with section-relative keys and values.
-- No end-to-end test exercises the full cycle: reorder IPC with project-relative payload → index persistence → reconciliation → book-export-order read.
+- `tests/index-reconciliation.test.ts` verifies `reconcileIndex` and `updateCache` behavior.
+- `tests/incremental-project-updater.test.ts` verifies pure incremental tree/meta mutations.
+- `tests/incremental-open-project.test.ts` verifies `handleOpenProject` with incremental params: cache hits, cache invalidation on root change, and empty-incremental reorder path.
 
 ## Related files
 
 | File | Role |
 |------|------|
-| `electron/services/index-service.ts` | Core index logic (load/save/reconcile) |
+| `electron/services/index-service.ts` | Core index logic (load/save/reconcile/updateCache) |
+| `electron/services/project-state-cache.ts` | In-memory cache for `tree`, `markdownFiles`, `metaByPath` |
+| `electron/services/incremental-project-updater.ts` | Pure logic to mutate cached state for file/folder CRUD |
 | `electron/ipc/handlers/project-handlers/index-handler.ts` | IPC handler for `trama:index:get` |
 | `electron/ipc/handlers/project-handlers/order-handlers.ts` | IPC handlers for reorder + move |
-| `electron/ipc/handlers/project-handlers/shared.ts` | Shared `reconcileActiveProjectIndex()` |
-| `electron/ipc/handlers/project-handlers/document-handlers.ts` | Document CRUD + reconciliation calls |
-| `electron/ipc/handlers/project-handlers/folder-handlers.ts` | Folder rename/delete + reconciliation calls |
-| `electron/ipc/handlers/project-handlers/project-open-handler.ts` | Project open + initial reconciliation |
+| `electron/ipc/handlers/project-handlers/shared.ts` | Shared `reconcileActiveProjectIndex()` with incremental support |
+| `electron/ipc/handlers/project-handlers/document-handlers.ts` | Document CRUD (no longer calls reconciliation) |
+| `electron/ipc/handlers/project-handlers/folder-handlers.ts` | Folder rename/delete/move (no longer calls reconciliation) |
+| `electron/ipc/handlers/project-handlers/project-open-handler.ts` | Project open with full-scan vs incremental branch |
 | `electron/ipc-runtime.ts` | Active project state + service lifecycle |
 | `electron/services/watcher-service.ts` | Chokidar wrapper + internal/external write classification; ignores `.trama.index.json` |
 | `electron/services/book-export-order.ts` | Book export ordering — reads project-relative `corkboardOrder` keys |
-| `src/shared/ipc.ts` | Schema definitions (`projectIndexSchema`, `documentMetaSchema`) |
+| `src/shared/ipc.ts` | Schema definitions (`projectIndexSchema`, `documentMetaSchema`, `incrementalUpdateSchema`) |
 | `src/features/project-editor/components/sidebar/sidebar-path-scoping.ts` | Canonical path seam: `scopeCorkboardOrder()`, `buildScopedReorderHandler()`, `getScopedFiles()` |
 | `src/features/project-editor/components/sidebar/sidebar-panel-body.tsx` | Thin adapter that routes sidebar callbacks through the canonical path seam |
 | `src/features/project-editor/components/sidebar/sidebar-tree-sort.ts` | `sortTreeRowsByOrder()` — reorders tree rows by scoped `corkboardOrder` |
 | `tests/index-reconciliation.test.ts` | Reconciliation behavior tests |
+| `tests/incremental-project-updater.test.ts` | Incremental updater unit tests |
+| `tests/incremental-open-project.test.ts` | Incremental openProject integration tests |

@@ -3,6 +3,7 @@ import type { ProjectSnapshot } from '../../shared/ipc'
 import { reconcileWorkspaceLayout, resolvePreferredFile } from './project-editor-logic'
 import { PROJECT_EDITOR_STRINGS } from './project-editor-strings'
 import type { WorkspaceLayoutState, WorkspacePane } from './project-editor-types'
+import type { OpenProjectOptions } from './use-project-editor-actions-types'
 
 export type PreferredPane = 'primary' | 'secondary'
 
@@ -82,18 +83,17 @@ export function useOpenProject(
   setters: OpenProjectSetters,
   clearEditor: () => void,
   loadDocument: (path: string, targetPane: WorkspacePane) => Promise<void>,
-): (
-  projectRoot: string,
-  preferredFilePath?: string,
-  preferredPane?: PreferredPane,
-) => Promise<void> {
+): (projectRoot: string, options?: OpenProjectOptions) => Promise<void> {
   return useCallback(
-    async (projectRoot: string, preferredFilePath?: string, preferredPane?: PreferredPane): Promise<void> => {
+    async (projectRoot: string, options?: OpenProjectOptions): Promise<void> => {
       setters.setLoadingProject(true)
       setters.setStatusMessage(PROJECT_EDITOR_STRINGS.projectOpeningStatus)
 
       try {
-        const response = await window.tramaApi.openProject({ rootPath: projectRoot })
+        const response = await window.tramaApi.openProject({
+          rootPath: projectRoot,
+          incrementalUpdate: options?.incrementalUpdate,
+        })
         if (!response.ok) {
           setters.setStatusMessage(`Could not open project: ${response.error.message}`)
           return
@@ -105,8 +105,8 @@ export function useOpenProject(
           setters,
           clearEditor,
           loadDocument,
-          preferredFilePath,
-          preferredPane,
+          preferredFilePath: options?.preferredFilePath,
+          preferredPane: options?.preferredPane,
         })
       } catch (error) {
         const message = error instanceof Error ? error.message : 'Unknown error'

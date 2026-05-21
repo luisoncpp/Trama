@@ -8,7 +8,7 @@ import {
 } from '../../../../src/shared/ipc.js'
 import { errorEnvelope } from '../../../ipc-errors.js'
 import { getActiveIndexService, getActiveProjectRoot, markInternalWrite } from '../../../ipc-runtime.js'
-import { documentRepository, reconcileActiveProjectIndex } from './shared.js'
+import { documentRepository } from './shared.js'
 
 export async function handleReorderFiles(rawPayload: unknown): Promise<IpcEnvelope<ReorderFilesResponse>> {
   const payload = reorderFilesRequestSchema.safeParse(rawPayload)
@@ -48,7 +48,6 @@ export async function handleMoveFile(rawPayload: unknown): Promise<IpcEnvelope<M
     const result = await documentRepository.moveDocument(projectRoot, payload.data.sourcePath, payload.data.targetFolder)
     markInternalWrite(result.path)
     markInternalWrite(result.renamedTo)
-    await reconcileActiveProjectIndex(projectRoot)
 
     return {
       ok: true,

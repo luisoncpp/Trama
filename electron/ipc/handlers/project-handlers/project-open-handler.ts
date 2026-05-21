@@ -6,6 +6,8 @@ import {
 } from '../../../ipc-runtime.js'
 import { IndexService } from '../../../services/index-service.js'
 import { scanProject } from '../../../services/project-scanner.js'
+import { getProjectCache, setProjectCache } from '../../../services/project-state-cache.js'
+import { applyIncrementalUpdate } from '../../../services/incremental-project-updater.js'
 import { readMetaByPath, resolveProjectRoot } from './shared.js'
 
 export async function handleOpenProject(rawPayload: unknown): Promise<IpcEnvelope<ProjectSnapshot>> {
@@ -16,8 +18,25 @@ export async function handleOpenProject(rawPayload: unknown): Promise<IpcEnvelop
   try {
     const projectRoot = await resolveProjectRoot(payload.data.rootPath)
     await startWatcher(projectRoot)
-    const { tree, markdownFiles } = await scanProject(projectRoot)
-    const metaByPath = await readMetaByPath(projectRoot, markdownFiles)
+
+    let tree: ProjectSnapshot['tree']
+    let markdownFiles: string[]
+    let metaByPath: Record<string, Record<string, unknown>>
+
+    const cache = getProjectCache(projectRoot)
+    if (payload.data.incrementalUpdate && cache) {
+      const updated = await applyIncrementalUpdate(cache, payload.data.incrementalUpdate, projectRoot)
+      tree = updated.tree
+      markdownFiles = updated.markdownFiles
+      metaByPath = updated.metaByPath
+      setProjectCache(projectRoot, tree, markdownFiles, metaByPath)
+    } else {
+      const scanResult = await scanProject(projectRoot)
+      tree = scanResult.tree
+      markdownFiles = scanResult.markdownFiles
+      metaByPath = await readMetaByPath(projectRoot, markdownFiles)
+      setProjectCache(projectRoot, tree, markdownFiles, metaByPath)
+    }
 
     const indexService = new IndexService(projectRoot)
     const index = await indexService.reconcileIndex(markdownFiles, metaByPath)
@@ -29,7 +48,7 @@ export async function handleOpenProject(rawPayload: unknown): Promise<IpcEnvelop
       data: {
         rootPath: projectRoot,
         tree,
-        markdownFiles : markdownFiles,
+        markdownFiles: markdownFiles,
         index,
       },
     }

@@ -7,6 +7,7 @@ import {
 import { noteSidebarFolderRenamed } from '../../components/sidebar/sidebar-folder-rename-events'
 import { normalizeName, isInvalidRenameInput } from '../../../../shared/sidebar-utils'
 import type { SidebarRenameInput, WorkspaceLayoutState, ProjectEditorProjectState } from '../../project-editor-types'
+import type { OpenProjectOptions } from '../../use-project-editor-actions-types'
 import type { PaneWorkspace } from '../../pane'
 
 function preferredPathFromLayout(layout: WorkspaceLayoutState): string | null {
@@ -20,7 +21,7 @@ export async function renameFolder(
     projectState: ProjectEditorProjectState
     setStatusMessage: (value: string) => void
     setWorkspaceLayout: (value: WorkspaceLayoutState | ((previous: WorkspaceLayoutState) => WorkspaceLayoutState)) => void
-    openProject: (projectRoot: string, preferredFilePath?: string, preferredPane?: 'primary' | 'secondary') => Promise<void>
+    openProject: (projectRoot: string, options?: OpenProjectOptions) => Promise<void>
   },
 ): Promise<void> {
   if (!deps.projectState.rootPath) {
@@ -55,7 +56,11 @@ export async function renameFolder(
   noteSidebarFolderRenamed(response.data.path, response.data.renamedTo)
   deps.setWorkspaceLayout(remappedLayout)
   deps.setStatusMessage(`Renamed folder: ${response.data.renamedTo}`)
-  await deps.openProject(deps.projectState.rootPath, preferredPathFromLayout(remappedLayout) ?? undefined, remappedLayout.activePane)
+  await deps.openProject(deps.projectState.rootPath, {
+    preferredFilePath: preferredPathFromLayout(remappedLayout) ?? undefined,
+    preferredPane: remappedLayout.activePane,
+    incrementalUpdate: { renamedFolders: [{ from: input.path, to: response.data.renamedTo }] },
+  })
 }
 
 export async function deleteFolder(
@@ -65,7 +70,7 @@ export async function deleteFolder(
     projectState: ProjectEditorProjectState
     setStatusMessage: (value: string) => void
     setWorkspaceLayout: (value: WorkspaceLayoutState | ((previous: WorkspaceLayoutState) => WorkspaceLayoutState)) => void
-    openProject: (projectRoot: string, preferredFilePath?: string, preferredPane?: 'primary' | 'secondary') => Promise<void>
+    openProject: (projectRoot: string, options?: OpenProjectOptions) => Promise<void>
   },
 ): Promise<void> {
   if (!deps.projectState.rootPath) {
@@ -92,7 +97,11 @@ export async function deleteFolder(
   const nextLayout = pruneWorkspaceLayoutPathsForFolderDelete(deps.workspace.layout, response.data.path)
   deps.setWorkspaceLayout(nextLayout)
   deps.setStatusMessage(`Deleted folder: ${response.data.path}`)
-  await deps.openProject(deps.projectState.rootPath, preferredPathFromLayout(nextLayout) ?? undefined, nextLayout.activePane)
+  await deps.openProject(deps.projectState.rootPath, {
+    preferredFilePath: preferredPathFromLayout(nextLayout) ?? undefined,
+    preferredPane: nextLayout.activePane,
+    incrementalUpdate: { deletedFolders: [path] },
+  })
 }
 
 export async function moveFolder(
@@ -103,7 +112,7 @@ export async function moveFolder(
     projectState: ProjectEditorProjectState
     setStatusMessage: (value: string) => void
     setWorkspaceLayout: (value: WorkspaceLayoutState | ((previous: WorkspaceLayoutState) => WorkspaceLayoutState)) => void
-    openProject: (projectRoot: string, preferredFilePath?: string, preferredPane?: 'primary' | 'secondary') => Promise<void>
+    openProject: (projectRoot: string, options?: OpenProjectOptions) => Promise<void>
   },
 ): Promise<void> {
   if (!deps.projectState.rootPath) {
@@ -129,9 +138,9 @@ export async function moveFolder(
   )
   deps.setWorkspaceLayout(remappedLayout)
   deps.setStatusMessage(`Moved folder to: ${response.data.renamedTo}`)
-  await deps.openProject(
-    deps.projectState.rootPath,
-    preferredPathFromLayout(remappedLayout) ?? undefined,
-    remappedLayout.activePane,
-  )
+  await deps.openProject(deps.projectState.rootPath, {
+    preferredFilePath: preferredPathFromLayout(remappedLayout) ?? undefined,
+    preferredPane: remappedLayout.activePane,
+    incrementalUpdate: { renamedFolders: [{ from: sourcePath, to: response.data.renamedTo }] },
+  })
 }

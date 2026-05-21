@@ -98,4 +98,23 @@ export class IndexService {
     index.corkboardOrder[folderPath] = orderedIds
     await this.saveIndex(index)
   }
+
+  async updateCache(
+    changedFiles: string[],
+    metaByPath: Record<string, DocumentMeta>,
+  ): Promise<ProjectIndex> {
+    const index = await this.loadIndex()
+
+    for (const filePath of changedFiles) {
+      const meta = metaByPath[filePath]
+      if (meta) {
+        index.cache[filePath] = meta
+      } else {
+        delete index.cache[filePath]
+      }
+    }
+
+    await this.saveIndex(index)
+    return index
+  }
 }

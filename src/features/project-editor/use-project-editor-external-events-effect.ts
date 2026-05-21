@@ -1,6 +1,7 @@
 import { useEffect } from 'preact/hooks'
 import type { ExternalFileEvent } from '../../shared/ipc'
 import type { WorkspacePane } from './project-editor-types'
+import type { OpenProjectOptions } from './use-project-editor-actions-types'
 import { shouldRefreshTreeOnExternalEvent } from './project-editor-logic'
 import { PROJECT_EDITOR_STRINGS } from './project-editor-strings'
 
@@ -11,7 +12,7 @@ interface ExternalEventsEffectParams {
   isDirty: boolean
   clearEditor: () => void
   loadDocument: (path: string, pane: WorkspacePane) => Promise<void>
-  openProject: (projectRoot: string, preferredFilePath?: string) => Promise<void>
+  openProject: (projectRoot: string, options?: OpenProjectOptions) => Promise<void>
   setExternalConflictPath: (path: string | null) => void
   setConflictComparisonContent: (value: string | null) => void
   setStatusMessage: (message: string) => void
@@ -30,7 +31,7 @@ function handleSelectedPath(
   checkSnapshot: (path: string, content: string) => Promise<boolean>,
   clearEditor: () => void,
   loadDocument: (path: string, pane: WorkspacePane) => Promise<void>,
-  openProject: (projectRoot: string, preferredFilePath?: string) => Promise<void>,
+  openProject: (projectRoot: string, options?: OpenProjectOptions) => Promise<void>,
   setExternalConflictPath: (path: string | null) => void,
   setConflictComparisonContent: (value: string | null) => void,
   setStatusMessage: (message: string) => void,
@@ -90,7 +91,7 @@ function handleExternalEvent(params: HandleExternalEventParams): void {
     setStatusMessage(PROJECT_EDITOR_STRINGS.statusNeedSaveBeforeRefresh)
     return
   }
-  void openProject(snapshotRootPath as string, selectedPath ?? undefined)
+  void openProject(snapshotRootPath as string, { preferredFilePath: selectedPath ?? undefined })
 }
 
 export function useProjectEditorExternalEventsEffect(params: ExternalEventsEffectParams): void {

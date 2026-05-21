@@ -2,6 +2,7 @@ import { useCallback, useMemo } from 'preact/hooks'
 import type { DocumentMeta } from '../../shared/ipc'
 import type { ProjectEditorActions, ProjectEditorUiState, WorkspacePane } from './project-editor-types'
 import type { ProjectEditorLayoutState, ProjectEditorProjectState, ProjectEditorSidebarState } from './project-editor-types'
+import type { OpenProjectOptions } from './use-project-editor-actions-types'
 import type { PaneWorkspace } from './pane'
 import { useOpenProject } from './use-project-editor-open-project'
 import { hydrateMarkdownImages, stripBase64ImagesFromMarkdown } from '../../shared/markdown-image-placeholder'
@@ -11,11 +12,7 @@ import { buildActions } from './use-project-editor-actions-builder'
 interface CoreProjectEditorActions {
   clearEditor: () => void
   loadDocument: (path: string, targetPane: WorkspacePane) => Promise<void>
-  openProject: (
-    projectRoot: string,
-    preferredFilePath?: string,
-    preferredPane?: 'primary' | 'secondary',
-  ) => Promise<void>
+  openProject: (projectRoot: string, options?: OpenProjectOptions) => Promise<void>
   saveDocumentNow: (path: string, content: string, meta: DocumentMeta) => Promise<void>
 }
 

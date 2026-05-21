@@ -1,4 +1,5 @@
 import type { ProjectEditorProjectState } from '../../project-editor-types'
+import type { OpenProjectOptions } from '../../use-project-editor-actions-types'
 import type { PaneWorkspace } from '../../pane'
 
 export async function reorderFiles(
@@ -6,7 +7,7 @@ export async function reorderFiles(
   orderedIds: string[],
   deps: {
     setStatusMessage: (value: string) => void
-    openProject: (projectRoot: string) => Promise<void>
+    openProject: (projectRoot: string, options?: OpenProjectOptions) => Promise<void>
     rootPath: string
   },
 ): Promise<void> {
@@ -17,7 +18,7 @@ export async function reorderFiles(
       return
     }
     deps.setStatusMessage(`File order updated for folder: ${folderPath || '(root)'}`)
-    await deps.openProject(deps.rootPath)
+    await deps.openProject(deps.rootPath, { incrementalUpdate: {} })
   } catch (error) {
     deps.setStatusMessage(`Error reordering files: ${error instanceof Error ? error.message : 'Unknown error'}`)
   }
@@ -30,7 +31,7 @@ export async function moveFile(
     workspace: PaneWorkspace
     projectState: ProjectEditorProjectState
     setStatusMessage: (value: string) => void
-    openProject: (projectRoot: string, preferredFilePath?: string) => Promise<void>
+    openProject: (projectRoot: string, options?: OpenProjectOptions) => Promise<void>
   },
 ): Promise<void> {
   if (!deps.projectState.rootPath) {
@@ -54,7 +55,10 @@ export async function moveFile(
     }
 
     deps.setStatusMessage(`Moved file to: ${response.data.renamedTo}`)
-    await deps.openProject(deps.projectState.rootPath, response.data.renamedTo)
+    await deps.openProject(deps.projectState.rootPath, {
+      preferredFilePath: response.data.renamedTo,
+      incrementalUpdate: { renamedFiles: [{ from: sourcePath, to: response.data.renamedTo }] },
+    })
   } catch (error) {
     deps.setStatusMessage(`Error moving file: ${error instanceof Error ? error.message : 'Unknown error'}`)
   }

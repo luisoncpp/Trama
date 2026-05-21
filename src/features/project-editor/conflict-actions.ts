@@ -2,6 +2,7 @@ import { buildConflictCopyPath } from './project-editor-logic'
 import { PROJECT_EDITOR_STRINGS } from './project-editor-strings'
 import { ensureMarkdownEmbeddedImagesArePng } from './project-editor-image-save'
 import type { ProjectEditorDocumentState, ProjectEditorProjectState, ProjectEditorUiState } from './project-editor-types'
+import type { OpenProjectOptions } from './use-project-editor-actions-types'
 import type { PaneWorkspace } from './pane'
 
 export function resolveConflictReload(
@@ -42,7 +43,7 @@ export function resolveConflictSaveAsCopy(
     setStatusMessage: (value: string) => void
     setExternalConflictPath: (value: string | null) => void
     setConflictComparisonContent: (value: string | null) => void
-    openProject: (projectRoot: string, preferredFilePath?: string, preferredPane?: 'primary' | 'secondary') => Promise<void>
+    openProject: (projectRoot: string, options?: OpenProjectOptions) => Promise<void>
     workspace: PaneWorkspace
   },
 ): void {
@@ -67,7 +68,11 @@ export function resolveConflictSaveAsCopy(
     deps.setExternalConflictPath(null)
     deps.setConflictComparisonContent(null)
     deps.setStatusMessage(PROJECT_EDITOR_STRINGS.statusSaveAsCopyCreated)
-    await deps.openProject(deps.projectState.rootPath, response.data.path, deps.workspace.layout.activePane)
+    await deps.openProject(deps.projectState.rootPath, {
+      preferredFilePath: response.data.path,
+      preferredPane: deps.workspace.layout.activePane,
+      incrementalUpdate: { createdFiles: [response.data.path] },
+    })
   })()
 }
 

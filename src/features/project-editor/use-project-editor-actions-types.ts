@@ -4,7 +4,14 @@ import type {
   SidebarSection,
 } from './project-editor-types'
 import type { ProjectEditorLayoutState, ProjectEditorProjectState, ProjectEditorSidebarState } from './project-editor-types'
+import type { IncrementalUpdate } from '../../shared/ipc'
 import type { PaneWorkspace } from './pane'
+
+export interface OpenProjectOptions {
+  preferredFilePath?: string
+  preferredPane?: 'primary' | 'secondary'
+  incrementalUpdate?: IncrementalUpdate
+}
 
 export interface BuildActionsInput {
   layoutState: ProjectEditorLayoutState
@@ -23,5 +30,5 @@ export interface BuildActionsInput {
   }
   paneWorkspace: PaneWorkspace
   loadDocument: (path: string, targetPane: WorkspacePane) => Promise<void>
-  openProject: (projectRoot: string, preferredFilePath?: string, preferredPane?: 'primary' | 'secondary') => Promise<void>
+  openProject: (projectRoot: string, options?: OpenProjectOptions) => Promise<void>
 }

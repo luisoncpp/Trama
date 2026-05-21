@@ -1,6 +1,7 @@
 import { PROJECT_EDITOR_STRINGS } from '../../project-editor-strings'
 import { normalizeName } from '../../../../shared/sidebar-utils'
 import type { SidebarCreateInput, ProjectEditorProjectState, ProjectEditorSidebarState } from '../../project-editor-types'
+import type { OpenProjectOptions } from '../../use-project-editor-actions-types'
 import { buildProjectCandidatePath, type SidebarSectionRoot } from '../../components/sidebar/sidebar-path-scoping'
 import { SIDEBAR_SECTION_CONFIG } from '../../components/sidebar/sidebar-section-roots'
 
@@ -30,7 +31,7 @@ export async function createArticle(
     projectState: ProjectEditorProjectState
     sidebarState: ProjectEditorSidebarState
     setStatusMessage: (value: string) => void
-    openProject: (projectRoot: string, preferredFilePath?: string) => Promise<void>
+    openProject: (projectRoot: string, options?: OpenProjectOptions) => Promise<void>
   },
 ): Promise<void> {
   if (!deps.projectState.rootPath) {
@@ -58,7 +59,10 @@ export async function createArticle(
     const response = await window.tramaApi.createDocument({ path: createPath, initialContent: '' })
     if (response.ok) {
       deps.setStatusMessage(`Created article: ${response.data.path}`)
-      await deps.openProject(deps.projectState.rootPath, response.data.path)
+      await deps.openProject(deps.projectState.rootPath, {
+        preferredFilePath: response.data.path,
+        incrementalUpdate: { createdFiles: [response.data.path] },
+      })
       return
     }
 
@@ -77,7 +81,7 @@ export async function createCategory(
     projectState: ProjectEditorProjectState
     sidebarState: ProjectEditorSidebarState
     setStatusMessage: (value: string) => void
-    openProject: (projectRoot: string, preferredFilePath?: string) => Promise<void>
+    openProject: (projectRoot: string, options?: OpenProjectOptions) => Promise<void>
   },
 ): Promise<void> {
   if (!deps.projectState.rootPath) {
@@ -105,7 +109,9 @@ export async function createCategory(
     const response = await window.tramaApi.createFolder({ path: createPath })
     if (response.ok) {
       deps.setStatusMessage(`Created category: ${response.data.path}`)
-      await deps.openProject(deps.projectState.rootPath)
+      await deps.openProject(deps.projectState.rootPath, {
+        incrementalUpdate: { createdFolders: [response.data.path] },
+      })
       return
     }
 

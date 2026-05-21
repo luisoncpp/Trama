@@ -58,7 +58,7 @@ export async function handleSaveDocument(rawPayload: unknown): Promise<IpcEnvelo
       markInternalWrite(imagePath)
     }
 
-    await reconcileActiveProjectIndex(projectRoot)
+    await reconcileActiveProjectIndex(projectRoot, { changedFiles: [payload.data.path] })
 
     return {
       ok: true,
@@ -84,7 +84,6 @@ export async function handleCreateDocument(rawPayload: unknown): Promise<IpcEnve
       payload.data.initialContent,
     )
     markInternalWrite(result.path)
-    await reconcileActiveProjectIndex(projectRoot)
 
     return {
       ok: true,
@@ -105,7 +104,6 @@ export async function handleCreateFolder(rawPayload: unknown): Promise<IpcEnvelo
   try {
     const projectRoot = getActiveProjectRoot()
     const result = await documentRepository.createFolder(projectRoot, payload.data.path)
-    await reconcileActiveProjectIndex(projectRoot)
 
     return {
       ok: true,
@@ -128,7 +126,6 @@ export async function handleRenameDocument(rawPayload: unknown): Promise<IpcEnve
     const result = await documentRepository.renameDocument(projectRoot, payload.data.path, payload.data.newName)
     markInternalWrite(result.path)
     markInternalWrite(result.renamedTo)
-    await reconcileActiveProjectIndex(projectRoot)
 
     return {
       ok: true,
@@ -155,7 +152,6 @@ export async function handleDeleteDocument(rawPayload: unknown): Promise<IpcEnve
     for (const imagePath of result.deletedImagePaths ?? []) {
       markInternalWrite(imagePath)
     }
-    await reconcileActiveProjectIndex(projectRoot)
 
     return {
       ok: true,

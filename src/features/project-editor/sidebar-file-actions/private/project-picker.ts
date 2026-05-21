@@ -1,9 +1,10 @@
 import { PROJECT_EDITOR_STRINGS } from '../../project-editor-strings'
+import type { OpenProjectOptions } from '../../use-project-editor-actions-types'
 
 export async function pickProjectFolder(
   deps: {
     setStatusMessage: (value: string) => void
-    openProject: (projectRoot: string, preferredFilePath?: string) => Promise<void>
+    openProject: (projectRoot: string, options?: OpenProjectOptions) => Promise<void>
   },
 ): Promise<void> {
   const selected = await window.tramaApi.selectProjectFolder()

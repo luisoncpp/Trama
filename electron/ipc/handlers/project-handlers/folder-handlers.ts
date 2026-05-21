@@ -10,7 +10,7 @@ import {
 import { errorEnvelope } from '../../../ipc-errors.js'
 import { getActiveProjectRoot, markInternalWrite } from '../../../ipc-runtime.js'
 import { scanProject } from '../../../services/project-scanner.js'
-import { documentRepository, reconcileActiveProjectIndex } from './shared.js'
+import { documentRepository } from './shared.js'
 
 function withTrailingSlash(folderPath: string): string {
   return folderPath.endsWith('/') ? folderPath : `${folderPath}/`
@@ -46,8 +46,6 @@ export async function handleRenameFolder(rawPayload: unknown): Promise<IpcEnvelo
       markInternalWrite(oldFilePath)
       markInternalWrite(remapFolderFilePath(oldFilePath, result.path, result.renamedTo))
     }
-
-    await reconcileActiveProjectIndex(projectRoot)
 
     return {
       ok: true,
@@ -106,8 +104,6 @@ export async function handleMoveFolder(rawPayload: unknown): Promise<IpcEnvelope
       markInternalWrite(oldFilePath)
       markInternalWrite(remapFolderFilePath(oldFilePath, result.sourcePath, result.renamedTo))
     }
-
-    await reconcileActiveProjectIndex(projectRoot)
 
     return {
       ok: true,

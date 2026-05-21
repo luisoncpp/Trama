@@ -3,6 +3,7 @@ import { notifyTagIndexRefresh } from '../../tag-index-events'
 import { normalizeName, isInvalidRenameInput, deduplicateTags } from '../../../../shared/sidebar-utils'
 import { ensureMarkdownEmbeddedImagesArePng } from '../../project-editor-image-save'
 import type { SidebarRenameInput, ProjectEditorProjectState } from '../../project-editor-types'
+import type { OpenProjectOptions } from '../../use-project-editor-actions-types'
 import type { PaneWorkspace } from '../../pane'
 
 export async function renameFile(
@@ -10,7 +11,7 @@ export async function renameFile(
   deps: {
     projectState: ProjectEditorProjectState
     setStatusMessage: (value: string) => void
-    openProject: (projectRoot: string, preferredFilePath?: string) => Promise<void>
+    openProject: (projectRoot: string, options?: OpenProjectOptions) => Promise<void>
   },
 ): Promise<void> {
   if (!deps.projectState.rootPath) {
@@ -33,7 +34,10 @@ export async function renameFile(
   }
 
   deps.setStatusMessage(`Renamed file: ${response.data.renamedTo}`)
-  await deps.openProject(deps.projectState.rootPath, response.data.renamedTo)
+  await deps.openProject(deps.projectState.rootPath, {
+    preferredFilePath: response.data.renamedTo,
+    incrementalUpdate: { renamedFiles: [{ from: input.path, to: response.data.renamedTo }] },
+  })
 }
 
 export async function deleteFile(
@@ -42,7 +46,7 @@ export async function deleteFile(
   deps: {
     projectState: ProjectEditorProjectState
     setStatusMessage: (value: string) => void
-    openProject: (projectRoot: string, preferredFilePath?: string) => Promise<void>
+    openProject: (projectRoot: string, options?: OpenProjectOptions) => Promise<void>
   },
 ): Promise<void> {
   if (!deps.projectState.rootPath) {
@@ -60,7 +64,9 @@ export async function deleteFile(
   }
 
   deps.setStatusMessage(`Deleted file: ${response.data.path}`)
-  await deps.openProject(deps.projectState.rootPath)
+  await deps.openProject(deps.projectState.rootPath, {
+    incrementalUpdate: { deletedFiles: [path] },
+  })
 }
 
 export async function editFileTags(
