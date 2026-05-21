@@ -2,7 +2,6 @@ import { useMemo, useRef, useState } from 'preact/hooks'
 import { PROJECT_EDITOR_STRINGS } from '../../project-editor-strings'
 import { filterSidebarTree } from './sidebar-filter-logic'
 import { buildSidebarTree, getVisibleSidebarRows, sortTreeRowsByOrder } from './sidebar-tree-logic'
-import { useSidebarTreeExpandedFolders } from './use-sidebar-tree-expanded-folders'
 import {
   createContainerDragOverHandler,
   createContainerDropHandler,
@@ -24,6 +23,9 @@ export interface SidebarTreeProps {
   onReorderFiles?: (folderPath: string, orderedIds: string[]) => Promise<void>
   onMoveFile?: (sourcePath: string, targetFolder: string) => Promise<void>
   onMoveFolder?: (sourcePath: string, targetParent: string) => Promise<void>
+  expandedFolders: string[]
+  onToggleFolder: (path: string, expanded: boolean) => void
+  isLoading?: boolean
 }
 
 export interface SidebarTreeRowsProps {
@@ -46,29 +48,28 @@ export interface SidebarTreeRowsProps {
   }
 }
 
-function useSidebarTreeData(visibleFiles: string[], selectedPath: string | null, filterQuery: string, corkboardOrder?: Record<string, string[]>) {
+function useSidebarTreeRows(
+  visibleFiles: string[],
+  expandedFolders: string[],
+  filterQuery: string,
+  corkboardOrder?: Record<string, string[]>,
+) {
   const tree = useMemo(() => buildSidebarTree(visibleFiles), [visibleFiles])
   const filterResult = useMemo(() => filterSidebarTree(tree, filterQuery), [filterQuery, tree])
-  const [setFolderExpanded, effectiveExpandedFolders] = useSidebarTreeExpandedFolders(
-    tree,
-    selectedPath,
-    filterQuery,
-    filterResult.autoExpandFolderPaths,
-  )
   const rawRows = useMemo(
     () =>
       getVisibleSidebarRows(
         tree,
-        new Set(effectiveExpandedFolders),
+        new Set(expandedFolders),
         filterResult.query ? filterResult.visibleNodePaths : undefined,
       ),
-    [effectiveExpandedFolders, filterResult, tree],
+    [expandedFolders, filterResult, tree],
   )
   const rows = useMemo(
     () => (corkboardOrder ? sortTreeRowsByOrder(rawRows, corkboardOrder) : rawRows),
     [rawRows, corkboardOrder],
   )
-  return { rows, filterResult, setFolderExpanded }
+  return { rows, filterResult }
 }
 
 function getDropIndicatorClass(
@@ -146,8 +147,11 @@ export function SidebarTree({
   onReorderFiles,
   onMoveFile,
   onMoveFolder,
+  expandedFolders,
+  onToggleFolder,
+  isLoading,
 }: SidebarTreeProps) {
-  const { rows, filterResult, setFolderExpanded } = useSidebarTreeData(visibleFiles, selectedPath, filterQuery, corkboardOrder)
+  const { rows, filterResult } = useSidebarTreeRows(visibleFiles, expandedFolders, filterQuery, corkboardOrder)
   const containerRef = useRef<HTMLDivElement | null>(null)
   const hasFilterQuery = filterResult.query.length > 0
   const [draggingPath, setDraggingPath] = useState<string | null>(null)
@@ -162,7 +166,7 @@ export function SidebarTree({
 
   return (
     <div
-      class='file-tree sidebar-tree'
+      class={`file-tree sidebar-tree${isLoading ? ' is-loading' : ''}`}
       ref={containerRef}
       role='tree'
       aria-label='Project files'
@@ -174,7 +178,7 @@ export function SidebarTree({
         selectedPath={selectedPath}
         loadingDocument={loadingDocument}
         onSelectFile={onSelectFile}
-        onToggleFolder={setFolderExpanded}
+        onToggleFolder={onToggleFolder}
         containerRef={containerRef}
         onFileContextMenu={onFileContextMenu}
         onFolderContextMenu={onFolderContextMenu}

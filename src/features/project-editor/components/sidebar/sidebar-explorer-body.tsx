@@ -1,3 +1,4 @@
+import { useMemo } from 'preact/hooks'
 import { PROJECT_EDITOR_STRINGS } from '../../project-editor-strings'
 import type { SidebarCreateInput } from '../../project-editor-types'
 import type { SidebarCreateMode } from './sidebar-create-dialog.tsx'
@@ -7,6 +8,9 @@ import { SidebarExplorerDialogs } from './sidebar-explorer-dialogs.tsx'
 import { useSidebarDialogs } from './sidebar-dialogs-context-menus'
 import { SidebarFilter } from './sidebar-filter.tsx'
 import { SidebarTree } from './sidebar-tree.tsx'
+import { buildSidebarTree } from './sidebar-tree-logic'
+import { filterSidebarTree } from './sidebar-filter-logic'
+import { useSidebarTreeExpandedFolders } from './use-sidebar-tree-expanded-folders'
 
 function EmptyStateHint({ showOnlyStateHint, loadingProject, apiAvailable }: {
   showOnlyStateHint: boolean
@@ -38,9 +42,11 @@ function SidebarTreeArea(props: {
   onReorderFiles?: (folderPath: string, orderedIds: string[]) => Promise<void>
   onMoveFile?: (sourcePath: string, targetFolder: string) => Promise<void>
   onMoveFolder?: (sourcePath: string, targetParent: string) => Promise<void>
+  expandedFolders: string[]
+  onToggleFolder: (path: string, expanded: boolean) => void
 }) {
   if (props.showOnlyStateHint) {
-    return <EmptyStateHint {...props} />
+    return <EmptyStateHint loadingProject={props.loadingProject} apiAvailable={props.apiAvailable} showOnlyStateHint />
   }
   return (
     <SidebarTree
@@ -55,6 +61,9 @@ function SidebarTreeArea(props: {
       onReorderFiles={props.onReorderFiles}
       onMoveFile={props.onMoveFile}
       onMoveFolder={props.onMoveFolder}
+      expandedFolders={props.expandedFolders}
+      onToggleFolder={props.onToggleFolder}
+      isLoading={props.loadingProject}
     />
   )
 }
@@ -147,6 +156,15 @@ export function SidebarExplorerBody(props: SidebarExplorerBodyProps) {
     openDeleteFolderDialog: props.openDeleteFolderDialog,
   })
 
+  const tree = useMemo(() => buildSidebarTree(props.visibleFiles), [props.visibleFiles])
+  const filterResult = useMemo(() => filterSidebarTree(tree, props.filterQuery), [tree, props.filterQuery])
+  const [setFolderExpanded, expandedFolders] = useSidebarTreeExpandedFolders(
+    tree,
+    props.selectedPath,
+    props.filterQuery,
+    filterResult.autoExpandFolderPaths,
+  )
+
   return (
     <>
       <p class="project-menu__path">{props.scopePathLabel || PROJECT_EDITOR_STRINGS.noFolderSelected}</p>
@@ -158,7 +176,7 @@ export function SidebarExplorerBody(props: SidebarExplorerBodyProps) {
         onChange={props.onFilterQueryChange}
       />
       <SidebarTreeArea
-        showOnlyStateHint={!props.apiAvailable || props.loadingProject}
+        showOnlyStateHint={!props.apiAvailable}
         loadingProject={props.loadingProject}
         apiAvailable={props.apiAvailable}
         visibleFiles={props.visibleFiles}
@@ -172,6 +190,8 @@ export function SidebarExplorerBody(props: SidebarExplorerBodyProps) {
         onReorderFiles={props.onReorderFiles}
         onMoveFile={props.onMoveFile}
         onMoveFolder={props.onMoveFolder}
+        expandedFolders={expandedFolders}
+        onToggleFolder={setFolderExpanded}
       />
       <SidebarExplorerDialogs {...buildDialogsProps(props, fileContextMenu, folderContextMenu)} />
     </>

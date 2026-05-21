@@ -1,7 +1,27 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { h, render } from 'preact'
+import { useMemo, useState } from 'preact/hooks'
 import { act } from 'preact/test-utils'
 import { SidebarTree } from '../src/features/project-editor/components/sidebar/sidebar-tree.tsx'
+import { buildSidebarTree } from '../src/features/project-editor/components/sidebar/sidebar-tree-logic'
+import { filterSidebarTree } from '../src/features/project-editor/components/sidebar/sidebar-filter-logic'
+import { useSidebarTreeExpandedFolders } from '../src/features/project-editor/components/sidebar/use-sidebar-tree-expanded-folders'
+
+function TestTree(props: Omit<Parameters<typeof SidebarTree>[0], 'expandedFolders' | 'onToggleFolder'>) {
+  const tree = useMemo(() => buildSidebarTree(props.visibleFiles), [props.visibleFiles])
+  const filterResult = useMemo(() => filterSidebarTree(tree, props.filterQuery), [tree, props.filterQuery])
+  const [setFolderExpanded, expandedFolders] = useSidebarTreeExpandedFolders(
+    tree,
+    props.selectedPath,
+    props.filterQuery,
+    filterResult.autoExpandFolderPaths,
+  )
+  return h(SidebarTree, {
+    ...props,
+    expandedFolders,
+    onToggleFolder: setFolderExpanded,
+  })
+}
 
 describe('sidebar filter UX', () => {
   let container: HTMLDivElement
@@ -24,6 +44,8 @@ describe('sidebar filter UX', () => {
           loadingDocument: false,
           onSelectFile: async () => undefined,
           filterQuery: 'missing-file',
+          expandedFolders: [],
+          onToggleFolder: () => {},
         }),
         container,
       )
@@ -45,7 +67,7 @@ describe('sidebar filter UX', () => {
     }
 
     act(() => {
-      render(h(SidebarTree, props), container)
+      render(h(TestTree, props), container)
     })
 
     const chapter01Button = Array.from(container.querySelectorAll('.sidebar-tree__row')).find((node) =>
@@ -59,14 +81,14 @@ describe('sidebar filter UX', () => {
     expect(container.textContent).toContain('Scene-001.md')
 
     act(() => {
-      render(h(SidebarTree, { ...props, filterQuery: 'scene-003' }), container)
+      render(h(TestTree, { ...props, filterQuery: 'scene-003' }), container)
     })
 
     expect(container.textContent).toContain('Scene-003.md')
     expect(container.textContent).not.toContain('Scene-001.md')
 
     act(() => {
-      render(h(SidebarTree, { ...props, filterQuery: '' }), container)
+      render(h(TestTree, { ...props, filterQuery: '' }), container)
     })
 
     expect(container.textContent).toContain('Scene-001.md')
@@ -86,7 +108,7 @@ describe('sidebar filter UX', () => {
     }
 
     act(() => {
-      render(h(SidebarTree, props), container)
+      render(h(TestTree, props), container)
     })
 
     const rootButtons = Array.from(container.querySelectorAll('.sidebar-tree__row')).filter((node) =>

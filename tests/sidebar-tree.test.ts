@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { filterSidebarTree } from '../src/features/project-editor/components/sidebar/sidebar-filter-logic'
 import { buildSidebarTree, getAncestorFolderPaths, getVisibleSidebarRows, sortTreeRowsByOrder } from '../src/features/project-editor/components/sidebar/sidebar-tree-logic'
 import { defineSidebarSectionRoot, scopeCorkboardOrder } from '../src/features/project-editor/components/sidebar/sidebar-path-scoping'
+import { getSeededExpandedFolders } from '../src/features/project-editor/components/sidebar/use-sidebar-tree-expanded-folders'
 
 describe('sidebar tree logic', () => {
   it('builds hierarchical folders and files with folder-first sorting', () => {
@@ -194,5 +195,83 @@ describe('scopeCorkboardOrder', () => {
     }
     const scoped = scopeCorkboardOrder(order, defineSidebarSectionRoot('book/'))
     expect(scoped!['']).toEqual(['intro.md', 'ch-01.md'])
+  })
+})
+
+describe('getSeededExpandedFolders', () => {
+  const folderPaths = new Set(['Act-01', 'Lore'])
+  const rootFolders = ['Act-01', 'Lore']
+
+  it('seeds root folders on first mount when no prior expanded state exists', () => {
+    const result = getSeededExpandedFolders({
+      previousExpanded: [],
+      folderPaths,
+      rootFolders,
+      didInitialize: false,
+      hasUserModified: false,
+      treeChanged: true,
+    })
+    expect(result).toEqual(['Act-01', 'Lore'])
+  })
+
+  it('preserves prior expanded state on first mount', () => {
+    const result = getSeededExpandedFolders({
+      previousExpanded: ['Act-01'],
+      folderPaths,
+      rootFolders,
+      didInitialize: false,
+      hasUserModified: false,
+      treeChanged: true,
+    })
+    expect(result).toEqual(['Act-01'])
+  })
+
+  it('preserves previously expanded folders after initialization when tree changes', () => {
+    const result = getSeededExpandedFolders({
+      previousExpanded: ['Act-01'],
+      folderPaths,
+      rootFolders,
+      didInitialize: true,
+      hasUserModified: true,
+      treeChanged: true,
+    })
+    expect(result).toEqual(['Act-01'])
+  })
+
+  it('keeps everything collapsed after initialization when user had everything collapsed', () => {
+    const result = getSeededExpandedFolders({
+      previousExpanded: [],
+      folderPaths,
+      rootFolders,
+      didInitialize: true,
+      hasUserModified: true,
+      treeChanged: true,
+    })
+    expect(result).toEqual([])
+  })
+
+  it('re-seeds root folders after initialization when empty state was not user-driven', () => {
+    const result = getSeededExpandedFolders({
+      previousExpanded: [],
+      folderPaths,
+      rootFolders,
+      didInitialize: true,
+      hasUserModified: false,
+      treeChanged: true,
+    })
+    expect(result).toEqual(['Act-01', 'Lore'])
+  })
+
+  it('falls back to root folders when previously expanded folders no longer exist', () => {
+    const newFolderPaths = new Set(['Act-02', 'Lore'])
+    const result = getSeededExpandedFolders({
+      previousExpanded: ['Act-01'],
+      folderPaths: newFolderPaths,
+      rootFolders: ['Act-02', 'Lore'],
+      didInitialize: true,
+      hasUserModified: true,
+      treeChanged: true,
+    })
+    expect(result).toEqual(['Act-02', 'Lore'])
   })
 })

@@ -1515,6 +1515,11 @@ select {
   gap: 6px;
 }
 
+.sidebar-tree.is-loading {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
 .file-tree__item {
   width: 100%;
   border: 1px solid transparent;

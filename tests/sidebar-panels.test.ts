@@ -271,7 +271,10 @@ describe('sidebar panels', () => {
       )
     })
 
-    expect(container.textContent).toContain('Loading project files...')
+    const treeEl = container.querySelector('.sidebar-tree')
+    expect(treeEl).toBeTruthy()
+    expect(treeEl?.classList.contains('is-loading')).toBe(true)
+    expect(container.textContent).toContain('README.md')
 
     act(() => {
       render(

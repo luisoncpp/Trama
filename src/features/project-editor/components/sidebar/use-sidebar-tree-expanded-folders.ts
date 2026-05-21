@@ -21,15 +21,16 @@ function getRootFolderPaths(tree: ReturnType<typeof buildSidebarTree>): string[]
     .map((node) => node.path)
 }
 
-function keepValidExpanded(previousExpanded: string[], folderPaths: Set<string>): string[] {
+export function keepValidExpanded(previousExpanded: string[], folderPaths: Set<string>): string[] {
   return previousExpanded.filter((path) => folderPaths.has(path))
 }
 
-function getSeededExpandedFolders(params: {
+export function getSeededExpandedFolders(params: {
   previousExpanded: string[]
   folderPaths: Set<string>
   rootFolders: string[]
   didInitialize: boolean
+  hasUserModified: boolean
   treeChanged: boolean
 }): string[] {
   const previousValid = keepValidExpanded(params.previousExpanded, params.folderPaths)
@@ -37,7 +38,7 @@ function getSeededExpandedFolders(params: {
     return previousValid.length > 0 ? previousValid : params.rootFolders
   }
 
-  if (params.treeChanged && params.previousExpanded.length === 0 && params.rootFolders.length > 0) {
+  if (!params.hasUserModified && params.treeChanged && params.previousExpanded.length === 0 && params.rootFolders.length > 0) {
     return params.rootFolders
   }
 
@@ -55,6 +56,7 @@ function getFolderTreeKey(folderPaths: Set<string>): string {
 function useSeedExpandedFolders(
   tree: ReturnType<typeof buildSidebarTree>,
   didInitializeRef: { current: boolean },
+  hasUserModifiedRef: { current: boolean },
   previousTreeKeyRef: { current: string },
   setExpandedFolders: (updater: (prev: string[]) => string[]) => void,
 ): void {
@@ -75,6 +77,7 @@ function useSeedExpandedFolders(
         folderPaths,
         rootFolders,
         didInitialize: didInitializeRef.current,
+        hasUserModified: hasUserModifiedRef.current,
         treeChanged,
       })
     })
@@ -126,9 +129,10 @@ export function useSidebarTreeExpandedFolders(
   const previousExpandedBeforeFilterRef = useRef<string[] | null>(null)
   const wasFilterActiveRef = useRef(false)
   const didInitializeRef = useRef(false)
+  const hasUserModifiedRef = useRef(false)
   const previousTreeKeyRef = useRef('')
 
-  useSeedExpandedFolders(tree, didInitializeRef, previousTreeKeyRef, setExpandedFolders)
+  useSeedExpandedFolders(tree, didInitializeRef, hasUserModifiedRef, previousTreeKeyRef, setExpandedFolders)
   useExpandSelectedPathAncestors(tree, selectedPath, setExpandedFolders)
 
   useEffect(() => {
@@ -147,6 +151,7 @@ export function useSidebarTreeExpandedFolders(
   }, [expandedFolders, filterQuery, tree])
 
   const setFolderExpanded = (path: string, expanded: boolean) => {
+    hasUserModifiedRef.current = true
     setExpandedFolders((current) => {
       if (expanded) {
         return unique([...current, path])
