@@ -22,6 +22,8 @@ function buildProps(
 		value: 'Primera frase del documento. Segunda frase para probar foco en split.',
 		disabled: false,
 		onChange: noop,
+		historyBackDisabled: true,
+		onHistoryBack: noop,
 		saveDisabled: false,
 		saveLabel: 'Guardar',
 		onSaveNow: noop,

@@ -35,6 +35,8 @@ use-project-editor.ts
 | `Ctrl/Cmd + Shift + F` | `onToggleFullscreen` | Toggle fullscreen mode |
 | `Ctrl/Cmd + Shift + M` | `onToggleFocusMode` | Toggle focus mode |
 | `Ctrl/Cmd + Shift + Tab` | `onSwitchActivePane` | Switch active pane in split mode |
+| `Alt + Left` | `onOpenPreviousHistory` | Open previous document in the current pane history |
+| `Alt + Right` | `onOpenNextHistory` | Open next document in the current pane history |
 | `Escape` | `onEscapePressed` | Exit fullscreen and/or focus mode |
 | `Ctrl/Cmd + +` / `Ctrl + =` | `onZoomIn` | Zoom in on editor content (+0.1) |
 | `Ctrl/Cmd + -` | `onZoomOut` | Zoom out on editor content (-0.1) |
@@ -58,6 +60,8 @@ These shortcuts use `window.addEventListener('keydown')` and are processed entir
 - `Ctrl + Shift + F`
 - `Ctrl + Shift + M`
 - `Ctrl + Shift + Tab`
+- `Alt + Left`
+- `Alt + Right`
 - `Escape`
 - `Ctrl + +` / `Ctrl + -` (zoom)
 
@@ -95,7 +99,7 @@ All shortcuts respect these guard conditions:
 
 1. **Form field exclusion** — `isFormFieldTarget()` blocks shortcuts when focus is inside `<input>`, `<textarea>`, or `<select>`
 2. **Modal exclusion** — `hasOpenModal()` blocks Escape when a dialog with `aria-modal="true"` is open
-3. **Modifier exclusion** — `!event.altKey` prevents shortcuts from triggering with Alt held (for zoom shortcuts specifically)
+3. **Modifier exclusion** — zoom and save shortcuts require `!event.altKey`; history navigation intentionally uses bare `Alt + Left/Right`
 
 ## Key Files
 

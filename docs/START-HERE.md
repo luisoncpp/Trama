@@ -25,7 +25,7 @@ Trama is a file-first desktop writing tool (Electron + Preact + TypeScript). The
 
 **Sidebar** — Section-scoped trees (`book/`, `outline/`, `lore/`), filter, keyboard basics, responsive collapse, create article/category, rename/delete from right-click.
 
-**Workspace split mode** — Both panes visible, active pane follows editor clicks, draggable center divider, pane headers show document name, split toggle via `Ctrl/Cmd + .` or context menu.
+**Workspace split mode** — Both panes visible, active pane follows editor clicks, draggable center divider, pane headers show document name, split toggle via `Ctrl/Cmd + .` or context menu, per-pane session history via `Alt+Left` / `Alt+Right` plus menu-bar Back/Forward.
 
 **Theme** — Settings exposes `light`, `dark`, `system`; preference persists through root `data-theme` tokens; system mode listens to OS theme changes.
 
@@ -48,6 +48,7 @@ Trama is a file-first desktop writing tool (Electron + Preact + TypeScript). The
 | Plan rich editor cleanup/refactor | `docs/plan/rich-editor-refactor-plan.md` → `docs/architecture/rich-markdown-editor-core-architecture.md` → `docs/architecture/image-handling-architecture.md` → `docs/architecture/split-pane-coordination.md` |
 | Follow editor typing behavior step-by-step | `docs/flows/rich-editor-typing-flow.md` → `src/features/project-editor/components/rich-markdown-editor-core.ts` → `src/features/project-editor/components/rich-markdown-editor-quill.ts` |
 | Follow split-pane activation behavior step-by-step | `docs/flows/switch-pane-flow.md` → `src/features/project-editor/workspace-actions.ts` → `src/features/project-editor/use-project-editor-state.ts` |
+| Change pane document history behavior | `docs/flows/pane-history-navigation-flow.md` → `src/features/project-editor/pane/pane-workspace.ts` → `src/features/project-editor/workspace-actions.ts` → `src/features/project-editor/use-project-editor.ts` |
 | Change filesystem/repo layer | `electron/services/document-repository.ts` → `electron/ipc/handlers/project-handlers/document-handlers.ts` |
 | Add a test | `tests/` + `docs/dev-workflow.md` (checklist) |
 | Understand split pane coordination | `docs/architecture/split-pane-coordination.md` (canonical: per-pane state contracts, two-layer model, pane-targeted action rules) |

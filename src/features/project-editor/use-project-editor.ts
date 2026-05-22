@@ -1,6 +1,11 @@
 import { useEffect, useRef } from 'preact/hooks'
 import type { DocumentMeta } from '../../shared/ipc'
-import type { EditorSerializationRefs, EditorZoomRef, ProjectEditorModel } from './project-editor-types'
+import type {
+  EditorSerializationRefs,
+  EditorZoomRef,
+  PaneNavigationHistoryStore,
+  ProjectEditorModel,
+} from './project-editor-types'
 import type { WorkspaceLayoutState } from './project-editor-types'
 import { useProjectEditorActions } from './use-project-editor-actions'
 import { useProjectEditorContextMenuEffect } from './use-project-editor-context-menu-effect'
@@ -39,6 +44,8 @@ function buildShortcutsEffectParams(
       actions.setWorkspaceActivePane(workspaceLayout.activePane === 'primary' ? 'secondary' : 'primary')
     },
     onSaveNow: () => actions.saveNow(),
+    onOpenPreviousHistory: () => void actions.openPreviousInPaneHistory(),
+    onOpenNextHistory: () => void actions.openNextInPaneHistory(),
     onEscapePressed: () => {
       if (isFullscreen) {
         void actions.setFullscreenEnabled(false)
@@ -100,6 +107,8 @@ function useProjectEditorEffects(
   useProjectEditorContextMenuEffect({
     isFullscreen: uiState.isFullscreen,
     toggleWorkspaceLayoutMode: actions.toggleWorkspaceLayoutMode,
+    openPreviousInPaneHistory: actions.openPreviousInPaneHistory,
+    openNextInPaneHistory: actions.openNextInPaneHistory,
     setFullscreenEnabled: actions.setFullscreenEnabled,
     toggleFocusMode: actions.toggleFocusMode, setFocusScope: actions.setFocusScope,
     setWorkspaceLayoutRatio: actions.setWorkspaceLayoutRatio,
@@ -110,10 +119,23 @@ function usePaneWorkspaceLifecycle(
   paneWorkspace: ReturnType<typeof usePaneWorkspace>,
   lastSavedContentMapRef: { current: Map<string, string> },
   rootPath: string | null,
+  workspaceLayout: WorkspaceLayoutState,
 ): void {
   useEffect(() => {
     return () => paneWorkspace.destroy()
   }, [paneWorkspace])
+
+  useEffect(/* seedPrimaryNavigationHistory */ () => {
+    if (workspaceLayout.primaryPath) {
+      paneWorkspace.recordPaneNavigation('primary', workspaceLayout.primaryPath)
+    }
+  }, [paneWorkspace, workspaceLayout.primaryPath] /*Inputs for seedPrimaryNavigationHistory*/)
+
+  useEffect(/* seedSecondaryNavigationHistory */ () => {
+    if (workspaceLayout.secondaryPath) {
+      paneWorkspace.recordPaneNavigation('secondary', workspaceLayout.secondaryPath)
+    }
+  }, [paneWorkspace, workspaceLayout.secondaryPath] /*Inputs for seedSecondaryNavigationHistory*/)
 
   useEffect(() => {
     if (!rootPath) {
@@ -140,6 +162,10 @@ export function useProjectEditor(): ProjectEditorModel {
 
   const saveDocumentNowRef = useRef<((path: string, content: string, meta: DocumentMeta) => Promise<void>) | null>(null)
   const lastSavedContentMapRef = useRef(new Map<string, string>())
+  const navigationHistoryRef = useRef<PaneNavigationHistoryStore>({
+    primary: { entries: [], index: -1 },
+    secondary: { entries: [], index: -1 },
+  })
 
   const zoomRef: EditorZoomRef = { current: layoutState.workspaceLayout.zoomLevel ?? 1.0 }
 
@@ -148,10 +174,16 @@ export function useProjectEditor(): ProjectEditorModel {
     paneBindings,
     { primary: primarySerializationRef, secondary: secondarySerializationRef },
     (path, content, meta) => saveDocumentNowRef.current?.(path, content, meta) ?? Promise.resolve(),
+    navigationHistoryRef.current,
     lastSavedContentMapRef.current,
   )
 
-  usePaneWorkspaceLifecycle(paneWorkspace, lastSavedContentMapRef, projectState.rootPath)
+  usePaneWorkspaceLifecycle(
+    paneWorkspace,
+    lastSavedContentMapRef,
+    projectState.rootPath,
+    layoutState.workspaceLayout,
+  )
 
   const { actions, core } = useProjectEditorActions({
     layoutState,

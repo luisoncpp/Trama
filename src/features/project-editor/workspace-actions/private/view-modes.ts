@@ -1,4 +1,3 @@
-import { PROJECT_EDITOR_STRINGS } from '../../project-editor-strings'
 import { clampZoomLevel } from '../../editor-zoom'
 import type { WorkspaceLayoutState, FocusScope } from '../../project-editor-types'
 

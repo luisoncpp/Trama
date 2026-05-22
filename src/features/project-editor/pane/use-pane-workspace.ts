@@ -1,6 +1,11 @@
 import { useMemo } from 'preact/hooks'
 import type { DocumentMeta } from '../../../shared/ipc'
-import type { EditorSerializationRefs, PaneDocumentState, WorkspaceLayoutState } from '../project-editor-types'
+import type {
+  EditorSerializationRefs,
+  PaneDocumentState,
+  PaneNavigationHistoryStore,
+  WorkspaceLayoutState,
+} from '../project-editor-types'
 import { PaneWorkspace } from './pane-workspace'
 
 export function usePaneWorkspace(
@@ -20,10 +25,11 @@ export function usePaneWorkspace(
     content: string,
     meta: DocumentMeta
   ) => Promise<void>,
+  navigationHistory: PaneNavigationHistoryStore,
   savedContentMap?: Map<string, string>,
 ): PaneWorkspace {
   return useMemo(
-    () => new PaneWorkspace(layoutState, paneBindings, serializationRefs, saveDocumentFn, savedContentMap),
-    [layoutState, paneBindings, serializationRefs, saveDocumentFn, savedContentMap],
+    () => new PaneWorkspace(layoutState, paneBindings, serializationRefs, saveDocumentFn, navigationHistory, savedContentMap),
+    [layoutState, paneBindings, serializationRefs, saveDocumentFn, navigationHistory, savedContentMap],
   )
 }

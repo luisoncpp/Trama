@@ -1,5 +1,12 @@
 import type { DocumentMeta } from '../../../shared/ipc'
-import type { EditorSerializationRefs, PaneDocumentState, WorkspaceLayoutState, WorkspacePane } from '../project-editor-types'
+import type {
+  EditorSerializationRefs,
+  PaneDocumentState,
+  PaneNavigationHistoryState,
+  PaneNavigationHistoryStore,
+  WorkspaceLayoutState,
+  WorkspacePane,
+} from '../project-editor-types'
 import { executePaneSave } from './pane-save-logic'
 import { logSnapshotComparison } from './snapshot-compare-logger'
 
@@ -24,10 +31,33 @@ export interface PaneBindings {
   setSecondaryPane: (value: PaneDocumentState | ((prev: PaneDocumentState) => PaneDocumentState)) => void
 }
 
+function getEmptyNavigationHistory(): PaneNavigationHistoryState {
+  return { entries: [], index: -1 }
+}
+
+function getHistoryForPane(
+  historyStore: PaneNavigationHistoryStore,
+  pane: WorkspacePane,
+): PaneNavigationHistoryState {
+  return pane === 'secondary' ? historyStore.secondary : historyStore.primary
+}
+
+function createNavigationHistoryStore(): PaneNavigationHistoryStore {
+  return {
+    primary: getEmptyNavigationHistory(),
+    secondary: getEmptyNavigationHistory(),
+  }
+}
+
+function isSavedContentMap(value: unknown): value is Map<string, string> {
+  return value instanceof Map
+}
+
 export class PaneWorkspace {
   private autosaveTimer: number | null = null
   private lastSavedContentMap: Map<string, string>
   private ownsSavedContentMap: boolean
+  private navigationHistory: PaneNavigationHistoryStore
 
   constructor(
     private layoutState: WorkspaceLayoutState,
@@ -41,10 +71,19 @@ export class PaneWorkspace {
       content: string,
       meta: DocumentMeta
     ) => Promise<void>,
+    navigationHistoryOrSavedContent?: PaneNavigationHistoryStore | Map<string, string>,
     savedContentMap?: Map<string, string>,
   ) {
-    this.lastSavedContentMap = savedContentMap ?? new Map()
-    this.ownsSavedContentMap = !savedContentMap
+    const navigationHistory = isSavedContentMap(navigationHistoryOrSavedContent)
+      ? undefined
+      : navigationHistoryOrSavedContent
+    const resolvedSavedContentMap = isSavedContentMap(navigationHistoryOrSavedContent)
+      ? navigationHistoryOrSavedContent
+      : savedContentMap
+
+    this.navigationHistory = navigationHistory ?? createNavigationHistoryStore()
+    this.lastSavedContentMap = resolvedSavedContentMap ?? new Map()
+    this.ownsSavedContentMap = !resolvedSavedContentMap
   }
 
   scheduleAutosave(pane: WorkspacePane, delay: number): void {
@@ -74,6 +113,56 @@ export class PaneWorkspace {
 
   getLastSavedContent(path: string): string | null {
     return this.lastSavedContentMap.get(path) ?? null
+  }
+
+  getPaneNavigationHistory(pane: WorkspacePane): PaneNavigationHistoryState {
+    const history = getHistoryForPane(this.navigationHistory, pane)
+    return {
+      entries: [...history.entries],
+      index: history.index,
+    }
+  }
+
+  recordPaneNavigation(pane: WorkspacePane, path: string): void {
+    const history = getHistoryForPane(this.navigationHistory, pane)
+    if (history.index >= 0 && history.entries[history.index] === path) {
+      return
+    }
+
+    history.entries = history.entries.slice(0, history.index + 1)
+    history.entries.push(path)
+    history.index = history.entries.length - 1
+  }
+
+  getPreviousPathInPaneHistory(pane: WorkspacePane): string | null {
+    const history = getHistoryForPane(this.navigationHistory, pane)
+    if (history.index <= 0) {
+      return null
+    }
+    return history.entries[history.index - 1] ?? null
+  }
+
+  getNextPathInPaneHistory(pane: WorkspacePane): string | null {
+    const history = getHistoryForPane(this.navigationHistory, pane)
+    if (history.index < 0 || history.index >= history.entries.length - 1) {
+      return null
+    }
+    return history.entries[history.index + 1] ?? null
+  }
+
+  stepPaneNavigationHistory(pane: WorkspacePane, direction: -1 | 1): string | null {
+    const history = getHistoryForPane(this.navigationHistory, pane)
+    const nextIndex = history.index + direction
+    if (nextIndex < 0 || nextIndex >= history.entries.length) {
+      return null
+    }
+    history.index = nextIndex
+    return history.entries[nextIndex] ?? null
+  }
+
+  clearNavigationHistory(): void {
+    this.navigationHistory.primary = getEmptyNavigationHistory()
+    this.navigationHistory.secondary = getEmptyNavigationHistory()
   }
 
   private getSerializationRefForPane(pane: WorkspacePane): { current: EditorSerializationRefs } {

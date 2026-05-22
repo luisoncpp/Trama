@@ -17,7 +17,7 @@ The solution cannot be to disable the application menu entirely via `Menu.setApp
 ## Solution
 
 Replace Electron's default application menu with a custom template that:
-- **Keeps**: File (close), Edit (undo, redo, cut, copy, paste, selectAll), View (toggleDevTools, togglefullscreen), Help
+- **Keeps**: File (close), Edit (undo, redo, cut, copy, paste, selectAll), View (Back, Forward, toggleDevTools, togglefullscreen), Help
 - **Removes**: Zoom controls from the View menu; Window menu entirely
 
 The custom menu is applied via `Menu.setApplicationMenu(Menu.buildFromTemplate(template))`.
@@ -54,6 +54,9 @@ The `autoHideMenuBar: true` setting in `window-config.ts` is preserved — the m
 {
   label: 'View',
   submenu: [
+    { label: 'Back', accelerator: 'Alt+Left', click: ... },
+    { label: 'Forward', accelerator: 'Alt+Right', click: ... },
+    { type: 'separator' },
     { role: 'toggleDevTools' },
     { type: 'separator' },
     { role: 'togglefullscreen' },

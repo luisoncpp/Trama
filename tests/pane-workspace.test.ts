@@ -393,6 +393,38 @@ describe('PaneWorkspace', () => {
     })
   })
 
+  describe('pane navigation history', () => {
+    it('records per-pane history and truncates forward entries on new navigation', () => {
+      const ws = makeWs('primary', primaryClean, secondaryClean)
+
+      ws.recordPaneNavigation('primary', 'docs/a.md')
+      ws.recordPaneNavigation('primary', 'docs/b.md')
+      expect(ws.getPaneNavigationHistory('primary')).toEqual({
+        entries: ['docs/a.md', 'docs/b.md'],
+        index: 1,
+      })
+
+      expect(ws.stepPaneNavigationHistory('primary', -1)).toBe('docs/a.md')
+      ws.recordPaneNavigation('primary', 'docs/c.md')
+
+      expect(ws.getPaneNavigationHistory('primary')).toEqual({
+        entries: ['docs/a.md', 'docs/c.md'],
+        index: 1,
+      })
+      expect(ws.getNextPathInPaneHistory('primary')).toBeNull()
+    })
+
+    it('keeps primary and secondary histories isolated', () => {
+      const ws = makeWs('primary', primaryClean, secondaryClean)
+
+      ws.recordPaneNavigation('primary', 'docs/a.md')
+      ws.recordPaneNavigation('secondary', 'docs/b.md')
+
+      expect(ws.getPaneNavigationHistory('primary')).toEqual({ entries: ['docs/a.md'], index: 0 })
+      expect(ws.getPaneNavigationHistory('secondary')).toEqual({ entries: ['docs/b.md'], index: 0 })
+    })
+  })
+
   describe('scheduleAutosave / cancelAutosave / destroy', () => {
     beforeEach(() => { vi.useFakeTimers() })
     afterEach(() => { vi.useRealTimers() })

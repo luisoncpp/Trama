@@ -14,6 +14,8 @@ interface SyncToolbarControlsParams {
   documentId: string | null
   hostRef: { current: HTMLDivElement | null }
   editorRef: { current: Quill | null }
+  historyBackDisabled: boolean
+  onHistoryBack: () => void
   saveDisabled: boolean
   saveLabel: string
   onSaveNow: () => void
@@ -30,6 +32,8 @@ export function useSyncToolbarControls({
   documentId,
   hostRef,
   editorRef,
+  historyBackDisabled,
+  onHistoryBack,
   saveDisabled,
   saveLabel,
   onSaveNow,
@@ -48,17 +52,19 @@ export function useSyncToolbarControls({
     const toolbar = host.querySelector('.ql-toolbar')
     if (!(toolbar instanceof HTMLElement)) return
 
-    const { centerButton, pagebreakButton, saveButton, revertButton, syncIcon, zoomSelect } =
+    const { centerButton, pagebreakButton, historyBackButton, saveButton, revertButton, syncIcon, zoomSelect } =
       ensureToolbarControls(toolbar)
 
     syncLayoutButtons(centerButton, pagebreakButton, editorRef)
-    syncToolbarSaveControls(saveButton, revertButton, syncIcon, {
+    syncToolbarSaveControls(historyBackButton, saveButton, revertButton, syncIcon, {
+      historyBackDisabled,
+      onHistoryBack,
       saveDisabled, saveLabel, onSaveNow,
       revertDisabled, revertLabel, onRevertNow,
       syncState, syncStateLabel,
     })
     syncZoomSelect(zoomSelect, zoomLevel, onZoomChange)
-  }, [documentId, editorRef, hostRef, onSaveNow, saveDisabled, saveLabel,
+  }, [documentId, editorRef, hostRef, historyBackDisabled, onHistoryBack, onSaveNow, saveDisabled, saveLabel,
       onRevertNow, revertDisabled, revertLabel,
       syncState, syncStateLabel, zoomLevel, onZoomChange])
 }

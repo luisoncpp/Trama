@@ -1,5 +1,4 @@
 import type { ProjectEditorActions } from './project-editor-types'
-import type { PaneWorkspace } from './pane'
 import * as conflictActions from './conflict-actions'
 import type { BuildActionsInput } from './use-project-editor-actions-types'
 

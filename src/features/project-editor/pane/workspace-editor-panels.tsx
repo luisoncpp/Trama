@@ -38,8 +38,10 @@ function PaneEditor({ model, spellcheckEnabled, pane, tagIndex, onTagClick, zoom
   const paneState = pane === 'secondary' ? state.secondaryPane : state.primaryPane
   const isActive = state.workspaceLayout.activePane === pane
   const serializationRef = pane === 'primary' ? serializationRefs.primary : serializationRefs.secondary
+  const historyBackDisabled = !paneState.path
   const onMarkDirty = () => { actions.updateEditorValue(paneState.content, pane) }
   const onPaneEditorChange = (nextValue: string) => { actions.updateEditorValue(nextValue, pane) }
+  const onPaneHistoryBack = () => { void actions.openPreviousInPaneHistory(pane) }
   const onPaneSaveNow = () => { actions.saveNow(pane) }
   const onPaneRevertNow = () => { actions.revertChanges(pane) }
   const onActivate = () => { if (!isActive) { void actions.setWorkspaceActivePane(pane) } }
@@ -64,6 +66,8 @@ function PaneEditor({ model, spellcheckEnabled, pane, tagIndex, onTagClick, zoom
           loadingDocument={state.loadingDocument && isActive}
           editorValue={paneState.content}
           spellcheckEnabled={spellcheckEnabled}
+          historyBackDisabled={historyBackDisabled}
+          onHistoryBack={onPaneHistoryBack}
           onSaveNow={onPaneSaveNow}
           onRevertNow={onPaneRevertNow}
           onEditorChange={onPaneEditorChange}
@@ -109,6 +113,8 @@ function ActiveEditorPanel({ model, spellcheckEnabled, tagIndex, onTagClick, zoo
       loadingDocument={state.loadingDocument}
       editorValue={state.editorValue}
       spellcheckEnabled={spellcheckEnabled}
+      historyBackDisabled={!state.selectedPath}
+      onHistoryBack={() => { void actions.openPreviousInPaneHistory() }}
       onSaveNow={actions.saveNow}
       onRevertNow={actions.revertChanges}
       onEditorChange={actions.updateEditorValue}

@@ -21,6 +21,8 @@ interface RichMarkdownEditorProps {
   disabled: boolean
   spellcheckEnabled?: boolean
   onChange: (value: string) => void
+  historyBackDisabled: boolean
+  onHistoryBack: () => void
   saveDisabled: boolean
   saveLabel: string
   onSaveNow: () => void
@@ -122,6 +124,7 @@ function useTagOverlayScrollEffect(
 export function RichMarkdownEditor(props: RichMarkdownEditorProps) {
   const {
     documentId, value, disabled, spellcheckEnabled = true, onChange,
+    historyBackDisabled, onHistoryBack,
     saveDisabled, saveLabel, onSaveNow,
     revertDisabled, revertLabel, onRevertNow,
     syncState, syncStateLabel,
@@ -158,7 +161,23 @@ export function RichMarkdownEditor(props: RichMarkdownEditorProps) {
     triggerTagOverlayRender,
   }
   useRichEditorLifecycle(lifecycleParams)
-  useSyncToolbarControls({ documentId, hostRef, editorRef, saveDisabled, saveLabel, onSaveNow, revertDisabled, revertLabel, onRevertNow, syncState, syncStateLabel, zoomLevel, onZoomChange })
+  useSyncToolbarControls({
+    documentId,
+    hostRef,
+    editorRef,
+    historyBackDisabled,
+    onHistoryBack,
+    saveDisabled,
+    saveLabel,
+    onSaveNow,
+    revertDisabled,
+    revertLabel,
+    onRevertNow,
+    syncState,
+    syncStateLabel,
+    zoomLevel,
+    onZoomChange,
+  })
   useFocusModeScopeEffect(editorRef, hostRef, focusModeEnabled, focusScope, isActive)
   useEditorZoom({ editorRef, hostRef, zoomRef: zoomRef ?? DEFAULT_ZOOM_REF, triggerTagOverlayRender })
 

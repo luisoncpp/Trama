@@ -6,7 +6,6 @@ import type {
   FocusScope,
   SidebarSection,
 } from './project-editor-types'
-import type { PaneWorkspace } from './pane'
 import * as workspaceActions from './workspace-actions'
 import * as sidebarFileActions from './sidebar-file-actions'
 import type { BuildActionsInput } from './use-project-editor-actions-types'
@@ -16,6 +15,7 @@ function buildWorkspaceActions(input: BuildActionsInput): Pick<ProjectEditorActi
   | 'toggleWorkspaceLayoutMode' | 'setWorkspaceLayoutRatio' | 'setWorkspaceActivePane'
   | 'openFileInPane' | 'setFullscreenEnabled' | 'toggleFocusMode'
   | 'setFocusScope' | 'setZoomLevel' | 'updateEditorValue' | 'saveNow' | 'revertChanges'
+  | 'openPreviousInPaneHistory' | 'openNextInPaneHistory'
 > {
   const { layoutState, projectState, uiState, setters, paneWorkspace, loadDocument } = input
   return {
@@ -33,6 +33,20 @@ function buildWorkspaceActions(input: BuildActionsInput): Pick<ProjectEditorActi
       workspaceActions.openFileInPane(filePath, pane, {
         workspace: paneWorkspace, setWorkspaceLayout: setters.setWorkspaceLayout,
         setStatusMessage: setters.setStatusMessage, loadDocument,
+      }),
+    openPreviousInPaneHistory: (pane?: WorkspacePane) =>
+      workspaceActions.openPreviousInPaneHistory(pane, {
+        workspace: paneWorkspace,
+        setWorkspaceLayout: setters.setWorkspaceLayout,
+        setStatusMessage: setters.setStatusMessage,
+        loadDocument,
+      }),
+    openNextInPaneHistory: (pane?: WorkspacePane) =>
+      workspaceActions.openNextInPaneHistory(pane, {
+        workspace: paneWorkspace,
+        setWorkspaceLayout: setters.setWorkspaceLayout,
+        setStatusMessage: setters.setStatusMessage,
+        loadDocument,
       }),
     setFullscreenEnabled: (enabled: boolean) =>
       workspaceActions.setFullscreenEnabled(enabled, {

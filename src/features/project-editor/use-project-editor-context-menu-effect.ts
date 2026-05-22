@@ -5,6 +5,8 @@ import type { FocusScope } from './project-editor-types'
 interface UseProjectEditorContextMenuEffectParams {
   isFullscreen: boolean
   toggleWorkspaceLayoutMode: () => void
+  openPreviousInPaneHistory: () => Promise<void>
+  openNextInPaneHistory: () => Promise<void>
   setFullscreenEnabled: (enabled: boolean) => Promise<void>
   toggleFocusMode: () => void
   setFocusScope: (scope: FocusScope) => void
@@ -22,6 +24,8 @@ function clampRatio(value: number): number {
 export function useProjectEditorContextMenuEffect({
   isFullscreen,
   toggleWorkspaceLayoutMode,
+  openPreviousInPaneHistory,
+  openNextInPaneHistory,
   setFullscreenEnabled,
   toggleFocusMode,
   setFocusScope,
@@ -41,6 +45,12 @@ export function useProjectEditorContextMenuEffect({
           break
         case 'toggle-fullscreen':
           void setFullscreenEnabled(!isFullscreen)
+          break
+        case 'history-back':
+          void openPreviousInPaneHistory()
+          break
+        case 'history-forward':
+          void openNextInPaneHistory()
           break
         case 'toggle-focus':
           toggleFocusMode()
@@ -64,5 +74,6 @@ export function useProjectEditorContextMenuEffect({
     return () => {
       window.removeEventListener(WORKSPACE_CONTEXT_MENU_EVENT, onWorkspaceContextCommand as EventListener)
     }
-  }, [isFullscreen, setFocusScope, setFullscreenEnabled, setWorkspaceLayoutRatio, toggleFocusMode, toggleWorkspaceLayoutMode])
+  }, [isFullscreen, openNextInPaneHistory, openPreviousInPaneHistory, setFocusScope,
+      setFullscreenEnabled, setWorkspaceLayoutRatio, toggleFocusMode, toggleWorkspaceLayoutMode])
 }

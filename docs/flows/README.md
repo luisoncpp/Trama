@@ -52,3 +52,4 @@ Keep these docs operational. Prefer short tables, explicit file names, and seque
 | `project-state-propagation-flow.md` | How state flows from `useProjectEditorCoreState` through 6 memoized sub-states to actions and back; why action hooks depend only on the sub-states they read |
 | `sidebar-render-chain-flow.md` | The full component render chain from `App` through 10 layers down to `SidebarTreeRowButton` |
 | `external-file-watcher-flow.md` | How chokidar events are classified internal/external, filtered, and forwarded to the renderer to trigger tree refreshes |
+| `pane-history-navigation-flow.md` | How pane-local browser-style document history is recorded, truncated, and replayed through shortcuts, menu entries, and toolbar back navigation |

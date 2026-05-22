@@ -19,6 +19,8 @@ describe('RichMarkdownEditor', () => {
     value: '',
     disabled: false,
     onChange: noop,
+    historyBackDisabled: true,
+    onHistoryBack: noop,
     saveDisabled: false,
     saveLabel: 'Guardar',
     onSaveNow: noop,

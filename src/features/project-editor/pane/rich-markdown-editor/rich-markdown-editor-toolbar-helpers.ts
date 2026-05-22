@@ -15,7 +15,7 @@ export function createToolbarIconButton(className: string, title: string, iconMa
 export function createCenterIconButton(): HTMLButtonElement {
   return createToolbarIconButton(
     'ql-center-layout',
-    'Centrar bloque',
+    'Center block',
     [
       '<svg class="rich-toolbar-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">',
       '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 6h16M8 12h8M6 18h12" />',
@@ -27,7 +27,7 @@ export function createCenterIconButton(): HTMLButtonElement {
 export function createPagebreakIconButton(): HTMLButtonElement {
   return createToolbarIconButton(
     'ql-pagebreak-layout',
-    'Insertar salto de pagina',
+    'Insert page break',
     [
       '<svg class="rich-toolbar-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">',
       '<path d="M3 10h18" stroke-dasharray="4 4" />',
@@ -41,11 +41,23 @@ export function createPagebreakIconButton(): HTMLButtonElement {
 export function createRevertIconButton(): HTMLButtonElement {
   return createToolbarIconButton(
     'ql-revert-changes',
-    'Revertir cambios no guardados',
+    'Revert changes',
     [
       '<svg class="rich-toolbar-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">',
       '<polyline points="1 4 1 10 7 10" />',
       '<path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" />',
+      '</svg>',
+    ].join(''),
+  )
+}
+
+export function createHistoryBackIconButton(): HTMLButtonElement {
+  return createToolbarIconButton(
+    'ql-history-back',
+    'Previous Document',
+    [
+      '<svg class="rich-toolbar-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">',
+      '<path d="M15 18l-6-6 6-6" />',
       '</svg>',
     ].join(''),
   )

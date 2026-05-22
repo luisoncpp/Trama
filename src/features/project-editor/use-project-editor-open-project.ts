@@ -83,6 +83,7 @@ export function useOpenProject(
   setters: OpenProjectSetters,
   clearEditor: () => void,
   loadDocument: (path: string, targetPane: WorkspacePane) => Promise<void>,
+  resetPaneNavigationHistory: () => void,
 ): (projectRoot: string, options?: OpenProjectOptions) => Promise<void> {
   return useCallback(
     async (projectRoot: string, options?: OpenProjectOptions): Promise<void> => {
@@ -100,6 +101,7 @@ export function useOpenProject(
         }
 
         const snapshot = response.data
+        resetPaneNavigationHistory()
         await applyOpenedProject({
           snapshot,
           setters,
@@ -115,6 +117,6 @@ export function useOpenProject(
         setters.setLoadingProject(false)
       }
     },
-    [clearEditor, loadDocument, setters],
+    [clearEditor, loadDocument, resetPaneNavigationHistory, setters],
   )
 }

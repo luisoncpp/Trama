@@ -105,6 +105,8 @@ export interface ProjectEditorActions {
   pickProjectFolder: () => Promise<void>
   selectFile: (filePath: string) => Promise<void>
   openFileInPane: (filePath: string, pane: WorkspacePane) => void
+  openPreviousInPaneHistory: (pane?: WorkspacePane) => Promise<void>
+  openNextInPaneHistory: (pane?: WorkspacePane) => Promise<void>
   createArticle: (input: SidebarCreateInput) => Promise<void>
   createCategory: (input: SidebarCreateInput) => Promise<void>
   renameFile: (input: SidebarRenameInput) => Promise<void>
@@ -143,6 +145,16 @@ export interface EditorSerializationRefs {
 
 export interface EditorZoomRef {
   current: number
+}
+
+export interface PaneNavigationHistoryState {
+  entries: string[]
+  index: number
+}
+
+export interface PaneNavigationHistoryStore {
+  primary: PaneNavigationHistoryState
+  secondary: PaneNavigationHistoryState
 }
 
 export interface ProjectEditorModel {

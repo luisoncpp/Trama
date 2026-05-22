@@ -6,6 +6,8 @@ interface UseProjectEditorShortcutsEffectParams {
   onToggleFocusMode: () => void
   onSwitchActivePane: () => void
   onSaveNow: () => void
+  onOpenPreviousHistory: () => void
+  onOpenNextHistory: () => void
   onEscapePressed: () => void
   onZoomIn: () => void
   onZoomOut: () => void
@@ -42,6 +44,16 @@ function handleZoomReset(onZoomReset: () => void, event: KeyboardEvent) {
 function handleSave(onSaveNow: () => void, event: KeyboardEvent) {
   event.preventDefault()
   onSaveNow()
+}
+
+function handleOpenPreviousHistory(onOpenPreviousHistory: () => void, event: KeyboardEvent) {
+  event.preventDefault()
+  onOpenPreviousHistory()
+}
+
+function handleOpenNextHistory(onOpenNextHistory: () => void, event: KeyboardEvent) {
+  event.preventDefault()
+  onOpenNextHistory()
 }
 
 function handleSwitchPane(onSwitchActivePane: () => void, event: KeyboardEvent) {
@@ -101,6 +113,16 @@ function makeKeydownHandler(params: UseProjectEditorShortcutsEffectParams) {
       return
     }
 
+    if (event.altKey && !isCommandKey && !event.shiftKey && event.code === 'ArrowLeft') {
+      handleOpenPreviousHistory(params.onOpenPreviousHistory, event)
+      return
+    }
+
+    if (event.altKey && !isCommandKey && !event.shiftKey && event.code === 'ArrowRight') {
+      handleOpenNextHistory(params.onOpenNextHistory, event)
+      return
+    }
+
     if (isCommandKey && !event.altKey && !event.shiftKey && (event.code === 'Equal' || event.key === '+')) {
       handleZoomIn(params.onZoomIn, event)
       return
@@ -123,7 +145,8 @@ export function useProjectEditorShortcutsEffect(params: UseProjectEditorShortcut
     const onWindowKeyDown = makeKeydownHandler(params)
     window.addEventListener('keydown', onWindowKeyDown)
     return () => window.removeEventListener('keydown', onWindowKeyDown)
-  }, [params.onSaveNow, params.onSwitchActivePane, params.onToggleFocusMode, params.onToggleFullscreen,
+  }, [params.onSaveNow, params.onOpenPreviousHistory, params.onOpenNextHistory,
+      params.onSwitchActivePane, params.onToggleFocusMode, params.onToggleFullscreen,
       params.onToggleSplitLayout, params.onEscapePressed, params.onZoomIn, params.onZoomOut,
       params.onZoomReset] /*Inputs for registerWorkspaceShortcuts*/)
 }

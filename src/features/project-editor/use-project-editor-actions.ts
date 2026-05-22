@@ -51,6 +51,7 @@ function useClearEditor(
   paneWorkspace: PaneWorkspace,
 ): () => void {
   return useCallback(() => {
+    paneWorkspace.clearNavigationHistory()
     paneWorkspace.clearPanes()
     setters.setExternalConflictPath(null)
     setters.setConflictComparisonContent(null)
@@ -120,7 +121,7 @@ export function useProjectEditorActions({
 }: UseProjectEditorActionsParams): UseProjectEditorActionsResult {
   const clearEditor = useClearEditor(setters, paneWorkspace)
   const loadDocument = useLoadDocument(setters, paneWorkspace)
-  const openProject = useOpenProject(setters, clearEditor, loadDocument)
+  const openProject = useOpenProject(setters, clearEditor, loadDocument, () => paneWorkspace.clearNavigationHistory())
   const saveDocumentNow = useSaveDocumentNow(setters)
 
   const actions = useMemo<ProjectEditorActions>(

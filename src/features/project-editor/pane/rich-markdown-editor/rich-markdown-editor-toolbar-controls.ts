@@ -1,5 +1,6 @@
 import {
   createCenterIconButton,
+  createHistoryBackIconButton,
   createPagebreakIconButton,
   createRevertIconButton,
   createZoomSelect,
@@ -116,9 +117,21 @@ export function ensureRevertButton(controls: HTMLDivElement): HTMLButtonElement 
   return revertButton
 }
 
+export function ensureHistoryBackButton(controls: HTMLDivElement): HTMLButtonElement {
+  let historyBackButton = controls.querySelector('button.ql-history-back') as HTMLButtonElement | null
+  if (!historyBackButton) {
+    historyBackButton = createHistoryBackIconButton()
+  }
+  if (!controls.contains(historyBackButton)) {
+    controls.prepend(historyBackButton)
+  }
+  return historyBackButton
+}
+
 export interface ToolbarControls {
   centerButton: HTMLButtonElement
   pagebreakButton: HTMLButtonElement
+  historyBackButton: HTMLButtonElement
   saveButton: HTMLButtonElement
   revertButton: HTMLButtonElement
   syncIcon: HTMLSpanElement
@@ -141,6 +154,7 @@ export function ensureToolbarControls(toolbar: HTMLElement): ToolbarControls {
   return {
     centerButton,
     pagebreakButton,
+    historyBackButton: ensureHistoryBackButton(controls),
     saveButton: controls.querySelector('button[data-trama-action="save"]') as HTMLButtonElement,
     revertButton: ensureRevertButton(controls),
     syncIcon: controls.querySelector('.rich-toolbar-sync') as HTMLSpanElement,
@@ -183,10 +197,13 @@ export function syncLayoutButtons(
 }
 
 export function syncToolbarSaveControls(
+  historyBackButton: HTMLButtonElement,
   saveButton: HTMLButtonElement,
   revertButton: HTMLButtonElement,
   syncIcon: HTMLSpanElement,
   params: {
+    historyBackDisabled: boolean
+    onHistoryBack: () => void
     saveDisabled: boolean
     saveLabel: string
     onSaveNow: () => void
@@ -197,6 +214,12 @@ export function syncToolbarSaveControls(
     syncStateLabel: string
   },
 ): void {
+  syncButton(historyBackButton, {
+    disabled: params.historyBackDisabled,
+    title: 'Documento anterior',
+    ariaLabel: 'Documento anterior',
+    onClick: params.onHistoryBack,
+  })
   syncButton(saveButton, { disabled: params.saveDisabled, label: params.saveLabel, onClick: params.onSaveNow })
   syncButton(revertButton, { disabled: params.revertDisabled, title: params.revertLabel, ariaLabel: params.revertLabel, onClick: params.onRevertNow })
   syncIcon.className = `rich-toolbar-sync is-${params.syncState}`

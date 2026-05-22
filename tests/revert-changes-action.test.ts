@@ -48,6 +48,10 @@ function makeSerializationRefs(): { primary: { current: EditorSerializationRefs 
 }
 
 const noopSaveDocumentFn = () => Promise.resolve()
+const navigationHistory = {
+  primary: { entries: [], index: -1 },
+  secondary: { entries: [], index: -1 },
+}
 
 function makePaneBindings(primary: PaneDocumentState, secondary: PaneDocumentState): PaneBindings {
   return {
@@ -75,7 +79,7 @@ describe('revertChanges', () => {
     let wsRef: ReturnType<typeof usePaneWorkspace> | null = null
 
     function Harness() {
-      wsRef = usePaneWorkspace(layout, paneBindings, serializationRefs, noopSaveDocumentFn)
+      wsRef = usePaneWorkspace(layout, paneBindings, serializationRefs, noopSaveDocumentFn, navigationHistory)
       return null
     }
 
@@ -112,7 +116,7 @@ describe('revertChanges', () => {
     let wsRef: ReturnType<typeof usePaneWorkspace> | null = null
 
     function Harness() {
-      wsRef = usePaneWorkspace(layout, paneBindings, serializationRefs, noopSaveDocumentFn)
+      wsRef = usePaneWorkspace(layout, paneBindings, serializationRefs, noopSaveDocumentFn, navigationHistory)
       return null
     }
 
@@ -148,7 +152,7 @@ describe('revertChanges', () => {
     let wsRef: ReturnType<typeof usePaneWorkspace> | null = null
 
     function Harness() {
-      wsRef = usePaneWorkspace(layout, paneBindings, serializationRefs, noopSaveDocumentFn)
+      wsRef = usePaneWorkspace(layout, paneBindings, serializationRefs, noopSaveDocumentFn, navigationHistory)
       return null
     }
 
@@ -184,7 +188,7 @@ describe('revertChanges', () => {
     let wsRef: ReturnType<typeof usePaneWorkspace> | null = null
 
     function Harness() {
-      wsRef = usePaneWorkspace(layout, paneBindings, serializationRefs, noopSaveDocumentFn)
+      wsRef = usePaneWorkspace(layout, paneBindings, serializationRefs, noopSaveDocumentFn, navigationHistory)
       return null
     }
 

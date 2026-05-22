@@ -1,4 +1,3 @@
-import { useMemo } from 'preact/hooks'
 import type { WorkspaceLayoutState, ProjectEditorStateValues } from './project-editor-types'
 import type { ProjectSnapshot } from '../../shared/ipc'
 import { useSidebarUiState } from './use-sidebar-ui-state'

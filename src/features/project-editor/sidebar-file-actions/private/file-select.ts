@@ -14,6 +14,7 @@ export async function selectFile(
   const activePaneState = deps.workspace.getPaneDocument(activePane)
   await deps.workspace.savePaneIfDirty(activePane)
 
+  deps.workspace.recordPaneNavigation(activePane, filePath)
   assignFileToActivePane(filePath, activePane, deps.setWorkspaceLayout)
   if (filePath !== activePaneState.path) {
     void deps.loadDocument(filePath, activePane)

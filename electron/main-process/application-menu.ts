@@ -1,7 +1,15 @@
 import { BrowserWindow, Menu } from 'electron'
 import { WORKSPACE_CONTEXT_MENU_EVENT } from '../../src/shared/workspace-context-menu.js'
 
-function dispatchWorkspaceCommand(win: BrowserWindow, command: { type: 'toggle-split' } | { type: 'toggle-fullscreen' } | { type: 'toggle-focus' }): void {
+function dispatchWorkspaceCommand(
+  win: BrowserWindow,
+  command:
+    | { type: 'toggle-split' }
+    | { type: 'toggle-fullscreen' }
+    | { type: 'toggle-focus' }
+    | { type: 'history-back' }
+    | { type: 'history-forward' },
+): void {
   const commandPayload = JSON.stringify(command)
   void win.webContents.executeJavaScript(
     `window.dispatchEvent(new CustomEvent(${JSON.stringify(WORKSPACE_CONTEXT_MENU_EVENT)}, { detail: ${commandPayload} }));`,
@@ -30,6 +38,17 @@ export function setupApplicationMenu(win: BrowserWindow): void {
     {
       label: 'View',
       submenu: [
+        {
+          label: 'Back',
+          accelerator: 'Alt+Left',
+          click: () => dispatchWorkspaceCommand(win, { type: 'history-back' }),
+        },
+        {
+          label: 'Forward',
+          accelerator: 'Alt+Right',
+          click: () => dispatchWorkspaceCommand(win, { type: 'history-forward' }),
+        },
+        { type: 'separator' },
         { role: 'toggleDevTools' },
         { type: 'separator' },
         {

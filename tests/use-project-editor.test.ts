@@ -364,6 +364,116 @@ describe('useProjectEditor', () => {
     expect(saveDocumentCalls[0]).toEqual({ path: 'docs/a.md', content: '# A changed' })
   })
 
+  it('navigates pane history with Alt+Left and Alt+Right without mutating the stack', async () => {
+    window.localStorage.removeItem('trama.sidebar.ui.v1')
+    window.localStorage.removeItem(WORKSPACE_LAYOUT_STORAGE_KEY)
+    setupTramaApiMock({
+      selectProjectFolder: async () => ({ ok: true, data: { rootPath: 'C:/tmp/project' } }),
+      openProject: async (_payload) => ({
+        ok: true,
+        data: {
+          rootPath: 'C:/tmp/project',
+          tree: [],
+          markdownFiles: ['docs/a.md', 'docs/b.md', 'docs/c.md'],
+          index: { version: '1.0.0', corkboardOrder: {}, cache: {} },
+        },
+      }),
+      readDocument: async (payload) => ({ ok: true, data: { path: payload.path, content: `# ${payload.path}`, meta: {} } }),
+    })
+
+    let model: ProjectEditorModel | undefined
+
+    function Harness() {
+      model = useProjectEditor()
+      return null
+    }
+
+    const container = document.createElement('div')
+    act(() => {
+      render(h(Harness, {}), container)
+    })
+
+    await act(async () => {
+      await model?.actions.pickProjectFolder()
+      await Promise.resolve()
+    })
+
+    await act(async () => {
+      await model?.actions.selectFile('docs/b.md')
+      await model?.actions.selectFile('docs/c.md')
+      await Promise.resolve()
+    })
+
+    expect(model?.state.selectedPath).toBe('docs/c.md')
+
+    await act(async () => {
+      window.dispatchEvent(new KeyboardEvent('keydown', { code: 'ArrowLeft', altKey: true, bubbles: true }))
+      await Promise.resolve()
+    })
+
+    expect(model?.state.selectedPath).toBe('docs/b.md')
+
+    await act(async () => {
+      window.dispatchEvent(new KeyboardEvent('keydown', { code: 'ArrowRight', altKey: true, bubbles: true }))
+      await Promise.resolve()
+    })
+
+    expect(model?.state.selectedPath).toBe('docs/c.md')
+  })
+
+  it('opens previous and next documents from pane history actions', async () => {
+    window.localStorage.removeItem('trama.sidebar.ui.v1')
+    window.localStorage.removeItem(WORKSPACE_LAYOUT_STORAGE_KEY)
+    setupTramaApiMock({
+      selectProjectFolder: async () => ({ ok: true, data: { rootPath: 'C:/tmp/project' } }),
+      openProject: async (_payload) => ({
+        ok: true,
+        data: {
+          rootPath: 'C:/tmp/project',
+          tree: [],
+          markdownFiles: ['docs/a.md', 'docs/b.md', 'docs/c.md'],
+          index: { version: '1.0.0', corkboardOrder: {}, cache: {} },
+        },
+      }),
+      readDocument: async (payload) => ({ ok: true, data: { path: payload.path, content: `# ${payload.path}`, meta: {} } }),
+    })
+
+    let model: ProjectEditorModel | undefined
+
+    function Harness() {
+      model = useProjectEditor()
+      return null
+    }
+
+    const container = document.createElement('div')
+    act(() => {
+      render(h(Harness, {}), container)
+    })
+
+    await act(async () => {
+      await model?.actions.pickProjectFolder()
+      await model?.actions.selectFile('docs/b.md')
+      await model?.actions.selectFile('docs/c.md')
+      await Promise.resolve()
+    })
+
+    expect(model?.state.selectedPath).toBe('docs/c.md')
+
+    await act(async () => {
+      await model?.actions.openPreviousInPaneHistory()
+      await Promise.resolve()
+    })
+
+    expect(model?.state.selectedPath).toBe('docs/b.md')
+
+    await act(async () => {
+      await model?.actions.openNextInPaneHistory()
+      await Promise.resolve()
+    })
+
+    expect(model?.state.selectedPath).toBe('docs/c.md')
+  })
+
   it('applies workspace commands from context menu bridge event', async () => {
     window.localStorage.removeItem('trama.sidebar.ui.v1')
     window.localStorage.removeItem(WORKSPACE_LAYOUT_STORAGE_KEY)

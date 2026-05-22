@@ -10,6 +10,8 @@ interface EditorPanelProps {
   loadingDocument: boolean
   editorValue: string
   spellcheckEnabled: boolean
+  historyBackDisabled: boolean
+  onHistoryBack: () => void
   onSaveNow: () => void
   onRevertNow: () => void
   onEditorChange: (value: string) => void
@@ -72,6 +74,8 @@ export function EditorPanel({
   loadingDocument,
   editorValue,
   spellcheckEnabled,
+  historyBackDisabled,
+  onHistoryBack,
   onSaveNow,
   onRevertNow,
   onEditorChange,
@@ -96,6 +100,8 @@ export function EditorPanel({
           documentId={selectedPath} value={editorValue}
           disabled={!selectedPath || loadingDocument}
           spellcheckEnabled={spellcheckEnabled} onChange={onEditorChange}
+          historyBackDisabled={historyBackDisabled}
+          onHistoryBack={onHistoryBack}
           saveDisabled={saveDisabled} saveLabel={saveLabel}
           onSaveNow={onSaveNow}
           revertDisabled={revertDisabled} revertLabel={revertLabel}

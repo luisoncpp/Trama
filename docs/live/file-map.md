@@ -34,6 +34,7 @@ Mandatory doc navigation for new chats: start with `docs/START-HERE.md` — it p
   - Window close handler: intercepts `close` event, checks cached dirty state, shows native save dialog, and calls `win.destroy()` to force close.
 - `electron/main-process/application-menu.ts`
   - Custom application menu setup: replaces Electron's default menu bar with a trimmed-down version (File, Edit, View, Help) that removes zoom controls to avoid confusion with Trama's custom zoom in the toolbar.
+  - View menu dispatches pane-history Back/Forward commands via the workspace command bridge.
 - `electron/ipc.ts`
   - Thin IPC registration/orchestration.
 - `electron/ipc/spellcheck.ts`
@@ -132,6 +133,7 @@ Mandatory doc navigation for new chats: start with `docs/START-HERE.md` — it p
   - Renderer hook for spellcheck preferences: boot-time sync against Electron session, local persistence, enable/disable, language updates, and optimistic UI updates with rollback on IPC failure.
 - `src/features/project-editor/use-project-editor.ts`
   - Main feature hook (state + effects + action integration).
+  - Owns the stable session-only pane-history store injected into `PaneWorkspace`.
 - `src/features/project-editor/project-editor-view.tsx`
   - Screen-level composition (sidebar + editor + status).
 - `src/features/project-editor/project-editor-dialogs.tsx`
@@ -141,7 +143,8 @@ Mandatory doc navigation for new chats: start with `docs/START-HERE.md` — it p
 - `src/features/project-editor/project-editor-logic.ts`
   - Pure workspace helpers: `deriveActivePaneDocument` (active pane projection), `canSelectFile`, `reconcileWorkspaceLayout`, `buildConflictCopyPath`, and layout persistence.
 - `src/features/project-editor/workspace-actions.ts`
-  - Deep module for workspace layout, pane activation, focus, fullscreen, editor view, and save/revert actions.
+  - Deep module for workspace layout, pane activation, focus, fullscreen, editor view, save/revert actions.
+  - Also owns browser-style pane-history open/back/forward behavior.
   - Plain functions — no hooks. Caller applies setters.
 - `src/features/project-editor/sidebar-file-actions/`
   - Deep module for sidebar UI and file/folder CRUD.
@@ -152,10 +155,12 @@ Mandatory doc navigation for new chats: start with `docs/START-HERE.md` — it p
   - Plain functions — no hooks.
 - `src/features/project-editor/use-project-editor-open-project.ts`
   - Open-project flow and pane/layout reconciliation.
+  - Resets pane history on explicit project-open boundaries before initial document seeding.
 - `src/features/project-editor/use-project-editor-fullscreen-effect.ts`
   - Renderer subscription to native fullscreen state changes.
 - `src/features/project-editor/use-project-editor-shortcuts-effect.ts`
   - Global workspace shortcuts (split/fullscreen/focus/pane switch).
+  - Includes `Alt+Left` / `Alt+Right` pane-history navigation.
 - `src/features/project-editor/use-project-editor-close-effect.ts`
   - Notifies dirty state to main process via `notifyCloseState` IPC and exposes `window.__tramaSaveAll` for the close handler to invoke saves before closing.
 - `src/features/project-editor/use-workspace-layout-state.ts`
@@ -193,7 +198,8 @@ Mandatory doc navigation for new chats: start with `docs/START-HERE.md` — it p
 - `src/features/project-editor/pane/`
   - Private module for pane coordination. All pane state, flush, save, and autosave access goes through this module.
   - `pane/index.ts` — barrel exporting `PaneWorkspace`, `usePaneWorkspace`, and public types
-  - `pane/pane-workspace.ts` — coordinator class with read methods (`getPaneDocument`, `isPaneDirty`) and write methods (`savePaneIfDirty`, `saveAllDirtyPanes`, `scheduleAutosave`, `updatePaneContent`, etc.); `markPaneSaved` is private
+  - `pane/pane-workspace.ts` — coordinator class with read methods (`getPaneDocument`, `isPaneDirty`) and write methods (`savePaneIfDirty`, `saveAllDirtyPanes`, `scheduleAutosave`, `updatePaneContent`, etc.); `markPaneSaved` is private.
+  - Also owns pane-local session history stack helpers (`recordPaneNavigation`, `getPreviousPathInPaneHistory`, `getNextPathInPaneHistory`, `stepPaneNavigationHistory`, `clearNavigationHistory`).
   - `pane/use-pane-workspace.ts` — factory hook that encapsulates Preact setter injection, creating a `PaneWorkspace` instance via `useMemo`
   - `pane/pane-save-logic.ts` — `executePaneSave` (internal, not exported from barrel)
   - `pane/snapshot-compare-logger.ts` — `logSnapshotComparison` helper for diagnosing false-positive external-change conflicts
@@ -201,6 +207,7 @@ Mandatory doc navigation for new chats: start with `docs/START-HERE.md` — it p
   - Subscribes to external file events (watcher) and handles reloads/conflicts/tree refresh.
 - `src/features/project-editor/use-project-editor-context-menu-effect.ts`
   - Handles workspace-level context menu commands (split/fullscreen/focus/split ratio).
+  - Also routes pane-history Back/Forward commands.
 - `src/features/project-editor/use-project-editor-fullscreen-effect.ts`
   - Listens for native fullscreen changes and mirrors them into UI state.
 - `src/features/project-editor/use-project-editor-shortcuts-effect.ts`
@@ -289,7 +296,7 @@ Mandatory doc navigation for new chats: start with `docs/START-HERE.md` — it p
 - `src/features/project-editor/components/rich-markdown-editor-focus-scope-geometry.ts`
   - Geometry helpers for focus-mode (text offset resolution, visual line/sentence boundary calculations).
 - `src/features/project-editor/components/rich-markdown-editor-toolbar.ts`
-  - Injects and synchronizes toolbar controls (save button, revert button, sync indicator) into the Quill toolbar.
+  - Injects and synchronizes toolbar controls (back button, save button, revert button, sync indicator) into the Quill toolbar.
 
 ### Sidebar components
 

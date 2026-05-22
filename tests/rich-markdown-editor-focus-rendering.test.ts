@@ -23,6 +23,8 @@ describe('RichMarkdownEditor focus rendering regression', () => {
     value: 'Primera frase. Segunda frase para probar foco.',
     disabled: false,
     onChange: noop,
+    historyBackDisabled: true,
+    onHistoryBack: noop,
     saveDisabled: false,
     saveLabel: 'Guardar',
     onSaveNow: noop,
