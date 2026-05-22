@@ -35,36 +35,15 @@ function computeSyncStateLabel(selectedPath: string | null, loadingDocument: boo
   return 'Sincronizado'
 }
 
-interface EditorPanelLabels {
-  saveDisabled: boolean
-  saveLabel: string
-  revertDisabled: boolean
-  revertLabel: string
-  syncState: RichEditorSyncState
-  syncStateLabel: string
+function getSaveLabel({saving, isDirty}: {saving: boolean, isDirty: boolean}): string {
+  if (saving) return PROJECT_EDITOR_STRINGS.saving
+  if (isDirty) return PROJECT_EDITOR_STRINGS.saveNow
+  return PROJECT_EDITOR_STRINGS.noChanges
 }
 
-function useEditorPanelLabels(
-  selectedPath: string | null,
-  loadingDocument: boolean,
-  saving: boolean,
-  isDirty: boolean,
-): EditorPanelLabels {
-  const saveDisabled = !selectedPath || saving || !isDirty
-  const saveLabel = saving
-    ? PROJECT_EDITOR_STRINGS.saving
-    : isDirty
-      ? PROJECT_EDITOR_STRINGS.saveNow
-      : PROJECT_EDITOR_STRINGS.noChanges
-
-  const revertDisabled = !selectedPath || saving || !isDirty
-  const revertLabel = isDirty
-    ? PROJECT_EDITOR_STRINGS.revertChanges
-    : PROJECT_EDITOR_STRINGS.noChanges
-
-  const syncState: RichEditorSyncState = !selectedPath || loadingDocument ? 'disabled' : saving ? 'saving' : isDirty ? 'dirty' : 'clean'
-  const syncStateLabel = computeSyncStateLabel(selectedPath, loadingDocument, saving, isDirty)
-  return { saveDisabled, saveLabel, revertDisabled, revertLabel, syncState, syncStateLabel }
+function getRevertLabel({isDirty}: {isDirty: boolean}): string {
+  if (isDirty) return PROJECT_EDITOR_STRINGS.revertChanges
+  return PROJECT_EDITOR_STRINGS.noChanges
 }
 
 export function EditorPanel({
@@ -91,7 +70,14 @@ export function EditorPanel({
   zoomLevel,
   onZoomChange,
 }: EditorPanelProps) {
-  const { saveDisabled, saveLabel, revertDisabled, revertLabel, syncState, syncStateLabel } = useEditorPanelLabels(selectedPath, loadingDocument, saving, isDirty)
+  const saveDisabled = !selectedPath || saving || !isDirty
+  const saveLabel = getSaveLabel({saving, isDirty})
+
+  const revertDisabled = !selectedPath || saving || !isDirty
+  const revertLabel = getRevertLabel({isDirty})
+
+  const syncState: RichEditorSyncState = !selectedPath || loadingDocument ? 'disabled' : saving ? 'saving' : isDirty ? 'dirty' : 'clean'
+  const syncStateLabel = computeSyncStateLabel(selectedPath, loadingDocument, saving, isDirty)
 
   return (
     <article class="editor-panel-root" onPointerDownCapture={onInteract}>
