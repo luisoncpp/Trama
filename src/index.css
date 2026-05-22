@@ -1901,8 +1901,8 @@ select {
   margin-right: 0;
 }
 
-.rich-editor .ql-toolbar.ql-snow .ql-formats button.ql-center-layout,
-.rich-editor .ql-toolbar.ql-snow .ql-formats button.ql-pagebreak-layout {
+.rich-editor .ql-toolbar.ql-snow button.ql-center-layout,
+.rich-editor .ql-toolbar.ql-snow button.ql-pagebreak-layout {
   width: 28px;
   height: 24px;
   padding: 0;
@@ -1917,21 +1917,21 @@ select {
   color: var(--quill-icon);
 }
 
-.rich-editor .ql-toolbar.ql-snow .ql-formats button.ql-center-layout:hover .rich-toolbar-icon,
-.rich-editor .ql-toolbar.ql-snow .ql-formats button.ql-center-layout:focus .rich-toolbar-icon,
-.rich-editor .ql-toolbar.ql-snow .ql-formats button.ql-pagebreak-layout:hover .rich-toolbar-icon,
-.rich-editor .ql-toolbar.ql-snow .ql-formats button.ql-pagebreak-layout:focus .rich-toolbar-icon {
+.rich-editor .ql-toolbar.ql-snow button.ql-center-layout:hover .rich-toolbar-icon,
+.rich-editor .ql-toolbar.ql-snow button.ql-center-layout:focus .rich-toolbar-icon,
+.rich-editor .ql-toolbar.ql-snow button.ql-pagebreak-layout:hover .rich-toolbar-icon,
+.rich-editor .ql-toolbar.ql-snow button.ql-pagebreak-layout:focus .rich-toolbar-icon {
   color: var(--quill-active);
 }
 
-.rich-toolbar-controls {
+.rich-toolbar-right {
   margin-left: auto;
   display: inline-flex;
   align-items: center;
   gap: 8px;
 }
 
-.rich-toolbar-controls button.ql-revert-changes {
+.rich-toolbar-right button.ql-revert-changes {
   width: 28px;
   height: 24px;
   padding: 0;
@@ -1944,18 +1944,18 @@ select {
   opacity: 0.6;
 }
 
-.rich-toolbar-controls button.ql-revert-changes:hover:not(:disabled),
-.rich-toolbar-controls button.ql-revert-changes:focus:not(:disabled) {
+.rich-toolbar-right button.ql-revert-changes:hover:not(:disabled),
+.rich-toolbar-right button.ql-revert-changes:focus:not(:disabled) {
   opacity: 1;
 }
 
-.rich-toolbar-controls button.ql-revert-changes:disabled {
+.rich-toolbar-right button.ql-revert-changes:disabled {
   cursor: default;
   opacity: 0.3;
 }
 
-.rich-toolbar-controls button.ql-revert-changes:hover:not(:disabled) .rich-toolbar-icon,
-.rich-toolbar-controls button.ql-revert-changes:focus:not(:disabled) .rich-toolbar-icon {
+.rich-toolbar-right button.ql-revert-changes:hover:not(:disabled) .rich-toolbar-icon,
+.rich-toolbar-right button.ql-revert-changes:focus:not(:disabled) .rich-toolbar-icon {
   color: var(--quill-active);
 }
 
@@ -2338,7 +2338,7 @@ select {
     padding: 0;
   }
 
-  .rich-toolbar-controls {
+  .rich-toolbar-right {
     width: 100%;
     justify-content: flex-end;
   }

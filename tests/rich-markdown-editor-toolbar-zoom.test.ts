@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { h, render } from 'preact'
 import { act } from 'preact/test-utils'
 import { RichMarkdownEditor } from '../src/features/project-editor/pane/rich-markdown-editor/rich-markdown-editor'
-import { createZoomSelect, normalizeZoomValue } from '../src/features/project-editor/pane/rich-markdown-editor/rich-markdown-editor-toolbar-helpers'
+import { createZoomSelect, normalizeZoomValue } from '../src/features/project-editor/pane/rich-markdown-editor/rich-markdown-editor-toolbar'
 
 describe('Zoom Toolbar', () => {
   let container: HTMLDivElement

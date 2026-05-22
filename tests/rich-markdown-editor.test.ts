@@ -135,9 +135,9 @@ describe('RichMarkdownEditor', () => {
     const toolbar = container.querySelector('.ql-toolbar') as HTMLElement
     const childSignatures = Array.from(toolbar.children).map((child) => {
       if (!(child instanceof HTMLElement)) return 'unknown'
-      if (child.matches('.rich-toolbar-layout-group')) return 'layout-group'
-      if (child.matches('select.ql-zoom-level')) return 'zoom'
-      if (child.matches('.rich-toolbar-controls')) return 'controls'
+      if (child.matches('.rich-toolbar-right')) return 'right'
+      if (child.matches('button.ql-center-layout')) return 'center'
+      if (child.matches('button.ql-pagebreak-layout')) return 'pagebreak'
       if (child.matches('.ql-formats') && child.querySelector('.ql-picker.ql-header')) return 'header'
       if (child.matches('.ql-formats') && child.querySelector('button.ql-bold')) return 'inline'
       if (child.matches('.ql-formats') && child.querySelector('button.ql-blockquote')) return 'blocks'
@@ -152,14 +152,15 @@ describe('RichMarkdownEditor', () => {
       'blocks',
       'media',
       'clean',
-      'layout-group',
-      'zoom',
-      'controls',
+      'center',
+      'pagebreak',
+      'right',
     ])
 
-    const controls = toolbar.querySelector('.rich-toolbar-controls') as HTMLElement
-    const controlOrder = Array.from(controls.children).map((child) => {
+    const rightContainer = toolbar.querySelector('.rich-toolbar-right') as HTMLElement
+    const rightOrder = Array.from(rightContainer.children).map((child) => {
       if (!(child instanceof HTMLElement)) return 'unknown'
+      if (child.matches('select.ql-zoom-level')) return 'zoom'
       if (child.matches('button.ql-history-back')) return 'history-back'
       if (child.matches('button.ql-revert-changes')) return 'revert'
       if (child.matches('button[data-trama-action="save"]')) return 'save'
@@ -167,7 +168,7 @@ describe('RichMarkdownEditor', () => {
       return `unknown:${child.className}`
     })
 
-    expect(controlOrder).toEqual(['history-back', 'revert', 'save', 'sync'])
+    expect(rightOrder).toEqual(['zoom', 'history-back', 'revert', 'save', 'sync'])
   })
 
   it('sincroniza el atributo spellcheck del editor con la prop', async () => {

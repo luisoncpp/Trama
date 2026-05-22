@@ -67,8 +67,8 @@ export class RichEditorToolbarController {
     if (!this.elements) return
     this.syncButton(this.elements.historyBackButton, {
       disabled: params.historyBackDisabled,
-      title: 'Documento anterior',
-      ariaLabel: 'Documento anterior',
+      title: 'Previous Document',
+      ariaLabel: 'Previous Document',
       onClick: params.onHistoryBack,
     })
     this.syncButton(this.elements.revertButton, {

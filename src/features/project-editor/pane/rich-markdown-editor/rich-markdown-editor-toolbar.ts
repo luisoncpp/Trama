@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'preact/hooks'
 import { RichEditorToolbarController, type SyncToolbarControlsParams } from './toolbar-private/rich-markdown-editor-toolbar-controller'
 
 export type { RichEditorSyncState } from './toolbar-private/rich-markdown-editor-toolbar-helpers'
+export { createZoomSelect, normalizeZoomValue } from './toolbar-private/rich-markdown-editor-toolbar-helpers'
 
 export function useSyncToolbarControls({
   documentId,
