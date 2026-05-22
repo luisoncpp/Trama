@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This document describes how Trama handles inline base64 images in the rich markdown editor without degrading editing performance. It covers the dual-representation strategy (lightweight placeholders during editing, standard markdown images on disk), the in-memory image cache, and the full load-edit-save lifecycle.
+This document describes how Trama handles inline base64 images and broken project-local image links in the rich markdown editor without degrading editing performance. It covers the dual-representation strategy (lightweight placeholders during editing, standard markdown images on disk), the in-memory image cache, and the full load-edit-save lifecycle.
 
 ---
 
@@ -52,12 +52,13 @@ The solution is to keep two representations:
 | File | Responsibility |
 |------|----------------|
 | `src/shared/markdown-image-placeholder.ts` | Image extraction, placeholder generation, hydration, in-memory cache |
-| `src/shared/turndown-service-factory.ts` | Centralized `createTramaTurndownService()` — encapsulates all Turndown rules (layout directives, image placeholders) and `normalizeMarkdownOutput()` |
+| `src/shared/turndown-service-factory.ts` | Centralized `createTramaTurndownService()` — encapsulates all Turndown rules (layout directives, image placeholders, broken-image placeholders) and `normalizeMarkdownOutput()` |
 | `src/features/project-editor/components/rich-markdown-editor-serialization.ts` | Debounced flush: holds `lastEditorValueRef` as placeholder-markdown, hydrates to `![...](data:...)` only before `onChangeRef.current` so parent state always receives portable markdown |
 | `src/features/project-editor/components/rich-markdown-editor-value-sync.ts` | Canonical editor-value normalization/equality for placeholder-vs-base64 comparisons |
-| `src/features/project-editor/components/rich-markdown-editor-quill.ts` | `serializeEditorMarkdown()` (HTML → placeholder-markdown via factory), `applyMarkdownToEditor()` (markdown → Quill with image hydration + contentEditable guard), `restoreImagesAfterMarkedparsing()` |
+| `src/features/project-editor/components/rich-markdown-editor-quill.ts` | `serializeEditorMarkdown()` (HTML → placeholder-markdown via factory), `applyMarkdownToEditor()` (markdown → Quill with image hydration + broken-image placeholder rendering + contentEditable guard), `restoreImagesAfterMarkedparsing()` |
 | `src/features/project-editor/components/rich-markdown-editor-core.ts` | Passes `documentId` through lifecycle hooks; no longer owns debounce serialization |
-| `src/features/project-editor/use-project-editor-actions.ts` | `useSaveDocumentNow` hydrates placeholders before calling IPC `saveDocument` |
+| `src/features/project-editor/use-project-editor-actions.ts` | `useSaveDocumentNow` hydrates image placeholders and broken-image placeholders before calling IPC `saveDocument` |
+| `electron/services/document-image-persistence.ts` | Rehydrates `res/*.png` links back to embedded PNG data; degrades missing files to editor-only broken-image placeholders instead of throwing |
 
 ---
 
@@ -96,6 +97,16 @@ clearImageMap(documentId: string): void
 4. `restoreImagesAfterMarkedparsing()` scans the HTML for legacy image placeholders and restores `<img>` tags.
 5. `editor.clipboard.dangerouslyPasteHTML()` inserts into Quill.
 6. `syncCenteredLayoutArtifacts()` syncs CSS classes.
+
+### Broken project-local images
+
+If the repository cannot read a linked `res/*.png` file during `readDocument`, it does not throw. Instead it replaces the markdown image with an editor-only placeholder comment that preserves the original markdown payload:
+
+```markdown
+<!-- TRAMA_BROKEN_IMAGE:%7B%22alt%22%3A%22cover%22%2C%22source%22%3A%22res%2Fmissing.png%22%7D -->
+```
+
+`applyMarkdownToEditor()` converts that placeholder into a dedicated Quill embed rendered as the `🖼️` emoji. During serialization/save, the placeholder is converted back to the original markdown image syntax `![cover](res/missing.png)` so unchanged broken images round-trip without drift.
 
 The entire operation is wrapped in `contentEditable = 'false'` to prevent user keystrokes from corrupting the DOM during `dangerouslyPasteHTML`.
 
@@ -201,7 +212,7 @@ async (path: string, content: string, meta: DocumentMeta): Promise<void> => {
 
 ### Hydration
 
-`hydrateMarkdownImages` scans the markdown for `<!-- IMAGE_PLACEHOLDER:uuid -->` comments, looks up the uuid in the cache, and replaces the comment with standard markdown image syntax:
+`hydrateMarkdownImages` scans the markdown for `<!-- IMAGE_PLACEHOLDER:uuid -->` comments, looks up the uuid in the cache, and replaces the comment with standard markdown image syntax. `hydrateBrokenImageComments` then restores any editor-only broken-image placeholders back to their original markdown image links before save.
 
 ```typescript
 export function hydrateMarkdownImages(markdown: string, documentId: string): string {
@@ -265,16 +276,18 @@ When such a document is edited and saved, it is rewritten in the new standard fo
 
 ### Integration tests
 
-`tests/rich-markdown-editor.test.ts` — suite `IMAGE_PLACEHOLDER round-trip regression` (5 tests):
+`tests/rich-markdown-editor.test.ts` — suite `IMAGE_PLACEHOLDER round-trip regression` (6 tests):
 - Paste image → placeholder in markdown
 - Load standard markdown `![uuid](dataUrl)` → image visible in Quill
 - Load legacy comment format → image visible in Quill (backward compatibility)
 - Edit document with existing image → placeholder preserved
+- Load broken project-local image placeholder → `🖼️` visible in Quill and serialization preserves original markdown source
 - Document without images → no placeholder pollution
 
 `tests/folder-delete-repository.test.ts` — repository coverage for:
 - rewriting embedded PNG markdown images to `res/*.png`
 - hydrating `res/*.png` links back to embedded PNG markdown on read
+- degrading missing `res/*.png` links to editor-only broken-image placeholders without failing document reads
 - optional deletion of linked images during article delete
 
 ---
@@ -285,3 +298,4 @@ When such a document is edited and saved, it is rewritten in the new standard fo
 - Marked docs: https://marked.js.org/
 - Related architecture: `docs/architecture/rich-markdown-editor-core-architecture.md`
 - Related lesson: `docs/lessons-learned/turndown-base64-replacement-performance.md`
+- Related lesson: `docs/lessons-learned/broken-project-images-need-editor-only-placeholders.md`

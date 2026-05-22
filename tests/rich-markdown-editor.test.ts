@@ -1200,6 +1200,7 @@ describe('RichMarkdownEditor', () => {
   describe('IMAGE_PLACEHOLDER round-trip regression', () => {
     const TINY_PNG_1X1 = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8DwDwAFBQIAX8jx0gAAAABJRU5ErkJggg=='
     const TINY_PNG_1X1_ALT = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAACCAYAAABhuykZAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=='
+    const BROKEN_IMAGE_COMMENT = '<!-- TRAMA_BROKEN_IMAGE:%7B%22alt%22%3A%22cover%22%2C%22source%22%3A%22res%2Fmissing-image.png%22%7D -->'
 
     it('preserva imagen en markdown tras pegar imagen base64', async () => {
       let lastMarkdown = ''
@@ -1371,6 +1372,40 @@ describe('RichMarkdownEditor', () => {
       await sleep(40)
 
       expect(lastMarkdown).not.toContain('IMAGE_PLACEHOLDER')
+    })
+
+    it('renderiza imagen rota como emoji y preserva su markdown original al serializar', async () => {
+      let lastMarkdown = ''
+      const serializationRef = { current: { flush: () => null as string | null, tagOverlayRecalcRef: { current: false }, tagOverlayMatchesRef: { current: [] as Array<{ tag: string; start: number; end: number; filePath: string }> } } }
+
+      act(() => {
+        render(
+          h(RichMarkdownEditor, buildEditorProps({
+            documentId: 'broken-image-doc',
+            value: `Texto antes\n\n${BROKEN_IMAGE_COMMENT}\n\nTexto despues`,
+            onChange: (markdown) => {
+              lastMarkdown = markdown
+            },
+            editorSerializationRef: serializationRef,
+          })),
+          container,
+        )
+      })
+
+      await sleep(80)
+
+      const editor = getQuillInstance(container)
+      expect(editor.root.textContent).toContain('🖼️')
+
+      act(() => {
+        editor.insertText(editor.getLength() - 1, ' actualizado', 'user')
+      })
+
+      await sleep(60)
+      serializationRef.current.flush()
+
+      expect(lastMarkdown).toContain('![cover](res/missing-image.png)')
+      expect(lastMarkdown).not.toContain('TRAMA_BROKEN_IMAGE:')
     })
   })
 

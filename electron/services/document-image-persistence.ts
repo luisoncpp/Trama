@@ -1,5 +1,6 @@
 import path from 'node:path'
 import { mkdir, readdir, readFile, rm, writeFile } from 'node:fs/promises'
+import { brokenImagePlaceholderToComment } from '../../src/shared/markdown-image-placeholder.js'
 
 const INLINE_IMAGE_REGEX = /!\[([^\]]*)\]\(([^)\s]+)\)/gi
 const DATA_URL_REGEX = /^data:image\/([a-z0-9.+-]+);base64,([a-z0-9+/=\r\n]+)$/i
@@ -121,9 +122,15 @@ export async function resolveMarkdownImageSources(
     }
 
     const absoluteImagePath = path.join(projectRoot, normalizedSource)
-    const imageBytes = await readFile(absoluteImagePath)
     linkedImagePaths.push(normalizedSource)
-    output += `![${match.alt}](${createPngDataUrl(imageBytes)})`
+
+    try {
+      const imageBytes = await readFile(absoluteImagePath)
+      output += `![${match.alt}](${createPngDataUrl(imageBytes)})`
+    } catch {
+      output += brokenImagePlaceholderToComment(match.alt, normalizedSource)
+    }
+
     cursor = match.index + match.match.length
   }
 

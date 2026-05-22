@@ -28,6 +28,7 @@ Avoid: "bug description + fix". Prefer: "what I learned that applies to future w
 | File | Topic | Date |
 |------|-------|------|
 | `incremental-project-updates.md` | Centralize incremental state updates in `openProject` with a backend cache; let the frontend own the delta; fall back to full scan for external events | 2026-05-20 |
+| `broken-project-images-need-editor-only-placeholders.md` | Missing `res/*.png` files must degrade to editor-only placeholders at repository read time, then rehydrate back to the original markdown image syntax on save | 2026-05-21 |
 | `docx-imagerun-pixel-units.md` | `docx` `ImageRun.transformation` expects pixels, not EMU; passing EMU causes invisible/gigantic images | 2026-04-25 |
 | `quill-setcontents-must-return-cursor.md` | Quill helpers that build and apply a Delta via `setContents` must return the cursor position for the new document, not rely on stale old-document indices | 2026-05-15 |
 | `adjacent-center-toggle-should-extend-segment.md` | Centering a line directly adjacent to a centered block should extend that segment, not create a second adjacent pair of boundaries | 2026-05-14 |

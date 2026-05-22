@@ -43,7 +43,7 @@ Trama is a file-first desktop writing tool (Electron + Preact + TypeScript). The
 | Add/change IPC handler | `electron/ipc/handlers/` + `electron/ipc-handlers.ts` → `docs/ipc-architecture.md` |
 | Change sidebar UX | `src/features/project-editor/components/sidebar/sidebar-types.ts` → target component in `sidebar/` |
 | Debug sidebar path scoping | `docs/architecture/sidebar-path-scoping-model.md` → `src/features/project-editor/components/sidebar/sidebar-path-scoping.ts` → `src/features/project-editor/components/sidebar/sidebar-panel-body.tsx` → `src/features/project-editor/components/sidebar/sidebar-panel-logic.ts` |
-| Change editor behavior | `src/features/project-editor/components/rich-markdown-editor*.ts*` + `docs/architecture/editor-serialization-debounce-architecture.md` |
+| Change editor behavior | `src/features/project-editor/components/rich-markdown-editor*.ts*` + `docs/architecture/editor-serialization-debounce-architecture.md` + `docs/architecture/image-handling-architecture.md` |
 | Debug editor debounce / flush-before-switch | `docs/architecture/editor-serialization-debounce-architecture.md` → `src/features/project-editor/components/rich-markdown-editor-core.ts` → `tests/project-editor-debounce-regression.test.ts` |
 | Plan rich editor cleanup/refactor | `docs/plan/rich-editor-refactor-plan.md` → `docs/architecture/rich-markdown-editor-core-architecture.md` → `docs/architecture/image-handling-architecture.md` → `docs/architecture/split-pane-coordination.md` |
 | Follow editor typing behavior step-by-step | `docs/flows/rich-editor-typing-flow.md` → `src/features/project-editor/components/rich-markdown-editor-core.ts` → `src/features/project-editor/components/rich-markdown-editor-quill.ts` |

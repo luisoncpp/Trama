@@ -90,4 +90,20 @@ describe('document repository folder delete', () => {
     expect(result.deletedImagePaths).toEqual(['res/book_act_01_scene_001_0.png'])
     await expect(readFile(imagePath)).rejects.toThrow()
   })
+
+  it('reads documents with missing linked images without throwing and preserves the original image source', async () => {
+    tempRoot = await mkdtemp(path.join(os.tmpdir(), 'trama-folder-delete-repo-'))
+    const repository = new DocumentRepository()
+    const documentPath = 'book/Act-01/Scene-001.md'
+    const absoluteDocumentPath = path.join(tempRoot, 'book', 'Act-01', 'Scene-001.md')
+
+    await mkdir(path.dirname(absoluteDocumentPath), { recursive: true })
+    await writeFile(absoluteDocumentPath, 'Texto\n\n![cover](res/missing-image.png)\n', 'utf-8')
+
+    const readResult = await repository.readDocument(tempRoot, documentPath)
+
+    expect(readResult.linkedImagePaths).toEqual(['res/missing-image.png'])
+    expect(readResult.content).toContain('TRAMA_BROKEN_IMAGE:')
+    expect(readResult.content).not.toContain('data:image/png')
+  })
 })

@@ -78,7 +78,7 @@ Mandatory doc navigation for new chats: start with `docs/START-HERE.md` — it p
   - Read/save/create/rename/delete markdown files + folder rename/create.
   - Persists markdown images to project-local `res/*.png` files on save and resolves them back to embedded data URLs on read.
 - `electron/services/document-image-persistence.ts`
-  - Repository helper for markdown image persistence: rewrites embedded images to `res/*.png`, rehydrates local image links back to embedded PNG data URLs, and collects associated image paths for delete flows.
+  - Repository helper for markdown image persistence: rewrites embedded images to `res/*.png`, rehydrates local image links back to embedded PNG data URLs, degrades missing linked images to editor-only placeholders, and collects associated image paths for delete flows.
 - `electron/services/frontmatter.ts`
   - YAML frontmatter parse/serialize.
 - `electron/services/index-service.ts`
@@ -186,6 +186,7 @@ Mandatory doc navigation for new chats: start with `docs/START-HERE.md` — it p
   - Sub-state builders are inlined; `setters` object uses stable individual setter dependencies.
 - `src/features/project-editor/use-project-editor-actions.ts`
   - Thin adapter: keeps core operations (clear, load, save, open) and builds the `ProjectEditorActions` surface via one `useMemo` over the three deep modules (`workspace-actions`, `sidebar-file-actions`, `conflict-actions`).
+  - Save path hydrates both image placeholders and broken-image placeholders before IPC persistence.
   - Receives `paneWorkspace` from `useProjectEditor`.
 - `src/features/project-editor/use-project-editor-autosave-effect.ts`
   - Minimal Preact adapter: detects dirty → calls `paneWorkspace.scheduleAutosave`, detects clean/unmount → calls `paneWorkspace.cancelAutosave`. Timer logic lives in `PaneWorkspace`.
@@ -251,9 +252,9 @@ Mandatory doc navigation for new chats: start with `docs/START-HERE.md` — it p
 - `src/features/project-editor/components/rich-markdown-editor-value-sync.ts`
   - Canonical editor-value helpers: normalize image-bearing markdown into placeholder form and compare equivalent external/editor values without triggering destructive re-renders.
 - `src/features/project-editor/pane/rich-markdown-editor/rich-markdown-editor-layout-blots.ts`
-  - Registers Quill `BlockEmbed`-based layout directive blots (`center`, `spacer`, `pagebreak`, unknown) so directive objects survive Quill canonicalization.
+  - Registers Quill `BlockEmbed`-based layout directive blots (`center`, `spacer`, `pagebreak`, `broken-image`, unknown) so directive objects survive Quill canonicalization.
 - `src/features/project-editor/pane/rich-markdown-editor/rich-markdown-editor-layout-clipboard.ts`
-  - Adds clipboard matcher logic that maps directive artifact nodes into embed Delta ops consumed by layout directive blots.
+  - Adds clipboard matcher logic that maps directive artifact nodes, including broken-image placeholders, into embed Delta ops consumed by layout directive blots.
 - `src/features/project-editor/pane/rich-markdown-editor/rich-markdown-editor-layout-keyboard.ts`
   - Registers explicit ArrowLeft/ArrowRight keyboard bindings so pagebreak embeds are traversed atomically in one cursor step.
   - Intercepts narrow Backspace/Delete seam cases around `center:start` and `center:end` so deletion shifts the nearest boundary instead of leaking or truncating centering.
@@ -379,6 +380,8 @@ Mandatory doc navigation for new chats: start with `docs/START-HERE.md` — it p
   - Artifact-node serializer for converting directive blot/artifact DOM nodes back into canonical markdown comments.
 - `src/shared/markdown-layout-directives-spacing.ts`
   - Markdown post-serialization normalization that converts repeated blank-line runs into canonical `trama:spacer` directives.
+- `src/shared/markdown-image-placeholder.ts`
+  - Shared image placeholder helpers: embedded-image cache, placeholder hydration, and editor-only broken-image placeholder encode/render/rehydrate helpers.
 - `src/shared/zulu-parser.ts`
   - `.zulu` XML parser: extracts page titles and content from ZuluPad document format.
 - `src/types/trama-api.d.ts`

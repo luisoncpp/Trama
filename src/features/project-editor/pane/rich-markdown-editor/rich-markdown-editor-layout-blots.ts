@@ -1,11 +1,13 @@
 import Quill from 'quill'
 
-export type LayoutDirectiveEmbedType = 'center' | 'spacer' | 'pagebreak' | 'unknown'
+export type LayoutDirectiveEmbedType = 'center' | 'spacer' | 'pagebreak' | 'broken-image' | 'unknown'
 
 export interface LayoutDirectiveEmbedValue {
   directive: LayoutDirectiveEmbedType
   role?: 'start' | 'end'
   lines?: number
+  alt?: string
+  source?: string
   raw?: string
 }
 
@@ -68,6 +70,15 @@ class LayoutDirectiveBlot extends QuillBlockEmbed {
       return node
     }
 
+    if (directive === 'broken-image') {
+      node.classList.add('trama-broken-image-placeholder')
+      node.setAttribute('data-trama-broken-image-alt', safeValue.alt ?? '')
+      node.setAttribute('data-trama-broken-image-source', safeValue.source ?? '')
+      node.setAttribute('aria-label', safeValue.alt?.trim() || 'Broken image')
+      node.textContent = '🖼️'
+      return node
+    }
+
     node.classList.add('trama-directive-unknown')
     node.setAttribute('data-trama-raw', safeValue.raw ?? '')
     return node
@@ -90,6 +101,14 @@ class LayoutDirectiveBlot extends QuillBlockEmbed {
 
     if (directive === 'pagebreak') {
       return { directive }
+    }
+
+    if (directive === 'broken-image') {
+      return {
+        directive,
+        alt: domNode.getAttribute('data-trama-broken-image-alt') ?? '',
+        source: domNode.getAttribute('data-trama-broken-image-source') ?? '',
+      }
     }
 
     if (directive === 'unknown') {

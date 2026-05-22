@@ -1,4 +1,10 @@
 const IMAGE_PLACEHOLDER_PROTOCOL = 'trama-image-placeholder:'
+const BROKEN_IMAGE_COMMENT_PREFIX = 'TRAMA_BROKEN_IMAGE:'
+
+interface BrokenImagePlaceholderPayload {
+  alt: string
+  source: string
+}
 
 /**
  * In-memory cache that maps documentId → (uuid → dataUrl).
@@ -80,6 +86,55 @@ export function stripBase64ImagesFromMarkdown(
 /** Create a short HTML comment placeholder used for in-memory markdown. */
 export function imagePlaceholderToComment(uuid: string): string {
   return `<!-- IMAGE_PLACEHOLDER:${uuid} -->`
+}
+
+function encodeBrokenImagePayload(payload: BrokenImagePlaceholderPayload): string {
+  return encodeURIComponent(JSON.stringify(payload))
+}
+
+function decodeBrokenImagePayload(encodedPayload: string): BrokenImagePlaceholderPayload | null {
+  try {
+    const parsed = JSON.parse(decodeURIComponent(encodedPayload)) as Partial<BrokenImagePlaceholderPayload>
+    if (typeof parsed.alt !== 'string' || typeof parsed.source !== 'string') {
+      return null
+    }
+
+    return { alt: parsed.alt, source: parsed.source }
+  } catch {
+    return null
+  }
+}
+
+function escapeHtmlAttribute(value: string): string {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/"/g, '&quot;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+}
+
+export function brokenImagePlaceholderToComment(alt: string, source: string): string {
+  return `<!-- ${BROKEN_IMAGE_COMMENT_PREFIX}${encodeBrokenImagePayload({ alt, source })} -->`
+}
+
+export function hydrateBrokenImageComments(markdown: string): string {
+  return markdown.replace(/<!--\s*TRAMA_BROKEN_IMAGE:([^\s]+)\s*-->/gi, (_match, encodedPayload) => {
+    const payload = decodeBrokenImagePayload(encodedPayload)
+    return payload ? `![${payload.alt}](${payload.source})` : _match
+  })
+}
+
+export function renderBrokenImageCommentsAsHtml(markdown: string): string {
+  return markdown.replace(/<!--\s*TRAMA_BROKEN_IMAGE:([^\s]+)\s*-->/gi, (_match, encodedPayload) => {
+    const payload = decodeBrokenImagePayload(encodedPayload)
+    if (!payload) {
+      return _match
+    }
+
+    const safeAlt = escapeHtmlAttribute(payload.alt)
+    const safeSource = escapeHtmlAttribute(payload.source)
+    return `<div data-trama-directive="broken-image" data-trama-broken-image="true" data-trama-broken-image-alt="${safeAlt}" data-trama-broken-image-source="${safeSource}">🖼️</div>`
+  })
 }
 
 /** Scan HTML for `trama-image-placeholder:` src values and return the uuids. */

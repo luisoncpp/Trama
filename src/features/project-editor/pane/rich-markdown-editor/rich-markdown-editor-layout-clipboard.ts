@@ -27,6 +27,14 @@ function parseDirectiveFromNode(node: Element): LayoutDirectiveEmbedValue | null
     return { directive }
   }
 
+  if (directive === 'broken-image') {
+    return {
+      directive,
+      alt: node.getAttribute('data-trama-broken-image-alt') ?? '',
+      source: node.getAttribute('data-trama-broken-image-source') ?? '',
+    }
+  }
+
   if (directive === 'unknown') {
     return {
       directive,
@@ -50,6 +58,14 @@ function parseDirectiveFromNode(node: Element): LayoutDirectiveEmbedValue | null
       return {
         directive: 'spacer',
         lines: getSpacerLinesFromClassList(node.classList),
+      }
+    }
+
+    if (node.hasAttribute('data-trama-broken-image-source')) {
+      return {
+        directive: 'broken-image',
+        alt: node.getAttribute('data-trama-broken-image-alt') ?? '',
+        source: node.getAttribute('data-trama-broken-image-source') ?? '',
       }
     }
   }

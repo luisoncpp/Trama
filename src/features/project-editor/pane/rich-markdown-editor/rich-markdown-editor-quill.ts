@@ -7,7 +7,9 @@ import { registerLayoutDirectiveClipboardMatchers } from './rich-markdown-editor
 import { createLayoutDirectiveKeyboardBindings } from './rich-markdown-editor-layout-keyboard'
 import { syncCenteredLayoutArtifacts } from './rich-markdown-editor-layout-centering'
 import {
+  hydrateBrokenImageComments,
   hydrateMarkdownImages,
+  renderBrokenImageCommentsAsHtml,
   storeImageMap,
   stripBase64ImagesFromHtml,
 } from '../../../../shared/markdown-image-placeholder'
@@ -71,7 +73,8 @@ export function applyMarkdownToEditor(
   root.contentEditable = 'false'
   try {
     const hydratedMarkdown = documentId ? hydrateMarkdownImages(markdown, documentId) : markdown
-    const { markdownWithArtifacts } = renderDirectiveArtifactsToMarkdown(hydratedMarkdown)
+    const markdownWithBrokenImagePlaceholders = renderBrokenImageCommentsAsHtml(hydratedMarkdown)
+    const { markdownWithArtifacts } = renderDirectiveArtifactsToMarkdown(markdownWithBrokenImagePlaceholders)
     const parsed = marked.parse(markdownWithArtifacts) as string
     const withImages = restoreImagesAfterMarkedparsing(parsed, new Map())
     editor.clipboard.dangerouslyPasteHTML(withImages, source)
@@ -95,7 +98,7 @@ export function serializeEditorMarkdown(
   const serviceFlags = imageMap.size > 0 ? TurndownServiceFlags.HasImages : TurndownServiceFlags.None
   const service = createTramaTurndownService(serviceFlags)
 
-  return normalizeMarkdownOutput(service.turndown(htmlWithoutImages))
+  return hydrateBrokenImageComments(normalizeMarkdownOutput(service.turndown(htmlWithoutImages)))
 }
 
 export function serializeEditorMarkdownFromRef(

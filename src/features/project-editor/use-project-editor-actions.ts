@@ -5,7 +5,11 @@ import type { ProjectEditorLayoutState, ProjectEditorProjectState, ProjectEditor
 import type { OpenProjectOptions } from './use-project-editor-actions-types'
 import type { PaneWorkspace } from './pane'
 import { useOpenProject } from './use-project-editor-open-project'
-import { hydrateMarkdownImages, stripBase64ImagesFromMarkdown } from '../../shared/markdown-image-placeholder'
+import {
+  hydrateBrokenImageComments,
+  hydrateMarkdownImages,
+  stripBase64ImagesFromMarkdown,
+} from '../../shared/markdown-image-placeholder'
 import { ensureMarkdownEmbeddedImagesArePng } from './project-editor-image-save'
 import { buildActions } from './use-project-editor-actions-builder'
 
@@ -91,7 +95,7 @@ function useSaveDocumentNow(
     setters.setSaving(true)
 
     try {
-      const hydratedContent = hydrateMarkdownImages(content, path)
+      const hydratedContent = hydrateBrokenImageComments(hydrateMarkdownImages(content, path))
       const pngNormalizedContent = await ensureMarkdownEmbeddedImagesArePng(hydratedContent)
       const response = await window.tramaApi.saveDocument({ path, content: pngNormalizedContent, meta })
       if (!response.ok) {
