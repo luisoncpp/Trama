@@ -1,32 +1,7 @@
-import { useEffect } from 'preact/hooks'
-import type Quill from 'quill'
-import { type RichEditorSyncState } from './rich-markdown-editor-toolbar-helpers'
-import { syncZoomSelect } from './zoom-select-sync'
-import {
-  ensureToolbarControls,
-  syncLayoutButtons,
-  syncToolbarSaveControls,
-} from './rich-markdown-editor-toolbar-controls'
+import { useEffect, useRef } from 'preact/hooks'
+import { RichEditorToolbarController, type SyncToolbarControlsParams } from './toolbar-private/rich-markdown-editor-toolbar-controller'
 
-export type { RichEditorSyncState } from './rich-markdown-editor-toolbar-helpers'
-
-interface SyncToolbarControlsParams {
-  documentId: string | null
-  hostRef: { current: HTMLDivElement | null }
-  editorRef: { current: Quill | null }
-  historyBackDisabled: boolean
-  onHistoryBack: () => void
-  saveDisabled: boolean
-  saveLabel: string
-  onSaveNow: () => void
-  revertDisabled: boolean
-  revertLabel: string
-  onRevertNow: () => void
-  syncState: RichEditorSyncState
-  syncStateLabel: string
-  zoomLevel?: number
-  onZoomChange?: (level: number) => void
-}
+export type { RichEditorSyncState } from './toolbar-private/rich-markdown-editor-toolbar-helpers'
 
 export function useSyncToolbarControls({
   documentId,
@@ -45,26 +20,28 @@ export function useSyncToolbarControls({
   zoomLevel,
   onZoomChange,
 }: SyncToolbarControlsParams): void {
-  useEffect(() => {
-    const host = hostRef.current
-    if (!host) return
+  const controllerRef = useRef<RichEditorToolbarController | null>(null)
 
-    const toolbar = host.querySelector('.ql-toolbar')
-    if (!(toolbar instanceof HTMLElement)) return
-
-    const { centerButton, pagebreakButton, historyBackButton, saveButton, revertButton, syncIcon, zoomSelect } =
-      ensureToolbarControls(toolbar)
-
-    syncLayoutButtons(centerButton, pagebreakButton, editorRef)
-    syncToolbarSaveControls(historyBackButton, saveButton, revertButton, syncIcon, {
+  useEffect(/* syncToolbarController */ () => {
+    if (!controllerRef.current) controllerRef.current = new RichEditorToolbarController()
+    controllerRef.current.sync({
+      documentId,
+      hostRef,
+      editorRef,
       historyBackDisabled,
       onHistoryBack,
-      saveDisabled, saveLabel, onSaveNow,
-      revertDisabled, revertLabel, onRevertNow,
-      syncState, syncStateLabel,
+      saveDisabled,
+      saveLabel,
+      onSaveNow,
+      revertDisabled,
+      revertLabel,
+      onRevertNow,
+      syncState,
+      syncStateLabel,
+      zoomLevel,
+      onZoomChange,
     })
-    syncZoomSelect(zoomSelect, zoomLevel, onZoomChange)
-  }, [documentId, editorRef, hostRef, historyBackDisabled, onHistoryBack, onSaveNow, saveDisabled, saveLabel,
-      onRevertNow, revertDisabled, revertLabel,
-      syncState, syncStateLabel, zoomLevel, onZoomChange])
+  }, [documentId, editorRef, hostRef, historyBackDisabled, onHistoryBack, saveDisabled, saveLabel, onSaveNow,
+      revertDisabled, revertLabel, onRevertNow, syncState, syncStateLabel, zoomLevel,
+      onZoomChange] /*Inputs for syncToolbarController*/)
 }

@@ -73,7 +73,7 @@ Pane history is session-only and pane-local. It must behave like a browser histo
 | `src/features/project-editor/use-project-editor.ts` | Stable history store injection and session seeding |
 | `src/features/project-editor/use-project-editor-shortcuts-effect.ts` | Alt+Left / Alt+Right handling |
 | `electron/main-process/application-menu.ts` | Menu bar Back / Forward entries |
-| `src/features/project-editor/pane/rich-markdown-editor/rich-markdown-editor-toolbar.ts` | Toolbar back button wiring |
+| `src/features/project-editor/pane/rich-markdown-editor/rich-markdown-editor-toolbar.ts` + `private/rich-markdown-editor-toolbar-controller.ts` | Toolbar back button wiring |
 | `tests/pane-workspace.test.ts` | Stack truncation and pane isolation tests |
 | `tests/use-project-editor.test.ts` | End-to-end action and shortcut coverage |
 

@@ -57,7 +57,7 @@ export function clampZoomLevel(value: number): number {
 
 ## Toolbar Drop-down
 
-The zoom drop-down is implemented in `rich-markdown-editor-toolbar.ts` via `useSyncToolbarControls`. It appears as a `<select>` element with class `ql-zoom-level` in Quill's toolbar, positioned to the left of `.rich-toolbar-controls`.
+The zoom drop-down is implemented through `rich-markdown-editor-toolbar.ts`, which stays as a thin public hook. The actual DOM ownership lives in `private/rich-markdown-editor-toolbar-controller.ts` and `private/rich-markdown-editor-toolbar-dom.ts`. The zoom control appears as a `<select>` element with class `ql-zoom-level` in Quill's toolbar, positioned between the layout group and `.rich-toolbar-controls`.
 
 **Zoom options:** 50%, 75%, 100%, 125%, 150%, 175%, 200% (corresponding to 0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0)
 
@@ -69,14 +69,15 @@ The zoom drop-down is implemented in `rich-markdown-editor-toolbar.ts` via `useS
 
 ## File Structure
 
-The toolbar implementation is split across multiple files to comply with lint constraints:
+The toolbar implementation keeps a thin public seam and private DOM ownership:
 
 ```
 src/features/project-editor/pane/rich-markdown-editor/
-├── rich-markdown-editor-toolbar.ts          # Main hook: useSyncToolbarControls
-├── rich-markdown-editor-toolbar-helpers.ts   # createZoomSelect, ZOOM_PAIRS, normalizeZoomValue
-├── rich-markdown-editor-toolbar-controls.ts # ensureToolbarControls, syncLayoutButtons, syncToolbarSaveControls
-└── zoom-select-sync.ts                       # syncZoomSelect (separate file to avoid TS resolution conflict)
+├── rich-markdown-editor-toolbar.ts                 # Thin public hook: useSyncToolbarControls
+├── rich-markdown-editor-toolbar-helpers.ts         # createZoomSelect, ZOOM_PAIRS, normalizeZoomValue
+└── private/
+    ├── rich-markdown-editor-toolbar-controller.ts # Class-based toolbar sync owner
+    └── rich-markdown-editor-toolbar-dom.ts        # Explicit toolbar order + DOM creation
 ```
 
 ### `toolbar-helpers.ts` — Zoom Select Creation
@@ -109,53 +110,25 @@ export function createZoomSelect(): HTMLSelectElement {
 
 `ZOOM_PAIRS` is an array of `[number, string]` tuples that maps numeric zoom levels to their string representation in the drop-down. `normalizeZoomValue` uses this array to handle floating-point comparison issues (e.g., `1.0` vs `0.999999...`).
 
-### `toolbar-controls.ts` — Toolbar Control Sync Helpers
+### `private/rich-markdown-editor-toolbar-controller.ts` — Toolbar Synchronization
 
 ```typescript
-export function ensureToolbarControls(container: HTMLElement): HTMLElement {
-  // Gets or creates .rich-toolbar-controls div inside Quill toolbar
-}
-
-export function syncLayoutButtons(container: HTMLElement): void {
-  // Syncs save/revert button visibility
-}
-
-export function syncToolbarSaveControls(
-  container: HTMLElement,
-  syncState: SyncState,
-  onSaveNow: () => void,
-  onRevertNow: () => void
-): void {
-  // Syncs save controls based on sync state
-}
-```
-
-### `zoom-select-sync.ts` — Zoom Drop-down Synchronization
-
-```typescript
-export function syncZoomSelect(
-  zoomSelect: HTMLSelectElement | undefined,
-  zoomLevel: number | undefined,
-  onZoomChange: ((level: number) => void) | undefined,
-): void {
-  if (!zoomSelect) return
-
-  const normalizedZoom = zoomLevel ?? 1.0
-  const found = ZOOM_PAIRS.find(([num]) => Math.abs(num - normalizedZoom) < 0.001)
-  zoomSelect.value = found ? found[1] : String(normalizedZoom)
-
-  if (onZoomChange) {
-    zoomSelect.onchange = () => {
-      const newLevel = parseFloat(zoomSelect.value)
-      if (!isNaN(newLevel)) {
-        onZoomChange(newLevel)
-      }
-    }
+class RichEditorToolbarController {
+  sync(params: SyncToolbarControlsParams): void {
+    // Attaches toolbar elements once, then syncs layout buttons,
+    // document controls, sync indicator, and zoom.
   }
 }
 ```
 
-**Note:** `syncZoomSelect` is in its own file to avoid a TypeScript module resolution conflict with `verbatimModuleSyntax: true`. The function was extracted when tests failed with "Expected 1 arguments, but got 2" due to the module resolution cache treating the function incorrectly.
+### `private/rich-markdown-editor-toolbar-dom.ts` — Explicit Toolbar Order
+
+```typescript
+export function applyToolbarOrder(toolbar, layoutGroup, zoomSelect, controls): void {
+  // Current explicit order:
+  // header -> inline -> blocks -> media -> clean -> layout -> zoom -> controls
+}
+```
 
 ## Zoom Application
 
@@ -237,10 +210,10 @@ Zoom persists via `trama.workspace.layout.v1` in localStorage, handled by `useWo
 | `src/features/project-editor/pane/workspace-editor-panels.tsx` | Passes `zoomLevel` and `onZoomChange` to both `PaneEditor` / `ActiveEditorPanel` instances |
 | `src/features/project-editor/pane/editor-panel.tsx` | Propagates `zoomLevel` and `onZoomChange` to `RichMarkdownEditor` |
 | `src/features/project-editor/pane/rich-markdown-editor/rich-markdown-editor.tsx` | Receives `zoomRef`, `zoomLevel`, and `onZoomChange`; passes to `useSyncToolbarControls` |
-| `src/features/project-editor/pane/rich-markdown-editor/rich-markdown-editor-toolbar.ts` | `useSyncToolbarControls` hook that creates and syncs the zoom drop-down |
-| `src/features/project-editor/pane/rich-markdown-editor/rich-markdown-editor-toolbar-helpers.ts` | `createZoomSelect` function, `ZOOM_PAIRS` array, `normalizeZoomValue` utility |
-| `src/features/project-editor/pane/rich-markdown-editor/rich-markdown-editor-toolbar-controls.ts` | Toolbar control helpers: `ensureToolbarControls`, `syncLayoutButtons`, `syncToolbarSaveControls` |
-| `src/features/project-editor/pane/rich-markdown-editor/zoom-select-sync.ts` | `syncZoomSelect` function (in separate file to avoid TS resolution conflict) |
+| `src/features/project-editor/pane/rich-markdown-editor/rich-markdown-editor-toolbar.ts` | Thin hook that forwards toolbar sync params into the private toolbar Module |
+| `src/features/project-editor/pane/rich-markdown-editor/rich-markdown-editor-toolbar-helpers.ts` | `createZoomSelect`, `ZOOM_PAIRS`, `normalizeZoomValue`, and shared toolbar button builders |
+| `src/features/project-editor/pane/rich-markdown-editor/private/rich-markdown-editor-toolbar-controller.ts` | Class-based toolbar state sync owner |
+| `src/features/project-editor/pane/rich-markdown-editor/private/rich-markdown-editor-toolbar-dom.ts` | Explicit current toolbar order and DOM element creation |
 | `src/features/project-editor/pane/rich-markdown-editor/use-editor-zoom.ts` | DOM zoom application via CSS `zoom`; reads `zoomRef.current` on each effect run |
 
 ## Tests
@@ -248,4 +221,4 @@ Zoom persists via `trama.workspace.layout.v1` in localStorage, handled by `useWo
 - `tests/workspace-keyboard-shortcuts.test.ts` — Zoom shortcut recognition and clamping logic
 - `tests/workspace-layout-persistence.test.ts` — Zoom persistence and clamping on restore
 - `tests/editor-zoom-ref.test.ts` — `EditorZoomRef` existence, initial value, shared instance, and synchronization with `setZoomLevel`
-- `tests/rich-markdown-editor-toolbar-zoom.test.ts` — Toolbar zoom drop-down rendering, value updates, and `onZoomChange` callback (8 tests)
+- `tests/rich-markdown-editor-toolbar-zoom.test.ts` — Toolbar zoom drop-down rendering, normalized value helpers, and `onZoomChange` callback

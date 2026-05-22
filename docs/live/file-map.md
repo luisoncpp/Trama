@@ -271,6 +271,10 @@ Mandatory doc navigation for new chats: start with `docs/START-HERE.md` — it p
   - Center-range utility module for Quill Delta: extracts center boundaries from ops, derives center segments, detects whether an index is inside a segment, normalizes a selection to full line boundaries, and builds seam-safe `center:start`/`center:end` boundary shifts for keyboard deletion.
 - `src/features/project-editor/pane/rich-markdown-editor/rich-markdown-editor-layout-centering.ts`
   - Synchronizes centered styling for editor blocks located between `center:start` and `center:end` boundary artifacts.
+- `src/features/project-editor/pane/rich-markdown-editor/private/rich-markdown-editor-toolbar-controller.ts`
+  - Private toolbar controller class: owns toolbar state synchronization for layout buttons, pane-history back, revert/save controls, sync indicator, and zoom.
+- `src/features/project-editor/pane/rich-markdown-editor/private/rich-markdown-editor-toolbar-dom.ts`
+  - Private toolbar DOM helper: creates toolbar-specific controls and enforces the explicit current toolbar order behind the Quill toolbar seam.
 - `src/features/project-editor/components/rich-markdown-editor-commands.ts`
   - Handles workspace context-menu commands (`paste-markdown`, `copy-as-markdown`) and clipboard serialization/paste flow for the rich editor.
 - `src/features/project-editor/components/rich-markdown-editor-find.tsx`
@@ -295,8 +299,8 @@ Mandatory doc navigation for new chats: start with `docs/START-HERE.md` — it p
   - Uses requestAnimationFrame phases to recalculate after padding changes; expands top/bottom edge space dynamically.
 - `src/features/project-editor/components/rich-markdown-editor-focus-scope-geometry.ts`
   - Geometry helpers for focus-mode (text offset resolution, visual line/sentence boundary calculations).
-- `src/features/project-editor/components/rich-markdown-editor-toolbar.ts`
-  - Injects and synchronizes toolbar controls (back button, save button, revert button, sync indicator) into the Quill toolbar.
+- `src/features/project-editor/pane/rich-markdown-editor/rich-markdown-editor-toolbar.ts`
+  - Thin public toolbar hook. Delegates toolbar DOM ownership to the private controller/DOM Modules while preserving Quill as the seam.
 
 ### Sidebar components
 

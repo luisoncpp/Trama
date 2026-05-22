@@ -2,8 +2,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { h, render } from 'preact'
 import { act } from 'preact/test-utils'
 import { RichMarkdownEditor } from '../src/features/project-editor/pane/rich-markdown-editor/rich-markdown-editor'
-import { createZoomSelect } from '../src/features/project-editor/pane/rich-markdown-editor/rich-markdown-editor-toolbar-helpers'
-import { syncZoomSelect } from '../src/features/project-editor/pane/rich-markdown-editor/zoom-select-sync'
+import { createZoomSelect, normalizeZoomValue } from '../src/features/project-editor/pane/rich-markdown-editor/rich-markdown-editor-toolbar-helpers'
 
 describe('Zoom Toolbar', () => {
   let container: HTMLDivElement
@@ -65,20 +64,8 @@ describe('Zoom Toolbar', () => {
     })
   })
 
-  describe('syncZoomSelect', () => {
-    it('sets select value based on zoomLevel', () => {
-      const select = createZoomSelect()
-      syncZoomSelect(select, 1.5, () => {})
-      expect(select.value).toBe('1.5')
-    })
-
-    it('uses default 1.0 when zoomLevel is undefined', () => {
-      const select = createZoomSelect()
-      syncZoomSelect(select, undefined, () => {})
-      expect(select.value).toBe('1.0')
-    })
-
-    it('sets correct values for all valid zoom levels', () => {
+  describe('normalizeZoomValue', () => {
+    it('returns the expected string for all valid zoom levels', () => {
       const levels: Array<{ value: number; str: string }> = [
         { value: 0.5, str: '0.5' },
         { value: 0.75, str: '0.75' },
@@ -89,36 +76,12 @@ describe('Zoom Toolbar', () => {
         { value: 2.0, str: '2.0' },
       ]
       for (const { value, str } of levels) {
-        const select = createZoomSelect()
-        syncZoomSelect(select, value, () => {})
-        expect(select.value).toBe(str)
+        expect(normalizeZoomValue(value)).toBe(str)
       }
     })
 
-    it('attaches onchange handler when onZoomChange provided', () => {
-      const select = createZoomSelect()
-      let captured: number | null = null
-      syncZoomSelect(select, 1.0, (level) => { captured = level })
-
-      act(() => {
-        select.value = '1.5'
-        select.dispatchEvent(new Event('change', { bubbles: true }))
-      })
-
-      expect(captured).toBe(1.5)
-    })
-
-    it('does not call onZoomChange when handler is undefined', () => {
-      const select = createZoomSelect()
-      let called = false
-      syncZoomSelect(select, 1.0, undefined)
-
-      act(() => {
-        select.value = '1.5'
-        select.dispatchEvent(new Event('change', { bubbles: true }))
-      })
-
-      expect(called).toBe(false)
+    it('uses default 1.0 when zoomLevel is undefined', () => {
+      expect(normalizeZoomValue(undefined)).toBe('1.0')
     })
   })
 
@@ -156,6 +119,31 @@ describe('Zoom Toolbar', () => {
 
       const zoomSelect = container.querySelector('select.ql-zoom-level')
       expect(zoomSelect).toBeTruthy()
+    })
+
+    it('calls onZoomChange when the toolbar select changes', async () => {
+      let capturedLevel: number | null = null
+
+      act(() => {
+        render(
+          h(RichMarkdownEditor, buildEditorProps({
+            documentId: 'zoom-callback-doc',
+            value: '# Test',
+            onZoomChange: (level) => { capturedLevel = level },
+          })),
+          container,
+        )
+      })
+
+      await sleep(200)
+
+      const zoomSelect = container.querySelector('select.ql-zoom-level') as HTMLSelectElement
+      act(() => {
+        zoomSelect.value = '1.5'
+        zoomSelect.dispatchEvent(new Event('change', { bubbles: true }))
+      })
+
+      expect(capturedLevel).toBe(1.5)
     })
   })
 })

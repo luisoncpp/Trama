@@ -98,7 +98,7 @@ When these conditions are not met, the action returns immediately without callin
 
 | File | Why inspect it |
 |------|----------------|
-| `src/features/project-editor/pane/rich-markdown-editor/rich-markdown-editor-toolbar.ts` | Toolbar button creation, `revertDisabled`/`onRevertNow` wiring |
+| `src/features/project-editor/pane/rich-markdown-editor/rich-markdown-editor-toolbar.ts` + `private/rich-markdown-editor-toolbar-controller.ts` | Toolbar button wiring and revert/save/sync state synchronization |
 | `src/features/project-editor/pane/rich-markdown-editor/rich-markdown-editor.tsx` | Receives and forwards `revertDisabled`/`onRevertNow` props |
 | `src/features/project-editor/pane/editor-panel.tsx` | Computes `revertDisabled` from `isDirty`/`selectedPath`/`saving` |
 | `src/features/project-editor/pane/workspace-editor-panels.tsx` | Wires pane-explicit `revertChanges(pane)` callback in `PaneEditor` |
