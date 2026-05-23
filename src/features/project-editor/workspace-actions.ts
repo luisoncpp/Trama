@@ -174,6 +174,7 @@ export function revertChanges(
   if (!paneDocument.isDirty || !paneDocument.path) {
     return
   }
+  deps.workspace.flushPaneContent(targetPane)
   if (paneDocument.path === deps.uiState.externalConflictPath) {
     deps.setExternalConflictPath(null)
     deps.setConflictComparisonContent(null)

@@ -116,14 +116,14 @@ export class PaneWorkspace {
     return pane === 'secondary' ? this.serializationRefs.secondary : this.serializationRefs.primary
   }
 
-  private flushPane(pane: WorkspacePane): string | null {
+  flushPaneContent(pane: WorkspacePane): string | null {
     return this.getSerializationRefForPane(pane).current.flush()
   }
 
   async savePaneIfDirty(pane: WorkspacePane): Promise<void> {
     const paneDocument = pane === 'secondary' ? this.paneBindings.secondaryPane : this.paneBindings.primaryPane
     if (!paneDocument.isDirty || !paneDocument.path) return
-    const flushResult = this.flushPane(pane)
+    const flushResult = this.flushPaneContent(pane)
     const contentToSave = flushResult ?? paneDocument.content
     await executePaneSave(paneDocument, flushResult, this.saveDocumentFn)
     this.markPaneSaved(pane, paneDocument.path, contentToSave)
@@ -167,16 +167,29 @@ export class PaneWorkspace {
   }
 
   loadPaneDocument(pane: WorkspacePane, path: string, content: string, meta: DocumentMeta): void {
-    const doc: PaneDocumentState = { path, content, meta, isDirty: false }
     if (pane === 'secondary') {
-      this.paneBindings.setSecondaryPane(doc)
+      this.paneBindings.setSecondaryPane((prev) => ({
+        ...prev,
+        path,
+        content,
+        meta,
+        isDirty: false,
+        reloadVersion: prev.reloadVersion + 1,
+      }))
     } else {
-      this.paneBindings.setPrimaryPane(doc)
+      this.paneBindings.setPrimaryPane((prev) => ({
+        ...prev,
+        path,
+        content,
+        meta,
+        isDirty: false,
+        reloadVersion: prev.reloadVersion + 1,
+      }))
     }
   }
 
   clearPanes(): void {
-    const emptyPane: PaneDocumentState = { path: null, content: '', meta: {}, isDirty: false }
+    const emptyPane: PaneDocumentState = { path: null, content: '', meta: {}, isDirty: false, reloadVersion: 0 }
     this.paneBindings.setPrimaryPane(emptyPane)
     this.paneBindings.setSecondaryPane(emptyPane)
   }

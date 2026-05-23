@@ -34,6 +34,7 @@ export function PaneEditor({ model, spellcheckEnabled, pane, tagIndex, onTagClic
           selectedPath={paneState.path}
           saving={state.saving && isActive}
           isDirty={paneState.isDirty}
+          reloadVersion={paneState.reloadVersion}
           loadingDocument={state.loadingDocument && isActive}
           editorValue={paneState.content}
           spellcheckEnabled={spellcheckEnabled}

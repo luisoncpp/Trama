@@ -9,6 +9,7 @@ function createEmptyPane(): PaneDocumentState {
     content: '',
     meta: {},
     isDirty: false,
+    reloadVersion: 0,
   }
 }
 

@@ -4,20 +4,22 @@ import { useRichEditorLifecycle } from './rich-markdown-editor-core'
 import { useRichEditorFind } from './rich-markdown-editor-find'
 import { useFocusModeScopeEffect } from './rich-markdown-editor-focus-scope'
 import { type RichEditorSyncState, useSyncToolbarControls } from './rich-markdown-editor-toolbar'
-import { buildTagOverlayMatches, useTagOverlay, findMatchAtPosition } from './rich-markdown-editor-tag-overlay'
-import { useCtrlKeyState } from './rich-markdown-editor-ctrl-key'
-import { TagHighlights } from './rich-markdown-editor-tag-highlights'
+import { useRichEditorOverlay } from './rich-markdown-editor-overlay'
+import { RichMarkdownEditorView } from './rich-markdown-editor-view'
 import type { FocusScope } from '../../project-editor-types'
 import type { EditorSerializationRefs, EditorZoomRef } from '../../project-editor-types'
 import { normalizeEditorDocumentValue } from './rich-markdown-editor-value-sync'
 import { createTramaTurndownService, TurndownServiceFlags } from '../../../../shared/turndown-service-factory'
 import { useEditorZoom } from './use-editor-zoom'
 
+type TagOverlayMatch = { tag: string; start: number; end: number; filePath: string }
+
 const DEFAULT_ZOOM_REF: EditorZoomRef = { current: 1.0 }
 
 interface RichMarkdownEditorProps {
   documentId: string | null
   value: string
+  forceApplyVersion?: number
   disabled: boolean
   spellcheckEnabled?: boolean
   onChange: (value: string) => void
@@ -61,7 +63,7 @@ function useRichEditorRefs(
   const serializationRef = useRef<EditorSerializationRefs>({
     flush: () => null,
     tagOverlayRecalcRef: { current: false },
-    tagOverlayMatchesRef: { current: [] as Array<{ tag: string; start: number; end: number; filePath: string }> },
+    tagOverlayMatchesRef: { current: [] as Array<TagOverlayMatch> },
   })
 
   useEffect(/* resetTagOverlayOnDocChange */ () => {
@@ -78,76 +80,46 @@ function useRichEditorRefs(
   useEffect(() => { onChangeRef.current = onChange }, [onChange] /*Inputs for syncOnChangeRef*/)
   useEffect(() => { onDirtyRef.current = onMarkDirty ?? (() => {}) }, [onMarkDirty] /*Inputs for syncOnDirtyRef*/)
 
-  return { shellRef, hostRef, editorRef, onChangeRef, lastEditorValueRef, isApplyingExternalValueRef, turndownRef, onDirtyRef, serializationRef }
-}
-
-function useTagClickHandler(
-  editorRef: { current: Quill | null },
-  tagIndex: Record<string, string> | null,
-  onTagClick?: (filePath: string) => void,
-) {
-  return (e: MouseEvent) => {
-    const isModifierClick = e.ctrlKey || e.metaKey
-    if (!isModifierClick || !onTagClick) return
-
-    const editor = editorRef.current
-    if (!editor) return
-
-    const availableMatches = tagIndex && Object.keys(tagIndex).length > 0
-      ? buildTagOverlayMatches(editor, tagIndex)
-      : []
-    if (availableMatches.length === 0) return
-
-    const rect = editor.container.getBoundingClientRect()
-    const match = findMatchAtPosition(availableMatches, e.clientX, e.clientY, rect)
-    if (match) {
-      e.preventDefault()
-      onTagClick(match.filePath)
-    }
+  return {
+    shellRef,
+    hostRef,
+    editorRef,
+    onChangeRef,
+    lastEditorValueRef,
+    isApplyingExternalValueRef,
+    turndownRef,
+    onDirtyRef,
+    serializationRef,
   }
 }
 
-function useTagOverlayScrollEffect(
-  ctrlPressed: boolean,
-  editorRef: { current: Quill | null },
-  setTagScrollTick: (f: (t: number) => number) => void,
+function useRichEditorBehaviors(
+  props: RichMarkdownEditorProps,
+  refs: ReturnType<typeof useRichEditorRefs>,
+  triggerTagOverlayRender: () => void,
 ) {
-  useEffect(() => { /* trackTagOverlayScroll */
-    if (!ctrlPressed || !editorRef.current) return
-    const container = editorRef.current.container
-    const onScroll = () => setTagScrollTick((t) => t + 1)
-    container.addEventListener('scroll', onScroll, { passive: true })
-    return () => { container.removeEventListener('scroll', onScroll) }
-  }, [ctrlPressed, editorRef.current, setTagScrollTick])
-}
-
-function useRichEditorHooks(props: RichMarkdownEditorProps) {
   const {
-    documentId, value, disabled, spellcheckEnabled = true, onChange,
+    documentId, value, disabled, spellcheckEnabled = true,
     historyBackDisabled, onHistoryBack,
     saveDisabled, saveLabel, onSaveNow,
     revertDisabled, revertLabel, onRevertNow,
     syncState, syncStateLabel,
-    focusModeEnabled = false, focusScope = 'paragraph', tagIndex,
-    onTagClick, isActive = true, editorSerializationRef, onMarkDirty,
+    focusModeEnabled = false, focusScope = 'paragraph',
+    isActive = true, editorSerializationRef,
     zoomRef, zoomLevel = 1.0, onZoomChange,
   } = props
-  const safeTagIndex = tagIndex ?? null
-  const [, setTagOverlayTick] = useState(0)
-  const triggerTagOverlayRender = useCallback(() => setTagOverlayTick((c) => c + 1), [])
-  const refs = useRichEditorRefs(documentId, value, safeTagIndex, onChange, triggerTagOverlayRender, onMarkDirty)
-  const { shellRef, hostRef, editorRef, onChangeRef, lastEditorValueRef, isApplyingExternalValueRef, turndownRef, onDirtyRef, serializationRef } = refs
-  const ctrlPressed = useCtrlKeyState()
-  const [, setTagScrollTick] = useState(0)
-  const tagMatches = useTagOverlay({
-    editorRef, tagIndex: safeTagIndex, ctrlPressed,
-    tagOverlayRecalcRef: serializationRef.current.tagOverlayRecalcRef,
-    tagOverlayMatchesRef: serializationRef.current.tagOverlayMatchesRef,
-  })
-  const handleEditorMouseDown = useTagClickHandler(editorRef, safeTagIndex, onTagClick)
-  useTagOverlayScrollEffect(ctrlPressed, editorRef, setTagScrollTick)
+  const {
+    hostRef,
+    editorRef,
+    onChangeRef,
+    lastEditorValueRef,
+    isApplyingExternalValueRef,
+    turndownRef,
+    onDirtyRef,
+    serializationRef,
+  } = refs
   useRichEditorLifecycle({
-    documentId, value, disabled, spellcheckEnabled, hostRef, editorRef,
+    documentId, value, forceApplyVersion: props.forceApplyVersion ?? 0, disabled, spellcheckEnabled, hostRef, editorRef,
     onChangeRef, isApplyingExternalValueRef,
     lastEditorValueRef, turndownRef, onDirtyRef, serializationRef,
     triggerTagOverlayRender,
@@ -161,37 +133,33 @@ function useRichEditorHooks(props: RichMarkdownEditorProps) {
   useFocusModeScopeEffect(editorRef, hostRef, focusModeEnabled, focusScope, isActive)
   useEditorZoom({ editorRef, hostRef, zoomRef: zoomRef ?? DEFAULT_ZOOM_REF, triggerTagOverlayRender })
   if (editorSerializationRef) editorSerializationRef.current = serializationRef.current
-  const findBar = useRichEditorFind({ documentId, hostRef, editorRef })
-  return { shellRef, hostRef, findBar, ctrlPressed, tagIndex, editorRef, tagMatches, handleEditorMouseDown }
+  return useRichEditorFind({ documentId, hostRef, editorRef })
+}
+
+function useRichEditorHooks(props: RichMarkdownEditorProps) {
+  const {
+    documentId, value, onChange, tagIndex,
+    onTagClick, onMarkDirty,
+  } = props
+  const safeTagIndex = tagIndex ?? null
+  const [, setTagOverlayTick] = useState(0)
+  const triggerTagOverlayRender = useCallback(() => setTagOverlayTick((c) => c + 1), [])
+  const refs = useRichEditorRefs(documentId, value, safeTagIndex, onChange, triggerTagOverlayRender, onMarkDirty)
+  const { shellRef, hostRef, editorRef, serializationRef } = refs
+  const overlay = useRichEditorOverlay(editorRef, safeTagIndex, serializationRef, onTagClick)
+  const findBar = useRichEditorBehaviors(props, refs, triggerTagOverlayRender)
+  return {
+    shellRef,
+    hostRef,
+    findBar,
+    ctrlPressed: overlay.ctrlPressed,
+    tagIndex: safeTagIndex,
+    editorRef,
+    tagMatches: overlay.tagMatches,
+    handleEditorMouseDown: overlay.handleEditorMouseDown,
+  }
 }
 
 export function RichMarkdownEditor(props: RichMarkdownEditorProps) {
-  const hooks = useRichEditorHooks(props)
-  return buildRichEditorReturn(hooks)
-}
-
-function buildRichEditorReturn({
-  shellRef, hostRef, findBar, ctrlPressed, tagIndex, editorRef, tagMatches, handleEditorMouseDown,
-}: {
-  shellRef: { current: HTMLDivElement | null }
-  hostRef: { current: HTMLDivElement | null }
-  findBar: preact.JSX.Element | null
-  ctrlPressed: boolean
-  tagIndex: Record<string, string> | null | undefined
-  editorRef: { current: Quill | null }
-  tagMatches: Array<{ tag: string; start: number; end: number; filePath: string }>
-  handleEditorMouseDown: (e: MouseEvent) => void
-}) {
-  const editorContainerRect = editorRef.current?.container.getBoundingClientRect() ?? null
-  const shellRect = shellRef.current?.getBoundingClientRect() ?? null
-  const tagOffsetTop = editorContainerRect && shellRect ? editorContainerRect.top - shellRect.top : 0
-  const tagOffsetLeft = editorContainerRect && shellRect ? editorContainerRect.left - shellRect.left : 0
-
-  return (
-    <div ref={shellRef} class="rich-editor-shell w-full" onMouseDownCapture={handleEditorMouseDown}>
-      <div ref={hostRef} class="rich-editor w-full" />
-      {findBar}
-      {ctrlPressed && tagIndex && editorRef.current && <TagHighlights matches={tagMatches} editor={editorRef.current} offsetTop={tagOffsetTop} offsetLeft={tagOffsetLeft} />}
-    </div>
-  )
+  return <RichMarkdownEditorView {...useRichEditorHooks(props)} />
 }

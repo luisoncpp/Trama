@@ -13,6 +13,7 @@ import type { EditorSerializationRefs } from '../../project-editor-types'
 interface UseRichEditorLifecycleParams {
   documentId: string | null
   value: string
+  forceApplyVersion: number
   disabled: boolean
   spellcheckEnabled: boolean
   hostRef: { current: HTMLDivElement | null }
@@ -30,7 +31,7 @@ function useInitializeEditor({
   documentId, value, spellcheckEnabled, hostRef, editorRef,
   isApplyingExternalValueRef, lastEditorValueRef,
   turndownRef, onChangeRef, serializationRef, onDirtyRef,
-}: Omit<UseRichEditorLifecycleParams, 'disabled'>): void {
+}: Omit<UseRichEditorLifecycleParams, 'disabled' | 'forceApplyVersion'>): void {
   useEffect(/* initializeEditor */ () => {
     const host = hostRef.current
     if (!host) return
@@ -63,7 +64,8 @@ export function useRichEditorLifecycle(params: UseRichEditorLifecycleParams): vo
   })
 
   useSyncExternalValue({
-    documentId: p.documentId, value: p.value, editorRef: p.editorRef, lastEditorValueRef: p.lastEditorValueRef,
+    documentId: p.documentId, value: p.value, forceApplyVersion: p.forceApplyVersion,
+    editorRef: p.editorRef, lastEditorValueRef: p.lastEditorValueRef,
     isApplyingExternalValueRef: p.isApplyingExternalValueRef,
     tagOverlayRecalcRef: p.serializationRef.current.tagOverlayRecalcRef,
     triggerRender: p.triggerTagOverlayRender,

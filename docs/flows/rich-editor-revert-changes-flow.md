@@ -12,7 +12,7 @@ User clicks the "Revertir cambios" (revert changes) button in the editor toolbar
 
 This is the only path where the user intentionally **discards** unsaved edits and reloads the file from disk. It differs from the external-sync flow in two critical ways:
 
-- External sync decides to apply or skip based on canonical equivalence. Revert **always** reloads from disk.
+- External sync usually decides to apply or skip based on canonical equivalence. Revert still **always** reloads from disk and now carries an explicit force-apply signal for text-identical reloads.
 - File selection (`selectFile`) saves dirty content before switching. Revert **does not save** — it discards deliberately.
 
 ## Guard condition
@@ -32,25 +32,25 @@ When these conditions are not met, the action returns immediately without callin
    - If `pane` is omitted → use `workspace.layout.activePane`
 4. Guard check: `workspace.getPaneDocument(targetPane)` returns `{ path, isDirty }`.
 5. If `!isDirty || !path`: return immediately — button should be disabled but double-check.
-6. If guard passes: call `loadDocument(path, targetPane)`.
-7. `loadDocument` sets `loadingDocument = true`.
-8. `loadDocument` calls `window.tramaApi.readDocument({ path })` via IPC `trama:document:read`.
-9. The main process handler reads the file from disk (`document-repository.ts`).
-10. The response envelope carries `{ path, content, meta }`.
-11. `stripBase64ImagesFromMarkdown(content, path)` extracts base64 images into the in-memory cache, replacing them with `<!-- IMAGE_PLACEHOLDER:... -->` markers.
-12. `paneWorkspace.loadPaneDocument(targetPane, path, markdownWithoutImages, meta)` is called:
+6. If guard passes: call `workspace.flushPaneContent(targetPane)`.
+7. `flushPaneContent()` cancels any pending debounce timer and snapshots the live Quill DOM while the current editor instance is still mounted.
+8. `revertChanges` then calls `loadDocument(path, targetPane)`.
+9. `loadDocument` sets `loadingDocument = true`.
+10. `loadDocument` calls `window.tramaApi.readDocument({ path })` via IPC `trama:document:read`.
+11. The main process handler reads the file from disk (`document-repository.ts`).
+12. The response envelope carries `{ path, content, meta }`.
+13. `stripBase64ImagesFromMarkdown(content, path)` extracts base64 images into the in-memory cache, replacing them with `<!-- IMAGE_PLACEHOLDER:... -->` markers.
+14. `paneWorkspace.loadPaneDocument(targetPane, path, markdownWithoutImages, meta)` is called:
     - Sets `isDirty: false` on the target pane
     - Updates the pane's content with the clean disk version
     - Updates the pane's meta from disk
-13. `RichMarkdownEditor` re-renders with the new `value` prop (clean content).
-14. `useSyncExternalValue()` detects a non-equivalent value and applies it into Quill:
-    - Sets `isApplyingExternalValueRef = true`
-    - Calls `applyMarkdownToEditor(editor, value, 'silent', documentId)`
-    - Preserves/captures selection (but since the document was just replaced, selection resets)
-    - Clears `isApplyingExternalValueRef` on `setTimeout(0)`
-15. Toolbar sync state updates: `syncState` transitions from `'dirty'` to `'clean'`.
-16. Revert button becomes disabled (no longer dirty).
-17. Status message: "Content reloaded from disk. Local changes were discarded."
+15. `loadPaneDocument()` increments the pane's `reloadVersion`.
+16. `EditorPanel` passes that value through as `forceApplyVersion` to `RichMarkdownEditor`.
+17. `useSyncExternalValue()` treats a newer `forceApplyVersion` as an explicit disk-reload intent and re-applies the disk markdown even when canonical equality says the value is unchanged.
+18. The external-sync path preserves the current selection and restores `editor.root.scrollTop`, avoiding the flicker and scroll-reset regressions caused by Quill remounting.
+19. Toolbar sync state updates: `syncState` transitions from `'dirty'` to `'clean'`.
+20. Revert button becomes disabled (no longer dirty).
+21. Status message: "Content reloaded from disk. Local changes were discarded."
 
 ## Button state matrix
 
@@ -77,11 +77,9 @@ When these conditions are not met, the action returns immediately without callin
 
 | Target | File / layer | What changes |
 |--------|--------------|--------------|
-| Pane document state | `PaneWorkspace.loadPaneDocument` → `setPrimaryPane`/`setSecondaryPane` | Content replaced, `isDirty: false`, meta refreshed |
+| Pane document state | `PaneWorkspace.loadPaneDocument` → `setPrimaryPane`/`setSecondaryPane` | Content replaced, `isDirty: false`, meta refreshed, `reloadVersion` incremented |
 | `loadingDocument` | `project-editor-private/actions.ts` | Temporarily `true` during the read |
-| Quill DOM | `rich-markdown-editor-external-sync.ts` → `rich-markdown-editor-quill.ts` | Replaced with disk content via external sync |
-| `lastEditorValueRef.current` | editor component refs | Updated to canonical form of the disk content |
-| `isApplyingExternalValueRef.current` | editor component refs | Temporarily locks outbound `text-change` handling |
+| Quill DOM | `rich-markdown-editor-external-sync.ts` | Disk content re-applied in-place when `forceApplyVersion` advances, even if old and new parent markdown strings match |
 | Toolbar sync state | `useSyncToolbarControls` | `syncState` → `'clean'` |
 | Status message | `project-editor-private/actions.ts` | Set to confirm content was reloaded |
 
@@ -100,11 +98,12 @@ When these conditions are not met, the action returns immediately without callin
 |------|----------------|
 | `src/features/project-editor/pane/rich-markdown-editor/rich-markdown-editor-toolbar.ts` + `private/rich-markdown-editor-toolbar-controller.ts` | Toolbar button wiring and revert/save/sync state synchronization |
 | `src/features/project-editor/pane/rich-markdown-editor/rich-markdown-editor.tsx` | Receives and forwards `revertDisabled`/`onRevertNow` props |
-| `src/features/project-editor/pane/editor-panel.tsx` | Computes `revertDisabled` from `isDirty`/`selectedPath`/`saving` |
+| `src/features/project-editor/pane/editor-panel.tsx` | Computes `revertDisabled` from `isDirty`/`selectedPath`/`saving` and forwards `forceApplyVersion={reloadVersion}` |
 | `src/features/project-editor/pane/workspace-editor-panels.tsx` | Wires pane-explicit `revertChanges(pane)` callback in `PaneEditor` |
-| `src/features/project-editor/workspace-actions.ts` | `revertChanges` — guard + `loadDocument` dispatch |
+| `src/features/project-editor/workspace-actions.ts` | `revertChanges` — guard + pre-reload flush + `loadDocument` dispatch |
 | `src/features/project-editor/project-editor-private/actions.ts` | `loadDocument` — IPC read, image stripping, `loadPaneDocument` |
-| `src/features/project-editor/pane/pane-workspace.ts` | `loadPaneDocument` — sets content + `isDirty: false` on the target pane |
+| `src/features/project-editor/pane/pane-workspace.ts` | `flushPaneContent()` and `loadPaneDocument()` — snapshot pending editor content, then set disk content + `isDirty: false` + `reloadVersion` |
+| `src/features/project-editor/pane/rich-markdown-editor/rich-markdown-editor-external-sync.ts` | Canonical external sync plus force-apply override for disk reloads; preserves selection and scroll |
 | `src/features/project-editor/project-editor-types.ts` | `ProjectEditorActions.revertChanges` type definition |
 | `src/features/project-editor/project-editor-strings.ts` | `revertChanges`, `statusRevertDone` string constants |
 | `src/shared/ipc.ts` | `trama:document:read` channel definition and Zod schemas |
@@ -114,6 +113,7 @@ When these conditions are not met, the action returns immediately without callin
 | Symptom | Usual cause | First file to inspect |
 |---------|-------------|-----------------------|
 | Revert button is disabled when it should be enabled | `isDirty` not propagating correctly to `EditorPanel` | `workspace-editor-panels.tsx` → `editor-panel.tsx` |
+| Revert does nothing if clicked before debounce fires | Revert skipped the live editor flush or the pane reload did not advance the force-apply signal | `workspace-actions.ts` → `pane-workspace.ts` → `editor-panel.tsx` → `rich-markdown-editor-external-sync.ts` |
 | Revert applies to the wrong pane in split mode | `revertChanges` called without explicit `pane`, falls back to `activePane` | `workspace-editor-panels.tsx` — check `onRevertNow` callback |
 | Images disappear after revert | Placeholder-markdown leaked into Quill without proper hydration through external sync | `rich-markdown-editor-external-sync.ts` and `rich-markdown-editor-value-sync.ts` |
 | Cursor jumps on revert | Selection was not preserved around the external-value re-apply | `rich-markdown-editor-external-sync.ts` |
@@ -136,6 +136,7 @@ When these conditions are not met, the action returns immediately without callin
 - In split mode, each pane gets its own toolbar and its own revert button. The `PaneEditor` callback passes the explicit `pane` identity to `revertChanges(pane)`, preventing timing bugs where `activePane` points at the wrong pane.
 - The revert action is intentionally **not awaitable** at the UI level — it fires and forgets. The `loadDocument` call is asynchronous but the UI does not block on it.
 - `revertDisabled` follows the exact same logic as `saveDisabled`: `!selectedPath || saving || !isDirty`. When the button is disabled, no guard violation can occur even if called programmatically.
+- Revert has two renderer-side invariants now: it must flush the live editor before reload, and disk reload must bump a pane-local `reloadVersion` so external sync force-applies the disk content even if the parent markdown string is text-identical to the previous clean value.
 
 ## Related hotspot
 

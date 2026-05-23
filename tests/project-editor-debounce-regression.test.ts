@@ -2,8 +2,10 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { h, render } from 'preact'
 import { act } from 'preact/test-utils'
 import { useProjectEditor } from '../src/features/project-editor/use-project-editor'
+import { WorkspaceLayoutPanel } from '../src/features/project-editor/pane'
 import type { ProjectEditorModel } from '../src/features/project-editor/project-editor-types'
 import type { ExternalFileEvent } from '../src/shared/ipc'
+import Quill from 'quill'
 
 const DEBOUNCE_MS = 1000
 
@@ -243,6 +245,42 @@ describe('editor serialization debounce', () => {
     act(() => { model?.actions.updateEditorValue('# more text') })
     await act(async () => { vi.advanceTimersByTime(DEBOUNCE_MS - 1); await Promise.resolve() })
     expect(model?.state.editorValue).toBe('# more text')
+  })
+
+  it('revert restores disk content even before the debounce fires', async () => {
+    const { readDocumentMock } = setupTramaApiMock()
+    let model: ProjectEditorModel | undefined
+
+    function Harness() {
+      model = useProjectEditor()
+      return h(WorkspaceLayoutPanel, { model: model as ProjectEditorModel, spellcheckEnabled: true })
+    }
+
+    const container = document.createElement('div')
+    act(() => { render(h(Harness, {}), container) })
+    await act(async () => { await model?.actions.pickProjectFolder() })
+
+    const quillContainer = container.querySelector('.ql-container')
+    expect(quillContainer).toBeTruthy()
+    const editor = Quill.find(quillContainer as Element, true)
+    expect(editor).toBeInstanceOf(Quill)
+
+    act(() => {
+      model?.actions.updateEditorValue('# A')
+      ;(editor as Quill).insertText((editor as Quill).getLength() - 1, ' changed', 'user')
+    })
+
+    await act(async () => {
+      model?.actions.revertChanges()
+      await Promise.resolve()
+      await Promise.resolve()
+    })
+
+    expect(readDocumentMock).toHaveBeenCalledTimes(2)
+    expect(model?.state.editorValue).toBe('# A')
+    expect(model?.state.isDirty).toBe(false)
+    const refreshedEditor = Quill.find(container.querySelector('.ql-container') as Element, true)
+    expect((refreshedEditor as Quill).getText().trim()).toBe('A')
   })
 
   it('flush returns null when isApplyingExternalValueRef is true', async () => {

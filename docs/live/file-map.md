@@ -148,6 +148,7 @@ Mandatory doc navigation for new chats: start with `docs/START-HERE.md` — it p
   - Pure workspace helpers: `deriveActivePaneDocument` (active pane projection), `canSelectFile`, `reconcileWorkspaceLayout`, `buildConflictCopyPath`, and layout persistence.
 - `src/features/project-editor/workspace-actions.ts`
   - Deep module for workspace layout, pane activation, focus, fullscreen, editor view, save/revert actions.
+  - Revert path flushes pending editor DOM through `PaneWorkspace` before reloading from disk.
   - Plain functions — no hooks. Caller applies setters.
   - Pane-history navigation delegates to `workspace-actions/private/pane-history.ts`.
 - `src/features/project-editor/workspace-actions/private/`
@@ -202,6 +203,7 @@ Mandatory doc navigation for new chats: start with `docs/START-HERE.md` — it p
 - `src/features/project-editor/project-editor-private/state.ts`
   - Private state assembly behind `use-project-editor.ts`.
   - Derives active editor state (`selectedPath` / `editorValue` / `isDirty`) from `workspaceLayout.activePane`.
+  - Pane documents now also carry `reloadVersion` so true disk reloads can force one in-place external re-apply even when the disk markdown is text-identical.
   - Returns memoized `documentState`, `layoutState`, `sidebarState`, `projectState`, `uiState`, plus `values`, `setters`, and `paneBindings`.
 - `src/features/project-editor/project-editor-private/actions.ts`
   - Private action assembly behind `use-project-editor.ts`.
@@ -213,6 +215,7 @@ Mandatory doc navigation for new chats: start with `docs/START-HERE.md` — it p
   - Private module for pane coordination. All pane state, flush, save, and autosave access goes through this module.
   - `pane/index.ts` — barrel exporting `PaneWorkspace`, `usePaneWorkspace`, and public types
   - `pane/pane-workspace.ts` — coordinator class with read methods (`getPaneDocument`, `isPaneDirty`) and write methods (`savePaneIfDirty`, `saveAllDirtyPanes`, `scheduleAutosave`, `updatePaneContent`, etc.); `markPaneSaved` is private.
+  - `loadPaneDocument()` increments pane `reloadVersion` so disk reloads/removals of dirty DOM advance the editor force-apply signal.
   - `pane/pane-navigation.ts` — `PaneNavigation` class extracted from `PaneWorkspace`: owns per-pane session history stack helpers (`recordPaneNavigation`, `getPreviousPathInPaneHistory`, `getNextPathInPaneHistory`, `stepPaneNavigationHistory`, `clearNavigationHistory`).
   - `pane/pane-navigation-state.ts` — pure helpers for navigation history state: `getEmptyNavigationHistory`, `getHistoryForPane`, `createNavigationHistoryStore`.
   - `pane/pane-editor.tsx` — `PaneEditor` component extracted from `workspace-editor-panels.tsx`.
@@ -246,6 +249,7 @@ Mandatory doc navigation for new chats: start with `docs/START-HERE.md` — it p
   - Split-pane dirty routing source of truth: each pane editor must route onChange to its own pane (`updateEditorValue(..., pane)`).
 - `src/features/project-editor/components/editor-panel.tsx`
   - Editor panel shell, sync labels, save/revert affordance enablement.
+  - Forwards pane `reloadVersion` as `forceApplyVersion` so disk reloads/removals re-apply disk content deterministically without remounting Quill.
 - `src/features/project-editor/components/ai-import-dialog.tsx`
   - Modal dialog for AI import text input, mode selector (`replace` / `append`), preview trigger, and import confirmation.
 - `src/features/project-editor/components/ai-import-preview-section.tsx`
@@ -268,7 +272,11 @@ Mandatory doc navigation for new chats: start with `docs/START-HERE.md` — it p
   - Core editor lifecycle and sync logic (initialize Quill, apply markdown, enable/disable, register typography handlers).
   - Also listens for workspace `paste-markdown` commands and handles reading/parsing clipboard Markdown and inserting HTML into Quill.
 - `src/features/project-editor/components/rich-markdown-editor-external-sync.ts`
-  - External-value sync hook: compares canonical values via `normalizeEditorDocumentValue` + `areEquivalentEditorValues`, preserves Quill selection, manages `isApplyingExternalValueRef` flag.
+  - External-value sync hook: compares canonical values via `normalizeEditorDocumentValue` + `areEquivalentEditorValues`, force-applies text-identical disk reloads via `forceApplyVersion`, preserves Quill selection and scroll, manages `isApplyingExternalValueRef` flag.
+- `src/features/project-editor/pane/rich-markdown-editor/rich-markdown-editor-overlay.ts`
+  - Tag overlay interaction hook cluster: Ctrl/Cmd state, overlay match recomputation, modifier-click tag navigation, and scroll-triggered overlay refresh.
+- `src/features/project-editor/pane/rich-markdown-editor/rich-markdown-editor-view.tsx`
+  - Presentational rich editor shell: host element, find bar mount point, and tag highlight overlay positioning.
 - `src/features/project-editor/components/rich-markdown-editor-serialization.ts`
   - Editor debounced serialization session: registers text-change listener, manages debounce timer and flush lifecycle, and hydrates image placeholders before forwarding to parent state via `onChange`.
 - `src/features/project-editor/components/rich-markdown-editor-value-sync.ts`

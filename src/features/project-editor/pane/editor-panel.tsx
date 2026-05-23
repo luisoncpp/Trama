@@ -7,6 +7,7 @@ interface EditorPanelProps {
   selectedPath: string | null
   saving: boolean
   isDirty: boolean
+  reloadVersion: number
   loadingDocument: boolean
   editorValue: string
   spellcheckEnabled: boolean
@@ -68,6 +69,7 @@ function renderEditorPanelBody(
       <div class={`editor-manuscript ${!selectedPath || loadingDocument ? 'is-muted' : ''}`}>
         <RichMarkdownEditor
           documentId={selectedPath} value={props.editorValue}
+          forceApplyVersion={props.reloadVersion}
           disabled={!selectedPath || loadingDocument}
           spellcheckEnabled={props.spellcheckEnabled} onChange={props.onEditorChange}
           historyBackDisabled={props.historyBackDisabled}

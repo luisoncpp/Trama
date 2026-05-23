@@ -27,9 +27,9 @@ This is not the canonical full architecture guide. For the full subsystem design
 
 | Hotspot | Symptom | Open these first |
 |---------|---------|------------------|
-| Debounced serialization | Last typed text disappears, save misses final keystrokes, cross-document contamination, images vanish after typing | `docs/architecture/editor-serialization-debounce-architecture.md` -> `src/features/project-editor/components/rich-markdown-editor-serialization.ts` |
-| Canonical external-value sync | Images blink or vanish after first edit, equivalent content gets re-applied | `src/features/project-editor/components/rich-markdown-editor-external-sync.ts` -> `src/features/project-editor/components/rich-markdown-editor-value-sync.ts` -> `docs/flows/rich-editor-external-sync-flow.md` |
-| Pane-targeted persistence | Save, switch, or close hits the wrong pane | `src/features/project-editor/use-project-editor-pane-persistence.ts` -> `src/features/project-editor/use-project-editor-layout-actions.ts` |
+| Debounced serialization | Last typed text disappears, save misses final keystrokes, revert ignores the latest keystroke, images vanish after typing | `docs/architecture/editor-serialization-debounce-architecture.md` -> `src/features/project-editor/pane/rich-markdown-editor/rich-markdown-editor-serialization.ts` |
+| Canonical external-value sync | Images blink or vanish after first edit, equivalent content gets re-applied | `src/features/project-editor/pane/rich-markdown-editor/rich-markdown-editor-external-sync.ts` -> `src/features/project-editor/pane/rich-markdown-editor/rich-markdown-editor-value-sync.ts` -> `docs/flows/rich-editor-external-sync-flow.md` |
+| Pane-targeted persistence | Save, switch, close, or revert hits the wrong pane | `src/features/project-editor/pane/pane-workspace.ts` -> `src/features/project-editor/workspace-actions.ts` |
 | Layout path vs loaded pane path | Sidebar highlights wrong file or goes blank after pane changes | `docs/architecture/split-pane-coordination.md` -> `src/features/project-editor/project-editor-private/state.ts` |
 | Quill lifecycle / re-init | Cursor jumps, editor remounts unexpectedly, runtime toggle acts like full re-create | `src/features/project-editor/components/rich-markdown-editor-core.ts` -> `docs/lessons-learned/rich-editor-effect-deps-remount.md` |
 | Focus-mode geometry / scroll | Active line is miscentered, EOF spacing behaves strangely, selection desync after scroll | `src/features/project-editor/components/rich-markdown-editor-focus-scope-scroll.ts` -> `src/features/project-editor/components/rich-markdown-editor-focus-scope-geometry.ts` |
@@ -43,7 +43,7 @@ The timer must serialize the exact editor/document captured at registration time
 
 ### Main files
 
-- `src/features/project-editor/components/rich-markdown-editor-serialization.ts`
+- `src/features/project-editor/pane/rich-markdown-editor/rich-markdown-editor-serialization.ts`
 - `docs/architecture/editor-serialization-debounce-architecture.md`
 - `docs/lessons-learned/editor-debounce-closure-capture.md`
 - `docs/lessons-learned/editor-onchange-image-hydration.md`
@@ -55,6 +55,7 @@ The timer must serialize the exact editor/document captured at registration time
 - `flush()` returns placeholder-markdown and callers must use it directly
 - `lastEditorValueRef.current` stores placeholder-markdown (lightweight)
 - `onChangeRef.current()` receives hydrated markdown with `![uuid](data:image/...)`
+- discard/reload flows must flush the live editor before `loadDocument()` and then advance pane `reloadVersion` so external sync force-applies the disk value even when it is text-identical
 
 ### Follow this flow
 
@@ -68,9 +69,9 @@ The same document can appear as hydrated base64 markdown or placeholder markdown
 
 ### Main files
 
-- `src/features/project-editor/components/rich-markdown-editor-external-sync.ts`
-- `src/features/project-editor/components/rich-markdown-editor-value-sync.ts`
-- `src/features/project-editor/components/rich-markdown-editor-core.ts`
+- `src/features/project-editor/pane/rich-markdown-editor/rich-markdown-editor-external-sync.ts`
+- `src/features/project-editor/pane/rich-markdown-editor/rich-markdown-editor-value-sync.ts`
+- `src/features/project-editor/pane/rich-markdown-editor/rich-markdown-editor-core.ts`
 - `src/shared/markdown-image-placeholder.ts`
 - `docs/architecture/image-handling-architecture.md`
 
@@ -93,16 +94,18 @@ Split layout becomes incorrect quickly if save/switch logic infers the target fr
 
 ### Main files
 
-- `src/features/project-editor/use-project-editor-pane-persistence.ts`
-- `src/features/project-editor/use-project-editor-ui-actions-helpers.ts`
-- `src/features/project-editor/use-project-editor-layout-actions.ts`
-- `src/features/project-editor/use-project-editor-close-effect.ts`
+- `src/features/project-editor/pane/pane-workspace.ts`
+- `src/features/project-editor/workspace-actions.ts`
+- `src/features/project-editor/pane/use-project-editor-autosave-effect.ts`
+- `src/features/project-editor/pane/use-project-editor-close-effect.ts`
 
 ### Invariants
 
 - pane-local UI actions should pass explicit pane identity
 - `savePaneIfDirty(pane)` is the shared policy boundary for flush + fallback content + save
 - `saveAllDirtyPanes()` is primarily test-verified because the current UX saves on pane switch
+- `revertChanges(pane)` must flush pending editor DOM before calling `loadDocument()`
+- disk reloads increment pane `reloadVersion` so `EditorPanel` can pass a force-apply signal into external sync even when the clean markdown string is unchanged
 
 ### Follow these flows
 

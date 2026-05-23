@@ -20,7 +20,7 @@ function makeLayout(activePane: 'primary' | 'secondary', primaryPath: string | n
 }
 
 function makePane(path: string | null, content: string, isDirty: boolean): PaneDocumentState {
-  return { path, content, meta: {}, isDirty }
+  return { path, content, meta: {}, isDirty, reloadVersion: 0 }
 }
 
 function makeSerializationRefs(): { primary: { current: EditorSerializationRefs }, secondary: { current: EditorSerializationRefs } } {

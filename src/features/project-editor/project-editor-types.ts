@@ -21,6 +21,7 @@ export interface PaneDocumentState {
   content: string
   meta: Readonly<DocumentMeta>
   isDirty: boolean
+  reloadVersion: number
 }
 
 export interface SidebarCreateInput {

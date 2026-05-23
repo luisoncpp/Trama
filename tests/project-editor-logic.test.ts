@@ -139,6 +139,7 @@ describe('project editor logic helpers', () => {
       content,
       meta: {},
       isDirty,
+      reloadVersion: 0,
     })
 
     it('returns primary pane state when active pane is primary', () => {
@@ -196,6 +197,7 @@ describe('project editor logic helpers', () => {
       content,
       meta: {},
       isDirty,
+      reloadVersion: 0,
     })
 
     const mockSave = vi.fn().mockResolvedValue(undefined)

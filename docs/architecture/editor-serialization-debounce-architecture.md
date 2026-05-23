@@ -25,6 +25,11 @@ flush()                                         [in rich-markdown-editor-seriali
 saveNow / selectFile / setWorkspaceActivePane
   → ref.current.flush() → uses return value     [bypasses stale React state]
   → saveDocumentNow(path, latestContent, meta)  [re-hydrates for safety via useSaveDocumentNow]
+
+revertChanges
+  → ref.current.flush()                         [collapses pending debounce before discard]
+  → loadDocument(path, pane)                    [disk reload path]
+  → pane.reloadVersion++                        [advances explicit force-apply signal for text-identical disk reloads]
 ```
 
 ## Per-pane isolation
@@ -157,6 +162,20 @@ That helper owns serialization-ref lookup, pane-state lookup, `flushPane(pane)`,
 | `setWorkspaceActivePane` | `use-project-editor-layout-actions.ts` | Outgoing pane via `savePaneIfDirty()` |
 | Autosave effect | `use-project-editor-autosave-effect.ts` | Active pane via `savePaneIfDirty()` |
 | Close effect (`__tramaSaveAll`) | `use-project-editor-close-effect.ts` | Both panes via `saveAllDirtyPanes()` |
+| `revertChanges` | `src/features/project-editor/workspace-actions.ts` | Target pane via `flushPaneContent()` before `loadDocument()` |
+
+## Force-apply rule for revert and disk reload
+
+Revert can reload the exact same markdown string that the parent state already held before the user started typing. In that case a pure value-based external sync effect would skip re-applying the content, leaving dirty Quill DOM in place even though pane state is now clean.
+
+The fix is explicit pane state, not a special-case string comparison override:
+
+- `PaneDocumentState` carries `reloadVersion`
+- `PaneWorkspace.loadPaneDocument()` increments `reloadVersion` on every disk load/revert
+- `EditorPanel` forwards `reloadVersion` as `forceApplyVersion`
+- `useSyncExternalValue()` force-applies the next external value when `forceApplyVersion` advances, then preserves selection and `editor.root.scrollTop`
+
+This makes true disk reloads/removals of unsaved DOM state deterministic and independent from markdown string equality without remounting Quill, which avoids the revert flicker and scroll-jump regressions.
 
 ## Files involved
 

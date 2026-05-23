@@ -25,6 +25,7 @@ interface ActiveEditorPanelProps {
 
 function ActiveEditorPanel({ model, spellcheckEnabled, tagIndex, onTagClick, zoomRef, zoomLevel, onZoomChange }: ActiveEditorPanelProps) {
   const { state, actions, serializationRefs } = model
+  const activePaneState = state.workspaceLayout.activePane === 'secondary' ? state.secondaryPane : state.primaryPane
 
   const onMarkDirty = () => {
     actions.updateEditorValue(state.editorValue)
@@ -35,6 +36,7 @@ function ActiveEditorPanel({ model, spellcheckEnabled, tagIndex, onTagClick, zoo
       selectedPath={state.selectedPath}
       saving={state.saving}
       isDirty={state.isDirty}
+      reloadVersion={activePaneState.reloadVersion}
       loadingDocument={state.loadingDocument}
       editorValue={state.editorValue}
       spellcheckEnabled={spellcheckEnabled}

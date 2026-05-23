@@ -37,7 +37,7 @@ function makeLayout(activePane: 'primary' | 'secondary', primaryPath: string | n
 }
 
 function makePane(path: string | null, content: string, isDirty: boolean): PaneDocumentState {
-  return { path, content, meta: {}, isDirty }
+  return { path, content, meta: {}, isDirty, reloadVersion: 0 }
 }
 
 function makeSerializationRefs(): { primary: { current: EditorSerializationRefs }; secondary: { current: EditorSerializationRefs } } {
@@ -207,5 +207,44 @@ describe('revertChanges', () => {
 
     expect(loadDocument).toHaveBeenCalledTimes(1)
     expect(loadDocument).toHaveBeenCalledWith('docs/b.md', 'secondary')
+  })
+
+  it('flushes pending editor content before reloading from disk', () => {
+    const layout = makeLayout('primary')
+    const primary = makePane('docs/a.md', '# clean content', true)
+    const secondary = makePane('docs/b.md', '# B', false)
+    const paneBindings = makePaneBindings(primary, secondary)
+    const serializationRefs = makeSerializationRefs()
+    const flushSpy = vi.fn(() => '# unsaved content')
+    serializationRefs.primary.current.flush = flushSpy
+    const setters: TestSetters = {
+      setExternalConflictPath: vi.fn(),
+      setConflictComparisonContent: vi.fn(),
+    }
+    const uiState = makeUiState()
+
+    const loadDocument = vi.fn().mockResolvedValue(undefined)
+    let wsRef: ReturnType<typeof usePaneWorkspace> | null = null
+
+    function Harness() {
+      wsRef = usePaneWorkspace(layout, paneBindings, serializationRefs, noopSaveDocumentFn, navigationHistory)
+      return null
+    }
+
+    const container = document.createElement('div')
+    act(() => { render(h(Harness, {}), container) })
+
+    act(() => {
+      revertChanges(undefined, {
+        workspace: wsRef!,
+        loadDocument,
+        setExternalConflictPath: setters.setExternalConflictPath,
+        setConflictComparisonContent: setters.setConflictComparisonContent,
+        uiState,
+      })
+    })
+
+    expect(flushSpy).toHaveBeenCalledTimes(1)
+    expect(loadDocument).toHaveBeenCalledWith('docs/a.md', 'primary')
   })
 })
