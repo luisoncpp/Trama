@@ -41,11 +41,6 @@ function getSaveLabel({saving, isDirty}: {saving: boolean, isDirty: boolean}): s
   return PROJECT_EDITOR_STRINGS.noChanges
 }
 
-function getRevertLabel({isDirty}: {isDirty: boolean}): string {
-  if (isDirty) return PROJECT_EDITOR_STRINGS.revertChanges
-  return PROJECT_EDITOR_STRINGS.noChanges
-}
-
 function buildSyncState(
   selectedPath: string | null,
   loadingDocument: boolean,
@@ -58,26 +53,15 @@ function buildSyncState(
   return 'clean'
 }
 
-function buildEditorPanelState(
-  selectedPath: string | null,
-  loadingDocument: boolean,
-  saving: boolean,
-  isDirty: boolean,
-) {
-  return {
-    saveDisabled: !selectedPath || saving || !isDirty,
-    saveLabel: getSaveLabel({ saving, isDirty }),
-    revertDisabled: !selectedPath || saving || !isDirty,
-    revertLabel: getRevertLabel({ isDirty }),
-    syncState: buildSyncState(selectedPath, loadingDocument, saving, isDirty),
-    syncStateLabel: computeSyncStateLabel(selectedPath, loadingDocument, saving, isDirty),
-  }
-}
-
 function renderEditorPanelBody(
   props: EditorPanelProps,
-  state: ReturnType<typeof buildEditorPanelState>,
-) {
+  state: {
+    saveDisabled: boolean,
+    saveLabel: string,
+    revertDisabled: boolean,
+    syncState: RichEditorSyncState,
+    syncStateLabel: string
+  }) {
   const { selectedPath, loadingDocument, onInteract } = props
   return (
     <article class="editor-panel-root" onPointerDownCapture={onInteract}>
@@ -90,7 +74,7 @@ function renderEditorPanelBody(
           onHistoryBack={props.onHistoryBack}
           saveDisabled={state.saveDisabled} saveLabel={state.saveLabel}
           onSaveNow={props.onSaveNow}
-          revertDisabled={state.revertDisabled} revertLabel={state.revertLabel}
+          revertDisabled={state.revertDisabled} revertLabel={PROJECT_EDITOR_STRINGS.revertChanges}
           onRevertNow={props.onRevertNow}
           syncState={state.syncState} syncStateLabel={state.syncStateLabel}
           focusModeEnabled={props.focusModeEnabled} focusScope={props.focusScope}
@@ -107,11 +91,12 @@ function renderEditorPanelBody(
 }
 
 export function EditorPanel(props: EditorPanelProps) {
-  const panelState = buildEditorPanelState(
-    props.selectedPath,
-    props.loadingDocument,
-    props.saving,
-    props.isDirty,
-  )
+  const panelState = {
+    saveDisabled: !props.selectedPath || props.saving || !props.isDirty,
+    saveLabel: getSaveLabel({ saving: props.saving, isDirty: props.isDirty }),
+    revertDisabled: !props.selectedPath || props.saving || !props.isDirty,
+    syncState: buildSyncState(props.selectedPath, props.loadingDocument, props.saving, props.isDirty),
+    syncStateLabel: computeSyncStateLabel(props.selectedPath, props.loadingDocument, props.saving, props.isDirty),
+  };
   return renderEditorPanelBody(props, panelState)
 }

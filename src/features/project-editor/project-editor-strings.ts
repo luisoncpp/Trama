@@ -32,8 +32,7 @@ export const PROJECT_EDITOR_STRINGS = {
   statusCompareFailed: 'Failed to prepare conflict comparison.',
   statusReloadDiscarded: 'Content reloaded from disk. Local changes were discarded.',
   statusNeedSaveBeforeSwitch: 'Save or wait for autosave before switching files.',
-  revertChanges: 'Descartar cambios',
-  revertChangesTooltip: 'Revertir cambios no guardados',
-  statusRevertDone: 'Cambios descartados. Archivo recargado desde el disco.',
+  revertChanges: 'Discard unsaved changes',
+  statusRevertDone: 'Unsaved changes discarded. File reloaded from disk.',
   statusNeedSaveBeforeRefresh: 'External changes detected. Save first to refresh the tree safely.',
 } as const
