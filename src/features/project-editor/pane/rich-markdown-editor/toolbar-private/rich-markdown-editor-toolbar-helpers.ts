@@ -51,6 +51,21 @@ export function createRevertIconButton(): HTMLButtonElement {
   )
 }
 
+export function createSaveIconButton(): HTMLButtonElement {
+  return createToolbarIconButton(
+    'ql-save-changes',
+    'Save now',
+    [
+      '<svg class="rich-toolbar-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">',
+      '<path d="M4 5a2 2 0 0 1 2-2h9l5 5v11a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z" />',
+      '<path d="M8 3v6h8" />',
+      '<path d="M8 17h8" />',
+      '<path d="M9 13h6" />',
+      '</svg>',
+    ].join(''),
+  )
+}
+
 export function createHistoryBackIconButton(): HTMLButtonElement {
   return createToolbarIconButton(
     'ql-history-back',

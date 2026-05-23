@@ -245,7 +245,7 @@ Mandatory doc navigation for new chats: start with `docs/START-HERE.md` — it p
   - Single/split editor rendering and pane interactions.
   - Split-pane dirty routing source of truth: each pane editor must route onChange to its own pane (`updateEditorValue(..., pane)`).
 - `src/features/project-editor/components/editor-panel.tsx`
-  - Editor panel shell, sync labels, save affordance.
+  - Editor panel shell, sync labels, save/revert affordance enablement.
 - `src/features/project-editor/components/ai-import-dialog.tsx`
   - Modal dialog for AI import text input, mode selector (`replace` / `append`), preview trigger, and import confirmation.
 - `src/features/project-editor/components/ai-import-preview-section.tsx`
@@ -291,8 +291,10 @@ Mandatory doc navigation for new chats: start with `docs/START-HERE.md` — it p
   - Synchronizes centered styling for editor blocks located between `center:start` and `center:end` boundary artifacts.
 - `src/features/project-editor/pane/rich-markdown-editor/private/rich-markdown-editor-toolbar-controller.ts`
   - Private toolbar controller class: owns toolbar state synchronization for layout buttons, pane-history back, revert/save controls, sync indicator, and zoom.
+  - Save control uses a diskette icon button and keeps dynamic state in tooltip/ARIA labels instead of replacing icon markup.
 - `src/features/project-editor/pane/rich-markdown-editor/private/rich-markdown-editor-toolbar-dom.ts`
   - Private toolbar DOM helper: creates toolbar-specific controls and enforces the explicit current toolbar order behind the Quill toolbar seam.
+  - Owns the diskette save button element (`.ql-save-changes`) in the right-side toolbar control cluster.
 - `src/features/project-editor/components/rich-markdown-editor-commands.ts`
   - Handles workspace context-menu commands (`paste-markdown`, `copy-as-markdown`) and clipboard serialization/paste flow for the rich editor.
 - `src/features/project-editor/components/rich-markdown-editor-find.tsx`

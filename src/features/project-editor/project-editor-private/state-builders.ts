@@ -1,7 +1,7 @@
 import { useMemo } from 'preact/hooks'
 import type { PaneBindings } from '../pane'
 import { deriveActivePaneDocument } from '../project-editor-logic'
-import type { SidebarSection, WorkspaceLayoutState } from '../project-editor-types'
+import type { WorkspaceLayoutState } from '../project-editor-types'
 import { useProjectEditorCoreState } from '../use-project-editor-core-state'
 import { useSidebarUiState } from '../use-sidebar-ui-state'
 

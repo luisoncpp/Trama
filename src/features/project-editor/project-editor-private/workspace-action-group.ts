@@ -26,7 +26,6 @@ export function buildWorkspaceActions(params: ActionGroupParams): Pick<ProjectEd
 function buildWorkspaceLayoutActions({
   layoutState,
   projectState,
-  uiState,
   setters,
   paneWorkspace,
   loadDocument,

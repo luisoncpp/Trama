@@ -3,7 +3,6 @@ import type { ProjectEditorModel, EditorZoomRef } from '../project-editor-types'
 import { EditorPanel } from './editor-panel'
 import { useTagIndex } from '../use-tag-index'
 import { PaneEditor } from './pane-editor'
-import { toPaneTitle } from './pane-title'
 
 interface LayoutControlsProps {
   model: ProjectEditorModel

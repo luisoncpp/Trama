@@ -3,6 +3,7 @@ import {
   createHistoryBackIconButton,
   createPagebreakIconButton,
   createRevertIconButton,
+  createSaveIconButton,
   createZoomSelect,
 } from './rich-markdown-editor-toolbar-helpers'
 
@@ -21,7 +22,6 @@ export interface ToolbarElements {
   historyBackButton: HTMLButtonElement
   revertButton: HTMLButtonElement
   saveButton: HTMLButtonElement
-  syncIcon: HTMLSpanElement
   zoomSelect: HTMLSelectElement
 }
 
@@ -30,8 +30,7 @@ export function attachToolbarElements(toolbar: HTMLElement): ToolbarElements {
   const pagebreakButton = (toolbar.querySelector('button.ql-pagebreak-layout') ?? createPagebreakIconButton()) as HTMLButtonElement
   const historyBackButton = (toolbar.querySelector('button.ql-history-back') ?? createHistoryBackIconButton()) as HTMLButtonElement
   const revertButton = (toolbar.querySelector('button.ql-revert-changes') ?? createRevertIconButton()) as HTMLButtonElement
-  const saveButton = (toolbar.querySelector('button[data-trama-action="save"]') ?? createSaveButton()) as HTMLButtonElement
-  const syncIcon = (toolbar.querySelector('.rich-toolbar-sync') ?? createSyncIcon()) as HTMLSpanElement
+  const saveButton = (toolbar.querySelector('button.ql-save-changes') ?? createSaveIconButton()) as HTMLButtonElement
   const zoomSelect = (toolbar.querySelector('select.ql-zoom-level') ?? createZoomSelect()) as HTMLSelectElement
   const baseGroups = readBaseGroups(toolbar)
   if (!baseGroups) {
@@ -41,9 +40,9 @@ export function attachToolbarElements(toolbar: HTMLElement): ToolbarElements {
   const leftToolbarElements = [historyBackButton, zoomSelect, baseGroups.header, baseGroups.inline, baseGroups.clean, baseGroups.blocks, centerButton, baseGroups.media, pagebreakButton]
   toolbar.append(...leftToolbarElements);
 
-  const toolbarRight = ensureToolbarRight(toolbar, [revertButton, saveButton, syncIcon])
+  const toolbarRight = ensureToolbarRight(toolbar, [revertButton, saveButton])
   toolbar.append(toolbarRight);
-  return { centerButton, pagebreakButton, toolbarRight, historyBackButton, revertButton, saveButton, syncIcon, zoomSelect };
+  return { centerButton, pagebreakButton, toolbarRight, historyBackButton, revertButton, saveButton, zoomSelect };
 }
 
 function ensureToolbarRight(
@@ -67,17 +66,4 @@ function readBaseGroups(toolbar: HTMLElement): ToolbarBaseGroups | null {
   return header && inline && blocks && media && clean ? { header, inline, blocks, media, clean } : null
 }
 
-function createSaveButton(): HTMLButtonElement {
-  const saveButton = document.createElement('button')
-  saveButton.type = 'button'
-  saveButton.className = 'editor-button editor-button--secondary editor-button--inline'
-  saveButton.dataset.tramaAction = 'save'
-  return saveButton
-}
 
-function createSyncIcon(): HTMLSpanElement {
-  const syncIcon = document.createElement('span')
-  syncIcon.className = 'rich-toolbar-sync is-disabled'
-  syncIcon.setAttribute('role', 'status')
-  return syncIcon
-}

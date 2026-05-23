@@ -79,12 +79,10 @@ export class RichEditorToolbarController {
     })
     this.syncButton(this.elements.saveButton, {
       disabled: params.saveDisabled,
-      label: params.saveLabel,
+      title: params.saveLabel,
+      ariaLabel: params.saveLabel,
       onClick: params.onSaveNow,
     })
-    this.elements.syncIcon.className = `rich-toolbar-sync is-${params.syncState}`
-    this.elements.syncIcon.setAttribute('aria-label', params.syncStateLabel)
-    this.elements.syncIcon.title = params.syncStateLabel
   }
 
   private syncZoom(zoomLevel: number | undefined, onZoomChange: ((level: number) => void) | undefined): void {
@@ -100,10 +98,9 @@ export class RichEditorToolbarController {
 
   private syncButton(
     button: HTMLButtonElement,
-    options: { disabled: boolean; label?: string; ariaLabel?: string; title?: string; onClick: () => void },
+    options: { disabled: boolean; ariaLabel?: string; title?: string; onClick: () => void },
   ): void {
     button.disabled = options.disabled
-    if (options.label) button.textContent = options.label
     if (options.ariaLabel) button.setAttribute('aria-label', options.ariaLabel)
     if (options.title) button.title = options.title
     button.onclick = options.onClick

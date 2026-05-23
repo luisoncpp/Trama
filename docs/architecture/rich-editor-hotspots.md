@@ -107,7 +107,7 @@ Split layout becomes incorrect quickly if save/switch logic infers the target fr
 ### Follow these flows
 
 - `docs/flows/switch-pane-flow.md`
-- `docs/flows/save-document-flow.md` if present
+- `docs/flows/save-document-flow.md`
 
 ## 4. Layout path vs loaded pane path
 

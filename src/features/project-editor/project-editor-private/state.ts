@@ -1,7 +1,5 @@
 import { useMemo } from 'preact/hooks'
 import type { ProjectSnapshot } from '../../../shared/ipc'
-import type { PaneBindings } from '../pane'
-import type { WorkspaceLayoutState } from '../project-editor-types'
 import { useProjectEditorCoreState } from '../use-project-editor-core-state'
 import { useSidebarUiState } from '../use-sidebar-ui-state'
 import { useWorkspaceLayoutState } from '../use-workspace-layout-state'

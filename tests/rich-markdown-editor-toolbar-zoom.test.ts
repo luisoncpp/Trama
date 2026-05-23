@@ -121,6 +121,42 @@ describe('Zoom Toolbar', () => {
       expect(zoomSelect).toBeTruthy()
     })
 
+    it('renders save as a disk icon button and toggles disabled state', async () => {
+      act(() => {
+        render(
+          h(RichMarkdownEditor, buildEditorProps({
+            documentId: 'save-icon-doc',
+            value: '# Test',
+            saveDisabled: true,
+          })),
+          container,
+        )
+      })
+
+      await sleep(200)
+
+      const saveButton = container.querySelector('button.ql-save-changes') as HTMLButtonElement | null
+      expect(saveButton).toBeTruthy()
+      expect(saveButton?.disabled).toBe(true)
+      expect(saveButton?.querySelector('svg.rich-toolbar-icon')).toBeTruthy()
+
+      act(() => {
+        render(
+          h(RichMarkdownEditor, buildEditorProps({
+            documentId: 'save-icon-doc',
+            value: '# Test',
+            saveDisabled: false,
+          })),
+          container,
+        )
+      })
+
+      await sleep(200)
+
+      const enabledSaveButton = container.querySelector('button.ql-save-changes') as HTMLButtonElement | null
+      expect(enabledSaveButton?.disabled).toBe(false)
+    })
+
     it('calls onZoomChange when the toolbar select changes', async () => {
       let capturedLevel: number | null = null
 

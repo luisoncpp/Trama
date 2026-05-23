@@ -68,10 +68,6 @@
   --conflict-pre-bg: rgba(7, 10, 15, 0.82);
   --conflict-pre-text: #e7edf8;
   --toolbar-bg: linear-gradient(180deg, #242c39 0%, #1c2330 100%);
-  --toolbar-sync-bg: rgba(255, 255, 255, 0.03);
-  --sync-clean: #7ad19f;
-  --sync-dirty: #f0c17d;
-  --sync-saving: #8eb8ff;
   --editor-canvas-bg:
     radial-gradient(circle at top, rgba(110, 166, 255, 0.08), transparent 28%),
     linear-gradient(180deg, #141922 0%, #10141c 100%);
@@ -157,10 +153,6 @@ html[data-theme='light'] {
   --conflict-pre-bg: rgba(244, 248, 255, 0.95);
   --conflict-pre-text: #24344a;
   --toolbar-bg: linear-gradient(180deg, #f4f8ff 0%, #e8eef9 100%);
-  --toolbar-sync-bg: rgba(31, 43, 63, 0.05);
-  --sync-clean: #349b60;
-  --sync-dirty: #bf782e;
-  --sync-saving: #3168cc;
   --editor-canvas-bg:
     radial-gradient(circle at top, rgba(42, 114, 235, 0.07), transparent 30%),
     linear-gradient(180deg, #fdfefe 0%, #eef4fd 100%);
@@ -1902,7 +1894,9 @@ select {
 }
 
 .rich-editor .ql-toolbar.ql-snow button.ql-center-layout,
-.rich-editor .ql-toolbar.ql-snow button.ql-pagebreak-layout {
+.rich-editor .ql-toolbar.ql-snow button.ql-pagebreak-layout,
+.rich-toolbar-right button.ql-revert-changes,
+.rich-toolbar-right button.ql-save-changes {
   width: 28px;
   height: 24px;
   padding: 0;
@@ -1931,31 +1925,31 @@ select {
   gap: 8px;
 }
 
-.rich-toolbar-right button.ql-revert-changes {
-  width: 28px;
-  height: 24px;
-  padding: 0;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+.rich-toolbar-right button.ql-revert-changes,
+.rich-toolbar-right button.ql-save-changes {
   background: none;
   border: none;
   cursor: pointer;
-  opacity: 0.6;
+  opacity: 0.8;
 }
 
 .rich-toolbar-right button.ql-revert-changes:hover:not(:disabled),
-.rich-toolbar-right button.ql-revert-changes:focus:not(:disabled) {
+.rich-toolbar-right button.ql-revert-changes:focus:not(:disabled),
+.rich-toolbar-right button.ql-save-changes:hover:not(:disabled),
+.rich-toolbar-right button.ql-save-changes:focus:not(:disabled) {
   opacity: 1;
 }
 
-.rich-toolbar-right button.ql-revert-changes:disabled {
+.rich-toolbar-right button.ql-revert-changes:disabled,
+.rich-toolbar-right button.ql-save-changes:disabled {
   cursor: default;
   opacity: 0.3;
 }
 
 .rich-toolbar-right button.ql-revert-changes:hover:not(:disabled) .rich-toolbar-icon,
-.rich-toolbar-right button.ql-revert-changes:focus:not(:disabled) .rich-toolbar-icon {
+.rich-toolbar-right button.ql-revert-changes:focus:not(:disabled) .rich-toolbar-icon,
+.rich-toolbar-right button.ql-save-changes:hover:not(:disabled) .rich-toolbar-icon,
+.rich-toolbar-right button.ql-save-changes:focus:not(:disabled) .rich-toolbar-icon {
   color: var(--quill-active);
 }
 
@@ -1979,53 +1973,6 @@ select {
 .rich-editor .ql-toolbar.ql-snow select.ql-zoom-level option {
   background-color: Field;
   color: FieldText;
-}
-
-.rich-toolbar-sync {
-  width: 17px;
-  height: 17px;
-  border-radius: 999px;
-  border: 1px solid var(--border-strong);
-  background: var(--toolbar-sync-bg);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.rich-toolbar-sync::before {
-  content: '';
-  width: 7px;
-  height: 7px;
-  border-radius: 999px;
-  background: var(--text-dim);
-}
-
-.rich-toolbar-sync.is-clean::before {
-  background: var(--sync-clean);
-}
-
-.rich-toolbar-sync.is-dirty::before {
-  background: var(--sync-dirty);
-}
-
-.rich-toolbar-sync.is-saving::before {
-  background: var(--sync-saving);
-  animation: sync-pulse 1s ease-in-out infinite;
-}
-
-.rich-toolbar-sync.is-disabled::before {
-  background: var(--text-dim);
-}
-
-@keyframes sync-pulse {
-  0%,
-  100% {
-    opacity: 0.4;
-  }
-
-  50% {
-    opacity: 1;
-  }
 }
 
 .rich-editor .ql-container.ql-snow {
