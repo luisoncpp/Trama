@@ -19,7 +19,7 @@ Phase 2, Phase 3 (WS1–WS5), and Phase 4 WS1/wiki-tag-links, WS2/folder-operati
 
 - `npm run build` ✅
 - `npm run lint` ✅
-- `npm run test` ✅ (76 suites, 681 tests)
+- `npm run test` ✅ (76 suites, 683 tests)
 - `npm run test:smoke` ✅
 
 In sandboxed agent environments use the PowerShell script — see `docs/dev-workflow.md`.

@@ -43,6 +43,7 @@ Keep these docs operational. Prefer short tables, explicit file names, and seque
 
 | File | Scope |
 |------|-------|
+| `sidebar-rail-click-flow.md` | What happens when a rail section is clicked, including auto-expand behavior and the pinned shell-width invariant across section switches |
 | `save-document-flow.md` | What happens when the toolbar diskette save button enables, disables, and persists the current pane |
 | `rich-editor-typing-flow.md` | What happens from a Quill keystroke through dirty marking, debounce, serialization, and state sync |
 | `rich-editor-external-sync-flow.md` | What happens when the editor receives a new external value and must decide whether to re-apply it into Quill |

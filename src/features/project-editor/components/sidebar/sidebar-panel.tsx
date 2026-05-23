@@ -110,11 +110,12 @@ function buildSidebarBodyProps(props: SidebarPanelProps, effectiveCollapsed: boo
 export function SidebarPanel(props: SidebarPanelProps) {
   const { effectiveCollapsed, sectionState } = useSidebarPanelRenderState(props)
   const bodyProps = buildSidebarBodyProps(props, effectiveCollapsed, sectionState)
+  const shellWidth = `${effectiveCollapsed ? 72 : props.sidebarPanelWidth}px`
 
   return (
     <aside
       class={`sidebar-shell ${effectiveCollapsed ? 'is-collapsed' : ''}`}
-      style={{ width: `${effectiveCollapsed ? 72 : props.sidebarPanelWidth}px` }}
+      style={{ width: shellWidth, minWidth: shellWidth, maxWidth: shellWidth }}
     >
       <SidebarRail
         activeSection={props.sidebarActiveSection}

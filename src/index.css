@@ -1218,6 +1218,7 @@ select {
 }
 
 .sidebar-rail {
+  flex: 0 0 72px;
   width: 72px;
   border-right: 1px solid var(--border);
   display: flex;
@@ -1226,6 +1227,12 @@ select {
   align-items: center;
   padding: 10px 8px;
   background: var(--sidebar-rail-bg);
+}
+
+.sidebar-rail.is-collapsed {
+  flex-basis: 100%;
+  width: 100%;
+  border-right: 0;
 }
 
 .sidebar-rail__items {

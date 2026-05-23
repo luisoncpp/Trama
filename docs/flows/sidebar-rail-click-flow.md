@@ -97,10 +97,12 @@ Calling `setSidebarActiveSection(section)` and `setSidebarPanelCollapsed(false)`
 
 ```typescript
 class={`sidebar-shell ${effectiveCollapsed ? 'is-collapsed' : ''}`}
-style={{ width: `${effectiveCollapsed ? 72 : props.sidebarPanelWidth}px` }}
+style={{ width: shellWidth, minWidth: shellWidth, maxWidth: shellWidth }}
 ```
 
-After the state update, `SidebarPanel` re-renders. Since `effectiveCollapsed` (derived from `props.sidebarPanelCollapsed || isResponsiveCollapsed`) is now `false`, the `sidebar-shell` element loses the `is-collapsed` class and its width changes from `72px` to `sidebarPanelWidth` (e.g., `300px`).
+After the state update, `SidebarPanel` re-renders. Since `effectiveCollapsed` (derived from `props.sidebarPanelCollapsed || isResponsiveCollapsed`) is now `false`, the `sidebar-shell` element loses the `is-collapsed` class and its width changes from `72px` to `sidebarPanelWidth` (e.g., `300px`). That shell width is pinned through `width`, `min-width`, and `max-width` so switching between rail sections cannot make the shell appear wider or narrower.
+
+The parent `editor-workspace` grid must also use the same effective collapsed state when computing `--sidebar-width`. Otherwise narrow responsive collapse can leave the child rail visually collapsed while the parent layout still reserves expanded width.
 
 The panel body (`SidebarPanelBody`) also becomes visible since `effectiveCollapsed` is now `false`.
 
@@ -115,7 +117,7 @@ The panel body (`SidebarPanelBody`) also becomes visible since `effectiveCollaps
 | `src/features/project-editor/project-editor-view.tsx:90` | Wires `actions.setSidebarSection` to panel prop |
 | `src/features/project-editor/use-project-editor-ui-actions-helpers.ts:139-147` | Core logic: sets section + conditionally expands panel |
 | `src/features/project-editor/use-sidebar-ui-state.ts:64-66` | State setters backed by `useState` |
-| `src/features/project-editor/components/sidebar/sidebar-panel.tsx:116-117` | CSS class and width driven by `effectiveCollapsed` |
+| `src/features/project-editor/components/sidebar/sidebar-panel.tsx:116-118` | CSS class and shell width constraints driven by `effectiveCollapsed` |
 
 ## Common failure modes
 
@@ -124,6 +126,10 @@ The panel body (`SidebarPanelBody`) also becomes visible since `effectiveCollaps
 2. **Panel expands during focus mode** — The `!layout.focusModeEnabled` guard should prevent this. If it still happens, verify `focusModeEnabled` in `layout` matches `workspaceLayout.focusModeEnabled` from state.
 
 3. **Responsive collapse overriding** — `useSidebarResponsiveCollapse` can independently collapse the panel on narrow viewports. The `effectiveCollapsed` in `sidebar-panel.tsx:62` is `props.sidebarPanelCollapsed || isResponsiveCollapsed`, meaning responsive collapse takes precedence and cannot be undone by `setSidebarSection` alone.
+
+4. **Section switch looks like width reset** — If `sidebarPanelWidth` state is stable but the rendered shell changes width across `transfer` / `settings` / explorer sections, inspect the shell constraints first. The shell must pin `width`, `min-width`, and `max-width`; otherwise section content can pressure the layout.
+
+5. **Responsive collapse mismatch** — If the rail looks collapsed but the surrounding workspace column still has expanded width, inspect `project-editor-view.tsx`. The parent `--sidebar-width` calculation must mirror `SidebarPanel`'s `effectiveCollapsed`, not only persisted `sidebarPanelCollapsed`.
 
 ## Related flows
 

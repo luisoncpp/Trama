@@ -10,6 +10,7 @@ import { useBookExport } from './use-book-export'
 import { useZuluImport } from './use-zulu-import'
 import type { ResolvedTheme, ThemePreference } from '../../theme/theme-types'
 import type { BookExportFormat } from '../../shared/ipc'
+import { useSidebarResponsiveCollapse } from './components/sidebar/sidebar-explorer-hooks'
 
 interface ProjectEditorViewProps {
   model: ProjectEditorModel
@@ -172,7 +173,9 @@ export function ProjectEditorView({
   const aiExport = useAiExport(state.rootPath)
   const bookExport = useBookExport(state.rootPath)
   const zuluImport = useZuluImport(state.rootPath)
-  const sidebarStyle = { '--sidebar-width': state.workspaceLayout.focusModeEnabled ? '0px' : `${state.sidebarPanelCollapsed ? 72 : state.sidebarPanelWidth}px` }
+  const isResponsiveSidebarCollapsed = useSidebarResponsiveCollapse()
+  const isSidebarEffectivelyCollapsed = state.sidebarPanelCollapsed || isResponsiveSidebarCollapsed
+  const sidebarStyle = { '--sidebar-width': state.workspaceLayout.focusModeEnabled ? '0px' : `${isSidebarEffectivelyCollapsed ? 72 : state.sidebarPanelWidth}px` }
 
   return (
     <main class={buildShellClassName(model)}>

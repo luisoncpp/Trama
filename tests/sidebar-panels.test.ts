@@ -657,6 +657,33 @@ describe('sidebar panels', () => {
     expect(onPanelWidthChange).toHaveBeenCalledWith(410)
   })
 
+  it('keeps the same shell width when switching sections', () => {
+    act(() => {
+      render(h(SidebarPanel, buildPanelProps({ sidebarActiveSection: 'explorer', sidebarPanelWidth: 320 })), container)
+    })
+
+    const shell = container.querySelector('.sidebar-shell') as HTMLElement
+    expect(shell.style.width).toBe('320px')
+    expect(shell.style.minWidth).toBe('320px')
+    expect(shell.style.maxWidth).toBe('320px')
+
+    act(() => {
+      render(h(SidebarPanel, buildPanelProps({ sidebarActiveSection: 'transfer', sidebarPanelWidth: 320 })), container)
+    })
+
+    expect(shell.style.width).toBe('320px')
+    expect(shell.style.minWidth).toBe('320px')
+    expect(shell.style.maxWidth).toBe('320px')
+
+    act(() => {
+      render(h(SidebarPanel, buildPanelProps({ sidebarActiveSection: 'settings', sidebarPanelWidth: 320 })), container)
+    })
+
+    expect(shell.style.width).toBe('320px')
+    expect(shell.style.minWidth).toBe('320px')
+    expect(shell.style.maxWidth).toBe('320px')
+  })
+
   it('updates theme preference from settings buttons', () => {
     const onThemePreferenceChange = vi.fn<(preference: ThemePreference) => void>()
 
@@ -812,6 +839,32 @@ describe('sidebar panels', () => {
     const shell = container.querySelector('.sidebar-shell') as HTMLElement
     expect(shell.className).toContain('is-collapsed')
     expect(container.textContent).not.toContain('Scene-001.md')
+
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalInnerWidth })
+  })
+
+  it('keeps the collapsed rail width stable across section switches on narrow viewport', () => {
+    const originalInnerWidth = window.innerWidth
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 860 })
+
+    act(() => {
+      render(h(SidebarPanel, buildPanelProps({ sidebarActiveSection: 'explorer', sidebarPanelCollapsed: false })), container)
+    })
+
+    const shell = container.querySelector('.sidebar-shell') as HTMLElement
+    expect(shell.className).toContain('is-collapsed')
+    expect(shell.style.width).toBe('72px')
+    expect(shell.style.minWidth).toBe('72px')
+    expect(shell.style.maxWidth).toBe('72px')
+
+    act(() => {
+      render(h(SidebarPanel, buildPanelProps({ sidebarActiveSection: 'settings', sidebarPanelCollapsed: false })), container)
+    })
+
+    expect(shell.className).toContain('is-collapsed')
+    expect(shell.style.width).toBe('72px')
+    expect(shell.style.minWidth).toBe('72px')
+    expect(shell.style.maxWidth).toBe('72px')
 
     Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalInnerWidth })
   })

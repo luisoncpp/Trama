@@ -157,6 +157,27 @@ Persisted in `trama.sidebar.ui.v1`:
 - `panelCollapsed`: whether the entire sidebar is collapsed
 - `panelWidth`: panel width in pixels
 
+### Shell width invariant
+
+The persisted `panelWidth` is the authoritative width for the rendered sidebar shell when the panel is expanded.
+
+Implementation rule in `sidebar-panel.tsx`:
+- compute one shell width from `effectiveCollapsed ? 72 : sidebarPanelWidth`
+- apply that value to `width`, `min-width`, and `max-width`
+
+Coordination rule in `project-editor-view.tsx`:
+- the parent `editor-workspace` grid column must use the same effective collapsed state as `SidebarPanel`
+- `sidebarPanelCollapsed` alone is not enough because `useSidebarResponsiveCollapse()` can force the rail closed on narrow viewports
+
+Rationale:
+- different rail sections (`explorer`, `transfer`, `settings`) render different intrinsic content widths
+- applying only `width` lets section content pressure the layout and makes rail switches look like width changes even when `panelWidth` state never changed
+- computing the grid column from non-responsive collapse state lets the parent reserve expanded width while the child rail is still collapsed at `72px`
+
+Regression coverage:
+- `tests/sidebar-panels.test.ts` verifies the shell keeps the same inline width constraints while switching sections
+- `tests/sidebar-panels.test.ts` also verifies narrow-viewport responsive collapse keeps the rail width stable across section switches
+
 ### Rail click expands sidebar
 
 When the sidebar panel is collapsed, clicking a rail section button (`explorer`, `outline`, `lore`, `transfer`, `settings`) automatically expands the panel. This behavior is implemented in `useSidebarActions` within `use-project-editor-ui-actions-helpers.ts`.
@@ -286,6 +307,7 @@ SidebarPanelBody
 | Tree rendering | Cursor jumping on re-init | Watch `buildSidebarTree` deps | See `docs/architecture/tree-building-and-implicit-folders.md` |
 | Filter | Auto-expand not restoring | Check `autoExpandFolderPaths` flow | See `docs/architecture/tree-building-and-implicit-folders.md` |
 | Drag-drop | Reorder uses stale rows or wrong path scoping | See `docs/architecture/sidebar-drag-drop-architecture.md` |
+| Shell layout | Sidebar appears to resize when switching rail sections | Check both `sidebar-panel.tsx` shell constraints and `project-editor-view.tsx` grid width calculation use the same effective collapsed state | 
 
 ## See also
 
@@ -295,3 +317,4 @@ SidebarPanelBody
 - Project index architecture: `docs/architecture/project-index-architecture.md`
 - Focus mode architecture: `docs/architecture/focus-mode-architecture.md`
 - Split pane coordination: `docs/architecture/split-pane-coordination.md`
+- Shell width invariant: `docs/lessons-learned/sidebar-shell-width-must-be-pinned.md`

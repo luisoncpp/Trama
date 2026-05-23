@@ -31,7 +31,7 @@ function RailItemLabel({ item }: { item: SidebarRailItem }): JSX.Element {
 
 export function SidebarRail({ activeSection, collapsed, focusModeEnabled, onSelectSection, onToggleCollapsed }: SidebarRailProps) {
   return (
-    <nav class="sidebar-rail" aria-label="Workspace sections">
+    <nav class={`sidebar-rail ${collapsed ? 'is-collapsed' : ''}`} aria-label="Workspace sections">
       <div class="sidebar-rail__items">
         {SIDEBAR_ITEMS.map((item) => (
           <button
