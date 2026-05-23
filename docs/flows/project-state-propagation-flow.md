@@ -33,9 +33,9 @@ A collection of standalone `useState` hooks:
 
 Returns a flat object with all values and their setters. **This object is recreated every render.**
 
-### Layer 2 — Derived state (`useProjectEditorState`)
+### Layer 2 — Derived state (`useProjectEditorState` private implementation)
 
-File: `src/features/project-editor/use-project-editor-state.ts`
+File: `src/features/project-editor/project-editor-private/state.ts`
 
 Adds three externally-persisted state hooks:
 - `useWorkspaceLayoutState()` — layout (single/split, pane assignments, focus mode) persisted to `localStorage`
@@ -45,23 +45,23 @@ Computes memoized derived values:
 - `visibleFiles = useMemo(() => getVisibleSidebarPaths(coreState.snapshot), [coreState.snapshot])`
 - `corkboardOrder = useMemo(() => coreState.snapshot?.index?.corkboardOrder ?? {}, [coreState.snapshot])`
 
-Assembles **6 memoized sub-states** via `use-project-editor-sub-state-hooks.ts`:
+Assembles memoized sub-states inline:
 - `documentState` — active pane path, content, meta, dirty flag
-- `paneState` — both pane document states (used by `use-project-editor.ts` to build `paneBindings`)
 - `layoutState` — workspace layout
 - `sidebarState` — sidebar section, collapse, width, focus mode flag
 - `projectState` — root path, snapshot, visible files, corkboard order
 - `uiState` — loading/saving/fullscreen/conflict/message flags
 
-Also assembles legacy objects for backward compatibility:
-- `values` via `buildValues()` — all readable state plus UI projections (`selectedPath`, `editorValue`, `isDirty` from active pane)
-- `setters` via `useMemo()` — all setters wrapped into one object. `setPrimaryPane`/`setSecondaryPane` are kept in the setters object for internal use by `use-project-editor.ts` to build `paneBindings`, but they are not part of the public API consumed by action hooks.
+Also assembles:
+- `values` via one private memoized projection — all readable state plus UI projections (`selectedPath`, `editorValue`, `isDirty` from active pane)
+- `setters` via `useMemo()` — all public setters needed by the private action Module
+- `paneBindings` via `useMemo()` — both pane states plus `setPrimaryPane`/`setSecondaryPane`, kept private to `use-project-editor.ts` for `PaneWorkspace`
 
 **The 6 sub-states are memoized with `useMemo`.** Action hooks should depend on the specific sub-states they read, not on `values`.
 
 ### Layer 3 — Actions (`useProjectEditorActions`)
 
-File: `src/features/project-editor/use-project-editor-actions.ts`
+File: `src/features/project-editor/project-editor-private/actions.ts`
 
 Receives the sub-states, `setters`, and `paneWorkspace`. Creates core actions:
 
@@ -77,17 +77,7 @@ Key changes from pane-isolation-plan-v2:
 - `loadDocument` calls `paneWorkspace.loadPaneDocument(targetPane, path, content, meta)` instead of `setters.setPrimaryPane(loadedPane)`/`setters.setSecondaryPane(loadedPane)`.
 - `saveDocumentNow` no longer clears `isDirty` on panes — that is handled privately by `PaneWorkspace.savePaneIfDirty()` via `markPaneSaved`.
 
-Then composes UI actions via `useProjectEditorUiActions(...)`, which receives the sub-states + `paneWorkspace` and passes each one only to the hooks that need it:
-
-| Hook | Receives | Why |
-|------|----------|-----|
-| `useSidebarActions` | `layoutState`, `sidebarState`, `setters` | Only reads layout and sidebar flags |
-| `useWorkspaceLayoutActions` | `workspace`, `projectState`, `setters` | Needs workspace for pane queries and project snapshot for split transitions |
-| `useEditorViewActions` | `workspace`, `uiState`, `setters` | Needs workspace for `updatePaneContent` and `savePaneIfDirty` |
-| `useProjectEditorCreateActions` | `projectState`, `sidebarState`, `setters` | Needs root path and active sidebar section |
-| `useProjectEditorFileActions` | `workspace`, `projectState`, `setters` | Needs workspace for dirty guards and `updatePaneMeta` |
-| `useProjectEditorFolderActions` | `workspace`, `projectState`, `setters` | Needs workspace for dirty guards and layout for path pruning |
-| `useSecondaryProjectEditorActions` | `workspace`, `documentState`, `projectState`, `uiState`, `setters` | Conflict actions need the active document's content/path |
+Then builds the flat `ProjectEditorActions` surface directly over the deep Modules (`workspace-actions`, `sidebar-file-actions`, `conflict-actions`).
 
 **Action callbacks are now stable** — they only re-create when the specific sub-states they consume change. A `statusMessage` update no longer re-creates `toggleFocusMode`.
 
@@ -112,13 +102,10 @@ useProjectEditorCoreState()
   ├─ snapshot, setSnapshot, rootPath, setRootPath, ...
   │
   ▼
-useProjectEditorState()
+project-editor-private/state.ts
   │
   ├─ documentState (useMemo)
   │   └─ selectedPath, editorValue, editorMeta, isDirty
-  │
-  ├─ paneState (useMemo)
-  │   └─ primaryPane, secondaryPane
   │
   ├─ layoutState (useMemo)
   │   └─ workspaceLayout
@@ -132,34 +119,27 @@ useProjectEditorState()
   ├─ uiState (useMemo)
   │   └─ apiAvailable, loadingProject, loadingDocument, saving, isFullscreen, externalConflictPath, conflictComparisonContent, statusMessage
   │
-  ├─ values (via buildValues) — legacy backward-compatible object
+  ├─ values (via private memoized projection) — legacy backward-compatible object
   │
   ├─ setters (useMemo)
   │   ├─ setSnapshot = coreState.setSnapshot (stable useState setter)
   │   ├─ setRootPath = coreState.setRootPath
-  │   ├─ setPrimaryPane, setSecondaryPane (internal, for paneBindings construction)
   │   └─ setWorkspaceLayout (from useWorkspaceLayoutState)
   │
-  ▼
-useProjectEditor() — builds paneBindings from paneState + setters, creates PaneWorkspace via usePaneWorkspace()
+  ├─ paneBindings (useMemo)
+  │   └─ primaryPane, secondaryPane, setPrimaryPane, setSecondaryPane
   │
   ▼
-useProjectEditorActions(subStates, setters, paneWorkspace)
+useProjectEditor() — creates PaneWorkspace via usePaneWorkspace() and is the only importer of `project-editor-private/`
+  │
+  ▼
+project-editor-private/actions.ts
   │
   ├─ openProject = useOpenProject(setters, clearEditor, loadDocument)
   │   └─ calls setters.setSnapshot(snapshot) in applyOpenedProject
   │
-  ├─ useProjectEditorUiActions({ layoutState, projectState, uiState, sidebarState, setters, openProject, loadDocument, paneWorkspace })
-  │   ├─ sidebarActions ← useSidebarActions(workspace.layout, sidebarState, setters)
-  │   ├─ layoutActions ← useWorkspaceLayoutActions(workspace, projectState, setters, loadDocument)
-  │   ├─ editorViewActions ← useEditorViewActions(workspace, uiState, setters)
-  │   │   └─ updateEditorValue → workspace.updatePaneContent(targetPane, nextValue)
-  │   │   └─ saveNow → workspace.savePaneIfDirty(targetPane) → flush → save → markPaneSaved (private)
-  │   ├─ createActions ← useProjectEditorCreateActions(projectState, sidebarState, setters)
-  │   ├─ fileActions ← useProjectEditorFileActions({ workspace, projectState, setters, openProject })
-  │   │   └─ editFileTags → workspace.updatePaneMeta(path, nextMeta)
-  │   ├─ folderActions ← useProjectEditorFolderActions({ workspace, projectState, setters, openProject })
-  │   └─ conflictActions ← useSecondaryProjectEditorActions(workspace, documentState, projectState, uiState, setters)
+  ├─ builds flat actions over `workspace-actions`, `sidebar-file-actions`, and `conflict-actions`
+  │   └─ editFileTags → workspace.updatePaneMeta(path, nextMeta)
   │
   └─ ... other actions
 
@@ -205,13 +185,12 @@ No code outside `pane/` calls `setPrimaryPane`/`setSecondaryPane` directly. The 
 | File | Role |
 |------|------|
 | `src/features/project-editor/use-project-editor-core-state.ts` | Raw useState hooks |
-| `src/features/project-editor/use-project-editor-sub-state-hooks.ts` | Memoized sub-state builders (`useDocumentState`, `usePaneState`, etc.) |
-| `src/features/project-editor/use-project-editor-state.ts` | Derived values + 6 sub-states + setters assembly |
+| `src/features/project-editor/project-editor-private/state.ts` | Derived values + memoized sub-states + setters/paneBindings assembly |
 | `src/features/project-editor/pane/pane-workspace.ts` | `PaneWorkspace` facade with mutation methods, private `markPaneSaved` |
 | `src/features/project-editor/pane/use-pane-workspace.ts` | Factory hook that encapsulates setter injection via `useMemo` |
-| `src/features/project-editor/use-project-editor-actions.ts` | Action composition hub; passes sub-states + `paneWorkspace` to UI action hooks |
-| `src/features/project-editor/use-project-editor.ts` | Model assembly for App; builds `paneBindings` from `paneState` + setters |
+| `src/features/project-editor/project-editor-private/actions.ts` | Private action composition hub over the deep Modules |
+| `src/features/project-editor/use-project-editor.ts` | Public seam for App; consumes private state/actions Modules and builds `PaneWorkspace` |
 | `src/app.tsx` | Top-level component wiring |
-| `src/features/project-editor/use-project-editor-open-project.ts` | `applyOpenedProject` — where setSnapshot is called |
-| `src/features/project-editor/use-project-editor-folder-actions.ts` | `executeFolderDelete` — prunes layout before openProject |
-| `src/features/project-editor/use-project-editor-file-actions.ts` | `useDeleteFileAction` — simpler flow without layout pruning |
+| `src/features/project-editor/project-editor-private/open-project.ts` | `applyOpenedProject` — where setSnapshot is called |
+| `src/features/project-editor/sidebar-file-actions/private/folder-crud.ts` | `deleteFolder` — prunes layout before openProject |
+| `src/features/project-editor/sidebar-file-actions/private/file-crud.ts` | `deleteFile` — simpler flow without layout pruning |

@@ -6,7 +6,7 @@ Any state setter that updates `coreState.snapshot` — typically from `applyOpen
 
 ## Entry point
 
-`useProjectEditorState()` in `src/features/project-editor/use-project-editor-state.ts:139`.
+`useProjectEditorState()` in `src/features/project-editor/project-editor-private/state.ts`.
 
 ## Why this flow matters
 
@@ -18,13 +18,13 @@ Any state setter that updates `coreState.snapshot` — typically from `applyOpen
 
 1. `useProjectEditorCoreState()` (in `use-project-editor-core-state.ts:6`) exposes `snapshot` via `useState<ProjectSnapshot | null>(null)`. When `setSnapshot(snapshot)` is called, the `snapshot` reference changes.
 
-2. `useProjectEditorState()` de-structures `coreState.snapshot` and passes it as the **only dependency** to a `useMemo`:
+2. The private state Module de-structures `coreState.snapshot` and passes it as the **only dependency** to a `useMemo`:
    ```
    visibleFiles = useMemo(() => getVisibleSidebarPaths(coreState.snapshot), [coreState.snapshot])
    ```
    Preact compares the current `coreState.snapshot` against the previous stored dependency. If the references differ (`!==`), the callback runs; otherwise the cached array is returned.
 
-3. `getVisibleSidebarPaths(snapshot)` (same file, line 66):
+3. `getVisibleSidebarPaths(snapshot)` (same file):
    - Returns `[]` if `snapshot` is falsy.
    - Recursively walks `snapshot.tree` (an array of `TreeItem[]`).
    - Folder items → pushes `\`${item.path}/\`` and recurses into `item.children ?? []`.
@@ -38,9 +38,9 @@ Any state setter that updates `coreState.snapshot` — typically from `applyOpen
 
 ### Step B — Values object assembly
 
-5. `buildValues(params)` (same file, line 85) copies `visibleFiles` and `corkboardOrder` into the returned `ProjectEditorStateValues` object. This object is **not memoized** — it is recreated every render.
+5. A private memoized projection copies `visibleFiles` and `corkboardOrder` into the returned `ProjectEditorStateValues` object.
 
-6. `useProjectEditorState()` returns `{ values, setters }`.
+6. `useProjectEditorState()` returns `{ values, setters, paneBindings, ...memoized sub-states }`.
 
 ### Step C — Model object assembly
 
@@ -121,7 +121,7 @@ Any state setter that updates `coreState.snapshot` — typically from `applyOpen
 
 ## Common failure modes
 
-1. **`useMemo` doesn't trigger** — if `coreState.snapshot` is the same object reference (e.g. if `setSnapshot` is called with the old object), `useMemo` returns the cached `visibleFiles`. Verify with `[DEBUG useProjectEditorState]` log on line 145: it prints every time `coreState.snapshot` changes. If it prints but `visibleFiles` is unchanged, check `getVisibleSidebarPaths`.
+1. **`useMemo` doesn't trigger** — if `coreState.snapshot` is the same object reference (e.g. if `setSnapshot` is called with the old object), `useMemo` returns the cached `visibleFiles`.
 
 2. **`getVisibleSidebarPaths` returns stale data** — the function walks `snapshot.tree` synchronously. If `snapshot.tree` still contains the deleted folder, the backend returned a stale tree.
 

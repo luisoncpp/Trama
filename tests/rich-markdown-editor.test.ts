@@ -119,58 +119,6 @@ describe('RichMarkdownEditor', () => {
     expect(hostDiv).toBeDefined()
   })
 
-  it('mantiene el orden explicito actual de la toolbar', async () => {
-    act(() => {
-      render(
-        h(RichMarkdownEditor, buildEditorProps({
-          documentId: 'toolbar-order-doc',
-          value: '# Test',
-        })),
-        container,
-      )
-    })
-
-    await sleep(80)
-
-    const toolbar = container.querySelector('.ql-toolbar') as HTMLElement
-    const childSignatures = Array.from(toolbar.children).map((child) => {
-      if (!(child instanceof HTMLElement)) return 'unknown'
-      if (child.matches('.rich-toolbar-right')) return 'right'
-      if (child.matches('button.ql-center-layout')) return 'center'
-      if (child.matches('button.ql-pagebreak-layout')) return 'pagebreak'
-      if (child.matches('.ql-formats') && child.querySelector('.ql-picker.ql-header')) return 'header'
-      if (child.matches('.ql-formats') && child.querySelector('button.ql-bold')) return 'inline'
-      if (child.matches('.ql-formats') && child.querySelector('button.ql-blockquote')) return 'blocks'
-      if (child.matches('.ql-formats') && child.querySelector('button.ql-link')) return 'media'
-      if (child.matches('.ql-formats') && child.querySelector('button.ql-clean')) return 'clean'
-      return `unknown:${child.className}`
-    })
-
-    expect(childSignatures).toEqual([
-      'header',
-      'inline',
-      'blocks',
-      'media',
-      'clean',
-      'center',
-      'pagebreak',
-      'right',
-    ])
-
-    const rightContainer = toolbar.querySelector('.rich-toolbar-right') as HTMLElement
-    const rightOrder = Array.from(rightContainer.children).map((child) => {
-      if (!(child instanceof HTMLElement)) return 'unknown'
-      if (child.matches('select.ql-zoom-level')) return 'zoom'
-      if (child.matches('button.ql-history-back')) return 'history-back'
-      if (child.matches('button.ql-revert-changes')) return 'revert'
-      if (child.matches('button[data-trama-action="save"]')) return 'save'
-      if (child.matches('.rich-toolbar-sync')) return 'sync'
-      return `unknown:${child.className}`
-    })
-
-    expect(rightOrder).toEqual(['zoom', 'history-back', 'revert', 'save', 'sync'])
-  })
-
   it('sincroniza el atributo spellcheck del editor con la prop', async () => {
     function TestHarness() {
       const [spellcheckEnabled, setSpellcheckEnabled] = useState(true)

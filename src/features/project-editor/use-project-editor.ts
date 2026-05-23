@@ -3,17 +3,22 @@ import type { DocumentMeta } from '../../shared/ipc'
 import type {
   EditorSerializationRefs,
   EditorZoomRef,
-  PaneNavigationHistoryStore,
   ProjectEditorModel,
 } from './project-editor-types'
 import type { WorkspaceLayoutState } from './project-editor-types'
-import { useProjectEditorActions } from './use-project-editor-actions'
+import { useProjectEditorActions } from './project-editor-private/actions'
 import { useProjectEditorContextMenuEffect } from './use-project-editor-context-menu-effect'
 import { useProjectEditorExternalEventsEffect, useReloadProjectShortcutEffect } from './use-project-editor-external-events-effect'
 import { useProjectEditorFullscreenEffect } from './use-project-editor-fullscreen-effect'
 import { useProjectEditorShortcutsEffect } from './use-project-editor-shortcuts-effect'
-import { useProjectEditorState } from './use-project-editor-state'
+import { useProjectEditorState } from './project-editor-private/state'
 import { usePaneWorkspace, useProjectEditorAutosaveEffect, useProjectEditorCloseEffect } from './pane'
+import {
+  buildShortcutsEffectParams,
+  createEditorSerializationRefs,
+  createNavigationHistoryStore,
+  createSaveDocumentProxy,
+} from './project-editor-private/use-project-editor-model'
 
 function useAutoPickProjectFolderEffect(
   pickProjectFolder: () => Promise<void>,
@@ -28,44 +33,6 @@ function useAutoPickProjectFolderEffect(
     hasRequestedProjectFolderRef.current = true
     void pickProjectFolder()
   }, [pickProjectFolder, autoPickProjectFolderOnStart, apiAvailable, rootPath] /*Inputs for autoPickProjectFolderOnStartup*/)
-}
-
-function buildShortcutsEffectParams(
-  actions: ReturnType<typeof useProjectEditorActions>['actions'],
-  isFullscreen: boolean,
-  workspaceLayout: WorkspaceLayoutState,
-) {
-  return {
-    onToggleSplitLayout: actions.toggleWorkspaceLayoutMode,
-    onToggleFullscreen: () => void actions.setFullscreenEnabled(!isFullscreen),
-    onToggleFocusMode: actions.toggleFocusMode,
-    onSwitchActivePane: () => {
-      if (workspaceLayout.mode !== 'split') return
-      actions.setWorkspaceActivePane(workspaceLayout.activePane === 'primary' ? 'secondary' : 'primary')
-    },
-    onSaveNow: () => actions.saveNow(),
-    onOpenPreviousHistory: () => void actions.openPreviousInPaneHistory(),
-    onOpenNextHistory: () => void actions.openNextInPaneHistory(),
-    onEscapePressed: () => {
-      if (isFullscreen) {
-        void actions.setFullscreenEnabled(false)
-      }
-      if (workspaceLayout.focusModeEnabled) {
-        actions.toggleFocusMode()
-      }
-    },
-    onZoomIn: () => {
-      const current = workspaceLayout.zoomLevel ?? 1.0
-      actions.setZoomLevel(current + 0.25)
-    },
-    onZoomOut: () => {
-      const current = workspaceLayout.zoomLevel ?? 1.0
-      actions.setZoomLevel(current - 0.25)
-    },
-    onZoomReset: () => {
-      actions.setZoomLevel(1.0)
-    }
-  }
 }
 
 function useProjectEditorEffects(
@@ -148,24 +115,11 @@ export function useProjectEditor(): ProjectEditorModel {
   const autoPickProjectFolderOnStart = import.meta.env.MODE !== 'test'
   const state = useProjectEditorState()
   const { values, setters, documentState, layoutState, sidebarState, projectState, uiState, paneBindings } = state
-
-  const primarySerializationRef = useRef<EditorSerializationRefs>({
-    flush: () => null,
-    tagOverlayRecalcRef: { current: false },
-    tagOverlayMatchesRef: { current: [] as Array<{ tag: string; start: number; end: number; filePath: string }> },
-  })
-  const secondarySerializationRef = useRef<EditorSerializationRefs>({
-    flush: () => null,
-    tagOverlayRecalcRef: { current: false },
-    tagOverlayMatchesRef: { current: [] as Array<{ tag: string; start: number; end: number; filePath: string }> },
-  })
-
+  const primarySerializationRef = useRef<EditorSerializationRefs>(createEditorSerializationRefs())
+  const secondarySerializationRef = useRef<EditorSerializationRefs>(createEditorSerializationRefs())
   const saveDocumentNowRef = useRef<((path: string, content: string, meta: DocumentMeta) => Promise<void>) | null>(null)
   const lastSavedContentMapRef = useRef(new Map<string, string>())
-  const navigationHistoryRef = useRef<PaneNavigationHistoryStore>({
-    primary: { entries: [], index: -1 },
-    secondary: { entries: [], index: -1 },
-  })
+  const navigationHistoryRef = useRef(createNavigationHistoryStore())
 
   const zoomRef: EditorZoomRef = { current: layoutState.workspaceLayout.zoomLevel ?? 1.0 }
 
@@ -173,7 +127,7 @@ export function useProjectEditor(): ProjectEditorModel {
     layoutState.workspaceLayout,
     paneBindings,
     { primary: primarySerializationRef, secondary: secondarySerializationRef },
-    (path, content, meta) => saveDocumentNowRef.current?.(path, content, meta) ?? Promise.resolve(),
+    createSaveDocumentProxy(saveDocumentNowRef),
     navigationHistoryRef.current,
     lastSavedContentMapRef.current,
   )

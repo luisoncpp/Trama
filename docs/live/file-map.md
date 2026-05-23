@@ -91,6 +91,9 @@ Mandatory doc navigation for new chats: start with `docs/START-HERE.md` — it p
 - `electron/services/incremental-project-updater.ts`
   - Pure logic to mutate a cached `ProjectSnapshot` for file/folder create, delete, and rename.
   - Reads frontmatter only for newly created files; all other operations are in-memory.
+  - Delegates tree manipulation to `tree-mutations.ts`.
+- `electron/services/tree-mutations.ts`
+  - Pure tree mutation helpers used by `incremental-project-updater.ts`: deep clone, path parsing, folder/file add/remove/rename.
 - `electron/services/watcher-service.ts`
   - Chokidar wrapper + internal/external write classification.
 - `electron/services/ai-import-service.ts`
@@ -132,8 +135,9 @@ Mandatory doc navigation for new chats: start with `docs/START-HERE.md` — it p
 - `src/spellcheck/use-spellcheck-settings.ts`
   - Renderer hook for spellcheck preferences: boot-time sync against Electron session, local persistence, enable/disable, language updates, and optimistic UI updates with rollback on IPC failure.
 - `src/features/project-editor/use-project-editor.ts`
-  - Main feature hook (state + effects + action integration).
+  - Main feature hook and public seam for the project editor Module.
   - Owns the stable session-only pane-history store injected into `PaneWorkspace`.
+  - The only file that imports from `project-editor-private/`.
 - `src/features/project-editor/project-editor-view.tsx`
   - Screen-level composition (sidebar + editor + status).
 - `src/features/project-editor/project-editor-dialogs.tsx`
@@ -144,8 +148,11 @@ Mandatory doc navigation for new chats: start with `docs/START-HERE.md` — it p
   - Pure workspace helpers: `deriveActivePaneDocument` (active pane projection), `canSelectFile`, `reconcileWorkspaceLayout`, `buildConflictCopyPath`, and layout persistence.
 - `src/features/project-editor/workspace-actions.ts`
   - Deep module for workspace layout, pane activation, focus, fullscreen, editor view, save/revert actions.
-  - Also owns browser-style pane-history open/back/forward behavior.
   - Plain functions — no hooks. Caller applies setters.
+  - Pane-history navigation delegates to `workspace-actions/private/pane-history.ts`.
+- `src/features/project-editor/workspace-actions/private/`
+  - `view-modes.ts` — fullscreen, focus-mode, zoom helpers re-exported from workspace-actions.
+  - `pane-history.ts` — per-pane history navigation: `openPreviousInPaneHistory`, `openNextInPaneHistory`, and internal `openHistoryPathInPane`. Do not import from `private/` directly.
 - `src/features/project-editor/sidebar-file-actions/`
   - Deep module for sidebar UI and file/folder CRUD.
   - `index.ts` — public facade re-exporting all actions.
@@ -153,9 +160,19 @@ Mandatory doc navigation for new chats: start with `docs/START-HERE.md` — it p
 - `src/features/project-editor/conflict-actions.ts`
   - Deep module for external-edit conflict resolution (reload, keep, save-as-copy, compare, close-compare).
   - Plain functions — no hooks.
-- `src/features/project-editor/use-project-editor-open-project.ts`
-  - Open-project flow and pane/layout reconciliation.
-  - Resets pane history on explicit project-open boundaries before initial document seeding.
+- `src/features/project-editor/open-project-types.ts`
+  - Shared `OpenProjectOptions` type used by the project editor Module, conflict flow, and sidebar file/folder adapters.
+- `src/features/project-editor/project-editor-private/`
+  - Private implementation directory for the `use-project-editor.ts` seam. Do not import from it outside `use-project-editor.ts`.
+  - `state.ts` — private state assembly: core state, persisted layout/sidebar state, active-pane projection, visible-files derivation, setters, and `paneBindings`.
+  - `actions.ts` — private action assembly: clear/load/save/open plus flat `ProjectEditorActions` composition over the deep Modules via `action-group-types.ts`, `sidebar-action-group.ts`, `workspace-action-group.ts`, and `conflict-action-group.ts`.
+  - `open-project.ts` — private open-project orchestration: snapshot apply, layout reconcile, preferred-pane handling, inactive-pane preload.
+  - `action-group-types.ts` — shared `ProjectEditorActionSetters` and `ActionGroupParams` types used by the action-group files.
+  - `sidebar-action-group.ts` — delegates sidebar UI and file/folder CRUD actions to `sidebar-file-actions`.
+  - `workspace-action-group.ts` — delegates workspace/layout and editor-view actions to `workspace-actions`.
+  - `conflict-action-group.ts` — delegates conflict-resolution actions to `conflict-actions`.
+  - `state-builders.ts` — memoized sub-state hooks: `useProjectEditorSubStates`, `useProjectEditorBindings`.
+  - `state-values.ts` — `useProjectEditorValues` memoized projection.
 - `src/features/project-editor/use-project-editor-fullscreen-effect.ts`
   - Renderer subscription to native fullscreen state changes.
 - `src/features/project-editor/use-project-editor-shortcuts-effect.ts`
@@ -167,6 +184,8 @@ Mandatory doc navigation for new chats: start with `docs/START-HERE.md` — it p
   - Persist workspace layout (`trama.workspace.layout.v1`).
 - `docs/architecture/split-pane-coordination.md`
   - Canonical reference for the split pane per-pane state model. Documents the two-layer state model (layout vs document), all 7 formal contracts, state projection map, and key implementation files.
+- `src/features/project-editor/use-project-editor-model.ts`
+  - Plain helpers for the `use-project-editor.ts` composition root: `createEditorSerializationRefs`, `createNavigationHistoryStore`, `createSaveDocumentProxy`, `buildShortcutsEffectParams`.
 - `src/features/project-editor/use-sidebar-ui-state.ts`
   - Persist sidebar UI (`trama.sidebar.ui.v1`).
 - `src/features/project-editor/use-ai-import.ts`
@@ -180,26 +199,24 @@ Mandatory doc navigation for new chats: start with `docs/START-HERE.md` — it p
 
 ### Project editor hooks (detailed)
 
-- `src/features/project-editor/use-project-editor-state.ts`
-  - Core local state for the editor feature (panes, loading/saving flags, conflict state, status messages).
+- `src/features/project-editor/project-editor-private/state.ts`
+  - Private state assembly behind `use-project-editor.ts`.
   - Derives active editor state (`selectedPath` / `editorValue` / `isDirty`) from `workspaceLayout.activePane`.
-  - Returns 6 memoized sub-states (`documentState`, `paneState`, `layoutState`, `sidebarState`, `projectState`, `uiState`) alongside the legacy `values` object for granular dependency tracking in action hooks.
-- `src/features/project-editor/use-project-editor-state.ts`
-  - Core local state for the editor feature (panes, loading/saving flags, conflict state, status messages).
-  - Derives active editor state (`selectedPath` / `editorValue` / `isDirty`) from `workspaceLayout.activePane`.
-  - Returns 6 memoized sub-states (`documentState`, `paneState`, `layoutState`, `sidebarState`, `projectState`, `uiState`) alongside the legacy `values` object.
-  - Sub-state builders are inlined; `setters` object uses stable individual setter dependencies.
-- `src/features/project-editor/use-project-editor-actions.ts`
-  - Thin adapter: keeps core operations (clear, load, save, open) and builds the `ProjectEditorActions` surface via one `useMemo` over the three deep modules (`workspace-actions`, `sidebar-file-actions`, `conflict-actions`).
+  - Returns memoized `documentState`, `layoutState`, `sidebarState`, `projectState`, `uiState`, plus `values`, `setters`, and `paneBindings`.
+- `src/features/project-editor/project-editor-private/actions.ts`
+  - Private action assembly behind `use-project-editor.ts`.
+  - Keeps core operations (clear, load, save, open) and builds the flat `ProjectEditorActions` surface directly over the deep Modules (`workspace-actions`, `sidebar-file-actions`, `conflict-actions`).
   - Save path hydrates both image placeholders and broken-image placeholders before IPC persistence.
-  - Receives `paneWorkspace` from `useProjectEditor`.
 - `src/features/project-editor/use-project-editor-autosave-effect.ts`
   - Minimal Preact adapter: detects dirty → calls `paneWorkspace.scheduleAutosave`, detects clean/unmount → calls `paneWorkspace.cancelAutosave`. Timer logic lives in `PaneWorkspace`.
 - `src/features/project-editor/pane/`
   - Private module for pane coordination. All pane state, flush, save, and autosave access goes through this module.
   - `pane/index.ts` — barrel exporting `PaneWorkspace`, `usePaneWorkspace`, and public types
   - `pane/pane-workspace.ts` — coordinator class with read methods (`getPaneDocument`, `isPaneDirty`) and write methods (`savePaneIfDirty`, `saveAllDirtyPanes`, `scheduleAutosave`, `updatePaneContent`, etc.); `markPaneSaved` is private.
-  - Also owns pane-local session history stack helpers (`recordPaneNavigation`, `getPreviousPathInPaneHistory`, `getNextPathInPaneHistory`, `stepPaneNavigationHistory`, `clearNavigationHistory`).
+  - `pane/pane-navigation.ts` — `PaneNavigation` class extracted from `PaneWorkspace`: owns per-pane session history stack helpers (`recordPaneNavigation`, `getPreviousPathInPaneHistory`, `getNextPathInPaneHistory`, `stepPaneNavigationHistory`, `clearNavigationHistory`).
+  - `pane/pane-navigation-state.ts` — pure helpers for navigation history state: `getEmptyNavigationHistory`, `getHistoryForPane`, `createNavigationHistoryStore`.
+  - `pane/pane-editor.tsx` — `PaneEditor` component extracted from `workspace-editor-panels.tsx`.
+  - `pane/pane-title.ts` — `toPaneTitle` helper for deriving display labels from pane paths.
   - `pane/use-pane-workspace.ts` — factory hook that encapsulates Preact setter injection, creating a `PaneWorkspace` instance via `useMemo`
   - `pane/pane-save-logic.ts` — `executePaneSave` (internal, not exported from barrel)
   - `pane/snapshot-compare-logger.ts` — `logSnapshotComparison` helper for diagnosing false-positive external-change conflicts
@@ -212,8 +229,6 @@ Mandatory doc navigation for new chats: start with `docs/START-HERE.md` — it p
   - Listens for native fullscreen changes and mirrors them into UI state.
 - `src/features/project-editor/use-project-editor-shortcuts-effect.ts`
   - Global keyboard shortcuts handling for editor workspace actions.
-- `src/features/project-editor/use-project-editor-open-project.ts`
-  - Orchestrates opening a project: load snapshot, reconcile layout, preload inactive pane.
 - `src/features/project-editor/workspace-actions.ts`
   - Deep module for workspace/layout, pane, focus, fullscreen, editor view, save, and revert actions.
   - Plain functions. Callers pass setters/state and apply results.
@@ -268,7 +283,10 @@ Mandatory doc navigation for new chats: start with `docs/START-HERE.md` — it p
 - `src/features/project-editor/pane/rich-markdown-editor/rich-markdown-editor-layout-actions.ts`
   - Toolbar-triggered layout helpers for pagebreak/spacer insertion and center toggle behavior; inside centered content the action rebuilds canonical non-nested center boundaries around the untoggled lines, and when toggling an adjacent line it extends the existing centered segment instead of creating a second pair.
 - `src/features/project-editor/pane/rich-markdown-editor/rich-markdown-editor-layout-center-ranges.ts`
-  - Center-range utility module for Quill Delta: extracts center boundaries from ops, derives center segments, detects whether an index is inside a segment, normalizes a selection to full line boundaries, and builds seam-safe `center:start`/`center:end` boundary shifts for keyboard deletion.
+  - Center-range utility module for Quill Delta: extracts center boundaries from ops, derives center segments, detects whether an index is inside a segment, normalizes a selection to full line boundaries.
+  - Boundary-safe deletion logic moved to `rich-markdown-editor-layout-center-delete.ts`.
+- `src/features/project-editor/pane/rich-markdown-editor/rich-markdown-editor-layout-center-delete.ts`
+  - Extracted from `layout-center-ranges.ts`: `buildBoundarySafeDeleteContents` and its backspace/delete-forward branch helpers. Re-exports `CenterDeleteDirection` for import by `layout-keyboard.ts`.
 - `src/features/project-editor/pane/rich-markdown-editor/rich-markdown-editor-layout-centering.ts`
   - Synchronizes centered styling for editor blocks located between `center:start` and `center:end` boundary artifacts.
 - `src/features/project-editor/pane/rich-markdown-editor/private/rich-markdown-editor-toolbar-controller.ts`
@@ -379,6 +397,9 @@ Mandatory doc navigation for new chats: start with `docs/START-HERE.md` — it p
 
 - `src/shared/ipc.ts`
   - IPC channel constants, Zod schemas, shared envelope/types.
+  - Zulu schemas and types re-exported from `ipc-zulu.ts`.
+- `src/shared/ipc-zulu.ts`
+  - ZuluPad import schemas (`zuluTagModeSchema`, `zuluSelectFileResponseSchema`, etc.) and their inferred types, extracted from `ipc.ts`.
 - `src/shared/project-sections.ts`
   - Single source of truth for relevant project sections (`book`, `outline`, `lore`).
   - Exports `RELEVANT_SECTION_NAMES`, `RELEVANT_SECTION_ROOTS` and `isRelevantPath()` helper.

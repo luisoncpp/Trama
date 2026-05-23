@@ -7,7 +7,7 @@ import {
 import { noteSidebarFolderRenamed } from '../../components/sidebar/sidebar-folder-rename-events'
 import { normalizeName, isInvalidRenameInput } from '../../../../shared/sidebar-utils'
 import type { SidebarRenameInput, WorkspaceLayoutState, ProjectEditorProjectState } from '../../project-editor-types'
-import type { OpenProjectOptions } from '../../use-project-editor-actions-types'
+import type { OpenProjectOptions } from '../../open-project-types'
 import type { PaneWorkspace } from '../../pane'
 
 function preferredPathFromLayout(layout: WorkspaceLayoutState): string | null {

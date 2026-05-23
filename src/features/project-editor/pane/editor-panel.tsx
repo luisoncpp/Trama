@@ -46,62 +46,72 @@ function getRevertLabel({isDirty}: {isDirty: boolean}): string {
   return PROJECT_EDITOR_STRINGS.noChanges
 }
 
-export function EditorPanel({
-  selectedPath,
-  saving,
-  isDirty,
-  loadingDocument,
-  editorValue,
-  spellcheckEnabled,
-  historyBackDisabled,
-  onHistoryBack,
-  onSaveNow,
-  onRevertNow,
-  onEditorChange,
-  focusModeEnabled,
-  focusScope,
-  onInteract,
-  tagIndex,
-  onTagClick,
-  isActive = true,
-  editorSerializationRef,
-  onMarkDirty,
-  zoomRef,
-  zoomLevel,
-  onZoomChange,
-}: EditorPanelProps) {
-  const saveDisabled = !selectedPath || saving || !isDirty
-  const saveLabel = getSaveLabel({saving, isDirty})
+function buildSyncState(
+  selectedPath: string | null,
+  loadingDocument: boolean,
+  saving: boolean,
+  isDirty: boolean,
+): RichEditorSyncState {
+  if (!selectedPath || loadingDocument) return 'disabled'
+  if (saving) return 'saving'
+  if (isDirty) return 'dirty'
+  return 'clean'
+}
 
-  const revertDisabled = !selectedPath || saving || !isDirty
-  const revertLabel = getRevertLabel({isDirty})
+function buildEditorPanelState(
+  selectedPath: string | null,
+  loadingDocument: boolean,
+  saving: boolean,
+  isDirty: boolean,
+) {
+  return {
+    saveDisabled: !selectedPath || saving || !isDirty,
+    saveLabel: getSaveLabel({ saving, isDirty }),
+    revertDisabled: !selectedPath || saving || !isDirty,
+    revertLabel: getRevertLabel({ isDirty }),
+    syncState: buildSyncState(selectedPath, loadingDocument, saving, isDirty),
+    syncStateLabel: computeSyncStateLabel(selectedPath, loadingDocument, saving, isDirty),
+  }
+}
 
-  const syncState: RichEditorSyncState = !selectedPath || loadingDocument ? 'disabled' : saving ? 'saving' : isDirty ? 'dirty' : 'clean'
-  const syncStateLabel = computeSyncStateLabel(selectedPath, loadingDocument, saving, isDirty)
-
+function renderEditorPanelBody(
+  props: EditorPanelProps,
+  state: ReturnType<typeof buildEditorPanelState>,
+) {
+  const { selectedPath, loadingDocument, onInteract } = props
   return (
     <article class="editor-panel-root" onPointerDownCapture={onInteract}>
       <div class={`editor-manuscript ${!selectedPath || loadingDocument ? 'is-muted' : ''}`}>
         <RichMarkdownEditor
-          documentId={selectedPath} value={editorValue}
+          documentId={selectedPath} value={props.editorValue}
           disabled={!selectedPath || loadingDocument}
-          spellcheckEnabled={spellcheckEnabled} onChange={onEditorChange}
-          historyBackDisabled={historyBackDisabled}
-          onHistoryBack={onHistoryBack}
-          saveDisabled={saveDisabled} saveLabel={saveLabel}
-          onSaveNow={onSaveNow}
-          revertDisabled={revertDisabled} revertLabel={revertLabel}
-          onRevertNow={onRevertNow}
-          syncState={syncState} syncStateLabel={syncStateLabel}
-          focusModeEnabled={focusModeEnabled} focusScope={focusScope}
-          tagIndex={tagIndex} onTagClick={onTagClick} isActive={isActive}
-          editorSerializationRef={editorSerializationRef}
-          onMarkDirty={onMarkDirty}
-          zoomRef={zoomRef}
-          zoomLevel={zoomLevel}
-          onZoomChange={onZoomChange}
+          spellcheckEnabled={props.spellcheckEnabled} onChange={props.onEditorChange}
+          historyBackDisabled={props.historyBackDisabled}
+          onHistoryBack={props.onHistoryBack}
+          saveDisabled={state.saveDisabled} saveLabel={state.saveLabel}
+          onSaveNow={props.onSaveNow}
+          revertDisabled={state.revertDisabled} revertLabel={state.revertLabel}
+          onRevertNow={props.onRevertNow}
+          syncState={state.syncState} syncStateLabel={state.syncStateLabel}
+          focusModeEnabled={props.focusModeEnabled} focusScope={props.focusScope}
+          tagIndex={props.tagIndex} onTagClick={props.onTagClick} isActive={props.isActive}
+          editorSerializationRef={props.editorSerializationRef}
+          onMarkDirty={props.onMarkDirty}
+          zoomRef={props.zoomRef}
+          zoomLevel={props.zoomLevel}
+          onZoomChange={props.onZoomChange}
         />
       </div>
     </article>
   )
+}
+
+export function EditorPanel(props: EditorPanelProps) {
+  const panelState = buildEditorPanelState(
+    props.selectedPath,
+    props.loadingDocument,
+    props.saving,
+    props.isDirty,
+  )
+  return renderEditorPanelBody(props, panelState)
 }

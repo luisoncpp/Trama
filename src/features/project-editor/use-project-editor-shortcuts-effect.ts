@@ -76,6 +76,72 @@ function handleToggleSplitLayout(onToggleSplitLayout: () => void, event: Keyboar
   onToggleSplitLayout()
 }
 
+function handleCommandShortcut(
+  params: UseProjectEditorShortcutsEffectParams,
+  event: KeyboardEvent,
+  isCommandKey: boolean,
+): boolean {
+  if (isCommandKey && !event.altKey && event.code === 'Period') {
+    handleToggleSplitLayout(params.onToggleSplitLayout, event)
+    return true
+  }
+
+  if (isCommandKey && event.shiftKey && event.code === 'KeyF') {
+    handleToggleFullscreen(params.onToggleFullscreen, event)
+    return true
+  }
+
+  if (isCommandKey && event.shiftKey && event.code === 'KeyM') {
+    handleToggleFocusMode(params.onToggleFocusMode, event)
+    return true
+  }
+
+  if (isCommandKey && event.shiftKey && event.code === 'Tab') {
+    handleSwitchPane(params.onSwitchActivePane, event)
+    return true
+  }
+
+  if (isCommandKey && !event.altKey && !event.shiftKey && event.code === 'KeyS') {
+    handleSave(params.onSaveNow, event)
+    return true
+  }
+
+  return false
+}
+
+function handleNavigationAndZoomShortcut(
+  params: UseProjectEditorShortcutsEffectParams,
+  event: KeyboardEvent,
+  isCommandKey: boolean,
+): boolean {
+  if (event.altKey && !isCommandKey && !event.shiftKey && event.code === 'ArrowLeft') {
+    handleOpenPreviousHistory(params.onOpenPreviousHistory, event)
+    return true
+  }
+
+  if (event.altKey && !isCommandKey && !event.shiftKey && event.code === 'ArrowRight') {
+    handleOpenNextHistory(params.onOpenNextHistory, event)
+    return true
+  }
+
+  if (isCommandKey && !event.altKey && !event.shiftKey && (event.code === 'Equal' || event.key === '+')) {
+    handleZoomIn(params.onZoomIn, event)
+    return true
+  }
+
+  if (isCommandKey && !event.altKey && !event.shiftKey && (event.code === 'Minus' || event.key === '-')) {
+    handleZoomOut(params.onZoomOut, event)
+    return true
+  }
+
+  if (isCommandKey && !event.altKey && !event.shiftKey && event.key === '0') {
+    handleZoomReset(params.onZoomReset, event)
+    return true
+  }
+
+  return false
+}
+
 function makeKeydownHandler(params: UseProjectEditorShortcutsEffectParams) {
   return (event: KeyboardEvent) => {
     if (isFormFieldTarget(event.target)) return
@@ -88,53 +154,11 @@ function makeKeydownHandler(params: UseProjectEditorShortcutsEffectParams) {
 
     const isCommandKey = event.ctrlKey || event.metaKey
 
-    if (isCommandKey && !event.altKey && event.code === 'Period') {
-      handleToggleSplitLayout(params.onToggleSplitLayout, event)
+    if (handleCommandShortcut(params, event, isCommandKey)) {
       return
     }
 
-    if (isCommandKey && event.shiftKey && event.code === 'KeyF') {
-      handleToggleFullscreen(params.onToggleFullscreen, event)
-      return
-    }
-
-    if (isCommandKey && event.shiftKey && event.code === 'KeyM') {
-      handleToggleFocusMode(params.onToggleFocusMode, event)
-      return
-    }
-
-    if (isCommandKey && event.shiftKey && event.code === 'Tab') {
-      handleSwitchPane(params.onSwitchActivePane, event)
-      return
-    }
-
-    if (isCommandKey && !event.altKey && !event.shiftKey && event.code === 'KeyS') {
-      handleSave(params.onSaveNow, event)
-      return
-    }
-
-    if (event.altKey && !isCommandKey && !event.shiftKey && event.code === 'ArrowLeft') {
-      handleOpenPreviousHistory(params.onOpenPreviousHistory, event)
-      return
-    }
-
-    if (event.altKey && !isCommandKey && !event.shiftKey && event.code === 'ArrowRight') {
-      handleOpenNextHistory(params.onOpenNextHistory, event)
-      return
-    }
-
-    if (isCommandKey && !event.altKey && !event.shiftKey && (event.code === 'Equal' || event.key === '+')) {
-      handleZoomIn(params.onZoomIn, event)
-      return
-    }
-
-    if (isCommandKey && !event.altKey && !event.shiftKey && (event.code === 'Minus' || event.key === '-')) {
-      handleZoomOut(params.onZoomOut, event)
-      return
-    }
-
-    if (isCommandKey && !event.altKey && !event.shiftKey && event.key === '0') {
-      handleZoomReset(params.onZoomReset, event)
+    if (handleNavigationAndZoomShortcut(params, event, isCommandKey)) {
       return
     }
   }

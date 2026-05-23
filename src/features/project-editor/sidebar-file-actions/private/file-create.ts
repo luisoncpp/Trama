@@ -1,7 +1,7 @@
 import { PROJECT_EDITOR_STRINGS } from '../../project-editor-strings'
 import { normalizeName } from '../../../../shared/sidebar-utils'
 import type { SidebarCreateInput, ProjectEditorProjectState, ProjectEditorSidebarState } from '../../project-editor-types'
-import type { OpenProjectOptions } from '../../use-project-editor-actions-types'
+import type { OpenProjectOptions } from '../../open-project-types'
 import { buildProjectCandidatePath, type SidebarSectionRoot } from '../../components/sidebar/sidebar-path-scoping'
 import { SIDEBAR_SECTION_CONFIG } from '../../components/sidebar/sidebar-section-roots'
 

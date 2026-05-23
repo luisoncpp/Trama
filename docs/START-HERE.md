@@ -47,7 +47,7 @@ Trama is a file-first desktop writing tool (Electron + Preact + TypeScript). The
 | Debug editor debounce / flush-before-switch | `docs/architecture/editor-serialization-debounce-architecture.md` → `src/features/project-editor/components/rich-markdown-editor-core.ts` → `tests/project-editor-debounce-regression.test.ts` |
 | Plan rich editor cleanup/refactor | `docs/plan/rich-editor-refactor-plan.md` → `docs/architecture/rich-markdown-editor-core-architecture.md` → `docs/architecture/image-handling-architecture.md` → `docs/architecture/split-pane-coordination.md` |
 | Follow editor typing behavior step-by-step | `docs/flows/rich-editor-typing-flow.md` → `src/features/project-editor/components/rich-markdown-editor-core.ts` → `src/features/project-editor/components/rich-markdown-editor-quill.ts` |
-| Follow split-pane activation behavior step-by-step | `docs/flows/switch-pane-flow.md` → `src/features/project-editor/workspace-actions.ts` → `src/features/project-editor/use-project-editor-state.ts` |
+| Follow split-pane activation behavior step-by-step | `docs/flows/switch-pane-flow.md` → `src/features/project-editor/workspace-actions.ts` → `src/features/project-editor/project-editor-private/state.ts` |
 | Change pane document history behavior | `docs/flows/pane-history-navigation-flow.md` → `src/features/project-editor/pane/pane-workspace.ts` → `src/features/project-editor/workspace-actions.ts` → `src/features/project-editor/use-project-editor.ts` |
 | Change filesystem/repo layer | `electron/services/document-repository.ts` → `electron/ipc/handlers/project-handlers/document-handlers.ts` |
 | Add a test | `tests/` + `docs/dev-workflow.md` (checklist) |

@@ -1,7 +1,7 @@
 import { useEffect } from 'preact/hooks'
 import type { ExternalFileEvent } from '../../shared/ipc'
 import type { WorkspacePane } from './project-editor-types'
-import type { OpenProjectOptions } from './use-project-editor-actions-types'
+import type { OpenProjectOptions } from './open-project-types'
 import { shouldRefreshTreeOnExternalEvent } from './project-editor-logic'
 import { PROJECT_EDITOR_STRINGS } from './project-editor-strings'
 

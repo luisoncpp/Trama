@@ -1,3 +1,35 @@
+I didn't find a project CONTEXT.md or any ADR files, so I used the existing live and architecture docs as the domain source of truth.
+
+Project editor action Module
+Files: src/features/project-editor/use-project-editor.ts, use-project-editor-state.ts, use-project-editor-actions.ts, use-project-editor-actions-builder.ts, workspace-actions.ts, sidebar-file-actions/index.ts
+Problem: The project editor concept is spread across several shallow Modules whose Interface is mostly forwarding state, setters, and grouped actions to the next Module. The deletion test is weak here: deleting parts of the adapter stack would mostly remove indirection, not concentrated behavior. Understanding one behavior requires bouncing across many seams before reaching the real Implementation.
+Solution: Collapse pass-through Modules so the project editor has fewer, deeper Modules organized around project editor concepts like project open, pane assignment, and persistence.
+Benefits: Better locality because one behavior lives in fewer places. Better leverage because callers learn less Interface to get the same behavior. Tests improve because they can target deeper Modules directly instead of reconstructing the full hook stack.
+Pane persistence Module
+Files: src/features/project-editor/pane/pane-workspace.ts, pane-save-logic.ts, workspace-actions.ts, sidebar-file-actions/private/file-select.ts, components/rich-markdown-editor-serialization.ts
+Problem: The real complexity is sequencing: flush-before-save, autosave, switch-time save, manual save, and close-time save. That behavior is currently spread across several Modules, while some extracted Modules are shallow forwarding layers. The Interface is fragmented, so the seam leaks persistence policy into many callers.
+Solution: Give one deep Module ownership of pane persistence end-to-end: flush, save eligibility, autosave, switch-time save, and close-time save.
+Benefits: Better locality because save bugs concentrate in one place. Better leverage because one change fixes persistence behavior across rich editor, split pane, and sidebar navigation. Tests improve because the Interface becomes the real test surface instead of hook choreography.
+Folder order Module
+Files: electron/services/index-service.ts, electron/ipc/handlers/project-handlers/order-handlers.ts, src/features/project-editor/components/sidebar/sidebar-path-scoping.ts, sidebar-panel-body.tsx, electron/services/book-export-order.ts
+Problem: One concept, folder order, is represented through several translations across the sidebar, .trama.index.json, and book export. The seam leaks invariants because ordered identity changes shape across Modules: path in one place, meta.id in another. The docs already record that reconcile can overwrite reorder intent. This is shallow composition around one domain concept.
+Solution: Make ordered-item identity and folder scoping one deep Module shared by sidebar ordering and book export ordering.
+Benefits: Better locality because ordering rules stop being re-derived in multiple places. Better leverage because one ordering Interface would cover sidebar and export behavior. Tests improve because the ordering contract can be verified directly without going through project open plus export flows.
+Wiki tag links matching Module
+Files: electron/services/tag-index-service.ts, electron/ipc/handlers/tag-handlers.ts, src/features/project-editor/use-tag-index.ts, tag-index-events.ts, pane/rich-markdown-editor/rich-markdown-editor-tag-helpers.ts, rich-markdown-editor-tag-overlay.ts, rich-markdown-editor-tag-highlights.tsx
+Problem: Wiki tag matching logic exists in more than one place. The rich editor does local matching, while the main process has another matching path. The seam is shallow because the Interface does not hide the matching rules; instead, callers depend on duplicated behavior. That reduces depth and risks drift.
+Solution: Put Wiki tag links matching in one canonical Module and keep refresh and invalidation rules behind the same seam.
+Benefits: Better locality because matching semantics live in one place. Better leverage because overlay rendering, click resolution, and future Wiki tag links behavior all benefit from one Implementation. Tests improve because one expectation set covers the behavior.
+External conflict Module
+Files: src/features/project-editor/use-project-editor-external-events-effect.ts, conflict-actions.ts, project-editor-logic.ts, pane/pane-workspace.ts, use-project-editor-open-project.ts, tests/project-editor-conflict-flow.test.ts
+Problem: External conflict handling depends on projected document state, active pane, dirty state, snapshot comparison, compare state, and reopen behavior. The extracted Modules are individually small, but the important behavior lives in how they are coordinated. That means the current seam has low depth and poor locality.
+Solution: Make external conflict handling a pane-aware deep Module that owns detect, compare, reload, keep, and save-as-copy behavior under one set of invariants.
+Benefits: Better locality because one high-risk behavior lives behind one seam. Better leverage because split-pane and reopen behavior stop leaking into many callers. Tests improve because they can target the conflict Interface instead of mostly relying on one large end-to-end test.
+Which of these would you like to explore?
+
+
+
+
 useProjectEditor being called every keystroke
 
 > If you want to fix the keystroke churn, the next deepening candidate is PaneWorkspace itself.

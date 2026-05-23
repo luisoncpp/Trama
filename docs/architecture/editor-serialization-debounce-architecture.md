@@ -170,7 +170,7 @@ That helper owns serialization-ref lookup, pane-state lookup, `flushPane(pane)`,
 | `src/features/project-editor/components/workspace-editor-panels.tsx` | Reads `serializationRefs` from model, routes per pane |
 | `src/features/project-editor/project-editor-types.ts` | `EditorSerializationRefs` type, `serializationRefs` in model |
 | `src/features/project-editor/use-project-editor.ts` | Creates refs, wires into actions and effects |
-| `src/features/project-editor/use-project-editor-actions.ts` | Accepts and forwards `SerializationRefsForActions` |
+| `src/features/project-editor/project-editor-private/actions.ts` | Private action assembly that owns `loadDocument`/`saveDocumentNow` alongside serialization-aware editor flows |
 | `src/features/project-editor/use-project-editor-pane-persistence.ts` | Centralized pane-targeted `flush/save` helper used by actions and effects |
 | `src/features/project-editor/use-project-editor-ui-actions.ts` | Passes refs to `usePrimaryProjectEditorActions` |
 | `src/features/project-editor/use-project-editor-ui-actions-helpers.ts` | `saveNow`, `selectFile`, `editorViewActions` routed through pane persistence |

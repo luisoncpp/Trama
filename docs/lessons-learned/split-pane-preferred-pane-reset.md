@@ -41,10 +41,10 @@ Implemented changes that resolved the issue:
 5. Reintroduced the removed test and made it pass.
 
 Key implementation files:
-- `src/features/project-editor/use-project-editor-state.ts`
-- `src/features/project-editor/use-project-editor-actions.ts`
-- `src/features/project-editor/use-project-editor-open-project.ts`
-- `src/features/project-editor/use-project-editor-ui-actions.ts`
+- `src/features/project-editor/project-editor-private/state.ts`
+- `src/features/project-editor/project-editor-private/actions.ts`
+- `src/features/project-editor/project-editor-private/open-project.ts`
+- `src/features/project-editor/workspace-actions.ts`
 - `tests/project-editor-conflict-flow.test.ts`
 
 ## Anti-Stall Rules for Future Changes

@@ -1,5 +1,5 @@
 import type { ProjectEditorProjectState } from '../../project-editor-types'
-import type { OpenProjectOptions } from '../../use-project-editor-actions-types'
+import type { OpenProjectOptions } from '../../open-project-types'
 import type { PaneWorkspace } from '../../pane'
 
 export async function reorderFiles(

@@ -14,7 +14,7 @@ The `scopeCorkboardOrder()` function converts project-relative `corkboardOrder` 
 
 ## Data flow
 
-1. `snapshot.index.corkboardOrder` → `use-project-editor-state.ts` derives `corkboardOrder`
+1. `snapshot.index.corkboardOrder` → `project-editor-private/state.ts` derives `corkboardOrder`
 2. `corkboardOrder` flows through `project-editor-view` → `sidebar-panel` → `sidebar-panel-body`
 3. `sidebar-path-scoping.ts` converts keys/IDs to section-relative before the tree sees them
 4. Scoped order → `sidebar-explorer-content` → `sidebar-explorer-body` → `sidebar-tree`

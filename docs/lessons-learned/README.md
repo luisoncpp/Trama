@@ -28,6 +28,7 @@ Avoid: "bug description + fix". Prefer: "what I learned that applies to future w
 | File | Topic | Date |
 |------|-------|------|
 | `incremental-project-updates.md` | Centralize incremental state updates in `openProject` with a backend cache; let the frontend own the delta; fall back to full scan for external events | 2026-05-20 |
+| `private-directory-makes-the-seam-obvious.md` | Put seam-only hook assembly behind an explicitly private directory so the public Module stays obvious | 2026-05-22 |
 | `explicit-toolbar-order-needs-one-dom-owner.md` | Toolbar order stays readable when one private Module owns DOM composition and explicit order, even if Quill remains the seam | 2026-05-21 |
 | `broken-project-images-need-editor-only-placeholders.md` | Missing `res/*.png` files must degrade to editor-only placeholders at repository read time, then rehydrate back to the original markdown image syntax on save | 2026-05-21 |
 | `docx-imagerun-pixel-units.md` | `docx` `ImageRun.transformation` expects pixels, not EMU; passing EMU causes invisible/gigantic images | 2026-04-25 |

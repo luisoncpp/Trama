@@ -8,7 +8,7 @@ interface DeltaOp {
   insert?: DeltaInsert
 }
 
-interface SelectionRange {
+export interface SelectionRange {
   index: number
   length: number
 }
@@ -65,7 +65,7 @@ function readCenterBoundaryFromInsert(insert: DeltaInsert | undefined, index: nu
   }
 }
 
-function getLineStartIndex(editor: Quill, index: number): number {
+export function getLineStartIndex(editor: Quill, index: number): number {
   const [line, offset] = editor.getLine(index)
   if (!line) {
     return Math.max(0, index)
@@ -74,7 +74,7 @@ function getLineStartIndex(editor: Quill, index: number): number {
   return index - offset
 }
 
-function getLineEndIndexExclusive(editor: Quill, index: number): number {
+export function getLineEndIndexExclusive(editor: Quill, index: number): number {
   const [line] = editor.getLine(index)
   if (!line) {
     return Math.max(0, index)
@@ -84,11 +84,11 @@ function getLineEndIndexExclusive(editor: Quill, index: number): number {
   return lineStart + line.length()
 }
 
-function startsWithTextInsert(delta: Delta): boolean {
+export function startsWithTextInsert(delta: Delta): boolean {
   return typeof delta.ops[0]?.insert === 'string'
 }
 
-function buildSegmentWithShiftedEndBoundary(
+export function buildSegmentWithShiftedEndBoundary(
   contents: Delta,
   segment: CenterSegment,
   movedContentStartIndex: number,
@@ -106,7 +106,7 @@ function buildSegmentWithShiftedEndBoundary(
     .concat(suffix)
 }
 
-function buildSegmentWithShiftedStartBoundary(
+export function buildSegmentWithShiftedStartBoundary(
   contents: Delta,
   segment: CenterSegment,
   movedContentStartIndex: number,
@@ -204,72 +204,4 @@ export function normalizeSelectionToLineRange(editor: Quill, selection: Selectio
     startIndex,
     endIndexExclusive,
   }
-}
-
-export function buildBoundarySafeDeleteContents(
-  editor: Quill,
-  selection: SelectionRange | null,
-  direction: CenterDeleteDirection,
-): Delta | null {
-  if (!selection || selection.length !== 0) {
-    return null
-  }
-
-  const segments = getCenterSegments(editor)
-  const contents = editor.getContents() as Delta
-
-  if (direction === 'backspace') {
-    if (selection.index <= 0) {
-      return null
-    }
-
-    const startSegment = segments.find((candidate) => selection.index === candidate.startBoundaryIndex + 1)
-    if (startSegment && getLineStartIndex(editor, selection.index) === selection.index && startSegment.startBoundaryIndex > 0) {
-      const shiftedContentStartIndex = getLineStartIndex(editor, startSegment.startBoundaryIndex - 1)
-      const shiftedContent = contents.slice(shiftedContentStartIndex, startSegment.startBoundaryIndex)
-      if (startsWithTextInsert(shiftedContent)) {
-        return buildSegmentWithShiftedStartBoundary(contents, startSegment, shiftedContentStartIndex)
-      }
-    }
-
-    const segment = segments.find((candidate) => selection.index === candidate.endBoundaryIndex + 1)
-    if (!segment || getLineStartIndex(editor, selection.index) !== selection.index) {
-      return null
-    }
-
-    const shiftedContentEndIndexExclusive = getLineEndIndexExclusive(editor, selection.index)
-    const shiftedContent = contents.slice(selection.index, shiftedContentEndIndexExclusive)
-    if (!startsWithTextInsert(shiftedContent)) {
-      return null
-    }
-
-    return buildSegmentWithShiftedEndBoundary(contents, segment, selection.index, shiftedContentEndIndexExclusive)
-  }
-
-  const startSegment = segments.find((candidate) => selection.index === candidate.startBoundaryIndex)
-  if (startSegment && startSegment.startBoundaryIndex > 0) {
-    const shiftedContentStartIndex = getLineStartIndex(editor, startSegment.startBoundaryIndex - 1)
-    const shiftedContent = contents.slice(shiftedContentStartIndex, startSegment.startBoundaryIndex)
-    if (startsWithTextInsert(shiftedContent)) {
-      return buildSegmentWithShiftedStartBoundary(contents, startSegment, shiftedContentStartIndex)
-    }
-  }
-
-  const segment = segments.find((candidate) => selection.index === candidate.endBoundaryIndex)
-  const shiftedContentStartIndex = selection.index + 1
-  if (!segment || shiftedContentStartIndex >= editor.getLength()) {
-    return null
-  }
-
-  if (getLineStartIndex(editor, shiftedContentStartIndex) !== shiftedContentStartIndex) {
-    return null
-  }
-
-  const shiftedContentEndIndexExclusive = getLineEndIndexExclusive(editor, shiftedContentStartIndex)
-  const shiftedContent = contents.slice(shiftedContentStartIndex, shiftedContentEndIndexExclusive)
-  if (!startsWithTextInsert(shiftedContent)) {
-    return null
-  }
-
-  return buildSegmentWithShiftedEndBoundary(contents, segment, shiftedContentStartIndex, shiftedContentEndIndexExclusive)
 }

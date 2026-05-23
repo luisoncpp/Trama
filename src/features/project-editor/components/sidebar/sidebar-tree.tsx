@@ -48,6 +48,26 @@ export interface SidebarTreeRowsProps {
   }
 }
 
+function useSidebarTreeDragState() {
+  const [draggingPath, setDraggingPath] = useState<string | null>(null)
+  const [dropPosition, setDropPosition] = useState<DropIndicatorPosition | null>(null)
+  return { draggingPath, dropPosition, setDraggingPath, setDropPosition }
+}
+
+function renderSidebarTreeEmptyState(
+  visibleFiles: string[],
+  hasFilterQuery: boolean,
+  query: string,
+): preact.JSX.Element | null {
+  if (visibleFiles.length === 0 && !hasFilterQuery) {
+    return <p class='file-tree__empty'>{PROJECT_EDITOR_STRINGS.noMarkdownFiles}</p>
+  }
+  if (hasFilterQuery) {
+    return <p class='file-tree__empty'>No files match &quot;{query}&quot;.</p>
+  }
+  return null
+}
+
 function useSidebarTreeRows(
   visibleFiles: string[],
   expandedFolders: string[],
@@ -154,14 +174,11 @@ export function SidebarTree({
   const { rows, filterResult } = useSidebarTreeRows(visibleFiles, expandedFolders, filterQuery, corkboardOrder)
   const containerRef = useRef<HTMLDivElement | null>(null)
   const hasFilterQuery = filterResult.query.length > 0
-  const [draggingPath, setDraggingPath] = useState<string | null>(null)
-  const [dropPosition, setDropPosition] = useState<DropIndicatorPosition | null>(null)
+  const { draggingPath, dropPosition, setDraggingPath, setDropPosition } = useSidebarTreeDragState()
+  const emptyState = renderSidebarTreeEmptyState(visibleFiles, hasFilterQuery && rows.length === 0, filterResult.query)
 
-  if (visibleFiles.length === 0 && !hasFilterQuery) {
-    return <p class='file-tree__empty'>{PROJECT_EDITOR_STRINGS.noMarkdownFiles}</p>
-  }
-  if (rows.length === 0 && hasFilterQuery) {
-    return <p class='file-tree__empty'>No files match &quot;{filterResult.query}&quot;.</p>
+  if (emptyState) {
+    return emptyState
   }
 
   return (

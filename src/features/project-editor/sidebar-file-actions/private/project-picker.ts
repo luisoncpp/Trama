@@ -1,5 +1,5 @@
 import { PROJECT_EDITOR_STRINGS } from '../../project-editor-strings'
-import type { OpenProjectOptions } from '../../use-project-editor-actions-types'
+import type { OpenProjectOptions } from '../../open-project-types'
 
 export async function pickProjectFolder(
   deps: {

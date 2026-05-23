@@ -29,21 +29,21 @@ This flow involves two IPC calls, two workspace layout updates, and a snapshot r
    - Calls `setters.setWorkspaceLayout(nextLayout)` — **first layout update, triggers re-render**.
    - Calls `openProject(rootPath, { preferredFilePath, preferredPane, incrementalUpdate: { deletedFolders: [path] } })`.
 
-6. **`openProject`** in `use-project-editor-open-project.ts`:
+6. **`openProject`** in `project-editor-private/open-project.ts`:
    - Calls `setters.setLoadingProject(true)`.
    - Calls `window.tramaApi.openProject({ rootPath, incrementalUpdate: { deletedFolders: [path] } })` — **backend uses the incremental cache** to remove the folder from the cached tree and `markdownFiles` without rescanning the disk.
    - Calls `applyOpenedProject`.
 
-7. **`applyOpenedProject`** in `use-project-editor-open-project.ts:35`:
+7. **`applyOpenedProject`** in `project-editor-private/open-project.ts`:
    - `setters.setRootPath(snapshot.rootPath)`
    - `setters.setSnapshot(snapshot)` — **sets new snapshot, triggers re-render**.
    - `setters.setWorkspaceLayout(reconcileWorkspaceLayout(...))` — reconciles layout against new `snapshot.markdownFiles`.
 
-8. **`useProjectEditorState`** in `use-project-editor-state.ts:139` processes the new snapshot:
+8. **Private project editor state** in `project-editor-private/state.ts` processes the new snapshot:
    - `visibleFiles = useMemo(() => getVisibleSidebarPaths(coreState.snapshot), [coreState.snapshot])` — walks `snapshot.tree`, collects all paths (folders with `/` suffix, files without). The deleted folder is absent.
    - `corkboardOrder = useMemo(() => coreState.snapshot?.index?.corkboardOrder ?? {}, [coreState.snapshot])` — stale order entries for deleted documents are harmless (tree builder ignores them).
 
-9. **`buildValues`** creates `values.visibleFiles` from the memo — a flat array of project-relative paths.
+9. **The private state projection** creates `values.visibleFiles` from the memo — a flat array of project-relative paths.
 
 10. **`buildProjectEditorModelState`** in `use-project-editor.ts:93` copies `visibleFiles` into `model.state`.
 
@@ -92,12 +92,12 @@ This flow involves two IPC calls, two workspace layout updates, and a snapshot r
 
 | File | Role |
 |------|------|
-| `src/features/project-editor/use-project-editor-folder-actions.ts` | `executeFolderDelete` — orchestrates the full flow |
+| `src/features/project-editor/sidebar-file-actions/private/folder-crud.ts` | `deleteFolder` — orchestrates the full flow |
 | `electron/ipc/handlers/project-handlers/folder-handlers.ts` | `handleDeleteFolder` — backend deletion |
 | `electron/services/project-scanner.ts` | `scanProject` — rescans disk, builds tree |
 | `electron/ipc/handlers/project-handlers/project-open-handler.ts` | `handleOpenProject` — returns fresh snapshot |
-| `src/features/project-editor/use-project-editor-open-project.ts` | `applyOpenedProject` — applies snapshot to state |
-| `src/features/project-editor/use-project-editor-state.ts` | `getVisibleSidebarPaths` → `useMemo` chain |
+| `src/features/project-editor/project-editor-private/open-project.ts` | `applyOpenedProject` — applies snapshot to state |
+| `src/features/project-editor/project-editor-private/state.ts` | `getVisibleSidebarPaths` → `useMemo` chain |
 | `src/features/project-editor/components/sidebar/sidebar-panel-logic.ts` | `useSidebarContentSection` + `getScopedFiles` |
 | `src/features/project-editor/components/sidebar/sidebar-panel-body.tsx` | Thin adapter that converts raw dialog paths through the scoping seam |
 | `src/features/project-editor/components/sidebar/sidebar-path-scoping.ts` | `toSectionRelativePath()` + `toProjectPath()` used for delete-path conversion |

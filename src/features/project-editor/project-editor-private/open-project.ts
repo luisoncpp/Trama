@@ -1,27 +1,18 @@
 import { useCallback } from 'preact/hooks'
-import type { ProjectSnapshot } from '../../shared/ipc'
-import { reconcileWorkspaceLayout, resolvePreferredFile } from './project-editor-logic'
-import { PROJECT_EDITOR_STRINGS } from './project-editor-strings'
-import type { WorkspaceLayoutState, WorkspacePane } from './project-editor-types'
-import type { OpenProjectOptions } from './use-project-editor-actions-types'
+import type { ProjectSnapshot } from '../../../shared/ipc'
+import { reconcileWorkspaceLayout, resolvePreferredFile } from '../project-editor-logic'
+import { PROJECT_EDITOR_STRINGS } from '../project-editor-strings'
+import type { WorkspaceLayoutState, WorkspacePane } from '../project-editor-types'
+import type { OpenProjectOptions } from '../open-project-types'
 
-export type PreferredPane = 'primary' | 'secondary'
+type PreferredPane = 'primary' | 'secondary'
 
 interface OpenProjectSetters {
-  setRootPath?: (value: string) => void
-  setSnapshot?: (value: ProjectSnapshot | null) => void
+  setRootPath: (value: string) => void
+  setSnapshot: (value: ProjectSnapshot | null) => void
   setLoadingProject: (value: boolean) => void
   setStatusMessage: (value: string) => void
   setWorkspaceLayout: (value: WorkspaceLayoutState | ((previous: WorkspaceLayoutState) => WorkspaceLayoutState)) => void
-}
-
-interface ApplyOpenedProjectParams {
-  snapshot: ProjectSnapshot
-  setters: OpenProjectSetters
-  clearEditor: () => void
-  loadDocument: (path: string, targetPane: WorkspacePane) => Promise<void>
-  preferredFilePath?: string
-  preferredPane?: PreferredPane
 }
 
 async function preloadInactiveSplitPane(
@@ -29,9 +20,7 @@ async function preloadInactiveSplitPane(
   activePath: string,
   loadDocument: (path: string, targetPane: WorkspacePane) => Promise<void>,
 ): Promise<void> {
-  if (resolvedLayout.mode !== 'split') {
-    return
-  }
+  if (resolvedLayout.mode !== 'split') return
 
   const inactivePane: WorkspacePane = resolvedLayout.activePane === 'primary' ? 'secondary' : 'primary'
   const inactivePath = inactivePane === 'primary' ? resolvedLayout.primaryPath : resolvedLayout.secondaryPath
@@ -40,26 +29,25 @@ async function preloadInactiveSplitPane(
   }
 }
 
-async function applyOpenedProject({
-  snapshot,
-  setters,
-  clearEditor,
-  loadDocument,
-  preferredFilePath,
-  preferredPane,
-}: ApplyOpenedProjectParams): Promise<void> {
-  setters.setRootPath!(snapshot.rootPath)
-  setters.setSnapshot!(snapshot)
+async function applyOpenedProject(
+  snapshot: ProjectSnapshot,
+  setters: OpenProjectSetters,
+  clearEditor: () => void,
+  loadDocument: (path: string, targetPane: WorkspacePane) => Promise<void>,
+  preferredFilePath?: string,
+  preferredPane?: PreferredPane,
+): Promise<void> {
+  setters.setRootPath(snapshot.rootPath)
+  setters.setSnapshot(snapshot)
   setters.setStatusMessage(`Project opened: ${snapshot.rootPath}`)
 
-  let nextLayout = null as ReturnType<typeof reconcileWorkspaceLayout> | null
+  let nextLayout: ReturnType<typeof reconcileWorkspaceLayout> | null = null
   setters.setWorkspaceLayout((previous) => {
     const reconciled = reconcileWorkspaceLayout(previous, snapshot.markdownFiles, preferredFilePath)
-    const withPreferredPane = preferredPane && reconciled.mode === 'split'
+    nextLayout = preferredPane && reconciled.mode === 'split'
       ? { ...reconciled, activePane: preferredPane }
       : reconciled
-    nextLayout = withPreferredPane
-    return withPreferredPane
+    return nextLayout
   })
 
   const resolvedLayout = nextLayout ?? reconcileWorkspaceLayout(
@@ -86,7 +74,7 @@ export function useOpenProject(
   resetPaneNavigationHistory: () => void,
 ): (projectRoot: string, options?: OpenProjectOptions) => Promise<void> {
   return useCallback(
-    async (projectRoot: string, options?: OpenProjectOptions): Promise<void> => {
+    /* openProject */ async (projectRoot: string, options?: OpenProjectOptions): Promise<void> => {
       setters.setLoadingProject(true)
       setters.setStatusMessage(PROJECT_EDITOR_STRINGS.projectOpeningStatus)
 
@@ -100,16 +88,15 @@ export function useOpenProject(
           return
         }
 
-        const snapshot = response.data
         resetPaneNavigationHistory()
-        await applyOpenedProject({
-          snapshot,
+        await applyOpenedProject(
+          response.data,
           setters,
           clearEditor,
           loadDocument,
-          preferredFilePath: options?.preferredFilePath,
-          preferredPane: options?.preferredPane,
-        })
+          options?.preferredFilePath,
+          options?.preferredPane,
+        )
       } catch (error) {
         const message = error instanceof Error ? error.message : 'Unknown error'
         setters.setStatusMessage(`Error opening project: ${message}`)
@@ -117,6 +104,6 @@ export function useOpenProject(
         setters.setLoadingProject(false)
       }
     },
-    [clearEditor, loadDocument, resetPaneNavigationHistory, setters],
+    [clearEditor, loadDocument, resetPaneNavigationHistory, setters] /*Inputs for openProject*/,
   )
 }

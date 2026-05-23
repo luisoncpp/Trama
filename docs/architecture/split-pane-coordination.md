@@ -43,7 +43,7 @@ There are two independent `PaneDocumentState` instances: `primaryPane` and `seco
 
 **Document state is asynchronous.** Documents load after layout changes. During a pane switch, `workspaceLayout.activePane` updates synchronously but the new pane's document loads asynchronously. Deriving UI state from pane document state causes stale/null flashes during transitions.
 
-**Source:** `src/features/project-editor/use-project-editor-state.ts`
+**Source:** `src/features/project-editor/project-editor-private/state.ts`
 
 ## PaneWorkspace — Coordinator with Internal Timer
 
@@ -126,7 +126,7 @@ selectedPath: activePaneLayoutPath
 
 **Why it matters:** When activating a pane, `workspaceLayout.activePane` updates immediately but the target pane's document (`secondaryPane.path`) may still be loading. Deriving `selectedPath` from document state causes the sidebar to go blank during the load window.
 
-**File:** `src/features/project-editor/use-project-editor-state.ts:97`
+**File:** `src/features/project-editor/project-editor-private/state.ts`
 
 ### Contract 2: Editor `onChange` should pass explicit pane identity
 
@@ -200,7 +200,7 @@ The `preferredPane` parameter exists so conflict-resolution flows (save-as-copy)
 
 **Why `preferredPane` matters:** Without it, the single-document state model would overwrite pane intent on reopen.
 
-**File:** `src/features/project-editor/use-project-editor-open-project.ts:35-72`
+**File:** `src/features/project-editor/project-editor-private/open-project.ts`
 
 ### Contract 6: Split mode transitions are explicit, not automatic
 
@@ -235,7 +235,7 @@ expect(model?.state.workspaceLayout.mode).toBe('split')
 
 ## State Projection Map
 
-From `buildValues()` in `use-project-editor-state.ts`:
+From `buildProjectEditorValues` in `project-editor-private/state.ts`:
 
 | Projected value | Source | Notes |
 |---|---|---|
@@ -248,20 +248,19 @@ The active pane is determined by `workspaceLayout.activePane` and then used to s
 
 ## Sub-State Decomposition (Memoized)
 
-To prevent false re-render cascades caused by a single `values` object changing on every render, `useProjectEditorState` returns six stable sub-state objects built with inlined memo projections:
+To prevent false re-render cascades caused by a single `values` object changing on every render, the private state Module returns stable sub-state objects built with inlined memo projections:
 
 | Sub-state | Type | Contains | Consumed by |
 |---|---|---|---|
 | `documentState` | `ProjectEditorDocumentState` | `selectedPath`, `editorValue`, `editorMeta`, `isDirty` | Conflict actions, editor view actions |
-| `paneState` | `ProjectEditorPaneState` | `primaryPane`, `secondaryPane` | Persistence, file/folder actions, layout actions |
 | `layoutState` | `ProjectEditorLayoutState` | `workspaceLayout` | Layout actions, sidebar actions, focus actions |
 | `sidebarState` | `ProjectEditorSidebarState` | `sidebarActiveSection`, `sidebarPanelCollapsed`, `sidebarPanelWidth`, `focusModeEnabled` | Sidebar actions, focus actions, create actions |
 | `projectState` | `ProjectEditorProjectState` | `rootPath`, `snapshot`, `visibleFiles`, `corkboardOrder` | File/folder/create actions, layout actions |
 | `uiState` | `ProjectEditorUiState` | `apiAvailable`, `loadingProject`, `loadingDocument`, `saving`, `isFullscreen`, `externalConflictPath`, `conflictComparisonContent`, `statusMessage` | Conflict actions, editor view actions |
 
-**Rule:** The thin adapter in `use-project-editor-actions.ts` builds the full `ProjectEditorActions` surface via one `useMemo` over the three deep modules. Callers receive a stable `actions` object instead of 15 independent callbacks.
+**Rule:** The private action Module in `project-editor-private/actions.ts` builds the full `ProjectEditorActions` surface via one `useMemo` over the three deep Modules. Callers receive a stable `actions` object instead of many independent callbacks.
 
-**Source:** `src/features/project-editor/use-project-editor-state.ts`
+**Source:** `src/features/project-editor/project-editor-private/state.ts`
 
 ## Key Implementation Files
 
@@ -272,12 +271,13 @@ To prevent false re-render cascades caused by a single `values` object changing 
 | `src/features/project-editor/pane/use-pane-workspace.ts` | Factory hook that encapsulates setter injection via `useMemo`, creating a `PaneWorkspace` instance from `paneBindings` + `serializationRefs` + `saveDocumentFn` |
 | `src/features/project-editor/pane/index.ts` | Barrel: exports `PaneWorkspace`, `usePaneWorkspace`, `PaneBindings`, and public types |
 | `src/features/project-editor/pane/pane-save-logic.ts` | `executePaneSave` helper (internal, not in barrel) |
-| `src/features/project-editor/use-project-editor.ts` | Composition root: builds `paneBindings` from `paneState` + setters, creates `PaneWorkspace` via `usePaneWorkspace`, wires `serializationRefs` and `saveDocumentFn` |
-| `src/features/project-editor/use-project-editor-state.ts` | `buildValues()` — projection from layout+document layers to shared state; returns 6 memoized sub-states; `ProjectEditorStateSetters` excludes `setPrimaryPane`/`setSecondaryPane` from public API |
+| `src/features/project-editor/use-project-editor.ts` | Composition root and public seam: creates `PaneWorkspace`, wires `serializationRefs`/`saveDocumentFn`, and is the only importer of `project-editor-private/` |
+| `src/features/project-editor/project-editor-private/state.ts` | Private state assembly: layout+document projection to shared state, visible-files derivation, setters, and `paneBindings` |
 | `src/features/project-editor/workspace-actions.ts` | Deep module for workspace layout, pane activation, focus, fullscreen, editor view, save, and revert |
 | `src/features/project-editor/sidebar-file-actions/index.ts` | Deep module facade for sidebar UI and file/folder CRUD |
 | `src/features/project-editor/conflict-actions.ts` | Deep module for external-edit conflict resolution |
-| `src/features/project-editor/use-project-editor-open-project.ts` | `applyOpenedProject` with `preferredPane` handling |
+| `src/features/project-editor/project-editor-private/actions.ts` | Private action assembly over `workspace-actions`, `sidebar-file-actions`, and `conflict-actions` |
+| `src/features/project-editor/project-editor-private/open-project.ts` | `applyOpenedProject` with `preferredPane` handling |
 | `src/features/project-editor/project-editor-logic.ts` | `reconcileWorkspaceLayout`, `canSelectFile` |
 | `src/features/project-editor/components/workspace-editor-panels.tsx` | Split UI with explicit pane routing in `PaneEditor` |
 

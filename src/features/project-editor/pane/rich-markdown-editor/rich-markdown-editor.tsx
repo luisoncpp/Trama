@@ -121,7 +121,7 @@ function useTagOverlayScrollEffect(
   }, [ctrlPressed, editorRef.current, setTagScrollTick])
 }
 
-export function RichMarkdownEditor(props: RichMarkdownEditorProps) {
+function useRichEditorHooks(props: RichMarkdownEditorProps) {
   const {
     documentId, value, disabled, spellcheckEnabled = true, onChange,
     historyBackDisabled, onHistoryBack,
@@ -136,63 +136,38 @@ export function RichMarkdownEditor(props: RichMarkdownEditorProps) {
   const [, setTagOverlayTick] = useState(0)
   const triggerTagOverlayRender = useCallback(() => setTagOverlayTick((c) => c + 1), [])
   const refs = useRichEditorRefs(documentId, value, safeTagIndex, onChange, triggerTagOverlayRender, onMarkDirty)
-  const {
-    shellRef, hostRef, editorRef, onChangeRef, lastEditorValueRef,
-    isApplyingExternalValueRef, turndownRef,
-    onDirtyRef, serializationRef,
-  } = refs
+  const { shellRef, hostRef, editorRef, onChangeRef, lastEditorValueRef, isApplyingExternalValueRef, turndownRef, onDirtyRef, serializationRef } = refs
   const ctrlPressed = useCtrlKeyState()
   const [, setTagScrollTick] = useState(0)
-
   const tagMatches = useTagOverlay({
-    editorRef,
-    tagIndex: safeTagIndex,
-    ctrlPressed,
+    editorRef, tagIndex: safeTagIndex, ctrlPressed,
     tagOverlayRecalcRef: serializationRef.current.tagOverlayRecalcRef,
     tagOverlayMatchesRef: serializationRef.current.tagOverlayMatchesRef,
   })
   const handleEditorMouseDown = useTagClickHandler(editorRef, safeTagIndex, onTagClick)
   useTagOverlayScrollEffect(ctrlPressed, editorRef, setTagScrollTick)
-
-  const lifecycleParams = {
+  useRichEditorLifecycle({
     documentId, value, disabled, spellcheckEnabled, hostRef, editorRef,
     onChangeRef, isApplyingExternalValueRef,
     lastEditorValueRef, turndownRef, onDirtyRef, serializationRef,
     triggerTagOverlayRender,
-  }
-  useRichEditorLifecycle(lifecycleParams)
+  })
   useSyncToolbarControls({
-    documentId,
-    hostRef,
-    editorRef,
-    historyBackDisabled,
-    onHistoryBack,
-    saveDisabled,
-    saveLabel,
-    onSaveNow,
-    revertDisabled,
-    revertLabel,
-    onRevertNow,
-    syncState,
-    syncStateLabel,
-    zoomLevel,
-    onZoomChange,
+    documentId, hostRef, editorRef, historyBackDisabled, onHistoryBack,
+    saveDisabled, saveLabel, onSaveNow,
+    revertDisabled, revertLabel, onRevertNow,
+    syncState, syncStateLabel, zoomLevel, onZoomChange,
   })
   useFocusModeScopeEffect(editorRef, hostRef, focusModeEnabled, focusScope, isActive)
   useEditorZoom({ editorRef, hostRef, zoomRef: zoomRef ?? DEFAULT_ZOOM_REF, triggerTagOverlayRender })
-
-  // Sync the serialization ref into the parent-provided prop ref.
-  // Because registerEditorTextChangeHandler mutates serializationRef.current.flush
-  // (rather than replacing the object), the parent ref always sees the real function.
-  if (editorSerializationRef) {
-    editorSerializationRef.current = serializationRef.current
-  }
-
+  if (editorSerializationRef) editorSerializationRef.current = serializationRef.current
   const findBar = useRichEditorFind({ documentId, hostRef, editorRef })
+  return { shellRef, hostRef, findBar, ctrlPressed, tagIndex, editorRef, tagMatches, handleEditorMouseDown }
+}
 
-  return buildRichEditorReturn({
-    shellRef, hostRef, findBar, ctrlPressed, tagIndex, editorRef, tagMatches, handleEditorMouseDown,
-  })
+export function RichMarkdownEditor(props: RichMarkdownEditorProps) {
+  const hooks = useRichEditorHooks(props)
+  return buildRichEditorReturn(hooks)
 }
 
 function buildRichEditorReturn({

@@ -30,7 +30,7 @@ This is not the canonical full architecture guide. For the full subsystem design
 | Debounced serialization | Last typed text disappears, save misses final keystrokes, cross-document contamination, images vanish after typing | `docs/architecture/editor-serialization-debounce-architecture.md` -> `src/features/project-editor/components/rich-markdown-editor-serialization.ts` |
 | Canonical external-value sync | Images blink or vanish after first edit, equivalent content gets re-applied | `src/features/project-editor/components/rich-markdown-editor-external-sync.ts` -> `src/features/project-editor/components/rich-markdown-editor-value-sync.ts` -> `docs/flows/rich-editor-external-sync-flow.md` |
 | Pane-targeted persistence | Save, switch, or close hits the wrong pane | `src/features/project-editor/use-project-editor-pane-persistence.ts` -> `src/features/project-editor/use-project-editor-layout-actions.ts` |
-| Layout path vs loaded pane path | Sidebar highlights wrong file or goes blank after pane changes | `docs/architecture/split-pane-coordination.md` -> `src/features/project-editor/use-project-editor-state.ts` |
+| Layout path vs loaded pane path | Sidebar highlights wrong file or goes blank after pane changes | `docs/architecture/split-pane-coordination.md` -> `src/features/project-editor/project-editor-private/state.ts` |
 | Quill lifecycle / re-init | Cursor jumps, editor remounts unexpectedly, runtime toggle acts like full re-create | `src/features/project-editor/components/rich-markdown-editor-core.ts` -> `docs/lessons-learned/rich-editor-effect-deps-remount.md` |
 | Focus-mode geometry / scroll | Active line is miscentered, EOF spacing behaves strangely, selection desync after scroll | `src/features/project-editor/components/rich-markdown-editor-focus-scope-scroll.ts` -> `src/features/project-editor/components/rich-markdown-editor-focus-scope-geometry.ts` |
 | Workspace command bridge | Context-menu command or editor command does nothing | `src/shared/workspace-context-menu.ts` -> `src/features/project-editor/components/rich-markdown-editor-commands.ts` |
@@ -122,7 +122,7 @@ Using the wrong one at the wrong time causes blank or stale UI.
 
 ### Main files
 
-- `src/features/project-editor/use-project-editor-state.ts`
+- `src/features/project-editor/project-editor-private/state.ts`
 - `docs/architecture/split-pane-coordination.md`
 - `docs/lessons-learned/split-pane-sidebar-layout-vs-pane-path.md`
 

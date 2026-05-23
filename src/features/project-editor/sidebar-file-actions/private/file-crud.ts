@@ -3,7 +3,7 @@ import { notifyTagIndexRefresh } from '../../tag-index-events'
 import { normalizeName, isInvalidRenameInput, deduplicateTags } from '../../../../shared/sidebar-utils'
 import { ensureMarkdownEmbeddedImagesArePng } from '../../project-editor-image-save'
 import type { SidebarRenameInput, ProjectEditorProjectState } from '../../project-editor-types'
-import type { OpenProjectOptions } from '../../use-project-editor-actions-types'
+import type { OpenProjectOptions } from '../../open-project-types'
 import type { PaneWorkspace } from '../../pane'
 
 export async function renameFile(

@@ -1,7 +1,7 @@
 import type Quill from 'quill'
 import Delta from 'quill-delta'
 import { LAYOUT_DIRECTIVE_BLOT_NAME } from './rich-markdown-editor-layout-blots'
-import { buildBoundarySafeDeleteContents, type CenterDeleteDirection } from './rich-markdown-editor-layout-center-ranges'
+import { buildBoundarySafeDeleteContents, type CenterDeleteDirection } from './rich-markdown-editor-layout-center-delete'
 
 interface SelectionRange {
   index: number

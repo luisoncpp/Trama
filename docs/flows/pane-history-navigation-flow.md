@@ -51,7 +51,7 @@ Pane history is session-only and pane-local. It must behave like a browser histo
 | Pane history stack | `pane/pane-workspace.ts` | Append, truncate-forward, move cursor, or clear |
 | `workspaceLayout.primaryPath` / `secondaryPath` | `workspace-actions.ts` / sidebar file select | Immediate pane assignment |
 | `workspaceLayout.activePane` | `workspace-actions.ts` | Keeps navigation targeted to the pane being opened |
-| Pane document state | `use-project-editor-actions.ts` | Async document load if the target doc is not already loaded |
+| Pane document state | `project-editor-private/actions.ts` | Async document load if the target doc is not already loaded |
 
 ## Side effects
 

@@ -11,7 +11,6 @@ When a single `values` object with 20+ fields is recreated on every render, ever
 Decompose `values` into 6 focused sub-states memoized with `useMemo`:
 
 - `documentState` — active pane path, content, meta, dirty flag
-- `paneState` — both pane document states
 - `layoutState` — workspace layout
 - `sidebarState` — sidebar section, collapse, width, focus mode flag
 - `projectState` — root path, snapshot, visible files, corkboard order
@@ -25,5 +24,4 @@ Keeping the old `values` in the return type for backward compatibility is fine, 
 
 ## Related files
 
-- `src/features/project-editor/use-project-editor-sub-state-hooks.ts`
-- `src/features/project-editor/use-project-editor-state.ts`
+- `src/features/project-editor/project-editor-private/state.ts`

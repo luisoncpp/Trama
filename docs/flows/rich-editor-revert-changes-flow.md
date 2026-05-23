@@ -78,12 +78,12 @@ When these conditions are not met, the action returns immediately without callin
 | Target | File / layer | What changes |
 |--------|--------------|--------------|
 | Pane document state | `PaneWorkspace.loadPaneDocument` → `setPrimaryPane`/`setSecondaryPane` | Content replaced, `isDirty: false`, meta refreshed |
-| `loadingDocument` | `use-project-editor-actions.ts` | Temporarily `true` during the read |
+| `loadingDocument` | `project-editor-private/actions.ts` | Temporarily `true` during the read |
 | Quill DOM | `rich-markdown-editor-external-sync.ts` → `rich-markdown-editor-quill.ts` | Replaced with disk content via external sync |
 | `lastEditorValueRef.current` | editor component refs | Updated to canonical form of the disk content |
 | `isApplyingExternalValueRef.current` | editor component refs | Temporarily locks outbound `text-change` handling |
 | Toolbar sync state | `useSyncToolbarControls` | `syncState` → `'clean'` |
-| Status message | `use-project-editor-actions.ts` | Set to confirm content was reloaded |
+| Status message | `project-editor-private/actions.ts` | Set to confirm content was reloaded |
 
 ## Side effects
 
@@ -102,8 +102,8 @@ When these conditions are not met, the action returns immediately without callin
 | `src/features/project-editor/pane/rich-markdown-editor/rich-markdown-editor.tsx` | Receives and forwards `revertDisabled`/`onRevertNow` props |
 | `src/features/project-editor/pane/editor-panel.tsx` | Computes `revertDisabled` from `isDirty`/`selectedPath`/`saving` |
 | `src/features/project-editor/pane/workspace-editor-panels.tsx` | Wires pane-explicit `revertChanges(pane)` callback in `PaneEditor` |
-| `src/features/project-editor/use-project-editor-ui-actions-helpers.ts` | `useRevertChangesAction` — guard + `loadDocument` dispatch |
-| `src/features/project-editor/use-project-editor-actions.ts` | `useLoadDocument` — IPC read, image stripping, `loadPaneDocument` |
+| `src/features/project-editor/workspace-actions.ts` | `revertChanges` — guard + `loadDocument` dispatch |
+| `src/features/project-editor/project-editor-private/actions.ts` | `loadDocument` — IPC read, image stripping, `loadPaneDocument` |
 | `src/features/project-editor/pane/pane-workspace.ts` | `loadPaneDocument` — sets content + `isDirty: false` on the target pane |
 | `src/features/project-editor/project-editor-types.ts` | `ProjectEditorActions.revertChanges` type definition |
 | `src/features/project-editor/project-editor-strings.ts` | `revertChanges`, `statusRevertDone` string constants |
@@ -117,8 +117,8 @@ When these conditions are not met, the action returns immediately without callin
 | Revert applies to the wrong pane in split mode | `revertChanges` called without explicit `pane`, falls back to `activePane` | `workspace-editor-panels.tsx` — check `onRevertNow` callback |
 | Images disappear after revert | Placeholder-markdown leaked into Quill without proper hydration through external sync | `rich-markdown-editor-external-sync.ts` and `rich-markdown-editor-value-sync.ts` |
 | Cursor jumps on revert | Selection was not preserved around the external-value re-apply | `rich-markdown-editor-external-sync.ts` |
-| Document shows stale content after revert | `loadPaneDocument` not called, or called with wrong content | `use-project-editor-actions.ts` → `useLoadDocument` |
-| Status message says "Loaded document" instead of "Reverted" | `loadDocument` generic message used instead of revert-specific message | `use-project-editor-actions.ts` → `useLoadDocument` |
+| Document shows stale content after revert | `loadPaneDocument` not called, or called with wrong content | `project-editor-private/actions.ts` → `loadDocument` |
+| Status message says "Loaded document" instead of "Reverted" | `loadDocument` generic message used instead of revert-specific message | `project-editor-private/actions.ts` → `loadDocument` |
 
 ## Key differences from related flows
 

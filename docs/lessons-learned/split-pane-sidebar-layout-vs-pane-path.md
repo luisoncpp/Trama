@@ -6,7 +6,7 @@ When modifying one pane and switching focus to another pane, the sidebar stops s
 
 ## Root Cause
 
-In `use-project-editor-state.ts`, the `selectedPath` (used by the sidebar to highlight the active file) was computed from `activePaneState.path` — the document currently loaded **in memory** for that pane.
+In `project-editor-private/state.ts`, the `selectedPath` (used by the sidebar to highlight the active file) was computed from `activePaneState.path` — the document currently loaded **in memory** for that pane.
 
 ```typescript
 // WRONG - causes lag when switching panes
@@ -44,4 +44,4 @@ When projecting state for UI, prefer layout state or the most recently decided s
 
 ## Files Changed
 
-- `src/features/project-editor/use-project-editor-state.ts`
+- `src/features/project-editor/project-editor-private/state.ts`

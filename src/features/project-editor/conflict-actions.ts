@@ -2,7 +2,7 @@ import { buildConflictCopyPath } from './project-editor-logic'
 import { PROJECT_EDITOR_STRINGS } from './project-editor-strings'
 import { ensureMarkdownEmbeddedImagesArePng } from './project-editor-image-save'
 import type { ProjectEditorDocumentState, ProjectEditorProjectState, ProjectEditorUiState } from './project-editor-types'
-import type { OpenProjectOptions } from './use-project-editor-actions-types'
+import type { OpenProjectOptions } from './open-project-types'
 import type { PaneWorkspace } from './pane'
 
 export function resolveConflictReload(

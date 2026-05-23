@@ -21,6 +21,41 @@ function clampRatio(value: number): number {
   return Math.min(0.8, Math.max(0.2, value))
 }
 
+function handleWorkspaceContextCommand(
+  command: WorkspaceContextCommand,
+  params: UseProjectEditorContextMenuEffectParams,
+): void {
+  switch (command.type) {
+    case 'toggle-split':
+      params.toggleWorkspaceLayoutMode()
+      break
+    case 'toggle-fullscreen':
+      void params.setFullscreenEnabled(!params.isFullscreen)
+      break
+    case 'history-back':
+      void params.openPreviousInPaneHistory()
+      break
+    case 'history-forward':
+      void params.openNextInPaneHistory()
+      break
+    case 'toggle-focus':
+      params.toggleFocusMode()
+      break
+    case 'set-focus-scope':
+      if (isFocusScope(command.scope)) {
+        params.setFocusScope(command.scope)
+      }
+      break
+    case 'set-split-ratio':
+      if (typeof command.ratio === 'number' && Number.isFinite(command.ratio)) {
+        params.setWorkspaceLayoutRatio(clampRatio(command.ratio))
+      }
+      break
+    default:
+      break
+  }
+}
+
 export function useProjectEditorContextMenuEffect({
   isFullscreen,
   toggleWorkspaceLayoutMode,
@@ -39,35 +74,16 @@ export function useProjectEditorContextMenuEffect({
         return
       }
 
-      switch (command.type) {
-        case 'toggle-split':
-          toggleWorkspaceLayoutMode()
-          break
-        case 'toggle-fullscreen':
-          void setFullscreenEnabled(!isFullscreen)
-          break
-        case 'history-back':
-          void openPreviousInPaneHistory()
-          break
-        case 'history-forward':
-          void openNextInPaneHistory()
-          break
-        case 'toggle-focus':
-          toggleFocusMode()
-          break
-        case 'set-focus-scope':
-          if (isFocusScope(command.scope)) {
-            setFocusScope(command.scope)
-          }
-          break
-        case 'set-split-ratio':
-          if (typeof command.ratio === 'number' && Number.isFinite(command.ratio)) {
-            setWorkspaceLayoutRatio(clampRatio(command.ratio))
-          }
-          break
-        default:
-          break
-      }
+      handleWorkspaceContextCommand(command, {
+        isFullscreen,
+        toggleWorkspaceLayoutMode,
+        openPreviousInPaneHistory,
+        openNextInPaneHistory,
+        setFullscreenEnabled,
+        toggleFocusMode,
+        setFocusScope,
+        setWorkspaceLayoutRatio,
+      })
     }
 
     window.addEventListener(WORKSPACE_CONTEXT_MENU_EVENT, onWorkspaceContextCommand as EventListener)

@@ -57,7 +57,7 @@ The solution is to keep two representations:
 | `src/features/project-editor/components/rich-markdown-editor-value-sync.ts` | Canonical editor-value normalization/equality for placeholder-vs-base64 comparisons |
 | `src/features/project-editor/components/rich-markdown-editor-quill.ts` | `serializeEditorMarkdown()` (HTML → placeholder-markdown via factory), `applyMarkdownToEditor()` (markdown → Quill with image hydration + broken-image placeholder rendering + contentEditable guard), `restoreImagesAfterMarkedparsing()` |
 | `src/features/project-editor/components/rich-markdown-editor-core.ts` | Passes `documentId` through lifecycle hooks; no longer owns debounce serialization |
-| `src/features/project-editor/use-project-editor-actions.ts` | `useSaveDocumentNow` hydrates image placeholders and broken-image placeholders before calling IPC `saveDocument` |
+| `src/features/project-editor/project-editor-private/actions.ts` | `saveDocumentNow` hydrates image placeholders and broken-image placeholders before calling IPC `saveDocument` |
 | `electron/services/document-image-persistence.ts` | Rehydrates `res/*.png` links back to embedded PNG data; degrades missing files to editor-only broken-image placeholders instead of throwing |
 
 ---
@@ -196,7 +196,7 @@ The editor must also compare incoming values in the same placeholder-based repre
 
 ### Path
 
-`useSaveDocumentNow` in `use-project-editor-actions.ts`
+`saveDocumentNow` in `project-editor-private/actions.ts`
 
 ```typescript
 async (path: string, content: string, meta: DocumentMeta): Promise<void> => {

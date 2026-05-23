@@ -13,9 +13,9 @@ The projection `activePane → {selectedPath, editorValue, editorMeta, isDirty}`
 
 | Module | Location |
 |--------|----------|
-| `buildValues()` | `use-project-editor-state.ts` |
-| `useProjectEditorUiActions()` | `use-project-editor-ui-actions.ts` |
-| `useDocumentState()` | `use-project-editor-sub-state-hooks.ts` |
+| `values` projection | `project-editor-private/state.ts` |
+| Action assembly | `project-editor-private/actions.ts` |
+| Shared projection helper | `project-editor-logic.ts` |
 
 All three had the same pattern:
 ```typescript
@@ -25,10 +25,10 @@ const activePanePath = activePane === 'secondary' ? secondaryPath : primaryPath
 
 ## Solution
 
-Extracted to `deriveActivePaneDocument(workspaceLayout, primaryPane, secondaryPane)` in `project-editor-logic.ts`. All three call sites now delegate to it:
+Extracted to `deriveActivePaneDocument(workspaceLayout, primaryPane, secondaryPane)` in `project-editor-logic.ts`. The private state and action assembly now delegate to it instead of duplicating the projection:
 
 ```typescript
-// in use-project-editor-state.ts, use-project-editor-ui-actions.ts, use-project-editor-sub-state-hooks.ts
+// in project-editor-private/state.ts and related project editor assembly
 const { selectedPath, editorValue, editorMeta, isDirty } = deriveActivePaneDocument(ws, primaryPane, secondaryPane)
 ```
 
