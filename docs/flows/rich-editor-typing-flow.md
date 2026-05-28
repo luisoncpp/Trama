@@ -27,7 +27,7 @@ The canonical equivalence rule now lives in `src/features/project-editor/compone
 4. User types.
 5. Quill fires `text-change`.
 6. `syncCenteredLayoutArtifacts(editor)` runs immediately.
-7. `onDirtyRef.current()` runs immediately.
+7. `onDirtyRef.current()` runs immediately and routes to the dirty-only pane mutation.
 8. The pending serialization timer is cleared if one exists.
 9. A new 1-second timer is scheduled to call `flush()`.
 10. `flush()` serializes `editor.root.innerHTML` to placeholder-markdown through `serializeEditorMarkdownFromRef(...)`.
@@ -45,7 +45,7 @@ The canonical equivalence rule now lives in `src/features/project-editor/compone
 | Current document identity | closure-captured `documentId` | Needed for image placeholder cache and canonical serialization |
 | External-apply flag | `isApplyingExternalValueRef.current` | Prevent feedback loops and zombie serialization |
 | Latest editor value | `lastEditorValueRef.current` | Prevent external sync from re-applying the same content |
-| Dirty callback | `onDirtyRef.current` | Marks pane dirty immediately |
+| Dirty callback | `onDirtyRef.current` | Marks pane dirty immediately without rewriting pane content |
 | Change callback | `onChangeRef.current` | Pushes serialized markdown into pane state |
 
 ## State writes
@@ -53,8 +53,8 @@ The canonical equivalence rule now lives in `src/features/project-editor/compone
 | Target | File / layer | What changes |
 |--------|--------------|--------------|
 | `lastEditorValueRef.current` | editor component refs | Updated to the serialized placeholder-markdown (lightweight) |
-| Pane dirty flag | `use-project-editor-ui-actions-helpers.ts` | `isDirty` becomes `true` immediately |
-| Pane content | `use-project-editor-ui-actions-helpers.ts` | Debounced hydrated markdown replaces previous pane content |
+| Pane dirty flag | `pane/pane-workspace.ts` via `markPaneDirty()` | `isDirty` becomes `true` immediately |
+| Pane content | `pane/pane-workspace.ts` via `updatePaneContent()` | Debounced hydrated markdown replaces previous pane content |
 
 ## Side effects
 
@@ -65,7 +65,8 @@ The canonical equivalence rule now lives in `src/features/project-editor/compone
 | Image placeholder extraction + hydration before onChange | `rich-markdown-editor-serialization.ts` |
 | Markdown ↔ HTML conversion and image placeholder logic | `rich-markdown-editor-quill.ts` |
 | Canonical value equivalence for later external sync | `rich-markdown-editor-value-sync.ts` |
-| UI state update for the current pane | `use-project-editor-ui-actions-helpers.ts` |
+| Immediate dirty-only pane update | `pane/pane-workspace.ts` |
+| Debounced pane content update | `pane/pane-workspace.ts` |
 
 ## Files to inspect
 
@@ -77,7 +78,7 @@ The canonical equivalence rule now lives in `src/features/project-editor/compone
 | `src/features/project-editor/components/rich-markdown-editor-value-sync.ts` | Canonical placeholder-based normalization/equality used by external sync |
 | `src/features/project-editor/components/rich-markdown-editor-quill.ts` | Markdown <-> HTML conversion and image placeholder logic |
 | `src/features/project-editor/pane/pane-workspace.ts` | Where later save/switch callers consume `flush()` safely by pane |
-| `src/features/project-editor/use-project-editor-ui-actions-helpers.ts` | Pane state updates through `updateEditorValue(...)` |
+| `src/features/project-editor/pane/pane-workspace.ts` | Dirty-only vs content-updating pane mutations |
 | `docs/lessons-learned/editor-debounce-closure-capture.md` | Non-obvious debounce invariants |
 | `docs/lessons-learned/quill-render-keypress-image-loss.md` | Canonical image representation rule |
 | `docs/architecture/rich-editor-hotspots.md` | Fast routing if the symptom maps better to a known fragile seam |
@@ -95,6 +96,7 @@ The canonical equivalence rule now lives in `src/features/project-editor/compone
 ## High-value notes
 
 - `flush()` must return placeholder-markdown and callers must use that returned value directly. The parent receives hydrated markdown via `onChange`.
+- Typing now splits into two pane mutations: immediate `markPaneDirty()` and later debounced `updatePaneContent()`. Repeated dirty marks must become a no-op once the pane is already dirty.
 - Debounce cleanup clears the timer only; it must not serialize during React cleanup.
 - The editor compares canonical placeholder-based markdown, not raw base64 image markdown, when deciding whether external sync should re-apply content.
 - Image hydration happens at the serialization boundary (`rich-markdown-editor-serialization.ts`) — `onChange` always delivers fully-hydrated markdown with `![uuid](data:image/...)` syntax, while `lastEditorValueRef` stays as lightweight `<!-- IMAGE_PLACEHOLDER -->` comments.

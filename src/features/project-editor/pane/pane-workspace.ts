@@ -158,6 +158,17 @@ export class PaneWorkspace {
     return !doc.isDirty || doc.path === null
   }
 
+  markPaneDirty(pane: WorkspacePane): void {
+    if (pane === 'secondary') {
+      this.paneBindings.setSecondaryPane((prev) => (prev.isDirty ? prev : { ...prev, isDirty: true }))
+    } else {
+      this.paneBindings.setPrimaryPane((prev) => {
+        const next = prev.isDirty ? prev : { ...prev, isDirty: true }
+        return next
+      })
+    }
+  }
+
   updatePaneContent(pane: WorkspacePane, content: string): void {
     if (pane === 'secondary') {
       this.paneBindings.setSecondaryPane((prev) => ({ ...prev, content, isDirty: true }))

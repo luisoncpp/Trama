@@ -364,6 +364,64 @@ describe('useProjectEditor', () => {
     expect(saveDocumentCalls[0]).toEqual({ path: 'docs/a.md', content: '# A changed' })
   })
 
+  it('markEditorDirty flips dirty once without mutating content on repeated calls', async () => {
+    window.localStorage.removeItem('trama.sidebar.ui.v1')
+    window.localStorage.removeItem(WORKSPACE_LAYOUT_STORAGE_KEY)
+    setupTramaApiMock({
+      selectProjectFolder: async () => ({ ok: true, data: { rootPath: 'C:/tmp/project' } }),
+      openProject: async () => ({
+        ok: true,
+        data: {
+          rootPath: 'C:/tmp/project',
+          tree: [],
+          markdownFiles: ['docs/a.md'],
+          index: { version: '1.0.0', corkboardOrder: {}, cache: {} },
+        },
+      }),
+      readDocument: async (payload) => ({ ok: true, data: { path: payload.path, content: '# A', meta: {} } }),
+    })
+
+    let model: ProjectEditorModel | undefined
+    let renderCount = 0
+
+    function Harness() {
+      renderCount += 1
+      model = useProjectEditor()
+      return null
+    }
+
+    const container = document.createElement('div')
+    act(() => {
+      render(h(Harness, {}), container)
+    })
+
+    await act(async () => {
+      await model?.actions.pickProjectFolder()
+    })
+
+    const renderCountAfterLoad = renderCount
+    expect(model?.state.editorValue).toBe('# A')
+    expect(model?.state.isDirty).toBe(false)
+
+    act(() => {
+      model?.actions.markEditorDirty()
+    })
+
+    expect(model?.state.editorValue).toBe('# A')
+    expect(model?.state.isDirty).toBe(true)
+    expect(renderCount).toBe(renderCountAfterLoad + 1)
+
+    const renderCountAfterFirstDirty = renderCount
+    act(() => {
+      model?.actions.markEditorDirty()
+      model?.actions.markEditorDirty()
+    })
+
+    expect(model?.state.editorValue).toBe('# A')
+    expect(model?.state.isDirty).toBe(true)
+    expect(renderCount).toBe(renderCountAfterFirstDirty)
+  })
+
   it('navigates pane history with Alt+Left and Alt+Right without mutating the stack', async () => {
     window.localStorage.removeItem('trama.sidebar.ui.v1')
     window.localStorage.removeItem(WORKSPACE_LAYOUT_STORAGE_KEY)

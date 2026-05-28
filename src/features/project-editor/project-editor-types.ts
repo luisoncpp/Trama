@@ -128,6 +128,7 @@ export interface ProjectEditorActions {
   toggleFocusMode: () => void
   setFocusScope: (scope: FocusScope) => void
   setZoomLevel: (level: number) => void
+  markEditorDirty: (pane?: WorkspacePane) => void
   updateEditorValue: (value: string, pane?: WorkspacePane) => void
   saveNow: (pane?: WorkspacePane) => Promise<void>
   revertChanges: (pane?: WorkspacePane) => void

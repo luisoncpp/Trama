@@ -138,6 +138,14 @@ export function updateEditorValue(
   workspace.updatePaneContent(targetPane, nextValue)
 }
 
+export function markEditorDirty(
+  pane: WorkspacePane | undefined,
+  workspace: PaneWorkspace,
+): void {
+  const targetPane = pane ?? workspace.layout.activePane
+  workspace.markPaneDirty(targetPane)
+}
+
 export async function saveNow(
   pane: WorkspacePane | undefined,
   deps: {

@@ -13,6 +13,7 @@ export function buildWorkspaceActions(params: ActionGroupParams): Pick<ProjectEd
   | 'toggleFocusMode'
   | 'setFocusScope'
   | 'setZoomLevel'
+  | 'markEditorDirty'
   | 'updateEditorValue'
   | 'saveNow'
   | 'revertChanges'
@@ -79,6 +80,7 @@ function buildWorkspaceEditorActions({
   loadDocument,
 }: ActionGroupParams) {
   return {
+    markEditorDirty: (pane?: WorkspacePane) => workspaceActions.markEditorDirty(pane, paneWorkspace),
     updateEditorValue: (value: string, pane?: WorkspacePane) => workspaceActions.updateEditorValue(value, pane, paneWorkspace),
     saveNow: (pane?: WorkspacePane) => workspaceActions.saveNow(pane, {
       workspace: paneWorkspace,

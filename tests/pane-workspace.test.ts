@@ -393,6 +393,67 @@ describe('PaneWorkspace', () => {
     })
   })
 
+  describe('markPaneDirty / updatePaneContent', () => {
+    it('markPaneDirty sets dirty without changing content', () => {
+      let nextPrimary = primaryClean
+      const paneBindings: PaneBindings = {
+        primaryPane: primaryClean,
+        secondaryPane: secondaryClean,
+        setPrimaryPane: (value) => {
+          nextPrimary = typeof value === 'function' ? value(nextPrimary) : value
+        },
+        setSecondaryPane: () => {},
+      }
+      const ws = new PaneWorkspace(makeLayout('primary', primaryClean.path, secondaryClean.path), paneBindings, makeRefs(), saveDocumentFn)
+
+      ws.markPaneDirty('primary')
+
+      expect(nextPrimary.content).toBe('# A content')
+      expect(nextPrimary.isDirty).toBe(true)
+    })
+
+    it('markPaneDirty is a no-op when the pane is already dirty', () => {
+      let nextPrimary = primaryDirty
+      let updates = 0
+      const paneBindings: PaneBindings = {
+        primaryPane: primaryDirty,
+        secondaryPane: secondaryClean,
+        setPrimaryPane: (value) => {
+          updates += 1
+          const prev = nextPrimary
+          nextPrimary = typeof value === 'function' ? value(nextPrimary) : value
+          expect(nextPrimary).toBe(prev)
+        },
+        setSecondaryPane: () => {},
+      }
+      const ws = new PaneWorkspace(makeLayout('primary', primaryDirty.path, secondaryClean.path), paneBindings, makeRefs(), saveDocumentFn)
+
+      ws.markPaneDirty('primary')
+
+      expect(updates).toBe(1)
+      expect(nextPrimary.isDirty).toBe(true)
+      expect(nextPrimary.content).toBe('# A modified')
+    })
+
+    it('updatePaneContent still updates content and marks dirty', () => {
+      let nextPrimary = primaryClean
+      const paneBindings: PaneBindings = {
+        primaryPane: primaryClean,
+        secondaryPane: secondaryClean,
+        setPrimaryPane: (value) => {
+          nextPrimary = typeof value === 'function' ? value(nextPrimary) : value
+        },
+        setSecondaryPane: () => {},
+      }
+      const ws = new PaneWorkspace(makeLayout('primary', primaryClean.path, secondaryClean.path), paneBindings, makeRefs(), saveDocumentFn)
+
+      ws.updatePaneContent('primary', '# A changed')
+
+      expect(nextPrimary.content).toBe('# A changed')
+      expect(nextPrimary.isDirty).toBe(true)
+    })
+  })
+
   describe('pane navigation history', () => {
     it('records per-pane history and truncates forward entries on new navigation', () => {
       const ws = makeWs('primary', primaryClean, secondaryClean)

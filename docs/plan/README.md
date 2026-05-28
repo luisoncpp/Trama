@@ -15,6 +15,7 @@ Active implementation plans — work that is in progress or planned but not yet 
 | `incremental-project-update-plan.md` | Avoid full project rescans on file/folder create, delete, rename, move |
 | `book-export-implementation-plan.md` | Book export Phase C multi-format backend |
 | `rich-editor-refactor-plan.md` | Low-risk refactor plan for Quill lifecycle, canonical value sync, and split-pane persistence wiring |
+| `use-project-editor-keystroke-churn-plan.md` | Diagnose and reduce avoidable `useProjectEditor()` churn during typing |
 
 ## When to add a doc here
 

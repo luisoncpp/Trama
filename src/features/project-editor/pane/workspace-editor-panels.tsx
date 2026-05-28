@@ -28,7 +28,7 @@ function ActiveEditorPanel({ model, spellcheckEnabled, tagIndex, onTagClick, zoo
   const activePaneState = state.workspaceLayout.activePane === 'secondary' ? state.secondaryPane : state.primaryPane
 
   const onMarkDirty = () => {
-    actions.updateEditorValue(state.editorValue)
+    actions.markEditorDirty()
   }
 
   return (

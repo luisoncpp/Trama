@@ -19,7 +19,7 @@ export function PaneEditor({ model, spellcheckEnabled, pane, tagIndex, onTagClic
   const isActive = state.workspaceLayout.activePane === pane
   const serializationRef = pane === 'primary' ? serializationRefs.primary : serializationRefs.secondary
   const historyBackDisabled = !paneState.path
-  const onMarkDirty = () => { actions.updateEditorValue(paneState.content, pane) }
+  const onMarkDirty = () => { actions.markEditorDirty(pane) }
   const onPaneEditorChange = (nextValue: string) => { actions.updateEditorValue(nextValue, pane) }
   const onPaneHistoryBack = () => { void actions.openPreviousInPaneHistory(pane) }
   const onPaneSaveNow = () => { actions.saveNow(pane) }
