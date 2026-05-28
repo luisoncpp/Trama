@@ -13,6 +13,7 @@ import { useProjectEditorFullscreenEffect } from './use-project-editor-fullscree
 import { useProjectEditorShortcutsEffect } from './use-project-editor-shortcuts-effect'
 import { useProjectEditorState } from './project-editor-private/state'
 import { usePaneWorkspace, useProjectEditorAutosaveEffect, useProjectEditorCloseEffect } from './pane'
+import type { PaneBindings } from './pane'
 import {
   buildShortcutsEffectParams,
   createEditorSerializationRefs,
@@ -40,6 +41,7 @@ function useProjectEditorEffects(
   projectState: ReturnType<typeof useProjectEditorState>['projectState'],
   documentState: ReturnType<typeof useProjectEditorState>['documentState'],
   layoutState: ReturnType<typeof useProjectEditorState>['layoutState'],
+  paneBindings: PaneBindings,
   setters: ReturnType<typeof useProjectEditorState>['setters'],
   actions: ReturnType<typeof useProjectEditorActions>['actions'],
   core: ReturnType<typeof useProjectEditorActions>['core'],
@@ -70,6 +72,8 @@ function useProjectEditorEffects(
   useProjectEditorShortcutsEffect(buildShortcutsEffectParams(actions, uiState.isFullscreen, layoutState.workspaceLayout))
   useProjectEditorCloseEffect({
     paneWorkspace,
+    primaryIsDirty: paneBindings.primaryPane.isDirty,
+    secondaryIsDirty: paneBindings.secondaryPane.isDirty,
   })
   useProjectEditorContextMenuEffect({
     isFullscreen: uiState.isFullscreen,
@@ -154,7 +158,7 @@ export function useProjectEditor(): ProjectEditorModel {
   }, [layoutState.workspaceLayout.zoomLevel])
 
 
-  useProjectEditorEffects(uiState, projectState, documentState, layoutState, setters, actions, core, autoPickProjectFolderOnStart, paneWorkspace)
+  useProjectEditorEffects(uiState, projectState, documentState, layoutState, paneBindings, setters, actions, core, autoPickProjectFolderOnStart, paneWorkspace)
 
   return {
     state: (({ snapshot, editorMeta, ...state }) => state)(values),

@@ -1,4 +1,4 @@
-import { useMemo } from 'preact/hooks'
+import { useRef } from 'preact/hooks'
 import type { DocumentMeta } from '../../../shared/ipc'
 import type {
   EditorSerializationRefs,
@@ -28,8 +28,20 @@ export function usePaneWorkspace(
   navigationHistory: PaneNavigationHistoryStore,
   savedContentMap?: Map<string, string>,
 ): PaneWorkspace {
-  return useMemo(
-    () => new PaneWorkspace(layoutState, paneBindings, serializationRefs, saveDocumentFn, navigationHistory, savedContentMap),
-    [layoutState, paneBindings, serializationRefs, saveDocumentFn, navigationHistory, savedContentMap],
-  )
+  const workspaceRef = useRef<PaneWorkspace | null>(null)
+
+  if (workspaceRef.current === null) {
+    workspaceRef.current = new PaneWorkspace(
+      layoutState,
+      paneBindings,
+      serializationRefs,
+      saveDocumentFn,
+      navigationHistory,
+      savedContentMap,
+    )
+  } else {
+    workspaceRef.current.updateDependencies(layoutState, paneBindings, serializationRefs, saveDocumentFn)
+  }
+
+  return workspaceRef.current
 }

@@ -1,5 +1,4 @@
 import { describe, expect, it } from 'vitest'
-console.log('LOG: use-pane-workspace test cargado')
 import { h, render } from 'preact'
 import { useMemo } from 'preact/hooks'
 import { act } from 'preact/test-utils'
@@ -90,7 +89,7 @@ describe('usePaneWorkspace', () => {
     expect(Object.isFrozen(workspaceRef.secondary)).toBe(true)
   })
 
-  it('memoizes workspace across re-renders when layout changes', () => {
+  it('keeps workspace identity stable when layout changes', () => {
     let firstInstance: any = null
     let secondInstance: any = null
     const primary = makePane('docs/a.md', '# A', false)
@@ -117,12 +116,11 @@ describe('usePaneWorkspace', () => {
       render(h(Harness, { layout: layout2 }), container)
     })
 
-    expect(secondInstance).not.toBe(firstInstance)
+    expect(secondInstance).toBe(firstInstance)
     expect(secondInstance.layout.activePane).toBe('secondary')
-    expect(firstInstance.layout.activePane).toBe('primary')
   })
 
-  it('memoizes workspace across re-renders when primary pane changes', () => {
+  it('keeps workspace identity stable when primary pane changes', () => {
     let firstInstance: any = null
     let secondInstance: any = null
     const layout = makeLayout('primary')
@@ -149,12 +147,11 @@ describe('usePaneWorkspace', () => {
       render(h(Harness, { primary: primary2 }), container)
     })
 
-    expect(secondInstance).not.toBe(firstInstance)
+    expect(secondInstance).toBe(firstInstance)
     expect(secondInstance.primary.isDirty).toBe(true)
-    expect(firstInstance.primary.isDirty).toBe(false)
   })
 
-  it('memoizes workspace across re-renders when secondary pane changes', () => {
+  it('keeps workspace identity stable when secondary pane changes', () => {
     let firstInstance: any = null
     let secondInstance: any = null
     const layout = makeLayout('primary')
@@ -181,9 +178,8 @@ describe('usePaneWorkspace', () => {
       render(h(Harness, { secondary: secondary2 }), container)
     })
 
-    expect(secondInstance).not.toBe(firstInstance)
+    expect(secondInstance).toBe(firstInstance)
     expect(secondInstance.secondary.isDirty).toBe(true)
-    expect(firstInstance.secondary.isDirty).toBe(false)
   })
 
   it('returns same instance when inputs do not change across re-renders', () => {

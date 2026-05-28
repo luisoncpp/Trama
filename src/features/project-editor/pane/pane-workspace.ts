@@ -61,6 +61,21 @@ export class PaneWorkspace {
     this.ownsSavedContentMap = !resolvedMap
   }
 
+  updateDependencies(
+    layoutState: WorkspaceLayoutState,
+    paneBindings: PaneBindings,
+    serializationRefs: {
+      primary: { current: EditorSerializationRefs }
+      secondary: { current: EditorSerializationRefs }
+    },
+    saveDocumentFn: (path: string, content: string, meta: DocumentMeta) => Promise<void>,
+  ): void {
+    this.layoutState = layoutState
+    this.paneBindings = paneBindings
+    this.serializationRefs = serializationRefs
+    this.saveDocumentFn = saveDocumentFn
+  }
+
   scheduleAutosave(pane: WorkspacePane, delay: number): void {
     this.cancelAutosave()
     const capturedPane = pane
@@ -84,36 +99,31 @@ export class PaneWorkspace {
     if (this.ownsSavedContentMap) this.lastSavedContentMap.clear()
   }
 
-  getLastSavedContent(path: string): string | null {
-    return this.lastSavedContentMap.get(path) ?? null
-  }
-
-  getPaneNavigationHistory(pane: WorkspacePane): PaneNavigationHistoryState {
-    return this.navigation.getPaneNavigationHistory(pane)
-  }
-
-  recordPaneNavigation(pane: WorkspacePane, path: string): void {
-    return this.navigation.recordPaneNavigation(pane, path)
-  }
-
-  getPreviousPathInPaneHistory(pane: WorkspacePane): string | null {
-    return this.navigation.getPreviousPathInPaneHistory(pane)
-  }
-
-  getNextPathInPaneHistory(pane: WorkspacePane): string | null {
-    return this.navigation.getNextPathInPaneHistory(pane)
-  }
-
-  stepPaneNavigationHistory(pane: WorkspacePane, direction: -1 | 1): string | null {
-    return this.navigation.stepPaneNavigationHistory(pane, direction)
-  }
-
-  clearNavigationHistory(): void {
-    return this.navigation.clearNavigationHistory()
-  }
+  getLastSavedContent(path: string): string | null { return this.lastSavedContentMap.get(path) ?? null }
+  getPaneNavigationHistory(pane: WorkspacePane): PaneNavigationHistoryState { return this.navigation.getPaneNavigationHistory(pane) }
+  recordPaneNavigation(pane: WorkspacePane, path: string): void { return this.navigation.recordPaneNavigation(pane, path) }
+  getPreviousPathInPaneHistory(pane: WorkspacePane): string | null { return this.navigation.getPreviousPathInPaneHistory(pane) }
+  getNextPathInPaneHistory(pane: WorkspacePane): string | null { return this.navigation.getNextPathInPaneHistory(pane) }
+  stepPaneNavigationHistory(pane: WorkspacePane, direction: -1 | 1): string | null { return this.navigation.stepPaneNavigationHistory(pane, direction) }
+  clearNavigationHistory(): void { return this.navigation.clearNavigationHistory() }
 
   private getSerializationRefForPane(pane: WorkspacePane) {
     return pane === 'secondary' ? this.serializationRefs.secondary : this.serializationRefs.primary
+  }
+
+  private getPaneState(pane: WorkspacePane): PaneDocumentState {
+    return pane === 'secondary' ? this.paneBindings.secondaryPane : this.paneBindings.primaryPane
+  }
+
+  private updatePaneState(
+    pane: WorkspacePane,
+    updater: PaneDocumentState | ((prev: PaneDocumentState) => PaneDocumentState),
+  ): void {
+    if (pane === 'secondary') {
+      this.paneBindings.setSecondaryPane(updater)
+      return
+    }
+    this.paneBindings.setPrimaryPane(updater)
   }
 
   flushPaneContent(pane: WorkspacePane): string | null {
@@ -121,7 +131,7 @@ export class PaneWorkspace {
   }
 
   async savePaneIfDirty(pane: WorkspacePane): Promise<void> {
-    const paneDocument = pane === 'secondary' ? this.paneBindings.secondaryPane : this.paneBindings.primaryPane
+    const paneDocument = this.getPaneState(pane)
     if (!paneDocument.isDirty || !paneDocument.path) return
     const flushResult = this.flushPaneContent(pane)
     const contentToSave = flushResult ?? paneDocument.content
@@ -135,7 +145,7 @@ export class PaneWorkspace {
 
   getActivePaneDocument(): ActivePaneDocumentInfo {
     const { activePane } = this.layoutState
-    const pane = activePane === 'secondary' ? this.paneBindings.secondaryPane : this.paneBindings.primaryPane
+    const pane = this.getPaneState(activePane)
     const selectedPath = activePane === 'secondary'
       ? this.layoutState.secondaryPath
       : this.layoutState.primaryPath
@@ -143,60 +153,33 @@ export class PaneWorkspace {
   }
 
   getPaneDocument(pane: WorkspacePane): PaneDocumentInfo {
-    const doc = pane === 'secondary' ? this.paneBindings.secondaryPane : this.paneBindings.primaryPane
+    const doc = this.getPaneState(pane)
     return { path: doc.path, content: doc.content, isDirty: doc.isDirty }
   }
 
-  isPaneDirty(pane?: WorkspacePane): boolean {
-    if (!pane) return this.getActivePaneDocument().isDirty
-    return this.getPaneDocument(pane).isDirty
-  }
-
+  isPaneDirty(pane?: WorkspacePane): boolean { return (pane ? this.getPaneDocument(pane) : this.getActivePaneDocument()).isDirty }
   canSwitchAwayFrom(pane?: WorkspacePane): boolean {
-    const target = pane ?? this.layoutState.activePane
-    const doc = this.getPaneDocument(target)
+    const doc = this.getPaneDocument(pane ?? this.layoutState.activePane)
     return !doc.isDirty || doc.path === null
   }
 
   markPaneDirty(pane: WorkspacePane): void {
-    if (pane === 'secondary') {
-      this.paneBindings.setSecondaryPane((prev) => (prev.isDirty ? prev : { ...prev, isDirty: true }))
-    } else {
-      this.paneBindings.setPrimaryPane((prev) => {
-        const next = prev.isDirty ? prev : { ...prev, isDirty: true }
-        return next
-      })
-    }
+    this.updatePaneState(pane, (prev) => (prev.isDirty ? prev : { ...prev, isDirty: true }))
   }
 
   updatePaneContent(pane: WorkspacePane, content: string): void {
-    if (pane === 'secondary') {
-      this.paneBindings.setSecondaryPane((prev) => ({ ...prev, content, isDirty: true }))
-    } else {
-      this.paneBindings.setPrimaryPane((prev) => ({ ...prev, content, isDirty: true }))
-    }
+    this.updatePaneState(pane, (prev) => ({ ...prev, content, isDirty: true }))
   }
 
   loadPaneDocument(pane: WorkspacePane, path: string, content: string, meta: DocumentMeta): void {
-    if (pane === 'secondary') {
-      this.paneBindings.setSecondaryPane((prev) => ({
-        ...prev,
-        path,
-        content,
-        meta,
-        isDirty: false,
-        reloadVersion: prev.reloadVersion + 1,
-      }))
-    } else {
-      this.paneBindings.setPrimaryPane((prev) => ({
-        ...prev,
-        path,
-        content,
-        meta,
-        isDirty: false,
-        reloadVersion: prev.reloadVersion + 1,
-      }))
-    }
+    this.updatePaneState(pane, (prev) => ({
+      ...prev,
+      path,
+      content,
+      meta,
+      isDirty: false,
+      reloadVersion: prev.reloadVersion + 1,
+    }))
   }
 
   clearPanes(): void {
@@ -206,17 +189,13 @@ export class PaneWorkspace {
   }
 
   updatePaneMeta(path: string, meta: DocumentMeta): void {
-    this.paneBindings.setPrimaryPane((prev) => prev.path === path ? { ...prev, meta } : prev)
-    this.paneBindings.setSecondaryPane((prev) => prev.path === path ? { ...prev, meta } : prev)
+    this.updatePaneState('primary', (prev) => prev.path === path ? { ...prev, meta } : prev)
+    this.updatePaneState('secondary', (prev) => prev.path === path ? { ...prev, meta } : prev)
   }
 
   private markPaneSaved(pane: WorkspacePane, path: string, content: string): void {
     this.lastSavedContentMap.set(path, content)
-    if (pane === 'secondary') {
-      this.paneBindings.setSecondaryPane((prev) => prev.path === path ? { ...prev, isDirty: false } : prev)
-    } else {
-      this.paneBindings.setPrimaryPane((prev) => prev.path === path ? { ...prev, isDirty: false } : prev)
-    }
+    this.updatePaneState(pane, (prev) => prev.path === path ? { ...prev, isDirty: false } : prev)
   }
 
   async checkExternalChangeMatchesSavedSnapshot(path: string, externalContent: string): Promise<boolean> {

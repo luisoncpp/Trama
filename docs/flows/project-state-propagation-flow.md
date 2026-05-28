@@ -59,7 +59,22 @@ Also assembles:
 
 **The 6 sub-states are memoized with `useMemo`.** Action hooks should depend on the specific sub-states they read, not on `values`.
 
-### Layer 3 — Actions (`useProjectEditorActions`)
+`paneBindings` still changes when pane state changes, but `usePaneWorkspace()` no longer turns that into workspace recreation. It syncs the fresh bindings into one stable `PaneWorkspace` instance.
+
+### Layer 3 — Stable pane workspace (`usePaneWorkspace`)
+
+File: `src/features/project-editor/pane/use-pane-workspace.ts`
+
+`usePaneWorkspace()` creates one `PaneWorkspace` with `useRef` and then calls `workspace.updateDependencies(...)` on later renders.
+
+That keeps:
+- autosave timer ownership inside the class
+- pane history store attached to the same facade
+- action/effect dependencies from churning only because pane snapshots changed
+
+This also changes an important rule for effects: they must depend on semantic state (`isDirty`, `selectedPath`, layout paths), not on `paneWorkspace` identity.
+
+### Layer 4 — Actions (`useProjectEditorActions`)
 
 File: `src/features/project-editor/project-editor-private/actions.ts`
 
@@ -81,7 +96,7 @@ Then builds the flat `ProjectEditorActions` surface directly over the deep Modul
 
 **Action callbacks are now stable** — they only re-create when the specific sub-states they consume change. A `statusMessage` update no longer re-creates `toggleFocusMode`.
 
-### Layer 4 — Consumer (`App` → `ProjectEditorView`)
+### Layer 5 — Consumer (`App` → `ProjectEditorView`)
 
 File: `src/app.tsx`
 
@@ -130,7 +145,10 @@ project-editor-private/state.ts
   │   └─ primaryPane, secondaryPane, setPrimaryPane, setSecondaryPane
   │
   ▼
-useProjectEditor() — creates PaneWorkspace via usePaneWorkspace() and is the only importer of `project-editor-private/`
+useProjectEditor() — creates one stable PaneWorkspace via usePaneWorkspace() and is the only importer of `project-editor-private/`
+  │
+  ▼
+PaneWorkspace.updateDependencies(...)
   │
   ▼
 project-editor-private/actions.ts
@@ -187,7 +205,7 @@ No code outside `pane/` calls `setPrimaryPane`/`setSecondaryPane` directly. The 
 | `src/features/project-editor/use-project-editor-core-state.ts` | Raw useState hooks |
 | `src/features/project-editor/project-editor-private/state.ts` | Derived values + memoized sub-states + setters/paneBindings assembly |
 | `src/features/project-editor/pane/pane-workspace.ts` | `PaneWorkspace` facade with mutation methods, private `markPaneSaved` |
-| `src/features/project-editor/pane/use-pane-workspace.ts` | Factory hook that encapsulates setter injection via `useMemo` |
+| `src/features/project-editor/pane/use-pane-workspace.ts` | Factory hook that encapsulates setter injection via one stable `PaneWorkspace` instance and dependency sync |
 | `src/features/project-editor/project-editor-private/actions.ts` | Private action composition hub over the deep Modules |
 | `src/features/project-editor/use-project-editor.ts` | Public seam for App; consumes private state/actions Modules and builds `PaneWorkspace` |
 | `src/app.tsx` | Top-level component wiring |

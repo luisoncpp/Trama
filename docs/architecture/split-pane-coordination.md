@@ -51,6 +51,8 @@ Action hooks no longer reciben `layoutState` + `paneState` separados y recalcula
 
 `PaneWorkspace` recibe los setters de Preact via `paneBindings` (con `primaryPane`, `secondaryPane`, `setPrimaryPane`, `setSecondaryPane`) y es el **único** modulo que llama `setPrimaryPane`/`setSecondaryPane`. Los hooks externos solo usan los métodos públicos de la fachada.
 
+La instancia de `PaneWorkspace` debe permanecer estable durante la sesión. `usePaneWorkspace()` la crea una sola vez y luego sincroniza dentro de ella el `layoutState`, `paneBindings`, refs de serialización y `saveDocumentFn` actuales mediante `updateDependencies(...)`.
+
 ```typescript
 class PaneWorkspace {
   private autosaveTimer: ReturnType<typeof setTimeout> | null = null
@@ -84,6 +86,7 @@ class PaneWorkspace {
   // Coordination methods
   scheduleAutosave(pane: WorkspacePane, delay: number): void  // sin callback,interno
   cancelAutosave(): void
+  updateDependencies(...): void
   destroy(): void
 
   // Direct access getters (frozen copies)
@@ -102,7 +105,7 @@ class PaneWorkspace {
 **Files:**
 - `src/features/project-editor/pane/pane-workspace.ts` — the class with `PaneBindings` interface and mutation methods
 - `src/features/project-editor/pane/index.ts` — barrel export (`PaneWorkspace`, `usePaneWorkspace`, `PaneBindings`, and public types)
-- `src/features/project-editor/pane/use-pane-workspace.ts` — factory hook that encapsulates Preact setter injection, creates `PaneWorkspace` via `useMemo`
+- `src/features/project-editor/pane/use-pane-workspace.ts` — factory hook that encapsulates Preact setter injection, creates one stable `PaneWorkspace` via `useRef`, and syncs live dependencies into it
 - `src/features/project-editor/pane/pane-save-logic.ts` — `executePaneSave` (internal, not exported)
 
 ## The Formal Contracts

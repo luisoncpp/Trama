@@ -2,9 +2,11 @@
 
 ## Status
 
-- State: planned
+- State: in progress
 - Scope: renderer project-editor state/update path only
 - Goal: stop avoidable `useProjectEditor()` churn during typing, while preserving the existing pane, save, and debounce invariants
+- Completed: issue 1 via the deeper split (`markPaneDirty` / `updatePaneContent`)
+- Completed: issue 2 via stable `PaneWorkspace` instance with live dependency sync
 
 ## Problem Summary
 
@@ -100,7 +102,7 @@ Start with the minimal guard. It is the smallest correct fix and preserves the c
 
 #### What happens
 
-`usePaneWorkspace()` creates a new `PaneWorkspace` instance through `useMemo(...)` with dependencies on:
+`usePaneWorkspace()` created a new `PaneWorkspace` instance through `useMemo(...)` with dependencies on:
 
 - `layoutState`
 - `paneBindings`
@@ -109,7 +111,7 @@ Start with the minimal guard. It is the smallest correct fix and preserves the c
 - `navigationHistory`
 - `savedContentMap`
 
-`paneBindings` itself depends on `coreState.primaryPane` and `coreState.secondaryPane`, so every pane-content change recreates the `PaneWorkspace` instance.
+`paneBindings` itself depended on `coreState.primaryPane` and `coreState.secondaryPane`, so every pane-content change recreated the `PaneWorkspace` instance.
 
 #### Why it matters
 
@@ -124,13 +126,13 @@ Start with the minimal guard. It is the smallest correct fix and preserves the c
 - `src/features/project-editor/use-project-editor.ts`
 - `src/features/project-editor/pane/use-project-editor-autosave-effect.ts`
 
-#### Planned fix
+#### Fix applied
 
-Stabilize `PaneWorkspace` identity:
+`PaneWorkspace` now stays stable for the session:
 
-1. Create the instance once with `useRef(...)` or equivalent stable construction.
-2. Feed latest layout and pane snapshots into the instance via mutable refs or explicit sync methods.
-3. Keep long-lived collaborators (`navigationHistoryRef`, `lastSavedContentMapRef`, serialization refs) attached to the stable instance.
+1. `usePaneWorkspace()` creates the instance once with `useRef(...)`.
+2. `PaneWorkspace.updateDependencies(...)` syncs the latest layout, pane bindings, serialization refs, and save function into that instance each render.
+3. Long-lived collaborators (`navigationHistoryRef`, `lastSavedContentMapRef`) remain attached to the stable instance.
 
 #### Risks and invariants
 
@@ -219,6 +221,8 @@ The first slice should not redesign the whole app composition. The goal is to re
 
 ### Slice 2: Stabilize `PaneWorkspace`
 
+Status: completed
+
 #### Changes
 
 - Replace render-tied `useMemo(new PaneWorkspace(...))` construction with a stable instance.
@@ -229,6 +233,11 @@ The first slice should not redesign the whole app composition. The goal is to re
 
 - Pane coordination facade stops changing identity during typing.
 - Effects and action builders stop re-running only because the workspace object was recreated.
+
+#### Notes from implementation
+
+- `useProjectEditorCloseEffect()` now depends on pane dirty flags, not `paneWorkspace` identity.
+- The autosave effect already depended on semantic inputs (`selectedPath`, `isDirty`, `activePane`) and remained compatible with the stable workspace.
 
 #### Risk
 
