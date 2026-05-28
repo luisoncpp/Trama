@@ -116,6 +116,18 @@ return <ProjectEditorView model={model} ... />
 
 `model` is ALWAYS a new reference. `buildProjectEditorModelState(values)` creates a fresh state object. Components receiving `model` always re-render.
 
+#### Shell narrowing (issue #4)
+
+`ProjectEditorView` now narrows the full model into stable memoized prop bundles using dedicated hooks:
+
+- `useProjectEditorShellState(model)` — picks only shell-relevant fields (`rootPath`, `visibleFiles`, `sidebarActiveSection`, etc.) into a memoized object
+- `useProjectEditorShellActions(model)` — picks only shell-relevant actions (`selectFile`, `setSidebarSection`, file/folder CRUD, etc.) into a memoized object
+- `useProjectEditorViewDialogs(rootPath, visibleFiles)` — repackages dialog hook state (AI import/export, book export, Zulu import) into stable memoized prop bundles
+
+The sidebar shell (`ProjectEditorSidebarShell`) is wrapped in `memo(...)` and only re-renders when its narrowed props actually change. `ProjectEditorDialogs` is also memoized so closed dialog leaf components do not receive new props during typing.
+
+Top-level callbacks (spellcheck enable/disable, theme preference) are stabilized via `useCallback` in `App` so they do not defeat the memo boundary.
+
 ## Data flow diagram
 
 ```
@@ -169,8 +181,20 @@ project-editor-private/actions.ts
   └─ ... other actions
 
 ▼
-App → ProjectEditorView → ... → SidebarTree
-  (model.state.visibleFiles flows down)
+App → ProjectEditorView
+  │
+  ├─ ProjectEditorLayout (receives narrowed shell props)
+  │   │
+  │   ├─ ProjectEditorSidebarShell (memo)
+  │   │   └─ ... → SidebarPanel → SidebarTree
+  │   │      (only re-renders when shellState/shellActions props change)
+  │   │
+  │   └─ ProjectEditorMainPane → WorkspaceLayoutPanel
+  │      (re-renders on model changes — accepts the live model)
+  │
+  └─ ProjectEditorDialogs (memo)
+     └─ AI/Zulu/Book dialog portals
+        (only re-render when their stable dialog prop bundles change)
 ```
 
 ## Critical invariant

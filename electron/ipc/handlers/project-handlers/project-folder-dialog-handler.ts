@@ -1,11 +1,16 @@
 import { dialog } from 'electron'
 import path from 'node:path'
 import { mkdir, stat } from 'node:fs/promises'
-import type { IpcEnvelope, SelectProjectFolderResponse } from '../../../../src/shared/ipc.js'
+import {
+  type IpcEnvelope,
+  type SelectProjectFolderResponse,
+  type ValidateProjectFolderResponse,
+} from '../../../../src/shared/ipc.js'
+import { validateProjectFolderRequestSchema } from '../../../../src/shared/ipc-project.js'
 import { RELEVANT_SECTION_NAMES } from '../../../../src/shared/project-sections.js'
 import { errorEnvelope } from '../../../ipc-errors.js'
 
-async function getMissingProjectFolders(rootPath: string): Promise<string[]> {
+export async function getMissingProjectFolders(rootPath: string): Promise<string[]> {
   const checks = await Promise.all(
     RELEVANT_SECTION_NAMES.map(async (folder) => {
       try {
@@ -20,6 +25,10 @@ async function getMissingProjectFolders(rootPath: string): Promise<string[]> {
   return checks.filter(
     (folder): folder is (typeof RELEVANT_SECTION_NAMES)[number] => folder !== null,
   )
+}
+
+export async function isProjectFolderStructureValid(rootPath: string): Promise<boolean> {
+  return (await getMissingProjectFolders(rootPath)).length === 0
 }
 
 async function ensureRequiredProjectFolders(rootPath: string, missingFolders: string[]): Promise<void> {
@@ -100,5 +109,26 @@ export async function handleSelectProjectFolder(): Promise<IpcEnvelope<SelectPro
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unable to select project folder'
     return errorEnvelope('PROJECT_PICKER_FAILED', message)
+  }
+}
+
+export async function handleValidateProjectFolder(
+  rawPayload: unknown,
+): Promise<IpcEnvelope<ValidateProjectFolderResponse>> {
+  const payload = validateProjectFolderRequestSchema.safeParse(rawPayload)
+  if (!payload.success) {
+    return errorEnvelope('VALIDATION_ERROR', 'Invalid payload for project folder validation', payload.error.flatten())
+  }
+
+  try {
+    return {
+      ok: true,
+      data: {
+        valid: await isProjectFolderStructureValid(payload.data.rootPath),
+      },
+    }
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unable to validate project folder'
+    return errorEnvelope('PROJECT_VALIDATION_FAILED', message)
   }
 }

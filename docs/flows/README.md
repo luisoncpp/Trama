@@ -49,6 +49,7 @@ Keep these docs operational. Prefer short tables, explicit file names, and seque
 | `tag-overlay-flow.md` | What happens when Ctrl is held to show wiki tag underlines, including text matching, index mapping, and fresh bounds computation on each render |
 | `switch-pane-flow.md` | What happens when the active workspace pane changes in split mode |
 | `folder-delete-flow.md` | What happens from right-click Delete through IPC, snapshot refresh, and sidebar tree re-render |
+| `startup-project-open-flow.md` | What happens on app startup when Trama restores the last valid project root or falls back to the folder picker |
 | `visible-files-computation-flow.md` | How `visibleFiles` is derived from `coreState.snapshot`, scoped, and propagated through 7+ component layers to the tree renderer |
 | `project-state-propagation-flow.md` | How state flows from `useProjectEditorCoreState` through 6 memoized sub-states to actions and back; why action hooks depend only on the sub-states they read |
 | `sidebar-render-chain-flow.md` | The full component render chain from `App` through 10 layers down to `SidebarTreeRowButton` |

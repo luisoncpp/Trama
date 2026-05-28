@@ -13,6 +13,7 @@ interface OpenProjectSetters {
   setLoadingProject: (value: boolean) => void
   setStatusMessage: (value: string) => void
   setWorkspaceLayout: (value: WorkspaceLayoutState | ((previous: WorkspaceLayoutState) => WorkspaceLayoutState)) => void
+  setLastProjectRootPath: (value: string) => void
 }
 
 async function preloadInactiveSplitPane(
@@ -52,6 +53,7 @@ async function applyOpenedProject(
 ): Promise<void> {
   setters.setRootPath(snapshot.rootPath)
   setters.setSnapshot(snapshot)
+  setters.setLastProjectRootPath(snapshot.rootPath)
   setters.setStatusMessage(`Project opened: ${snapshot.rootPath}`)
 
   let nextLayout: ReturnType<typeof reconcileWorkspaceLayout> | null = null

@@ -12,3 +12,4 @@ Current archived plans:
 - `pane-isolation-plan-v2.md`
 - `wiki-tag-links-implementation-plan.md`
 - `wiki-tag-links-system-guide.md`
+- `use-project-editor-keystroke-churn-plan.md`

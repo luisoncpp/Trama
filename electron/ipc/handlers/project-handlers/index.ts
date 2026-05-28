@@ -9,5 +9,5 @@ export {
 } from './document-handlers.js'
 export { handleDeleteFolder, handleMoveFolder, handleRenameFolder } from './folder-handlers.js'
 export { handleOpenProject } from './project-open-handler.js'
-export { handleSelectProjectFolder } from './project-folder-dialog-handler.js'
+export { handleSelectProjectFolder, handleValidateProjectFolder } from './project-folder-dialog-handler.js'
 export { handleMoveFile, handleReorderFiles } from './order-handlers.js'

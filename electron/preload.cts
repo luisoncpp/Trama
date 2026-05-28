@@ -42,6 +42,8 @@ import {
   type MoveFolderResponse,
   type NotifyCloseState,
   type SelectProjectFolderResponse,
+  type ValidateProjectFolderRequest,
+  type ValidateProjectFolderResponse,
   type SetSpellcheckSettingsRequest,
   type SetFullscreenRequest,
   type SetFullscreenResponse,
@@ -71,6 +73,9 @@ const tramaApi = {
   },
   selectProjectFolder(): Promise<IpcEnvelope<SelectProjectFolderResponse>> {
     return ipcRenderer.invoke(IPC_CHANNELS.selectProjectFolder)
+  },
+  validateProjectFolder(payload: ValidateProjectFolderRequest): Promise<IpcEnvelope<ValidateProjectFolderResponse>> {
+    return ipcRenderer.invoke(IPC_CHANNELS.validateProjectFolder, payload)
   },
   readDocument(payload: ReadDocumentRequest): Promise<IpcEnvelope<ReadDocumentResponse>> {
     return ipcRenderer.invoke(IPC_CHANNELS.readDocument, payload)

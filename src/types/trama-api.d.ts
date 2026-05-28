@@ -35,6 +35,8 @@ import type {
   SetFullscreenRequest,
   SetFullscreenResponse,
   SelectProjectFolderResponse,
+  ValidateProjectFolderRequest,
+  ValidateProjectFolderResponse,
   SpellcheckSettingsResponse,
   ReorderFilesRequest,
   ReorderFilesResponse,
@@ -58,6 +60,7 @@ declare global {
       debugLog(payload: DebugLogRequest): Promise<void>
       openProject(payload: OpenProjectRequest): Promise<IpcEnvelope<ProjectSnapshot>>
       selectProjectFolder(): Promise<IpcEnvelope<SelectProjectFolderResponse>>
+      validateProjectFolder(payload: ValidateProjectFolderRequest): Promise<IpcEnvelope<ValidateProjectFolderResponse>>
       readDocument(payload: ReadDocumentRequest): Promise<IpcEnvelope<ReadDocumentResponse>>
       saveDocument(payload: SaveDocumentRequest): Promise<IpcEnvelope<SaveDocumentResponse>>
       createDocument(payload: CreateDocumentRequest): Promise<IpcEnvelope<CreateDocumentResponse>>

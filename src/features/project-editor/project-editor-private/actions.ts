@@ -119,7 +119,7 @@ export function useProjectEditorActions({
   projectState: ProjectEditorProjectState
   uiState: ProjectEditorUiState
   sidebarState: ProjectEditorSidebarState
-  setters: ProjectEditorActionSetters
+  setters: ProjectEditorActionSetters & { setLastProjectRootPath: (value: string) => void }
   paneWorkspace: PaneWorkspace
 }) {
   const clearEditor = useClearEditor(setters, paneWorkspace)

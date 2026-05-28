@@ -41,6 +41,7 @@ import {
   handleRenameFolder,
   handleSaveDocument,
   handleSelectProjectFolder,
+  handleValidateProjectFolder,
   shutdownIpcServices,
   handleAiImportPreview,
   handleAiImport,
@@ -113,6 +114,7 @@ function registerPingHandler(ipcMain: IpcMain): void {
 function registerProjectHandlers(ipcMain: IpcMain): void {
   ipcMain.handle(IPC_CHANNELS.openProject, (_event, payload) => handleOpenProject(payload))
   ipcMain.handle(IPC_CHANNELS.selectProjectFolder, () => handleSelectProjectFolder())
+  ipcMain.handle(IPC_CHANNELS.validateProjectFolder, (_event, payload) => handleValidateProjectFolder(payload))
   ipcMain.handle(IPC_CHANNELS.getIndex, () => handleGetIndex())
   ipcMain.handle(IPC_CHANNELS.reorderFiles, (_event, payload) => handleReorderFiles(payload))
   ipcMain.handle(IPC_CHANNELS.moveFile, (_event, payload) => handleMoveFile(payload))

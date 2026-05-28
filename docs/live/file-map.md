@@ -56,6 +56,7 @@ Mandatory doc navigation for new chats: start with `docs/START-HERE.md` — it p
 - `electron/ipc/handlers/project-handlers/project-folder-dialog-handler.ts`
   - Native folder picker endpoint.
   - Enforces required project folders (`book`, `lore`, `outline`) by prompting to create missing folders or reselect another directory.
+  - Also validates remembered startup project roots through the same folder-structure rules.
 - `electron/ipc/handlers/project-handlers/document-handlers.ts`
   - Read/save/create/rename/delete document + create folder handlers.
 - `electron/ipc/handlers/project-handlers/folder-handlers.ts`
@@ -193,6 +194,10 @@ Mandatory doc navigation for new chats: start with `docs/START-HERE.md` — it p
   - Notifies dirty state to main process via `notifyCloseState` IPC and exposes `window.__tramaSaveAll` for the close handler to invoke saves before closing.
 - `src/features/project-editor/use-workspace-layout-state.ts`
   - Persist workspace layout (`trama.workspace.layout.v1`).
+- `src/features/project-editor/use-last-project-state.ts`
+  - Persist the last successfully opened project root (`trama.last-project.v1`) and clear it when startup validation fails.
+- `src/features/project-editor/startup-project-open.ts`
+  - Small startup helper that decides between reopening the remembered project and falling back to the folder picker.
 - `docs/architecture/split-pane-coordination.md`
   - Canonical reference for the split pane per-pane state model. Documents the two-layer state model (layout vs document), all 7 formal contracts, state projection map, and key implementation files.
 - `src/features/project-editor/use-project-editor-model.ts`
@@ -475,6 +480,8 @@ Core and regression suites:
   - Integration tests for `handleOpenProject` with `incrementalUpdate`: cache hits, cache invalidation on root change, empty-incremental reorder path.
 - `tests/theme-preference.test.ts`
 - `tests/startup-smoke.test.ts`
+- `tests/startup-project-open.test.ts`
+  - Startup restore decision coverage: valid remembered root auto-open, no-memory picker fallback, invalid-memory cleanup.
 - `tests/electron-smoke.test.ts`
 - `tests/typescript-compile.test.ts`
 - `tests/ai-import-parser.test.ts`

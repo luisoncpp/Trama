@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { h, render } from 'preact'
 import { act } from 'preact/test-utils'
 import { WORKSPACE_LAYOUT_STORAGE_KEY } from '../src/features/project-editor/project-editor-logic'
+import { LAST_PROJECT_STORAGE_KEY } from '../src/features/project-editor/use-last-project-state'
 import { WORKSPACE_CONTEXT_MENU_EVENT } from '../src/shared/workspace-context-menu'
 import { useProjectEditor } from '../src/features/project-editor/use-project-editor'
 import type { ProjectEditorModel } from '../src/features/project-editor/project-editor-types'
@@ -18,6 +19,7 @@ type TramaApiMock = {
     }
   }>
   selectProjectFolder: () => Promise<{ ok: true; data: { rootPath: string | null } }>
+  validateProjectFolder: (payload: { rootPath: string }) => Promise<{ ok: true; data: { valid: boolean } }>
   readDocument: (payload: { path: string }) => Promise<{ ok: true; data: { path: string; content: string; meta: Record<string, unknown> } }>
   saveDocument: (payload: { path: string; content: string; meta: Record<string, unknown> }) => Promise<{ ok: true; data: { path: string; version: string } }>
   createDocument: (payload: { path: string; initialContent?: string }) => Promise<{
@@ -58,6 +60,7 @@ function setupTramaApiMock(overrides?: Partial<TramaApiMock>) {
       },
     }),
     selectProjectFolder: async () => ({ ok: true, data: { rootPath: null } }),
+    validateProjectFolder: async () => ({ ok: true, data: { valid: false } }),
     readDocument: async (payload) => ({ ok: true, data: { path: payload.path, content: '# A', meta: {} } }),
     saveDocument: async (payload) => ({ ok: true, data: { path: payload.path, version: new Date().toISOString() } }),
     createDocument: async (payload) => ({
@@ -166,6 +169,7 @@ describe('useProjectEditor', () => {
   it('persists sidebar section and layout preferences', async () => {
     window.localStorage.removeItem('trama.sidebar.ui.v1')
     window.localStorage.removeItem(WORKSPACE_LAYOUT_STORAGE_KEY)
+    window.localStorage.removeItem(LAST_PROJECT_STORAGE_KEY)
     setupTramaApiMock()
 
     let model: ProjectEditorModel | undefined
@@ -216,6 +220,43 @@ describe('useProjectEditor', () => {
       focusScope: 'paragraph',
       zoomLevel: 1,
     })
+  })
+
+  it('persists last successful project root after opening a project', async () => {
+    window.localStorage.removeItem('trama.sidebar.ui.v1')
+    window.localStorage.removeItem(WORKSPACE_LAYOUT_STORAGE_KEY)
+    window.localStorage.removeItem(LAST_PROJECT_STORAGE_KEY)
+    setupTramaApiMock({
+      selectProjectFolder: async () => ({ ok: true, data: { rootPath: 'C:/tmp/project' } }),
+      openProject: async () => ({
+        ok: true,
+        data: {
+          rootPath: 'C:/tmp/project',
+          tree: [],
+          markdownFiles: ['docs/a.md'],
+          index: { version: '1.0.0', corkboardOrder: {}, cache: {} },
+        },
+      }),
+      readDocument: async (payload) => ({ ok: true, data: { path: payload.path, content: '# A', meta: {} } }),
+    })
+
+    let model: ProjectEditorModel | undefined
+
+    function Harness() {
+      model = useProjectEditor()
+      return null
+    }
+
+    const container = document.createElement('div')
+    act(() => {
+      render(h(Harness, {}), container)
+    })
+
+    await act(async () => {
+      await model?.actions.pickProjectFolder()
+    })
+
+    expect(window.localStorage.getItem(LAST_PROJECT_STORAGE_KEY)).toBe('C:/tmp/project')
   })
 
   it('creates a new article with generated name in active section', async () => {

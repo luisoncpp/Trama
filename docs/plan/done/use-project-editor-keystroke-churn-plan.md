@@ -2,11 +2,10 @@
 
 ## Status
 
-- State: in progress
+- State: complete
 - Scope: renderer project-editor state/update path only
 - Goal: stop avoidable `useProjectEditor()` churn during typing, while preserving the existing pane, save, and debounce invariants
-- Completed: issue 1 via the deeper split (`markPaneDirty` / `updatePaneContent`)
-- Completed: issue 2 via stable `PaneWorkspace` instance with live dependency sync
+- Completed: issues 1–4 end-to-end
 
 ## Problem Summary
 

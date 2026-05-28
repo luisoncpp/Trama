@@ -11,6 +11,7 @@ export {
   handleRenameFolder,
   handleSaveDocument,
   handleSelectProjectFolder,
+  handleValidateProjectFolder,
   handleReorderFiles,
   handleMoveFile,
   handleMoveFolder,

@@ -17,7 +17,7 @@ vi.mock('electron', () => ({
   },
 }))
 
-import { handleSelectProjectFolder } from '../electron/ipc/handlers/project-handlers/project-folder-dialog-handler'
+import { handleSelectProjectFolder, handleValidateProjectFolder } from '../electron/ipc/handlers/project-handlers/project-folder-dialog-handler'
 
 describe('project folder dialog handler', () => {
   const tempRoots: string[] = []
@@ -105,5 +105,31 @@ describe('project folder dialog handler', () => {
 
     expect(showOpenDialogMock).toHaveBeenCalledTimes(2)
     expect(response.data.rootPath).toBe(secondProjectRoot)
+  })
+
+  it('validates true when the folder already has the required project structure', async () => {
+    const projectRoot = await mkdtemp(path.join(os.tmpdir(), 'trama-picker-'))
+    tempRoots.push(projectRoot)
+
+    await Promise.all([
+      mkdir(path.join(projectRoot, 'book'), { recursive: true }),
+      mkdir(path.join(projectRoot, 'lore'), { recursive: true }),
+      mkdir(path.join(projectRoot, 'outline'), { recursive: true }),
+    ])
+
+    const response = await handleValidateProjectFolder({ rootPath: projectRoot })
+
+    expect(response).toEqual({ ok: true, data: { valid: true } })
+  })
+
+  it('validates false when the folder is missing required project folders', async () => {
+    const projectRoot = await mkdtemp(path.join(os.tmpdir(), 'trama-picker-'))
+    tempRoots.push(projectRoot)
+
+    await mkdir(path.join(projectRoot, 'book'), { recursive: true })
+
+    const response = await handleValidateProjectFolder({ rootPath: projectRoot })
+
+    expect(response).toEqual({ ok: true, data: { valid: false } })
   })
 })
