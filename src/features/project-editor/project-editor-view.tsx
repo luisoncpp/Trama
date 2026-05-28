@@ -1,15 +1,13 @@
 import type { ProjectEditorModel } from './project-editor-types'
 import { ConflictBanner } from './components/conflict-banner'
 import { ConflictComparePanel } from './components/conflict-compare-panel'
-import { WorkspaceLayoutPanel } from './pane'
-import { SidebarPanel } from './components/sidebar/sidebar-panel.tsx'
 import { ProjectEditorDialogs } from './project-editor-dialogs'
-import { useAiImport } from './use-ai-import'
-import { useAiExport } from './use-ai-export'
-import { useBookExport } from './use-book-export'
-import { useZuluImport } from './use-zulu-import'
+import { useProjectEditorShellActions, useProjectEditorShellState } from './project-editor-shell'
+import { useProjectEditorViewDialogs } from './project-editor-view-dialogs'
+import { ProjectEditorLayout } from './project-editor-view-layout'
 import type { ResolvedTheme, ThemePreference } from '../../theme/theme-types'
 import type { BookExportFormat } from '../../shared/ipc'
+import type { ProjectEditorShellActions, ProjectEditorShellState } from './project-editor-shell-props'
 
 interface ProjectEditorViewProps {
   model: ProjectEditorModel
@@ -24,18 +22,6 @@ interface ProjectEditorViewProps {
   onSpellcheckLanguageChange: (language: string) => void
 }
 
-interface SidebarExtraProps extends Omit<ProjectEditorViewProps, 'model'> {
-  onImportClick: () => void
-  onImportZuluClick: () => void
-  onBookExportClick: (format: BookExportFormat) => void
-  onExportClick: () => void
-}
-
-interface ProjectEditorMainPaneProps {
-  model: ProjectEditorModel
-  spellcheckEnabled: boolean
-}
-
 function buildShellClassName(model: ProjectEditorModel): string {
   const { state } = model
   return [
@@ -47,11 +33,17 @@ function buildShellClassName(model: ProjectEditorModel): string {
   ].filter(Boolean).join(' ')
 }
 
-function ProjectEditorMainPane({ model, spellcheckEnabled }: ProjectEditorMainPaneProps) {
+function buildSidebarStyle(sidebarPanelCollapsed: boolean, sidebarPanelWidth: number, focusModeEnabled: boolean) {
+  return {
+    '--sidebar-width': focusModeEnabled ? '0px' : `${sidebarPanelCollapsed ? 72 : sidebarPanelWidth}px`,
+  }
+}
+
+function ProjectEditorConflictOverlays({ model }: { model: ProjectEditorModel }) {
   const { state, actions } = model
 
   return (
-    <div class="editor-main">
+    <>
       {state.externalConflictPath && (
         <ConflictBanner
           externalConflictPath={state.externalConflictPath}
@@ -61,7 +53,6 @@ function ProjectEditorMainPane({ model, spellcheckEnabled }: ProjectEditorMainPa
           onCompare={actions.resolveConflictCompare}
         />
       )}
-
       {state.externalConflictPath && state.conflictComparisonContent !== null && (
         <ConflictComparePanel
           externalConflictPath={state.externalConflictPath}
@@ -70,89 +61,48 @@ function ProjectEditorMainPane({ model, spellcheckEnabled }: ProjectEditorMainPa
           onClose={actions.closeConflictCompare}
         />
       )}
-
-      <WorkspaceLayoutPanel model={model} spellcheckEnabled={spellcheckEnabled} />
-    </div>
+    </>
   )
 }
 
-function buildSidebarSectionProps(model: ProjectEditorModel, props: SidebarExtraProps) {
-  const { state, actions } = model
-
+function buildProjectEditorLayoutProps(
+  model: ProjectEditorModel,
+  shellState: ProjectEditorShellState,
+  shellActions: ProjectEditorShellActions,
+  sidebarStyle: ReturnType<typeof buildSidebarStyle>,
+  themePreference: ThemePreference,
+  resolvedTheme: ResolvedTheme,
+  onThemePreferenceChange: (preference: ThemePreference) => void,
+  spellcheckEnabled: boolean,
+  spellcheckLanguage: string | null,
+  spellcheckLanguageOptions: string[],
+  spellcheckLanguageSelectionSupported: boolean,
+  onSpellcheckEnabledChange: (enabled: boolean) => void,
+  onSpellcheckLanguageChange: (language: string) => void,
+  openAiImport: () => void,
+  openZuluImport: () => void,
+  openBookExport: (format: BookExportFormat) => void,
+  openAiExport: () => void,
+) {
   return {
-    visibleFiles: state.visibleFiles,
-    selectedPath: state.selectedPath,
-    loadingDocument: state.loadingDocument,
-    onSelectFile: actions.selectFile,
-    sidebarActiveSection: state.sidebarActiveSection,
-    sidebarPanelCollapsed: state.sidebarPanelCollapsed,
-    sidebarPanelWidth: state.sidebarPanelWidth,
-    onSelectSidebarSection: actions.setSidebarSection,
-    onToggleSidebarPanelCollapsed: actions.toggleSidebarPanelCollapsed,
-    onSidebarPanelWidthChange: actions.setSidebarPanelWidth,
-    onCreateArticle: (input: Parameters<typeof actions.createArticle>[0]) => void actions.createArticle(input),
-    onCreateCategory: (input: Parameters<typeof actions.createCategory>[0]) => void actions.createCategory(input),
-    onRenameFile: (path: string, newName: string) => void actions.renameFile({ path, newName }),
-    onRenameFolder: (path: string, newName: string) => void actions.renameFolder({ path, newName }),
-    onDeleteFolder: (path: string) => void actions.deleteFolder(path),
-    onDeleteFile: (path: string, options?: { deleteAssociatedImages?: boolean }) => void actions.deleteFile(path, options),
-    onEditFileTags: (path: string, tags: string[]) => void actions.editFileTags(path, tags),
-    onReorderFiles: (folderPath: string, orderedIds: string[]) => actions.reorderFiles(folderPath, orderedIds),
-    onMoveFile: (sourcePath: string, targetFolder: string) => actions.moveFile(sourcePath, targetFolder),
-    onMoveFolder: (sourcePath: string, targetParent: string) => actions.moveFolder(sourcePath, targetParent),
-    corkboardOrder: state.corkboardOrder,
-    apiAvailable: state.apiAvailable,
-    loadingProject: state.loadingProject,
-    rootPath: state.rootPath,
-    statusMessage: state.statusMessage,
-    onPickFolder: () => void actions.pickProjectFolder(),
-    onImport: props.onImportClick,
-    onImportZulu: props.onImportZuluClick,
-    onExportBook: props.onBookExportClick,
-    onExport: props.onExportClick,
-    themePreference: props.themePreference,
-    resolvedTheme: props.resolvedTheme,
-    onThemePreferenceChange: props.onThemePreferenceChange,
-    spellcheckEnabled: props.spellcheckEnabled,
-    spellcheckLanguage: props.spellcheckLanguage,
-    spellcheckLanguageOptions: props.spellcheckLanguageOptions,
-    spellcheckLanguageSelectionSupported: props.spellcheckLanguageSelectionSupported,
-    onSpellcheckEnabledChange: props.onSpellcheckEnabledChange,
-    onSpellcheckLanguageChange: props.onSpellcheckLanguageChange,
-    focusModeEnabled: state.workspaceLayout.focusModeEnabled,
-    focusScope: state.workspaceLayout.focusScope,
-    onFocusScopeChange: actions.setFocusScope,
+    model,
+    shellState,
+    shellActions,
+    sidebarStyle,
+    themePreference,
+    resolvedTheme,
+    onThemePreferenceChange,
+    spellcheckEnabled,
+    spellcheckLanguage,
+    spellcheckLanguageOptions,
+    spellcheckLanguageSelectionSupported,
+    onSpellcheckEnabledChange,
+    onSpellcheckLanguageChange,
+    onImportClick: openAiImport,
+    onImportZuluClick: openZuluImport,
+    onBookExportClick: openBookExport,
+    onExportClick: openAiExport,
   }
-}
-
-function SidebarSection({
-  model,
-  themePreference,
-  resolvedTheme,
-  onThemePreferenceChange,
-  spellcheckEnabled,
-  spellcheckLanguage,
-  spellcheckLanguageOptions,
-  spellcheckLanguageSelectionSupported,
-  onSpellcheckEnabledChange,
-  onSpellcheckLanguageChange,
-  onImportClick,
-  onImportZuluClick,
-  onBookExportClick,
-  onExportClick,
-}: Pick<ProjectEditorViewProps, 'model' | 'themePreference' | 'resolvedTheme' | 'onThemePreferenceChange' | 'spellcheckEnabled' | 'spellcheckLanguage' | 'spellcheckLanguageOptions' | 'spellcheckLanguageSelectionSupported' | 'onSpellcheckEnabledChange' | 'onSpellcheckLanguageChange'> & {
-  onImportClick: () => void
-  onImportZuluClick: () => void
-  onBookExportClick: (format: BookExportFormat) => void
-  onExportClick: () => void
-}) {
-  const sidebarProps = buildSidebarSectionProps(model, {
-    themePreference, resolvedTheme, onThemePreferenceChange,
-    spellcheckEnabled, spellcheckLanguage, spellcheckLanguageOptions,
-    spellcheckLanguageSelectionSupported, onSpellcheckEnabledChange,
-    onSpellcheckLanguageChange, onImportClick, onImportZuluClick, onBookExportClick, onExportClick,
-  })
-  return <SidebarPanel {...sidebarProps} />
 }
 
 export function ProjectEditorView({
@@ -167,37 +117,42 @@ export function ProjectEditorView({
   onSpellcheckEnabledChange,
   onSpellcheckLanguageChange,
 }: ProjectEditorViewProps) {
-  const { state } = model
-  const aiImport = useAiImport(state.rootPath)
-  const aiExport = useAiExport(state.rootPath)
-  const bookExport = useBookExport(state.rootPath)
-  const zuluImport = useZuluImport(state.rootPath)
-  const sidebarStyle = { '--sidebar-width': state.workspaceLayout.focusModeEnabled ? '0px' : `${state.sidebarPanelCollapsed ? 72 : state.sidebarPanelWidth}px` }
+  const shellState = useProjectEditorShellState(model)
+  const shellActions = useProjectEditorShellActions(model)
+  const { dialogsProps, openAiImport, openZuluImport, openAiExport, openBookExport } = useProjectEditorViewDialogs(
+    shellState.rootPath,
+    shellState.visibleFiles,
+  )
+  const sidebarStyle = buildSidebarStyle(
+    shellState.sidebarPanelCollapsed,
+    shellState.sidebarPanelWidth,
+    shellState.workspaceLayout.focusModeEnabled,
+  )
+  const layoutProps = buildProjectEditorLayoutProps(
+    model,
+    shellState,
+    shellActions,
+    sidebarStyle,
+    themePreference,
+    resolvedTheme,
+    onThemePreferenceChange,
+    spellcheckEnabled,
+    spellcheckLanguage,
+    spellcheckLanguageOptions,
+    spellcheckLanguageSelectionSupported,
+    onSpellcheckEnabledChange,
+    onSpellcheckLanguageChange,
+    openAiImport,
+    openZuluImport,
+    openBookExport,
+    openAiExport,
+  )
 
   return (
     <main class={buildShellClassName(model)}>
-      <div class="editor-app">
-        <section class="editor-workspace" style={sidebarStyle}>
-          <SidebarSection
-            model={model}
-            themePreference={themePreference}
-            resolvedTheme={resolvedTheme}
-            onThemePreferenceChange={onThemePreferenceChange}
-            spellcheckEnabled={spellcheckEnabled}
-            spellcheckLanguage={spellcheckLanguage}
-            spellcheckLanguageOptions={spellcheckLanguageOptions}
-            spellcheckLanguageSelectionSupported={spellcheckLanguageSelectionSupported}
-            onSpellcheckEnabledChange={onSpellcheckEnabledChange}
-            onSpellcheckLanguageChange={onSpellcheckLanguageChange}
-            onImportClick={() => aiImport.setOpen(true)}
-            onImportZuluClick={() => zuluImport.setOpen(true)}
-            onBookExportClick={(format) => { bookExport.setFormat(format); bookExport.setOutputPath(''); bookExport.setOpen(true) }}
-            onExportClick={() => aiExport.setOpen(true)}
-          />
-          <ProjectEditorMainPane model={model} spellcheckEnabled={spellcheckEnabled} />
-        </section>
-      </div>
-      <ProjectEditorDialogs rootPath={state.rootPath} visibleFiles={state.visibleFiles} aiImport={aiImport} bookExport={bookExport} aiExport={aiExport} zuluImport={zuluImport} />
+      <ProjectEditorConflictOverlays model={model} />
+      <ProjectEditorLayout {...layoutProps} />
+      <ProjectEditorDialogs {...dialogsProps} />
     </main>
   )
 }

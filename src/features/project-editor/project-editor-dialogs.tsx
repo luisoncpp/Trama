@@ -1,3 +1,4 @@
+import { memo } from 'preact/compat'
 import { AiImportDialog } from './components/ai-import-dialog'
 import { AiExportDialog } from './components/ai-export-dialog'
 import { BookExportDialog } from './components/book-export-dialog'
@@ -24,7 +25,7 @@ function ExportToast({ message, dismissLabel, onDismiss }: ExportToastProps) {
   )
 }
 
-interface ProjectEditorDialogsProps {
+export interface ProjectEditorDialogsProps {
   rootPath: string
   visibleFiles: string[]
   aiImport: ReturnType<typeof useAiImport>
@@ -105,7 +106,7 @@ function ProjectEditorDialogToasts({ bookExport, aiExport }: Pick<ProjectEditorD
   )
 }
 
-export function ProjectEditorDialogs(props: ProjectEditorDialogsProps) {
+function ProjectEditorDialogsInner(props: ProjectEditorDialogsProps) {
   return (
     <>
       <ProjectEditorDialogPortals {...props} />
@@ -113,3 +114,5 @@ export function ProjectEditorDialogs(props: ProjectEditorDialogsProps) {
     </>
   )
 }
+
+export const ProjectEditorDialogs = memo(ProjectEditorDialogsInner)

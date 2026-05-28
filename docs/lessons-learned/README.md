@@ -112,3 +112,5 @@ Avoid: "bug description + fix". Prefer: "what I learned that applies to future w
 | `pane-history-needs-stable-store.md` | Session navigation history cannot live inside recreated `PaneWorkspace` instances; keep it in a stable ref and reset it only in explicit open/clear flows | 2026-05-21 |
 | `pane-history-initial-seeding-belongs-in-open-project.md` | Initial pane-history entries must be seeded inside `openProject()` after reset; path-based effects can miss the restore when persisted paths do not change | 2026-05-27 |
 | `flex-shrink-zero-for-fixed-width-flex-items.md` | Fixed-width flex items (like sidebar rails) must explicitly define `flex-shrink: 0` or they will collapse when sibling items contain content that resists wrapping or shrinking | 2026-05-23 |
+| `memo-boundaries-need-stable-props-at-the-call-site.md` | `memo(...)` only blocks typing churn when the parent also stabilizes object/callback props passed into the shell boundary | 2026-05-27 |
+| `vitest-include-pattern-can-skip-test-tsx-files.md` | The current Vitest include glob only matches `tests/**/*.test.ts`, so `.test.tsx` files are silently excluded | 2026-05-27 |

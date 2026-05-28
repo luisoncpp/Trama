@@ -269,14 +269,24 @@ Status: completed
 
 ### Slice 4: Narrow shell subscriptions if still needed
 
+Status: completed
+
 #### Changes
 
-- Profile the post-slice-3 behavior.
-- If typing still invalidates too much UI, split `ProjectEditorView` inputs or move to selector-oriented consumption.
+- Extracted shell/layout boundaries out of `project-editor-view.tsx` into dedicated files so lint constraints and memo boundaries could hold at the same time.
+- Added `project-editor-shell.tsx` + `project-editor-shell-props.ts` to narrow sidebar subscriptions to shell-specific state/actions instead of the full live model.
+- Added `project-editor-view-dialogs.ts` to repackage dialog hook outputs into stable memoized prop bundles.
+- Memoized `ProjectEditorDialogs` and stabilized top-level spellcheck/import/export handlers so typing does not invalidate closed shell UI.
+- Added `tests/project-editor-view-render-split.test.ts` to lock the render-split behavior.
 
 #### Expected outcome
 
 - Typing only re-renders pane/editor surfaces and any UI that truly reflects live editor state.
+
+#### Notes from implementation
+
+- `memo(...)` alone was insufficient; parent call sites also had to stop passing fresh callback/object identities.
+- The render regression initially missed coverage because this repo's Vitest include pattern only matches `tests/**/*.test.ts`, not `.test.tsx`.
 
 #### Risk
 
@@ -325,3 +335,4 @@ This plan is complete when:
 2. `PaneWorkspace` is stable across ordinary typing updates, unless a deliberate design reason remains and is documented.
 3. Action identity churn caused solely by workspace recreation is removed.
 4. The remaining reruns during typing correspond to real state changes that the UI must observe.
+5. Closed shell UI (sidebar shell and dialogs) no longer re-renders solely because live editor text changed.

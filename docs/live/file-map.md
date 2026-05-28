@@ -139,9 +139,18 @@ Mandatory doc navigation for new chats: start with `docs/START-HERE.md` — it p
   - Owns the stable session-only pane-history store injected into `PaneWorkspace`.
   - The only file that imports from `project-editor-private/`.
 - `src/features/project-editor/project-editor-view.tsx`
-  - Screen-level composition (sidebar + editor + status).
+  - Screen-level composition root for project editor shell, conflict overlays, layout shell, and dialogs.
+- `src/features/project-editor/project-editor-view-layout.tsx`
+  - Extracted shell/layout composition for the memoized sidebar boundary and main workspace pane.
+- `src/features/project-editor/project-editor-view-dialogs.ts`
+  - Dialog view-model hook: stabilizes AI import/export, book export, and Zulu import props so dialog shell subscriptions do not churn on editor typing.
 - `src/features/project-editor/project-editor-dialogs.tsx`
   - Centralized overlay/dialog composition for AI import/export and markdown book export modals plus toast notifications.
+  - Wrapped in `memo(...)`; depends on stable dialog prop bundles from `project-editor-view-dialogs.ts`.
+- `src/features/project-editor/project-editor-shell.tsx`
+  - Memoized sidebar shell boundary plus narrow shell state/action selectors over the full project editor model.
+- `src/features/project-editor/project-editor-shell-props.ts`
+  - Shell prop types and sidebar prop-builder helpers used to adapt the flat project-editor action surface to `SidebarPanel` without inline churn in the view.
 - `src/features/project-editor/project-editor-folder-logic.ts`
   - Pure helpers for folder-prefix path remap (`isPathInsideFolder`, `remapFolderPrefix`, layout remap).
 - `src/features/project-editor/project-editor-logic.ts`
@@ -514,6 +523,8 @@ Core and regression suites:
   - Renderer import hook coverage: `importMode` forwarded to preview IPC call, `importMode` forwarded to execute IPC call, log message format matches created/appended/replaced/skipped/errors counts.
 - `tests/window-close.test.ts`
   - Regression tests for window close behavior: dirty state IPC notification, `__tramaSaveAll` global function, parallel save of dirty panes.
+- `tests/project-editor-view-render-split.test.ts`
+  - Regression test for issue #4 shell narrowing: typing updates should not re-render the memoized sidebar shell or closed dialog leaf components.
 - `tests/rich-markdown-editor-value-sync.test.ts`
   - Unit coverage for canonical editor-value normalization and equivalence between base64 markdown images and `IMAGE_PLACEHOLDER` markdown.
 

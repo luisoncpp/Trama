@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'preact/hooks'
+import { useCallback, useEffect, useState } from 'preact/hooks'
 import type { SpellcheckSettingsResponse } from '../shared/ipc'
 
 const SPELLCHECK_SETTINGS_STORAGE_KEY = 'trama.spellcheck.settings'
@@ -143,37 +143,41 @@ export function useSpellcheckSettings() {
   })
   useSpellcheckSettingsSyncEffect(setSettings)
 
+  const setEnabled = useCallback(/* setEnabled */ async (enabled: boolean) => {
+    const pendingSettings = {
+      enabled,
+      selectedLanguage: settings.selectedLanguage,
+    }
+    setSettings(mergeSpellcheckSettings(settings, pendingSettings))
+
+    const nextSettings = await applySpellcheckSettings(settings, pendingSettings)
+    if (!nextSettings) {
+      setSettings(settings)
+      return
+    }
+
+    setSettings(nextSettings)
+  }, [settings, setSettings] /*Inputs for setEnabled*/)
+
+  const setLanguage = useCallback(/* setLanguage */ async (language: string) => {
+    const pendingSettings = {
+      enabled: settings.enabled,
+      selectedLanguage: language,
+    }
+    setSettings(mergeSpellcheckSettings(settings, pendingSettings))
+
+    const nextSettings = await applySpellcheckSettings(settings, pendingSettings)
+    if (!nextSettings) {
+      setSettings(settings)
+      return
+    }
+
+    setSettings(nextSettings)
+  }, [settings, setSettings] /*Inputs for setLanguage*/)
+
   return {
     settings,
-    setEnabled: async (enabled: boolean) => {
-      const pendingSettings = {
-        enabled,
-        selectedLanguage: settings.selectedLanguage,
-      }
-      setSettings(mergeSpellcheckSettings(settings, pendingSettings))
-
-      const nextSettings = await applySpellcheckSettings(settings, pendingSettings)
-      if (!nextSettings) {
-        setSettings(settings)
-        return
-      }
-
-      setSettings(nextSettings)
-    },
-    setLanguage: async (language: string) => {
-      const pendingSettings = {
-        enabled: settings.enabled,
-        selectedLanguage: language,
-      }
-      setSettings(mergeSpellcheckSettings(settings, pendingSettings))
-
-      const nextSettings = await applySpellcheckSettings(settings, pendingSettings)
-      if (!nextSettings) {
-        setSettings(settings)
-        return
-      }
-
-      setSettings(nextSettings)
-    },
+    setEnabled,
+    setLanguage,
   }
 }
