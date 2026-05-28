@@ -167,6 +167,7 @@ Mandatory doc navigation for new chats: start with `docs/START-HERE.md` — it p
   - Private implementation directory for the `use-project-editor.ts` seam. Do not import from it outside `use-project-editor.ts`.
   - `state.ts` — private state assembly: core state, persisted layout/sidebar state, active-pane projection, visible-files derivation, setters, and `paneBindings`.
   - `actions.ts` — private action assembly: clear/load/save/open plus flat `ProjectEditorActions` composition over the deep Modules via `action-group-types.ts`, `sidebar-action-group.ts`, `workspace-action-group.ts`, and `conflict-action-group.ts`.
+  - `action-group-memos.ts` — memoized sidebar/workspace/conflict action-group hooks so the flat action surface only rebuilds when each domain's real inputs change.
   - `open-project.ts` — private open-project orchestration: snapshot apply, layout reconcile, preferred-pane handling, inactive-pane preload.
   - `action-group-types.ts` — shared `ProjectEditorActionSetters` and `ActionGroupParams` types used by the action-group files.
   - `sidebar-action-group.ts` — delegates sidebar UI and file/folder CRUD actions to `sidebar-file-actions`.

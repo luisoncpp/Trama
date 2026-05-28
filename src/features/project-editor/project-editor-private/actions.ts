@@ -19,9 +19,11 @@ import type { PaneWorkspace } from '../pane'
 import {
   type ProjectEditorActionSetters,
 } from './action-group-types'
-import { buildSidebarActions } from './sidebar-action-group'
-import { buildWorkspaceActions } from './workspace-action-group'
-import { buildConflictActionGroup } from './conflict-action-group'
+import {
+  useConflictProjectEditorActions,
+  useSidebarProjectEditorActions,
+  useWorkspaceProjectEditorActions,
+} from './action-group-memos'
 import { useOpenProject } from './open-project'
 
 interface CoreProjectEditorActions {
@@ -105,24 +107,6 @@ function useSaveDocumentNow(
   )
 }
 
-function buildActionsMemo(params: {
-  layoutState: ProjectEditorLayoutState
-  projectState: ProjectEditorProjectState
-  uiState: ProjectEditorUiState
-  sidebarState: ProjectEditorSidebarState
-  setters: ProjectEditorActionSetters
-  paneWorkspace: PaneWorkspace
-  loadDocument: (path: string, targetPane: WorkspacePane) => Promise<void>
-  openProject: (projectRoot: string, options?: OpenProjectOptions) => Promise<void>
-}): ProjectEditorActions {
-  const args = params as any
-  return {
-    ...buildSidebarActions(args),
-    ...buildWorkspaceActions(args),
-    ...buildConflictActionGroup(args),
-  }
-}
-
 export function useProjectEditorActions({
   layoutState,
   projectState,
@@ -140,14 +124,24 @@ export function useProjectEditorActions({
 }) {
   const clearEditor = useClearEditor(setters, paneWorkspace)
   const loadDocument = useLoadDocument(setters, paneWorkspace)
-  const openProject = useOpenProject(setters, clearEditor, loadDocument, () => paneWorkspace.clearNavigationHistory())
+  const resetPaneNavigationHistory = useCallback(
+    /* resetPaneNavigationHistory */ () => paneWorkspace.clearNavigationHistory(),
+    [paneWorkspace] /*Inputs for resetPaneNavigationHistory*/,
+  )
+  const openProject = useOpenProject(setters, clearEditor, loadDocument, resetPaneNavigationHistory)
   const saveDocumentNow = useSaveDocumentNow(setters)
+  const actionParams = { layoutState, projectState, uiState, sidebarState, setters, paneWorkspace, loadDocument, openProject }
+  const sidebarActions = useSidebarProjectEditorActions(actionParams)
+  const workspaceActions = useWorkspaceProjectEditorActions(actionParams)
+  const conflictActions = useConflictProjectEditorActions(actionParams)
 
   const actions = useMemo<ProjectEditorActions>(
-    /* buildProjectEditorActionsMemo */ () => buildActionsMemo({
-      layoutState, projectState, uiState, sidebarState, setters, paneWorkspace, loadDocument, openProject,
+    /* buildProjectEditorActions */ () => ({
+      ...sidebarActions,
+      ...workspaceActions,
+      ...conflictActions,
     }),
-    [layoutState, projectState, uiState, sidebarState, setters, paneWorkspace, loadDocument, openProject] /*Inputs for buildProjectEditorActions*/,
+    [sidebarActions, workspaceActions, conflictActions] /*Inputs for buildProjectEditorActions*/,
   )
 
   return { actions, core: { clearEditor, loadDocument, openProject, saveDocumentNow } as CoreProjectEditorActions }

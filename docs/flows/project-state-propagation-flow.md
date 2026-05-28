@@ -80,11 +80,12 @@ File: `src/features/project-editor/project-editor-private/actions.ts`
 
 Receives the sub-states, `setters`, and `paneWorkspace`. Creates core actions:
 
-| Action | Built by | Deps |
+| Action/core piece | Built by | Deps |
 |--------|----------|------|
 | `clearEditor` | `useClearEditor(setters, paneWorkspace)` | `[setters, paneWorkspace]` |
 | `loadDocument` | `useLoadDocument(setters, paneWorkspace)` | `[setters, paneWorkspace]` |
-| `openProject` | `useOpenProject(setters, clearEditor, loadDocument)` | `[clearEditor, loadDocument, setters]` |
+| `resetPaneNavigationHistory` | `useCallback(() => paneWorkspace.clearNavigationHistory())` | `[paneWorkspace]` |
+| `openProject` | `useOpenProject(setters, clearEditor, loadDocument, resetPaneNavigationHistory)` | `[clearEditor, loadDocument, resetPaneNavigationHistory, setters]` |
 | `saveDocumentNow` | `useSaveDocumentNow(setters)` | `[setters]` |
 
 Key changes from pane-isolation-plan-v2:
@@ -92,9 +93,15 @@ Key changes from pane-isolation-plan-v2:
 - `loadDocument` calls `paneWorkspace.loadPaneDocument(targetPane, path, content, meta)` instead of `setters.setPrimaryPane(loadedPane)`/`setters.setSecondaryPane(loadedPane)`.
 - `saveDocumentNow` no longer clears `isDirty` on panes — that is handled privately by `PaneWorkspace.savePaneIfDirty()` via `markPaneSaved`.
 
-Then builds the flat `ProjectEditorActions` surface directly over the deep Modules (`workspace-actions`, `sidebar-file-actions`, `conflict-actions`).
+Then memoizes three action groups separately over the deep Modules:
 
-**Action callbacks are now stable** — they only re-create when the specific sub-states they consume change. A `statusMessage` update no longer re-creates `toggleFocusMode`.
+- sidebar actions
+- workspace actions
+- conflict actions
+
+The flat `ProjectEditorActions` surface is composed from those three group objects.
+
+**Action callbacks are now stable** — they only re-create when the specific sub-states they consume change. A `statusMessage` update no longer re-creates `toggleFocusMode`, and editor typing no longer re-creates unrelated sidebar/conflict callbacks.
 
 ### Layer 5 — Consumer (`App` → `ProjectEditorView`)
 

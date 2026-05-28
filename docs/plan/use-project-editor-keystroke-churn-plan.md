@@ -160,9 +160,11 @@ Because `paneWorkspace` is recreated on pane updates, the action object is also 
 - `src/features/project-editor/project-editor-private/workspace-action-group.ts`
 - `src/features/project-editor/use-project-editor.ts`
 
-#### Planned fix
+#### Fix applied
 
-After stabilizing `PaneWorkspace`, rebuild action groups only when the state slices they truly depend on change.
+After stabilizing `PaneWorkspace`, `useProjectEditorActions()` now memoizes sidebar, workspace, and conflict action groups separately, then composes the flat surface from those stable group objects.
+
+The remaining hidden churn source was an inline helper callback passed to `useOpenProject()` (`() => paneWorkspace.clearNavigationHistory()`). That callback is now its own named `useCallback(...)`, so sidebar/conflict groups no longer rebuild on unrelated editor typing updates.
 
 Possible follow-up deepening:
 
@@ -245,6 +247,8 @@ Status: completed
 
 ### Slice 3: Reduce action churn
 
+Status: completed
+
 #### Changes
 
 - After stabilizing the workspace, tighten dependencies in `useProjectEditorActions()`.
@@ -253,6 +257,11 @@ Status: completed
 #### Expected outcome
 
 - Fewer downstream rerenders driven by `actions` identity changes.
+
+#### Notes from implementation
+
+- `useProjectEditorActions()` now memoizes sidebar, workspace, and conflict action groups independently before composing the flat `actions` surface.
+- A focused regression test now verifies that unrelated callbacks like `toggleFocusMode`, `resolveConflictKeep`, and `setSidebarSection` stay referentially stable through editor dirty/content updates.
 
 #### Risk
 

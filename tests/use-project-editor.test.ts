@@ -422,6 +422,63 @@ describe('useProjectEditor', () => {
     expect(renderCount).toBe(renderCountAfterFirstDirty)
   })
 
+  it('keeps unrelated action identities stable during editor dirty and content updates', async () => {
+    window.localStorage.removeItem('trama.sidebar.ui.v1')
+    window.localStorage.removeItem(WORKSPACE_LAYOUT_STORAGE_KEY)
+    setupTramaApiMock({
+      selectProjectFolder: async () => ({ ok: true, data: { rootPath: 'C:/tmp/project' } }),
+      openProject: async () => ({
+        ok: true,
+        data: {
+          rootPath: 'C:/tmp/project',
+          tree: [],
+          markdownFiles: ['docs/a.md'],
+          index: { version: '1.0.0', corkboardOrder: {}, cache: {} },
+        },
+      }),
+      readDocument: async (payload) => ({ ok: true, data: { path: payload.path, content: '# A', meta: {} } }),
+    })
+
+    let model: ProjectEditorModel | undefined
+
+    function Harness() {
+      model = useProjectEditor()
+      return null
+    }
+
+    const container = document.createElement('div')
+    act(() => {
+      render(h(Harness, {}), container)
+    })
+
+    await act(async () => {
+      await model?.actions.pickProjectFolder()
+    })
+
+    const beforeDirtyActions = model?.actions
+    const beforeDirtyToggleFocusMode = model?.actions.toggleFocusMode
+    const beforeDirtyResolveConflictKeep = model?.actions.resolveConflictKeep
+    const beforeDirtySetSidebarSection = model?.actions.setSidebarSection
+
+    act(() => {
+      model?.actions.markEditorDirty()
+    })
+
+    expect(model?.actions).toBe(beforeDirtyActions)
+    expect(model?.actions.toggleFocusMode).toBe(beforeDirtyToggleFocusMode)
+    expect(model?.actions.resolveConflictKeep).toBe(beforeDirtyResolveConflictKeep)
+    expect(model?.actions.setSidebarSection).toBe(beforeDirtySetSidebarSection)
+
+    act(() => {
+      model?.actions.updateEditorValue('# A changed')
+    })
+
+    expect(model?.actions).toBe(beforeDirtyActions)
+    expect(model?.actions.toggleFocusMode).toBe(beforeDirtyToggleFocusMode)
+    expect(model?.actions.resolveConflictKeep).toBe(beforeDirtyResolveConflictKeep)
+    expect(model?.actions.setSidebarSection).toBe(beforeDirtySetSidebarSection)
+  })
+
   it('navigates pane history with Alt+Left and Alt+Right without mutating the stack', async () => {
     window.localStorage.removeItem('trama.sidebar.ui.v1')
     window.localStorage.removeItem(WORKSPACE_LAYOUT_STORAGE_KEY)
