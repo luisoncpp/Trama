@@ -198,10 +198,13 @@ The `preferredPane` parameter exists so conflict-resolution flows (save-as-copy)
 
 **Flow:**
 1. `applyOpenedProject` reconciles layout and applies `preferredPane` to `activePane`
-2. Loads active pane document first
-3. Preloads inactive pane document if in split mode and path differs
+2. Seeds pane-history initial entries from the reconciled layout
+3. Loads active pane document first
+4. Preloads inactive pane document if in split mode and path differs
 
 **Why `preferredPane` matters:** Without it, the single-document state model would overwrite pane intent on reopen.
+
+**Why the seeding step matters:** if project-open resets pane history and restores the same persisted pane paths, path-based render effects may not run again, leaving the first opened pane documents unreachable via Back.
 
 **File:** `src/features/project-editor/project-editor-private/open-project.ts`
 

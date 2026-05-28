@@ -589,6 +589,100 @@ describe('useProjectEditor', () => {
     expect(model?.state.selectedPath).toBe('docs/c.md')
   })
 
+  it('seeds initial pane history from persisted split layout on project open', async () => {
+    window.localStorage.removeItem('trama.sidebar.ui.v1')
+    window.localStorage.setItem(
+      WORKSPACE_LAYOUT_STORAGE_KEY,
+      JSON.stringify({
+        mode: 'split',
+        ratio: 0.56,
+        primaryPath: 'docs/a.md',
+        secondaryPath: 'docs/b.md',
+        activePane: 'secondary',
+        focusModeEnabled: false,
+        focusScope: 'paragraph',
+        zoomLevel: 1,
+      }),
+    )
+    setupTramaApiMock({
+      selectProjectFolder: async () => ({ ok: true, data: { rootPath: 'C:/tmp/project' } }),
+      openProject: async () => ({
+        ok: true,
+        data: {
+          rootPath: 'C:/tmp/project',
+          tree: [],
+          markdownFiles: ['docs/a.md', 'docs/b.md', 'docs/c.md', 'docs/d.md'],
+          index: { version: '1.0.0', corkboardOrder: {}, cache: {} },
+        },
+      }),
+      readDocument: async (payload) => ({ ok: true, data: { path: payload.path, content: `# ${payload.path}`, meta: {} } }),
+    })
+
+    let model: ProjectEditorModel | undefined
+
+    function Harness() {
+      model = useProjectEditor()
+      return null
+    }
+
+    const container = document.createElement('div')
+    act(() => {
+      render(h(Harness, {}), container)
+    })
+
+    await act(async () => {
+      await model?.actions.pickProjectFolder()
+    })
+
+    expect(model?.state.workspaceLayout.activePane).toBe('secondary')
+    expect(model?.state.selectedPath).toBe('docs/b.md')
+
+    await act(async () => {
+      await model?.actions.openFileInPane('docs/c.md', 'secondary')
+      await model?.actions.openFileInPane('docs/d.md', 'secondary')
+      await Promise.resolve()
+    })
+
+    expect(model?.state.selectedPath).toBe('docs/d.md')
+
+    await act(async () => {
+      await model?.actions.openPreviousInPaneHistory('secondary')
+      await Promise.resolve()
+    })
+
+    expect(model?.state.selectedPath).toBe('docs/c.md')
+
+    await act(async () => {
+      await model?.actions.openPreviousInPaneHistory('secondary')
+      await Promise.resolve()
+    })
+
+    expect(model?.state.selectedPath).toBe('docs/b.md')
+
+    await act(async () => {
+      await model?.actions.openFileInPane('docs/c.md', 'primary')
+      await model?.actions.openFileInPane('docs/d.md', 'primary')
+      await Promise.resolve()
+    })
+
+    expect(model?.state.workspaceLayout.activePane).toBe('primary')
+    expect(model?.state.selectedPath).toBe('docs/d.md')
+
+    await act(async () => {
+      await model?.actions.openPreviousInPaneHistory('primary')
+      await Promise.resolve()
+    })
+
+    expect(model?.state.selectedPath).toBe('docs/c.md')
+
+    await act(async () => {
+      await model?.actions.openPreviousInPaneHistory('primary')
+      await Promise.resolve()
+    })
+
+    expect(model?.state.selectedPath).toBe('docs/a.md')
+  })
+
   it('applies workspace commands from context menu bridge event', async () => {
     window.localStorage.removeItem('trama.sidebar.ui.v1')
     window.localStorage.removeItem(WORKSPACE_LAYOUT_STORAGE_KEY)

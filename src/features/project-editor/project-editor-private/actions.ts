@@ -128,7 +128,17 @@ export function useProjectEditorActions({
     /* resetPaneNavigationHistory */ () => paneWorkspace.clearNavigationHistory(),
     [paneWorkspace] /*Inputs for resetPaneNavigationHistory*/,
   )
-  const openProject = useOpenProject(setters, clearEditor, loadDocument, resetPaneNavigationHistory)
+  const seedPaneNavigationHistory = useCallback(
+    /* seedPaneNavigationHistory */ (pane: WorkspacePane, path: string) => paneWorkspace.recordPaneNavigation(pane, path),
+    [paneWorkspace] /*Inputs for seedPaneNavigationHistory*/,
+  )
+  const openProject = useOpenProject(
+    setters,
+    clearEditor,
+    loadDocument,
+    resetPaneNavigationHistory,
+    seedPaneNavigationHistory,
+  )
   const saveDocumentNow = useSaveDocumentNow(setters)
   const actionParams = { layoutState, projectState, uiState, sidebarState, setters, paneWorkspace, loadDocument, openProject }
   const sidebarActions = useSidebarProjectEditorActions(actionParams)

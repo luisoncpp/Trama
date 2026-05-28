@@ -31,7 +31,7 @@ Pane history is session-only and pane-local. It must behave like a browser histo
    - if no adjacent entry exists, stop
    - move the history index by one step
    - reopen that path in the same pane without calling `recordPaneNavigation()`
-7. `useProjectEditor` seeds the history from `workspaceLayout.primaryPath` and `workspaceLayout.secondaryPath` so the initially opened documents become the first history entries for the session.
+7. `openProject()` resets pane history, reconciles the next layout, and seeds `primaryPath` / `secondaryPath` from that reconciled layout before loading documents, so the initially opened documents become the first history entries for the session.
 8. When the project is cleared or reopened, `PaneWorkspace.clearNavigationHistory()` resets both pane stacks.
 
 ## Reads
@@ -39,10 +39,10 @@ Pane history is session-only and pane-local. It must behave like a browser histo
 | Kind | Source | Why |
 |------|--------|-----|
 | Active pane | `workspace.layout.activePane` | Default pane for shortcuts/menu commands |
-| Current pane path | `workspace.layout.primaryPath` / `secondaryPath` | Seeds history and updates UI selection immediately |
+| Current pane path | reconciled layout in `openProject()` and `workspace.layout.primaryPath` / `secondaryPath` | Seeds initial history and updates UI selection immediately |
 | Loaded pane path | `workspace.primary.path` / `secondary.path` | Avoid redundant `loadDocument()` calls |
 | Pane dirty state | `workspace.getPaneDocument(pane)` | Primary-pane history navigation still respects the dirty guard |
-| History stack | `PaneWorkspace` injected navigation store | Decides previous/next availability |
+| History stack | `PaneWorkspace` injected navigation store | Decides previous/next availability and receives initial seeding during project-open |
 
 ## Writes
 
@@ -70,7 +70,8 @@ Pane history is session-only and pane-local. It must behave like a browser histo
 | `src/features/project-editor/pane/pane-workspace.ts` | History stack storage and cursor movement |
 | `src/features/project-editor/workspace-actions.ts` | Browser-like navigation rules for open/back/forward |
 | `src/features/project-editor/sidebar-file-actions/private/file-select.ts` | Sidebar open path records pane history |
-| `src/features/project-editor/use-project-editor.ts` | Stable history store injection and session seeding |
+| `src/features/project-editor/use-project-editor.ts` | Stable history store injection |
+| `src/features/project-editor/project-editor-private/open-project.ts` | Reset + initial seeding of pane history from reconciled layout |
 | `src/features/project-editor/use-project-editor-shortcuts-effect.ts` | Alt+Left / Alt+Right handling |
 | `electron/main-process/application-menu.ts` | Menu bar Back / Forward entries |
 | `src/features/project-editor/pane/rich-markdown-editor/rich-markdown-editor-toolbar.ts` + `private/rich-markdown-editor-toolbar-controller.ts` | Toolbar back button wiring |
@@ -85,6 +86,7 @@ Pane history is session-only and pane-local. It must behave like a browser histo
 | Back adds duplicate entries | History navigation path reused the regular `record` path | `workspace-actions.ts` |
 | Forward still works after opening a new document from the middle of history | Forward entries were not truncated before append | `pane/pane-workspace.ts` |
 | Both panes share the same history | Pane-local stacks not separated by pane key | `pane/pane-workspace.ts` |
+| Back cannot reach the initially opened pane document after startup | History was reset during `openProject()` but not re-seeded from the reconciled layout | `project-editor-private/open-project.ts` |
 | Alt+Left does nothing but the action works in tests | Shortcut guard swallowed the event or wrong key detection | `use-project-editor-shortcuts-effect.ts` |
 
 ## Focused tests

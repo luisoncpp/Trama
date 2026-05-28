@@ -90,23 +90,10 @@ function usePaneWorkspaceLifecycle(
   paneWorkspace: ReturnType<typeof usePaneWorkspace>,
   lastSavedContentMapRef: { current: Map<string, string> },
   rootPath: string | null,
-  workspaceLayout: WorkspaceLayoutState,
 ): void {
   useEffect(() => {
     return () => paneWorkspace.destroy()
   }, [paneWorkspace])
-
-  useEffect(/* seedPrimaryNavigationHistory */ () => {
-    if (workspaceLayout.primaryPath) {
-      paneWorkspace.recordPaneNavigation('primary', workspaceLayout.primaryPath)
-    }
-  }, [paneWorkspace, workspaceLayout.primaryPath] /*Inputs for seedPrimaryNavigationHistory*/)
-
-  useEffect(/* seedSecondaryNavigationHistory */ () => {
-    if (workspaceLayout.secondaryPath) {
-      paneWorkspace.recordPaneNavigation('secondary', workspaceLayout.secondaryPath)
-    }
-  }, [paneWorkspace, workspaceLayout.secondaryPath] /*Inputs for seedSecondaryNavigationHistory*/)
 
   useEffect(() => {
     if (!rootPath) {
@@ -140,7 +127,6 @@ export function useProjectEditor(): ProjectEditorModel {
     paneWorkspace,
     lastSavedContentMapRef,
     projectState.rootPath,
-    layoutState.workspaceLayout,
   )
 
   const { actions, core } = useProjectEditorActions({

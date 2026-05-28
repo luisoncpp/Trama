@@ -29,11 +29,24 @@ async function preloadInactiveSplitPane(
   }
 }
 
+function seedPaneHistoryFromLayout(
+  resolvedLayout: ReturnType<typeof reconcileWorkspaceLayout>,
+  seedPaneNavigationHistory: (pane: WorkspacePane, path: string) => void,
+): void {
+  if (resolvedLayout.primaryPath) {
+    seedPaneNavigationHistory('primary', resolvedLayout.primaryPath)
+  }
+  if (resolvedLayout.mode === 'split' && resolvedLayout.secondaryPath) {
+    seedPaneNavigationHistory('secondary', resolvedLayout.secondaryPath)
+  }
+}
+
 async function applyOpenedProject(
   snapshot: ProjectSnapshot,
   setters: OpenProjectSetters,
   clearEditor: () => void,
   loadDocument: (path: string, targetPane: WorkspacePane) => Promise<void>,
+  seedPaneNavigationHistory: (pane: WorkspacePane, path: string) => void,
   preferredFilePath?: string,
   preferredPane?: PreferredPane,
 ): Promise<void> {
@@ -63,6 +76,7 @@ async function applyOpenedProject(
     return
   }
 
+  seedPaneHistoryFromLayout(resolvedLayout, seedPaneNavigationHistory)
   await loadDocument(nextFile, resolvedLayout.activePane)
   await preloadInactiveSplitPane(resolvedLayout, nextFile, loadDocument)
 }
@@ -72,6 +86,7 @@ export function useOpenProject(
   clearEditor: () => void,
   loadDocument: (path: string, targetPane: WorkspacePane) => Promise<void>,
   resetPaneNavigationHistory: () => void,
+  seedPaneNavigationHistory: (pane: WorkspacePane, path: string) => void,
 ): (projectRoot: string, options?: OpenProjectOptions) => Promise<void> {
   return useCallback(
     /* openProject */ async (projectRoot: string, options?: OpenProjectOptions): Promise<void> => {
@@ -94,6 +109,7 @@ export function useOpenProject(
           setters,
           clearEditor,
           loadDocument,
+          seedPaneNavigationHistory,
           options?.preferredFilePath,
           options?.preferredPane,
         )
@@ -104,6 +120,6 @@ export function useOpenProject(
         setters.setLoadingProject(false)
       }
     },
-    [clearEditor, loadDocument, resetPaneNavigationHistory, setters] /*Inputs for openProject*/,
+    [clearEditor, loadDocument, resetPaneNavigationHistory, seedPaneNavigationHistory, setters] /*Inputs for openProject*/,
   )
 }
