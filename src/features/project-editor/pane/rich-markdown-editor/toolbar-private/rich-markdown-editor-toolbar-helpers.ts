@@ -1,6 +1,6 @@
 import type Quill from 'quill'
 
-export type RichEditorSyncState = 'clean' | 'dirty' | 'saving' | 'disabled'
+export type RichEditorSyncState = 'clean' | 'dirty' | 'saving' | 'disabled' | 'preview'
 
 export function createToolbarIconButton(className: string, title: string, iconMarkup: string): HTMLButtonElement {
   const button = document.createElement('button')
@@ -9,6 +9,16 @@ export function createToolbarIconButton(className: string, title: string, iconMa
   button.title = title
   button.setAttribute('aria-label', title)
   button.innerHTML = iconMarkup
+  return button
+}
+
+export function createToolbarTextButton(className: string, title: string, text: string): HTMLButtonElement {
+  const button = document.createElement('button')
+  button.type = 'button'
+  button.className = className
+  button.title = title
+  button.setAttribute('aria-label', title)
+  button.textContent = text
   return button
 }
 
@@ -63,6 +73,14 @@ export function createSaveIconButton(): HTMLButtonElement {
       '<path d="M9 13h6" />',
       '</svg>',
     ].join(''),
+  )
+}
+
+export function createPreviewRestoreButton(): HTMLButtonElement {
+  return createToolbarTextButton(
+    'ql-preview-restore rich-toolbar-restore-button',
+    'Restore revision',
+    'Restore revision',
   )
 }
 

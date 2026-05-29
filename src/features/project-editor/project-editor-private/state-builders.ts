@@ -47,6 +47,7 @@ function buildUiStateForMemo(
     externalConflictPath: coreState.externalConflictPath,
     conflictComparisonContent: coreState.conflictComparisonContent,
     statusMessage: coreState.statusMessage,
+    gitHistory: coreState.gitHistory,
   }
 }
 
@@ -87,6 +88,7 @@ export function useProjectEditorSubStates(
       coreState.externalConflictPath,
       coreState.conflictComparisonContent,
       coreState.statusMessage,
+      coreState.gitHistory,
     ] /*Inputs for deriveUiState*/,
   )
 
@@ -103,6 +105,7 @@ export interface ProjectEditorSetters {
   setExternalConflictPath: (value: string | null) => void
   setConflictComparisonContent: (value: string | null) => void
   setStatusMessage: (value: string) => void
+  setGitHistory: (value: import('../project-editor-types').GitHistoryState | ((previous: import('../project-editor-types').GitHistoryState) => import('../project-editor-types').GitHistoryState)) => void
   setSidebarActiveSection: (value: import('../project-editor-types').SidebarSection) => void
   setSidebarPanelCollapsed: (value: boolean) => void
   setSidebarPanelWidth: (value: number) => void
@@ -124,6 +127,7 @@ function buildSettersForMemo(
     setExternalConflictPath: coreState.setExternalConflictPath,
     setConflictComparisonContent: coreState.setConflictComparisonContent,
     setStatusMessage: coreState.setStatusMessage,
+    setGitHistory: coreState.setGitHistory,
     setSidebarActiveSection: sidebarUiState.setters.setActiveSection,
     setSidebarPanelCollapsed: sidebarUiState.setters.setPanelCollapsed,
     setSidebarPanelWidth: sidebarUiState.setters.setPanelWidth,
@@ -151,7 +155,7 @@ export function useProjectEditorBindings(
       coreState.setRootPath, coreState.setSnapshot, coreState.setLoadingProject,
       coreState.setLoadingDocument, coreState.setSaving, coreState.setIsFullscreen,
       coreState.setExternalConflictPath, coreState.setConflictComparisonContent,
-      coreState.setStatusMessage, sidebarUiState.setters.setActiveSection,
+      coreState.setStatusMessage, coreState.setGitHistory, sidebarUiState.setters.setActiveSection,
       sidebarUiState.setters.setPanelCollapsed, sidebarUiState.setters.setPanelWidth,
       setWorkspaceLayout,
     ] /*Inputs for buildProjectEditorSetters*/,

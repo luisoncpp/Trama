@@ -47,6 +47,11 @@ import {
   handleAiImport,
   handleAiExport,
   handleBookExport,
+  handleGitHistoryStatus,
+  handleListDocumentRevisions,
+  handleLoadDocumentRevision,
+  handleReadDocumentRevision,
+  handleSaveGitSnapshot,
   handleTagGetIndex,
   handleTagResolve,
   handleReorderFiles,
@@ -161,6 +166,14 @@ function registerAiHandlers(ipcMain: IpcMain): void {
   })
 }
 
+function registerGitHistoryHandlers(ipcMain: IpcMain): void {
+  ipcMain.handle(IPC_CHANNELS.gitHistoryStatus, () => handleGitHistoryStatus())
+  ipcMain.handle(IPC_CHANNELS.saveGitSnapshot, (_event, payload) => handleSaveGitSnapshot(payload))
+  ipcMain.handle(IPC_CHANNELS.listDocumentRevisions, (_event, payload) => handleListDocumentRevisions(payload))
+  ipcMain.handle(IPC_CHANNELS.readDocumentRevision, (_event, payload) => handleReadDocumentRevision(payload))
+  ipcMain.handle(IPC_CHANNELS.loadDocumentRevision, (_event, payload) => handleLoadDocumentRevision(payload))
+}
+
 function registerTagHandlers(ipcMain: IpcMain): void {
   ipcMain.handle(IPC_CHANNELS.tagGetIndex, () => handleTagGetIndex())
   ipcMain.handle(IPC_CHANNELS.tagResolve, (_event, payload) => handleTagResolve(payload))
@@ -186,6 +199,7 @@ export function registerIpcHandlers(ipcMain: IpcMain, getMainWindow: () => Brows
   registerFullscreenHandler(ipcMain, getMainWindow)
   registerSpellcheckHandler(ipcMain, getMainWindow)
   registerAiHandlers(ipcMain)
+  registerGitHistoryHandlers(ipcMain)
   registerTagHandlers(ipcMain)
   registerZuluHandlers(ipcMain)
 

@@ -98,6 +98,18 @@ export const moveFolderRequestSchema = z.object({
 })
 export const moveFolderResponseSchema = z.object({ sourcePath: z.string(), renamedTo: z.string(), updatedAt: z.string() })
 export {
+  gitHistoryStatusResponseSchema,
+  saveGitSnapshotRequestSchema,
+  saveGitSnapshotResponseSchema,
+  listDocumentRevisionsRequestSchema,
+  gitDocumentRevisionSchema,
+  listDocumentRevisionsResponseSchema,
+  readDocumentRevisionRequestSchema,
+  readDocumentRevisionResponseSchema,
+  loadDocumentRevisionRequestSchema,
+  loadDocumentRevisionResponseSchema,
+} from './ipc-git-history.js'
+export {
   zuluTagModeSchema,
   zuluSelectFileResponseSchema,
   zuluImportPreviewRequestSchema,
@@ -154,6 +166,18 @@ export type MoveFileResponse = z.infer<typeof moveFileResponseSchema>
 export type MoveFolderRequest = z.infer<typeof moveFolderRequestSchema>
 export type MoveFolderResponse = z.infer<typeof moveFolderResponseSchema>
 export type NotifyCloseState = { hasUnsavedChanges: boolean }
+export type {
+  GitHistoryStatusResponse,
+  SaveGitSnapshotRequest,
+  SaveGitSnapshotResponse,
+  ListDocumentRevisionsRequest,
+  GitDocumentRevision,
+  ListDocumentRevisionsResponse,
+  ReadDocumentRevisionRequest,
+  ReadDocumentRevisionResponse,
+  LoadDocumentRevisionRequest,
+  LoadDocumentRevisionResponse,
+} from './ipc-git-history.js'
 export type {
   IncrementalUpdate,
   OpenProjectRequest,

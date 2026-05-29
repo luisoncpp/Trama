@@ -11,10 +11,13 @@ const BOOK_EXPORT_FORMAT_OPTIONS: Array<{ value: BookExportFormat; label: string
 
 interface SidebarTransferContentProps {
   disabled: boolean
+  gitAvailable: boolean
+  savingSnapshot?: boolean
   onImport: () => void
   onExport: () => void
   onExportBook: (format: BookExportFormat) => void
   onImportZulu: () => void
+  onSaveSnapshot: () => void
 }
 
 function SidebarInterchangeActions({ disabled, onImport, onExport }: Pick<SidebarTransferContentProps, 'disabled' | 'onImport' | 'onExport'>) {
@@ -71,7 +74,30 @@ function SidebarBookExportActions({ disabled, onExportBook }: Pick<SidebarTransf
   )
 }
 
-export function SidebarTransferContent({ disabled, onImport, onExport, onExportBook, onImportZulu }: SidebarTransferContentProps) {
+function SidebarGitActions({ disabled, savingSnapshot = false, onSaveSnapshot }: Pick<SidebarTransferContentProps, 'disabled' | 'savingSnapshot' | 'onSaveSnapshot'>) {
+  return (
+    <div class="project-menu">
+      <label class="project-menu__field">
+        <span>Project history</span>
+        <span class="project-menu__field-note">
+          Save a local Git snapshot of Trama-managed project content.
+        </span>
+      </label>
+      <div class="project-menu__actions">
+        <button
+          type="button"
+          class="editor-button editor-button--secondary"
+          disabled={disabled || savingSnapshot}
+          onClick={onSaveSnapshot}
+        >
+          {savingSnapshot ? 'Saving Snapshot...' : 'Save Snapshot'}
+        </button>
+      </div>
+    </div>
+  )
+}
+
+export function SidebarTransferContent({ disabled, gitAvailable, savingSnapshot, onImport, onExport, onExportBook, onImportZulu, onSaveSnapshot }: SidebarTransferContentProps) {
   return (
     <div class="sidebar-panel-content">
       <aside class="workspace-panel workspace-panel--sidebar">
@@ -118,6 +144,7 @@ export function SidebarTransferContent({ disabled, onImport, onExport, onExportB
           </label>
           <SidebarBookExportActions disabled={disabled} onExportBook={onExportBook} />
         </div>
+        {gitAvailable ? <SidebarGitActions disabled={disabled} savingSnapshot={savingSnapshot} onSaveSnapshot={onSaveSnapshot} /> : null}
       </aside>
     </div>
   )

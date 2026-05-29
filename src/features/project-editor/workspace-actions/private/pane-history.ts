@@ -27,6 +27,7 @@ async function openHistoryPathInPane(
     loadDocument: (path: string, pane: WorkspacePane) => Promise<void>
   },
 ): Promise<void> {
+  deps.workspace.exitRevisionPreview(pane)
   if (pane === 'primary') {
     const primaryPaneState = deps.workspace.primary
     const primaryPanePath = deps.workspace.layout.primaryPath

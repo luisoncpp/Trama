@@ -21,6 +21,7 @@ interface RichMarkdownEditorProps {
   value: string
   forceApplyVersion?: number
   disabled: boolean
+  readOnlyPreview?: boolean
   spellcheckEnabled?: boolean
   onChange: (value: string) => void
   historyBackDisabled: boolean
@@ -31,6 +32,9 @@ interface RichMarkdownEditorProps {
   revertDisabled: boolean
   revertLabel: string
   onRevertNow: () => void
+  previewRestoreDisabled?: boolean
+  previewRestoreLabel?: string
+  onPreviewRestore?: () => void
   syncState: RichEditorSyncState
   syncStateLabel: string
   focusModeEnabled?: boolean
@@ -99,10 +103,11 @@ function useRichEditorBehaviors(
   triggerTagOverlayRender: () => void,
 ) {
   const {
-    documentId, value, disabled, spellcheckEnabled = true,
+    documentId, value, disabled, readOnlyPreview = false, spellcheckEnabled = true,
     historyBackDisabled, onHistoryBack,
     saveDisabled, saveLabel, onSaveNow,
     revertDisabled, revertLabel, onRevertNow,
+    previewRestoreDisabled = false, previewRestoreLabel = 'Restore revision', onPreviewRestore,
     syncState, syncStateLabel,
     focusModeEnabled = false, focusScope = 'paragraph',
     isActive = true, editorSerializationRef,
@@ -119,7 +124,7 @@ function useRichEditorBehaviors(
     serializationRef,
   } = refs
   useRichEditorLifecycle({
-    documentId, value, forceApplyVersion: props.forceApplyVersion ?? 0, disabled, spellcheckEnabled, hostRef, editorRef,
+    documentId, value, forceApplyVersion: props.forceApplyVersion ?? 0, disabled, readOnlyPreview, spellcheckEnabled, hostRef, editorRef,
     onChangeRef, isApplyingExternalValueRef,
     lastEditorValueRef, turndownRef, onDirtyRef, serializationRef,
     triggerTagOverlayRender,
@@ -128,12 +133,13 @@ function useRichEditorBehaviors(
     documentId, hostRef, editorRef, historyBackDisabled, onHistoryBack,
     saveDisabled, saveLabel, onSaveNow,
     revertDisabled, revertLabel, onRevertNow,
+    previewRestoreDisabled, previewRestoreLabel, onPreviewRestore,
     syncState, syncStateLabel, zoomLevel, onZoomChange,
   })
   useFocusModeScopeEffect(editorRef, hostRef, focusModeEnabled, focusScope, isActive)
   useEditorZoom({ editorRef, hostRef, zoomRef: zoomRef ?? DEFAULT_ZOOM_REF, triggerTagOverlayRender })
   if (editorSerializationRef) editorSerializationRef.current = serializationRef.current
-  return useRichEditorFind({ documentId, hostRef, editorRef })
+  return useRichEditorFind({ documentId, hostRef, editorRef, readOnlyPreview })
 }
 
 function useRichEditorHooks(props: RichMarkdownEditorProps) {

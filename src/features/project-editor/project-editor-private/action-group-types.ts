@@ -14,6 +14,7 @@ export interface ProjectEditorActionSetters {
   setLoadingProject: (value: boolean) => void
   setSaving: (value: boolean) => void
   setStatusMessage: (value: string) => void
+  setGitHistory: (value: any) => void
   setExternalConflictPath: (value: string | null) => void
   setConflictComparisonContent: (value: string | null) => void
   setWorkspaceLayout: (value: any) => void

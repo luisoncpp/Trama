@@ -34,4 +34,9 @@ export const IPC_CHANNELS = {
   readImageFile: 'trama:image:read',
   writeImageFile: 'trama:image:write',
   reloadProjectRequested: 'trama:project:reload-requested',
+  gitHistoryStatus: 'trama:git:status',
+  saveGitSnapshot: 'trama:git:snapshot',
+  listDocumentRevisions: 'trama:git:revisions:list',
+  readDocumentRevision: 'trama:git:revisions:read',
+  loadDocumentRevision: 'trama:git:revisions:load',
 } as const

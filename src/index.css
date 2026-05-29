@@ -1479,7 +1479,7 @@ select {
 .editor-panel-root {
   flex: 1 1 auto;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   min-height: 0;
 }
 
@@ -1675,6 +1675,144 @@ select {
   border: 0;
   background: transparent;
   overflow: hidden;
+}
+
+.revisions-rail {
+  width: 240px;
+  flex-shrink: 0;
+  border-left: 1px solid var(--border);
+  background: color-mix(in oklab, var(--surface) 92%, var(--surface-elevated) 8%);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px;
+  overflow: auto;
+}
+
+.revisions-rail__header {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.revisions-rail__back {
+  flex-shrink: 0;
+  border: 0;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 1.15rem;
+  line-height: 1;
+  padding: 2px 4px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.revisions-rail__back:hover,
+.revisions-rail__back:focus {
+  color: var(--text-main);
+  background: color-mix(in oklab, var(--surface-elevated) 82%, var(--surface) 18%);
+}
+
+.revisions-rail__header-copy {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.revisions-rail__eyebrow {
+  margin: 0;
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-dim);
+}
+
+.revisions-rail__path {
+  margin: 4px 0 0;
+  font-size: 0.74rem;
+  color: var(--text-muted);
+  word-break: break-word;
+}
+
+.revisions-rail__list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.revisions-rail__item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.revisions-rail__row {
+  width: 100%;
+  text-align: left;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--tree-row-bg);
+  color: var(--text-main);
+  padding: 10px;
+}
+
+.revisions-rail__item.is-selected .revisions-rail__row,
+.revisions-rail__row.is-selected {
+  border-color: var(--accent-border);
+  background: var(--surface-accent-bg);
+}
+
+.revisions-rail__row-title {
+  font-size: 0.8rem;
+}
+
+.revisions-rail__load-button,
+.revisions-rail__more {
+  width: 100%;
+}
+
+.revisions-rail__hint,
+.revisions-rail__error,
+.revisions-rail__confirm p {
+  margin: 0;
+  font-size: 0.78rem;
+}
+
+.revisions-rail__error {
+  color: var(--warning-text);
+}
+
+.revisions-rail__confirm {
+  border: 1px solid var(--border-strong);
+  border-radius: 10px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: var(--surface-elevated);
+}
+
+.revisions-rail__modal {
+  position: fixed;
+  inset: 0;
+  background: var(--modal-overlay);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  z-index: 40;
+}
+
+.revisions-rail__modal .revisions-rail__confirm {
+  width: min(420px, 100%);
+  border-color: color-mix(in oklab, var(--warning-border) 60%, var(--border-strong) 40%);
+  box-shadow: 0 22px 54px rgba(0, 0, 0, 0.32);
+  background: var(--dialog-bg);
+}
+
+.revisions-rail__confirm-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
 }
 
 .editor-manuscript.is-muted {
@@ -1932,6 +2070,36 @@ select {
   border: none;
   cursor: pointer;
   opacity: 0.8;
+}
+
+.rich-toolbar-right button.ql-preview-restore {
+  width: auto;
+  height: 28px;
+  min-height: 28px;
+  padding: 0 12px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+  border: 1px solid var(--warning-border);
+  background: var(--button-warning-bg);
+  color: var(--button-warning-ink);
+  cursor: pointer;
+  line-height: 1;
+  flex: 0 0 auto;
+  max-width: none;
+  overflow: visible;
+}
+
+.rich-toolbar-right button.ql-preview-restore:hover:not(:disabled),
+.rich-toolbar-right button.ql-preview-restore:focus:not(:disabled) {
+  filter: brightness(1.03);
+  box-shadow: 0 0 0 1px color-mix(in oklab, var(--warning-border) 60%, transparent);
+}
+
+.rich-toolbar-right button.ql-preview-restore:disabled {
+  cursor: default;
+  opacity: 0.45;
 }
 
 .rich-toolbar-right button.ql-revert-changes:hover:not(:disabled),

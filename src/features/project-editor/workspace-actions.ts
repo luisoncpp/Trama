@@ -68,6 +68,7 @@ export async function setWorkspaceActivePane(
   if (outgoingState.isDirty && outgoingState.path) {
     await deps.workspace.savePaneIfDirty(outgoingPane)
   }
+  deps.workspace.exitRevisionPreview(pane)
 
   const nextPath = pane === 'secondary' ? deps.workspace.layout.secondaryPath : deps.workspace.layout.primaryPath
 
@@ -95,6 +96,7 @@ export function openFileInPane(
     loadDocument: (path: string, pane: WorkspacePane) => Promise<void>
   },
 ): void {
+  deps.workspace.exitRevisionPreview(pane)
   deps.workspace.recordPaneNavigation(pane, filePath)
   if (pane === 'secondary') {
     const shouldLoad = deps.workspace.secondary.path !== filePath

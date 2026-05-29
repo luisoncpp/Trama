@@ -20,7 +20,12 @@ import {
   type DebugLogRequest,
   type ExternalFileEvent,
   type FullscreenChangedEvent,
+  type GitHistoryStatusResponse,
   type IpcEnvelope,
+  type ListDocumentRevisionsRequest,
+  type ListDocumentRevisionsResponse,
+  type LoadDocumentRevisionRequest,
+  type LoadDocumentRevisionResponse,
   type OpenProjectRequest,
   type PingRequest,
   type PingResponse,
@@ -28,12 +33,16 @@ import {
   type ProjectSnapshot,
   type ReadDocumentRequest,
   type ReadDocumentResponse,
+  type ReadDocumentRevisionRequest,
+  type ReadDocumentRevisionResponse,
   type RenameDocumentRequest,
   type RenameDocumentResponse,
   type RenameFolderRequest,
   type RenameFolderResponse,
   type SaveDocumentRequest,
   type SaveDocumentResponse,
+  type SaveGitSnapshotRequest,
+  type SaveGitSnapshotResponse,
   type ReorderFilesRequest,
   type ReorderFilesResponse,
   type MoveFileRequest,
@@ -154,6 +163,21 @@ const tramaApi = {
   },
   bookExport(payload: BookExportRequest): Promise<IpcEnvelope<BookExportResponse>> {
     return ipcRenderer.invoke(IPC_CHANNELS.bookExport, payload)
+  },
+  gitHistoryStatus(): Promise<IpcEnvelope<GitHistoryStatusResponse>> {
+    return ipcRenderer.invoke(IPC_CHANNELS.gitHistoryStatus)
+  },
+  saveGitSnapshot(payload: SaveGitSnapshotRequest): Promise<IpcEnvelope<SaveGitSnapshotResponse>> {
+    return ipcRenderer.invoke(IPC_CHANNELS.saveGitSnapshot, payload)
+  },
+  listDocumentRevisions(payload: ListDocumentRevisionsRequest): Promise<IpcEnvelope<ListDocumentRevisionsResponse>> {
+    return ipcRenderer.invoke(IPC_CHANNELS.listDocumentRevisions, payload)
+  },
+  readDocumentRevision(payload: ReadDocumentRevisionRequest): Promise<IpcEnvelope<ReadDocumentRevisionResponse>> {
+    return ipcRenderer.invoke(IPC_CHANNELS.readDocumentRevision, payload)
+  },
+  loadDocumentRevision(payload: LoadDocumentRevisionRequest): Promise<IpcEnvelope<LoadDocumentRevisionResponse>> {
+    return ipcRenderer.invoke(IPC_CHANNELS.loadDocumentRevision, payload)
   },
   getTagIndex(): Promise<IpcEnvelope<TagGetIndexResponse>> {
     return ipcRenderer.invoke(IPC_CHANNELS.tagGetIndex)

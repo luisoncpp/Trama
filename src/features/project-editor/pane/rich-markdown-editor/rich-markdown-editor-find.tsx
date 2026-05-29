@@ -14,6 +14,7 @@ interface UseRichEditorFindParams {
   documentId: string | null
   hostRef: { current: HTMLDivElement | null }
   editorRef: { current: Quill | null }
+  readOnlyPreview?: boolean
 }
 
 function useFindShortcutEffect({
@@ -128,7 +129,7 @@ function useFindBarActions({
   return { isOpen, replaceMode, openFind, openReplace, closeFind, toggleReplaceMode, jumpPrevious, jumpNext }
 }
 
-export function useRichEditorFind({ documentId, hostRef, editorRef }: UseRichEditorFindParams) {
+export function useRichEditorFind({ documentId, hostRef, editorRef, readOnlyPreview = false }: UseRichEditorFindParams) {
   const [replaceValue, setReplaceValue] = useState('')
   const { state, updateMatches, setMatches, jumpMatch, selectMatch, stateRef } = useSearchState(editorRef)
   const inputRef = useRef<HTMLInputElement | null>(null)
@@ -137,6 +138,7 @@ export function useRichEditorFind({ documentId, hostRef, editorRef }: UseRichEdi
 
   const { isOpen, replaceMode, openFind, openReplace, closeFind, toggleReplaceMode, jumpPrevious, jumpNext } =
     useFindBarActions({ inputRef, jumpMatch, keepFindFocus })
+  const handleOpenReplace = readOnlyPreview ? openFind : openReplace
 
   const { replaceCurrent, replaceAll } = useReplaceActions({
     editorRef, stateRef, replaceValue, keepFindFocus, setMatches, selectMatch,
@@ -144,7 +146,7 @@ export function useRichEditorFind({ documentId, hostRef, editorRef }: UseRichEdi
 
   useEffect(/* resetFindOnDocumentChange */ () => { closeFind(); setReplaceValue('') }, [documentId] /*Inputs for resetFindOnDocumentChange*/)
 
-  useFindShortcutEffect({ hostRef, editorRef, onOpenFind: openFind, onOpenReplace: openReplace })
+  useFindShortcutEffect({ hostRef, editorRef, onOpenFind: openFind, onOpenReplace: handleOpenReplace })
   useFindLifecycle({ hostRef, editorRef, isOpen, state, keepFindFocus })
 
   let activeBounds: FindMatchBounds | null = null
@@ -164,15 +166,16 @@ export function useRichEditorFind({ documentId, hostRef, editorRef }: UseRichEdi
       matchLabel={matchLabel}
       inputRef={inputRef}
       activeBounds={activeBounds}
-      replaceMode={replaceMode}
+      replaceMode={replaceMode && !readOnlyPreview}
+      allowReplace={!readOnlyPreview}
       replaceValue={replaceValue}
       onQueryChange={updateMatches}
       onReplaceValueChange={setReplaceValue}
       onClose={closeFind}
       onJumpPrevious={jumpPrevious}
       onJumpNext={jumpNext}
-      onReplace={replaceCurrent}
-      onReplaceAll={replaceAll}
+      onReplace={readOnlyPreview ? () => undefined : replaceCurrent}
+      onReplaceAll={readOnlyPreview ? () => undefined : replaceAll}
       onToggleReplaceMode={toggleReplaceMode}
     />
   )

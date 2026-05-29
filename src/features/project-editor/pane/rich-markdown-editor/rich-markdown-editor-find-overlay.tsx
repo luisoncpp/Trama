@@ -4,6 +4,7 @@ interface FindOverlayProps {
   inputRef: { current: HTMLInputElement | null }
   activeBounds: FindMatchBounds | null
   replaceMode: boolean
+  allowReplace?: boolean
   replaceValue: string
   onQueryChange: (value: string) => void
   onReplaceValueChange: (value: string) => void
@@ -22,7 +23,7 @@ export interface FindMatchBounds {
   height: number
 }
 
-function FindInputRow({ query, inputRef, matchLabel, replaceMode, onQueryChange, onClose, onJumpPrevious, onJumpNext, onToggleReplaceMode }: FindOverlayProps) {
+function FindInputRow({ query, inputRef, matchLabel, replaceMode, allowReplace, onQueryChange, onClose, onJumpPrevious, onJumpNext, onToggleReplaceMode }: FindOverlayProps) {
   return (
     <div class="editor-findbar__row">
       <input
@@ -54,9 +55,11 @@ function FindInputRow({ query, inputRef, matchLabel, replaceMode, onQueryChange,
       <button type="button" class="editor-findbar__button" onClick={onJumpPrevious} aria-label="Previous match">Prev</button>
       <button type="button" class="editor-findbar__button" onClick={onJumpNext} aria-label="Next match">Next</button>
       <button type="button" class="editor-findbar__button editor-findbar__button--close" onClick={onClose} aria-label="Close find">Close</button>
-      <button type="button" class="editor-findbar__button editor-findbar__button--toggle-replace" onClick={onToggleReplaceMode} aria-label={replaceMode ? 'Hide replace' : 'Show replace'}>
-        <svg width="12" height="12" viewBox="0 0 12 12"><path d={replaceMode ? 'M3 8L6 4L9 8' : 'M3 4L6 8L9 4'} fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" /></svg>
-      </button>
+      {allowReplace !== false ? (
+        <button type="button" class="editor-findbar__button editor-findbar__button--toggle-replace" onClick={onToggleReplaceMode} aria-label={replaceMode ? 'Hide replace' : 'Show replace'}>
+          <svg width="12" height="12" viewBox="0 0 12 12"><path d={replaceMode ? 'M3 8L6 4L9 8' : 'M3 4L6 8L9 4'} fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" /></svg>
+        </button>
+      ) : null}
     </div>
   )
 }

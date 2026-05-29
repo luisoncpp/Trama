@@ -2,6 +2,7 @@ import {
   createCenterIconButton,
   createHistoryBackIconButton,
   createPagebreakIconButton,
+  createPreviewRestoreButton,
   createRevertIconButton,
   createSaveIconButton,
   createZoomSelect,
@@ -22,6 +23,7 @@ export interface ToolbarElements {
   historyBackButton: HTMLButtonElement
   revertButton: HTMLButtonElement
   saveButton: HTMLButtonElement
+  restoreButton: HTMLButtonElement
   zoomSelect: HTMLSelectElement
 }
 
@@ -31,6 +33,7 @@ export function attachToolbarElements(toolbar: HTMLElement): ToolbarElements {
   const historyBackButton = (toolbar.querySelector('button.ql-history-back') ?? createHistoryBackIconButton()) as HTMLButtonElement
   const revertButton = (toolbar.querySelector('button.ql-revert-changes') ?? createRevertIconButton()) as HTMLButtonElement
   const saveButton = (toolbar.querySelector('button.ql-save-changes') ?? createSaveIconButton()) as HTMLButtonElement
+  const restoreButton = (toolbar.querySelector('button.ql-preview-restore') ?? createPreviewRestoreButton()) as HTMLButtonElement
   const zoomSelect = (toolbar.querySelector('select.ql-zoom-level') ?? createZoomSelect()) as HTMLSelectElement
   const baseGroups = readBaseGroups(toolbar)
   if (!baseGroups) {
@@ -42,7 +45,7 @@ export function attachToolbarElements(toolbar: HTMLElement): ToolbarElements {
 
   const toolbarRight = ensureToolbarRight(toolbar, [revertButton, saveButton])
   toolbar.append(toolbarRight);
-  return { centerButton, pagebreakButton, toolbarRight, historyBackButton, revertButton, saveButton, zoomSelect };
+  return { centerButton, pagebreakButton, toolbarRight, historyBackButton, revertButton, saveButton, restoreButton, zoomSelect };
 }
 
 function ensureToolbarRight(
@@ -65,5 +68,4 @@ function readBaseGroups(toolbar: HTMLElement): ToolbarBaseGroups | null {
   const [header, inline, blocks, media, clean] = formatGroups
   return header && inline && blocks && media && clean ? { header, inline, blocks, media, clean } : null
 }
-
 

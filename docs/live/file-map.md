@@ -28,6 +28,7 @@ Mandatory doc navigation for new chats: start with `docs/START-HERE.md` — it p
 - `electron/main-process/context-menu.ts`
   - Native editor context menu: flat workspace commands (toggle split, toggle fullscreen, toggle focus mode) dispatched to renderer via `WORKSPACE_CONTEXT_MENU_EVENT`.
   - Includes the `Paste Markdown` menu entry for editable contexts; the menu dispatches `{ type: 'paste-markdown' }` to the renderer when selected.
+  - Reads renderer-published preview/Git state to show `See Revisions` and hide cut/paste during read-only revision preview.
 - `electron/main-process/smoke-hooks.ts`
   - Startup smoke hooks.
 - `electron/main-process/window-close.ts`
@@ -69,6 +70,8 @@ Mandatory doc navigation for new chats: start with `docs/START-HERE.md` — it p
   - AI import/export handlers: preview import, execute import, and backend export formatting endpoint.
 - `electron/ipc/handlers/book-export-handler.ts`
   - Book export handler: validates request payload and delegates multi-format book export to service with consistent error envelopes.
+- `electron/ipc/handlers/git-history-handlers.ts`
+  - Git history IPC handlers: project Git status, save snapshot, list revisions, read revision preview, load revision.
 - `electron/ipc/handlers/zulu-handlers.ts`
   - ZuluPad import handlers: opens native file picker for `.zulu` files, previews parsed pages, and executes multi-file import with configurable tag generation.
 
@@ -86,6 +89,12 @@ Mandatory doc navigation for new chats: start with `docs/START-HERE.md` — it p
 - `electron/services/index-service.ts`
   - `.trama.index.json` load/save/reconcile/updateCache.
   - Architecture: `docs/architecture/project-index-architecture.md`.
+- `electron/services/git-history-service.ts`
+  - Local Git history orchestrator: repository discovery/init, scoped snapshot staging+commit, revision listing, preview reads, historical restore.
+- `electron/services/git-history-repository.ts`
+  - Git CLI/path helper layer: repo discovery, project-to-repo path scoping, managed pathspec rules, special-state detection.
+- `electron/services/git-history-restore-service.ts`
+  - Dedicated historical restore write path: exact markdown write, referenced image restore, internal-write tagging, cache sync.
 - `electron/services/project-state-cache.ts`
   - In-memory cache for `tree`, `markdownFiles`, and `metaByPath` scoped to a project root.
   - Used by `handleOpenProject` to avoid full filesystem rescans on incremental updates.
@@ -152,6 +161,14 @@ Mandatory doc navigation for new chats: start with `docs/START-HERE.md` — it p
   - Memoized sidebar shell boundary plus narrow shell state/action selectors over the full project editor model.
 - `src/features/project-editor/project-editor-shell-props.ts`
   - Shell prop types and sidebar prop-builder helpers used to adapt the flat project-editor action surface to `SidebarPanel` without inline churn in the view.
+- `src/features/project-editor/project-editor-revision-types.ts`
+  - Shared renderer-side Git-history types: pane-local revisions rail selection/confirmation state plus top-level Git availability state.
+- `src/features/project-editor/project-editor-git-history-state.ts`
+  - Constructors/mappers for empty Git-history state and empty pane revision-rail state.
+- `src/features/project-editor/git-history-actions.ts`
+  - Renderer action group for snapshot save, rail open/refresh, revision preview, and confirmed revision load.
+- `src/features/project-editor/git-history-helpers.ts`
+  - Shared renderer helpers for Git status sync, pane resolution, and revision-rail refresh.
 - `src/features/project-editor/project-editor-folder-logic.ts`
   - Pure helpers for folder-prefix path remap (`isPathInsideFolder`, `remapFolderPrefix`, layout remap).
 - `src/features/project-editor/project-editor-logic.ts`
@@ -231,9 +248,13 @@ Mandatory doc navigation for new chats: start with `docs/START-HERE.md` — it p
   - `pane/index.ts` — barrel exporting `PaneWorkspace`, `usePaneWorkspace`, and public types
   - `pane/pane-workspace.ts` — coordinator class with read methods (`getPaneDocument`, `isPaneDirty`) and write methods (`savePaneIfDirty`, `saveAllDirtyPanes`, `scheduleAutosave`, `updatePaneContent`, etc.); `markPaneSaved` is private.
   - `loadPaneDocument()` increments pane `reloadVersion` so disk reloads/removals of dirty DOM advance the editor force-apply signal.
+  - `pane/pane-workspace-types.ts` — extracted `PaneWorkspace` public info/binding types.
+  - `pane/pane-workspace-document-info.ts` — pure builders for active-pane and pane document projections.
+  - `pane/pane-workspace-revision-state.ts` — pure pane revision-rail state transitions (`Current` label, preview exit, preview apply, load sync).
   - `pane/pane-navigation.ts` — `PaneNavigation` class extracted from `PaneWorkspace`: owns per-pane session history stack helpers (`recordPaneNavigation`, `getPreviousPathInPaneHistory`, `getNextPathInPaneHistory`, `stepPaneNavigationHistory`, `clearNavigationHistory`).
   - `pane/pane-navigation-state.ts` — pure helpers for navigation history state: `getEmptyNavigationHistory`, `getHistoryForPane`, `createNavigationHistoryStore`.
   - `pane/pane-editor.tsx` — `PaneEditor` component extracted from `workspace-editor-panels.tsx`.
+  - Wires pane-local revision rail state, preview-mode props, and explicit pane-targeted revision actions into `EditorPanel`.
   - `pane/pane-title.ts` — `toPaneTitle` helper for deriving display labels from pane paths.
   - `pane/use-pane-workspace.ts` — factory hook that encapsulates Preact setter injection, creating a `PaneWorkspace` instance via `useMemo`
   - `pane/pane-save-logic.ts` — `executePaneSave` (internal, not exported from barrel)
@@ -242,7 +263,7 @@ Mandatory doc navigation for new chats: start with `docs/START-HERE.md` — it p
   - Subscribes to external file events (watcher) and handles reloads/conflicts/tree refresh.
 - `src/features/project-editor/use-project-editor-context-menu-effect.ts`
   - Handles workspace-level context menu commands (split/fullscreen/focus/split ratio).
-  - Also routes pane-history Back/Forward commands.
+  - Also routes pane-history Back/Forward commands and pane-targeted `see-revisions` bridge commands.
 - `src/features/project-editor/use-project-editor-fullscreen-effect.ts`
   - Listens for native fullscreen changes and mirrors them into UI state.
 - `src/features/project-editor/use-project-editor-shortcuts-effect.ts`
@@ -262,9 +283,11 @@ Mandatory doc navigation for new chats: start with `docs/START-HERE.md` — it p
 - `src/features/project-editor/components/workspace-editor-panels.tsx`
   - Single/split editor rendering and pane interactions.
   - Split-pane dirty routing source of truth: each pane editor must route onChange to its own pane (`updateEditorValue(..., pane)`).
-- `src/features/project-editor/components/editor-panel.tsx`
-  - Editor panel shell, sync labels, save/revert affordance enablement.
-  - Forwards pane `reloadVersion` as `forceApplyVersion` so disk reloads/removals re-apply disk content deterministically without remounting Quill.
+- `src/features/project-editor/pane/editor-panel.tsx`
+  - Pane editor shell, sync labels, save/revert affordance enablement, and renderer-to-native context-menu state publication.
+  - Forwards pane `reloadVersion` or revision `previewVersion` as `forceApplyVersion` so disk reloads and revision previews re-apply deterministically without remounting Quill.
+- `src/features/project-editor/pane/revisions/revisions-rail.tsx`
+  - Pane-local revisions rail UI: current row, revision rows, load-more pagination, and in-rail load confirmation.
 - `src/features/project-editor/components/ai-import-dialog.tsx`
   - Modal dialog for AI import text input, mode selector (`replace` / `append`), preview trigger, and import confirmation.
 - `src/features/project-editor/components/ai-import-preview-section.tsx`
@@ -292,6 +315,16 @@ Mandatory doc navigation for new chats: start with `docs/START-HERE.md` — it p
   - Tag overlay interaction hook cluster: Ctrl/Cmd state, overlay match recomputation, modifier-click tag navigation, and scroll-triggered overlay refresh.
 - `src/features/project-editor/pane/rich-markdown-editor/rich-markdown-editor-view.tsx`
   - Presentational rich editor shell: host element, find bar mount point, and tag highlight overlay positioning.
+- `src/features/project-editor/pane/rich-markdown-editor/rich-markdown-editor.tsx`
+  - Public pane editor seam. Threads read-only revision preview mode into the rich editor core and toolbar/find controller stack.
+- `src/features/project-editor/pane/rich-markdown-editor/rich-markdown-editor-core.ts`
+  - Core Quill lifecycle plus preview-aware enable/contenteditable sync.
+- `src/features/project-editor/pane/rich-markdown-editor/rich-markdown-editor-commands.ts`
+  - Handles workspace commands and blocks markdown paste while revision preview is read-only.
+- `src/features/project-editor/pane/rich-markdown-editor/rich-markdown-editor-find.tsx`
+  - In-document find controller; suppresses replace affordances during read-only revision preview.
+- `src/features/project-editor/pane/rich-markdown-editor/rich-markdown-editor-find-overlay.tsx`
+  - Floating find UI with preview-aware replace toggle visibility.
 - `src/features/project-editor/components/rich-markdown-editor-serialization.ts`
   - Editor debounced serialization session: registers text-change listener, manages debounce timer and flush lifecycle, and hydrates image placeholders before forwarding to parent state via `onChange`.
 - `src/features/project-editor/components/rich-markdown-editor-value-sync.ts`
@@ -423,14 +456,17 @@ Mandatory doc navigation for new chats: start with `docs/START-HERE.md` — it p
 - `src/shared/ipc.ts`
   - IPC channel constants, Zod schemas, shared envelope/types.
   - Zulu schemas and types re-exported from `ipc-zulu.ts`.
+- `src/shared/ipc-git-history.ts`
+  - Shared Git history IPC schemas/types for status, snapshot, revisions, preview, and load-revision calls.
 - `src/shared/ipc-zulu.ts`
   - ZuluPad import schemas (`zuluTagModeSchema`, `zuluSelectFileResponseSchema`, etc.) and their inferred types, extracted from `ipc.ts`.
 - `src/shared/project-sections.ts`
-  - Single source of truth for relevant project sections (`book`, `outline`, `lore`).
-  - Exports `RELEVANT_SECTION_NAMES`, `RELEVANT_SECTION_ROOTS` and `isRelevantPath()` helper.
+  - Single source of truth for relevant sections plus Git-managed roots (`book`, `outline`, `lore`, `res`, `.trama.index.json`).
+  - Exports `RELEVANT_SECTION_NAMES`, `RELEVANT_SECTION_ROOTS`, managed-root helpers, `isRelevantPath()`, and `isManagedPath()`.
 - `src/shared/workspace-context-menu.ts`
   - Event bridge contract between Electron context menu and the renderer: `WORKSPACE_CONTEXT_MENU_EVENT` constant and `WorkspaceContextCommand` union type.
   - The `WorkspaceContextCommand` includes the `{ type: 'paste-markdown' }` case used by the native menu and editor listeners.
+  - Also carries renderer-published `WorkspaceContextMenuState` plus `{ type: 'see-revisions', pane, path }` for pane-targeted revision rail opening.
 - `src/shared/markdown-layout-directives.ts`
   - Shared parser/serializer helpers for invisible markdown layout directives (`center`, `spacer`, `pagebreak`) and editor artifact mapping.
 - `src/shared/markdown-layout-directives-artifact-node.ts`
@@ -449,6 +485,8 @@ Mandatory doc navigation for new chats: start with `docs/START-HERE.md` — it p
 Core and regression suites:
 
 - `tests/ipc-contract.test.ts`
+- `tests/git-history-service.test.ts`
+  - Focused backend coverage for Git history: parent-repo scoping, unrelated staged abort, ignored-file noop, rename-follow listing, preview fallback, restore behavior.
 - `tests/fullscreen-ipc.test.ts`
 - `tests/use-project-editor.test.ts`
 - `tests/workspace-layout-persistence.test.ts`

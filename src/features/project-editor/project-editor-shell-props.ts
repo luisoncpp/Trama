@@ -15,6 +15,7 @@ export interface ProjectEditorShellState {
   sidebarPanelCollapsed: boolean
   sidebarPanelWidth: number
   workspaceLayout: ProjectEditorModel['state']['workspaceLayout']
+  gitHistory: ProjectEditorModel['state']['gitHistory']
 }
 
 export interface ProjectEditorShellActions {
@@ -34,6 +35,7 @@ export interface ProjectEditorShellActions {
   moveFolder: ProjectEditorModel['actions']['moveFolder']
   pickProjectFolder: ProjectEditorModel['actions']['pickProjectFolder']
   setFocusScope: ProjectEditorModel['actions']['setFocusScope']
+  saveSnapshot: ProjectEditorModel['actions']['saveSnapshot']
 }
 
 export interface ProjectEditorSidebarShellProps {
@@ -104,6 +106,7 @@ function buildSidebarProjectContextProps(
     loadingProject: shellState.loadingProject,
     rootPath: shellState.rootPath,
     statusMessage: shellState.statusMessage,
+    gitHistory: shellState.gitHistory,
     onPickFolder: () => {
       void shellActions.pickProjectFolder()
     },
@@ -111,6 +114,9 @@ function buildSidebarProjectContextProps(
     onImportZulu: props.onImportZuluClick,
     onExportBook: props.onBookExportClick,
     onExport: props.onExportClick,
+    onSaveSnapshot: () => {
+      void shellActions.saveSnapshot()
+    },
     themePreference: props.themePreference,
     resolvedTheme: props.resolvedTheme,
     onThemePreferenceChange: props.onThemePreferenceChange,

@@ -1,4 +1,5 @@
 import type { FocusScope, SidebarCreateInput, SidebarSection } from '../../project-editor-types'
+import type { GitHistoryState } from '../../project-editor-types'
 import type { ResolvedTheme, ThemePreference } from '../../../../theme/theme-types'
 import type { BookExportFormat } from '../../../../shared/ipc'
 
@@ -23,11 +24,13 @@ export interface SidebarProjectContextProps {
   loadingProject: boolean
   rootPath: string
   statusMessage: string
+  gitHistory: GitHistoryState
   onPickFolder: () => void
   onImport: () => void
   onImportZulu: () => void
   onExportBook: (format: BookExportFormat) => void
   onExport: () => void
+  onSaveSnapshot: () => void
 }
 
 export interface SidebarThemeProps {

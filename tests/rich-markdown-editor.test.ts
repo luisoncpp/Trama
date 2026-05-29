@@ -1,4 +1,4 @@
-import { describe, expect, it, beforeEach, afterEach } from 'vitest'
+import { describe, expect, it, beforeEach, afterEach, vi } from 'vitest'
 import { h, render, Fragment } from 'preact'
 import { act } from 'preact/test-utils'
 import { useState } from 'preact/hooks'
@@ -241,6 +241,25 @@ describe('RichMarkdownEditor', () => {
     await sleep(40)
 
     expect(container.querySelector('.rich-editor')).toBeDefined()
+  })
+
+  it('blocks typing while in read-only preview mode', async () => {
+    const onChange = vi.fn()
+
+    act(() => {
+      render(h(RichMarkdownEditor, buildEditorProps({
+        documentId: 'preview-doc',
+        value: '# Preview',
+        readOnlyPreview: true,
+        onChange,
+      })), container)
+    })
+
+    await sleep(80)
+
+    const editor = getQuillInstance(container)
+    expect(editor.isEnabled()).toBe(false)
+    expect(editor.root.getAttribute('contenteditable')).toBe('false')
   })
 
   it('mantiene estructura del host div entre renders', async () => {

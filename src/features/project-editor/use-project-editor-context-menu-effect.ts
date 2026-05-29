@@ -4,6 +4,7 @@ import type { FocusScope } from './project-editor-types'
 
 interface UseProjectEditorContextMenuEffectParams {
   isFullscreen: boolean
+  gitAvailable: boolean
   toggleWorkspaceLayoutMode: () => void
   openPreviousInPaneHistory: () => Promise<void>
   openNextInPaneHistory: () => Promise<void>
@@ -11,6 +12,7 @@ interface UseProjectEditorContextMenuEffectParams {
   toggleFocusMode: () => void
   setFocusScope: (scope: FocusScope) => void
   setWorkspaceLayoutRatio: (ratio: number) => void
+  toggleDocumentRevisions: (path: string, pane?: 'primary' | 'secondary') => Promise<void>
 }
 
 function isFocusScope(value: unknown): value is FocusScope {
@@ -51,6 +53,11 @@ function handleWorkspaceContextCommand(
         params.setWorkspaceLayoutRatio(clampRatio(command.ratio))
       }
       break
+    case 'see-revisions':
+      if (params.gitAvailable) {
+        void params.toggleDocumentRevisions(command.path, command.pane)
+      }
+      break
     default:
       break
   }
@@ -58,6 +65,7 @@ function handleWorkspaceContextCommand(
 
 export function useProjectEditorContextMenuEffect({
   isFullscreen,
+  gitAvailable,
   toggleWorkspaceLayoutMode,
   openPreviousInPaneHistory,
   openNextInPaneHistory,
@@ -65,8 +73,9 @@ export function useProjectEditorContextMenuEffect({
   toggleFocusMode,
   setFocusScope,
   setWorkspaceLayoutRatio,
+  toggleDocumentRevisions,
 }: UseProjectEditorContextMenuEffectParams): void {
-  useEffect(() => {
+  useEffect(/* listenWorkspaceContextCommands */ () => {
     const onWorkspaceContextCommand = (event: Event) => {
       const customEvent = event as CustomEvent<WorkspaceContextCommand | undefined>
       const command = customEvent.detail
@@ -76,6 +85,7 @@ export function useProjectEditorContextMenuEffect({
 
       handleWorkspaceContextCommand(command, {
         isFullscreen,
+        gitAvailable,
         toggleWorkspaceLayoutMode,
         openPreviousInPaneHistory,
         openNextInPaneHistory,
@@ -83,6 +93,7 @@ export function useProjectEditorContextMenuEffect({
         toggleFocusMode,
         setFocusScope,
         setWorkspaceLayoutRatio,
+        toggleDocumentRevisions,
       })
     }
 
@@ -90,6 +101,7 @@ export function useProjectEditorContextMenuEffect({
     return () => {
       window.removeEventListener(WORKSPACE_CONTEXT_MENU_EVENT, onWorkspaceContextCommand as EventListener)
     }
-  }, [isFullscreen, openNextInPaneHistory, openPreviousInPaneHistory, setFocusScope,
-      setFullscreenEnabled, setWorkspaceLayoutRatio, toggleFocusMode, toggleWorkspaceLayoutMode])
+  }, [gitAvailable, isFullscreen, openNextInPaneHistory, openPreviousInPaneHistory, setFocusScope,
+      setFullscreenEnabled, setWorkspaceLayoutRatio, toggleDocumentRevisions, toggleFocusMode,
+      toggleWorkspaceLayoutMode] /*Inputs for listenWorkspaceContextCommands*/)
 }

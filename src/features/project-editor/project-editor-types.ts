@@ -1,4 +1,7 @@
 import type { DocumentMeta, ProjectSnapshot } from '../../shared/ipc.js'
+import type { GitHistoryState, RevisionRailState } from './project-editor-revision-types.js'
+
+export type { GitHistoryState, RevisionRailState } from './project-editor-revision-types.js'
 
 export type SidebarSection = 'explorer' | 'outline' | 'lore' | 'transfer' | 'settings'
 export type WorkspaceLayoutMode = 'single' | 'split'
@@ -22,6 +25,7 @@ export interface PaneDocumentState {
   meta: Readonly<DocumentMeta>
   isDirty: boolean
   reloadVersion: number
+  revisionRail: RevisionRailState
 }
 
 export interface SidebarCreateInput {
@@ -59,6 +63,7 @@ export interface ProjectEditorStateValues {
   sidebarPanelCollapsed: boolean
   sidebarPanelWidth: number
   workspaceLayout: WorkspaceLayoutState
+  gitHistory: GitHistoryState
 }
 
 export interface ProjectEditorDocumentState {
@@ -100,6 +105,7 @@ export interface ProjectEditorUiState {
   externalConflictPath: string | null
   conflictComparisonContent: string | null
   statusMessage: string
+  gitHistory: GitHistoryState
 }
 
 export interface ProjectEditorActions {
@@ -131,7 +137,16 @@ export interface ProjectEditorActions {
   markEditorDirty: (pane?: WorkspacePane) => void
   updateEditorValue: (value: string, pane?: WorkspacePane) => void
   saveNow: (pane?: WorkspacePane) => Promise<void>
+  saveSnapshot: () => Promise<void>
   revertChanges: (pane?: WorkspacePane) => void
+  toggleDocumentRevisions: (path: string, pane?: WorkspacePane) => Promise<void>
+  closeDocumentRevisions: (pane?: WorkspacePane) => void
+  selectRevisionCurrent: (pane?: WorkspacePane) => void
+  selectDocumentRevision: (commitSha: string, pane?: WorkspacePane) => Promise<void>
+  loadMoreDocumentRevisions: (pane?: WorkspacePane) => Promise<void>
+  requestLoadDocumentRevision: (pane?: WorkspacePane) => void
+  cancelLoadDocumentRevision: (pane?: WorkspacePane) => void
+  confirmLoadDocumentRevision: (pane?: WorkspacePane) => Promise<void>
   resolveConflictReload: () => void
   resolveConflictKeep: () => void
   resolveConflictSaveAsCopy: () => void

@@ -24,6 +24,7 @@ export function registerWorkspaceCommandListener(
     if (!command) return
     if (command.type !== 'paste-markdown' && command.type !== 'copy-as-markdown') return
     if (!editor.hasFocus()) return
+    if (command.type === 'paste-markdown' && editor.root.getAttribute('data-readonly-preview') === 'true') return
     try {
       if (command.type === 'paste-markdown') {
         const clipboardText = await navigator.clipboard.readText()

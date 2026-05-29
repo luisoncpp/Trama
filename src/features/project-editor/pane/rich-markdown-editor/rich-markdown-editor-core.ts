@@ -15,6 +15,7 @@ interface UseRichEditorLifecycleParams {
   value: string
   forceApplyVersion: number
   disabled: boolean
+  readOnlyPreview: boolean
   spellcheckEnabled: boolean
   hostRef: { current: HTMLDivElement | null }
   editorRef: { current: Quill | null }
@@ -31,7 +32,7 @@ function useInitializeEditor({
   documentId, value, spellcheckEnabled, hostRef, editorRef,
   isApplyingExternalValueRef, lastEditorValueRef,
   turndownRef, onChangeRef, serializationRef, onDirtyRef,
-}: Omit<UseRichEditorLifecycleParams, 'disabled' | 'forceApplyVersion'>): void {
+}: Omit<UseRichEditorLifecycleParams, 'disabled' | 'forceApplyVersion' | 'readOnlyPreview'>): void {
   useEffect(/* initializeEditor */ () => {
     const host = hostRef.current
     if (!host) return
@@ -74,8 +75,20 @@ export function useRichEditorLifecycle(params: UseRichEditorLifecycleParams): vo
   useEffect(/* toggleDisabled */ () => {
     const editor = p.editorRef.current
     if (!editor) return
-    editor.enable(!p.disabled)
-  }, [p.disabled, p.documentId, p.editorRef] /*Inputs for toggleDisabled*/)
+    editor.enable(!(p.disabled || p.readOnlyPreview))
+    if (p.readOnlyPreview) {
+      editor.root.setAttribute('data-readonly-preview', 'true')
+      editor.root.setAttribute('contenteditable', 'false')
+      editor.root.spellcheck = false
+      editor.root.setAttribute('spellcheck', 'false')
+      return
+    }
+
+    editor.root.setAttribute('contenteditable', p.disabled ? 'false' : 'true')
+    if (!p.readOnlyPreview) {
+      editor.root.removeAttribute('data-readonly-preview')
+    }
+  }, [p.disabled, p.documentId, p.editorRef, p.readOnlyPreview] /*Inputs for toggleDisabled*/)
 
   useEffect(/* syncSpellcheckEnabled */ () => {
     const editor = p.editorRef.current

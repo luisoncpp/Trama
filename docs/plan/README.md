@@ -14,6 +14,7 @@ Active implementation plans — work that is in progress or planned but not yet 
 | `sidebar-drag-drop-reorder-folder-move-plan.md` | Item A: integrate corkboardOrder into sidebar tree; Item B: folder drag-and-drop move/reparent |
 | `incremental-project-update-plan.md` | Avoid full project rescans on file/folder create, delete, rename, move |
 | `book-export-implementation-plan.md` | Book export Phase C multi-format backend |
+| `project-history-git-implementation-plan.md` | Local Git-backed snapshots, document revisions, preview rail, and restore implementation |
 | `rich-editor-refactor-plan.md` | Low-risk refactor plan for Quill lifecycle, canonical value sync, and split-pane persistence wiring |
 <!-- use-project-editor-keystroke-churn-plan.md moved to done/ -->
 

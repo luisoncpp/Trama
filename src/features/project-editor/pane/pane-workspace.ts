@@ -4,40 +4,31 @@ import type {
   PaneDocumentState,
   PaneNavigationHistoryState,
   PaneNavigationHistoryStore,
+  RevisionRailState,
   WorkspaceLayoutState,
   WorkspacePane,
 } from '../project-editor-types'
+import { buildActivePaneDocumentInfo, buildPaneDocumentInfo } from './pane-workspace-document-info'
 import { executePaneSave } from './pane-save-logic'
+import {
+  buildExitedRevisionRailState,
+  buildLoadedPaneDocumentState,
+  buildPreviewLoadedPaneState,
+  buildUpdatedPaneContentState,
+  createEmptyPaneRevisionRail,
+} from './pane-workspace-revision-state'
 import { logSnapshotComparison } from './snapshot-compare-logger'
 import { PaneNavigation } from './pane-navigation'
+import type { ActivePaneDocumentInfo, PaneBindings, PaneDocumentInfo } from './pane-workspace-types'
 
 export type { WorkspacePane }
-
-export interface PaneDocumentInfo {
-  path: string | null
-  content: string
-  isDirty: boolean
-}
-
-export interface ActivePaneDocumentInfo extends PaneDocumentInfo {
-  selectedPath: string | null
-  editorValue: string
-  editorMeta: PaneDocumentState['meta']
-}
-
-export interface PaneBindings {
-  primaryPane: PaneDocumentState
-  secondaryPane: PaneDocumentState
-  setPrimaryPane: (value: PaneDocumentState | ((prev: PaneDocumentState) => PaneDocumentState)) => void
-  setSecondaryPane: (value: PaneDocumentState | ((prev: PaneDocumentState) => PaneDocumentState)) => void
-}
+export type { ActivePaneDocumentInfo, PaneBindings, PaneDocumentInfo } from './pane-workspace-types'
 
 export class PaneWorkspace {
   private autosaveTimer: number | null = null
   private lastSavedContentMap: Map<string, string>
   private ownsSavedContentMap: boolean
   private navigation: PaneNavigation
-
   constructor(
     private layoutState: WorkspaceLayoutState,
     private paneBindings: PaneBindings,
@@ -60,7 +51,6 @@ export class PaneWorkspace {
     this.lastSavedContentMap = resolvedMap ?? new Map()
     this.ownsSavedContentMap = !resolvedMap
   }
-
   updateDependencies(
     layoutState: WorkspaceLayoutState,
     paneBindings: PaneBindings,
@@ -75,7 +65,6 @@ export class PaneWorkspace {
     this.serializationRefs = serializationRefs
     this.saveDocumentFn = saveDocumentFn
   }
-
   scheduleAutosave(pane: WorkspacePane, delay: number): void {
     this.cancelAutosave()
     const capturedPane = pane
@@ -98,7 +87,6 @@ export class PaneWorkspace {
     this.cancelAutosave()
     if (this.ownsSavedContentMap) this.lastSavedContentMap.clear()
   }
-
   getLastSavedContent(path: string): string | null { return this.lastSavedContentMap.get(path) ?? null }
   getPaneNavigationHistory(pane: WorkspacePane): PaneNavigationHistoryState { return this.navigation.getPaneNavigationHistory(pane) }
   recordPaneNavigation(pane: WorkspacePane, path: string): void { return this.navigation.recordPaneNavigation(pane, path) }
@@ -106,7 +94,6 @@ export class PaneWorkspace {
   getNextPathInPaneHistory(pane: WorkspacePane): string | null { return this.navigation.getNextPathInPaneHistory(pane) }
   stepPaneNavigationHistory(pane: WorkspacePane, direction: -1 | 1): string | null { return this.navigation.stepPaneNavigationHistory(pane, direction) }
   clearNavigationHistory(): void { return this.navigation.clearNavigationHistory() }
-
   private getSerializationRefForPane(pane: WorkspacePane) {
     return pane === 'secondary' ? this.serializationRefs.secondary : this.serializationRefs.primary
   }
@@ -114,7 +101,6 @@ export class PaneWorkspace {
   private getPaneState(pane: WorkspacePane): PaneDocumentState {
     return pane === 'secondary' ? this.paneBindings.secondaryPane : this.paneBindings.primaryPane
   }
-
   private updatePaneState(
     pane: WorkspacePane,
     updater: PaneDocumentState | ((prev: PaneDocumentState) => PaneDocumentState),
@@ -125,7 +111,6 @@ export class PaneWorkspace {
     }
     this.paneBindings.setPrimaryPane(updater)
   }
-
   flushPaneContent(pane: WorkspacePane): string | null {
     return this.getSerializationRefForPane(pane).current.flush()
   }
@@ -138,25 +123,18 @@ export class PaneWorkspace {
     await executePaneSave(paneDocument, flushResult, this.saveDocumentFn)
     this.markPaneSaved(pane, paneDocument.path, contentToSave)
   }
-
   async saveAllDirtyPanes(): Promise<void> {
     await Promise.all((['primary', 'secondary'] as const).map((p) => this.savePaneIfDirty(p)))
   }
 
   getActivePaneDocument(): ActivePaneDocumentInfo {
     const { activePane } = this.layoutState
-    const pane = this.getPaneState(activePane)
-    const selectedPath = activePane === 'secondary'
-      ? this.layoutState.secondaryPath
-      : this.layoutState.primaryPath
-    return { selectedPath, editorValue: pane.content, editorMeta: pane.meta, isDirty: pane.isDirty, path: pane.path, content: pane.content }
+    return buildActivePaneDocumentInfo(activePane, this.layoutState, this.getPaneState(activePane))
   }
 
   getPaneDocument(pane: WorkspacePane): PaneDocumentInfo {
-    const doc = this.getPaneState(pane)
-    return { path: doc.path, content: doc.content, isDirty: doc.isDirty }
+    return buildPaneDocumentInfo(this.getPaneState(pane))
   }
-
   isPaneDirty(pane?: WorkspacePane): boolean { return (pane ? this.getPaneDocument(pane) : this.getActivePaneDocument()).isDirty }
   canSwitchAwayFrom(pane?: WorkspacePane): boolean {
     const doc = this.getPaneDocument(pane ?? this.layoutState.activePane)
@@ -166,38 +144,41 @@ export class PaneWorkspace {
   markPaneDirty(pane: WorkspacePane): void {
     this.updatePaneState(pane, (prev) => (prev.isDirty ? prev : { ...prev, isDirty: true }))
   }
-
   updatePaneContent(pane: WorkspacePane, content: string): void {
-    this.updatePaneState(pane, (prev) => ({ ...prev, content, isDirty: true }))
+    this.updatePaneState(pane, (prev) => buildUpdatedPaneContentState(prev, content))
   }
 
   loadPaneDocument(pane: WorkspacePane, path: string, content: string, meta: DocumentMeta): void {
-    this.updatePaneState(pane, (prev) => ({
-      ...prev,
-      path,
-      content,
-      meta,
-      isDirty: false,
-      reloadVersion: prev.reloadVersion + 1,
-    }))
+    this.updatePaneState(pane, (prev) => buildLoadedPaneDocumentState(prev, path, content, meta))
   }
 
   clearPanes(): void {
-    const emptyPane: PaneDocumentState = { path: null, content: '', meta: {}, isDirty: false, reloadVersion: 0 }
-    this.paneBindings.setPrimaryPane(emptyPane)
-    this.paneBindings.setSecondaryPane(emptyPane)
+    this.paneBindings.setPrimaryPane({ path: null, content: '', meta: {}, isDirty: false, reloadVersion: 0, revisionRail: createEmptyPaneRevisionRail() })
+    this.paneBindings.setSecondaryPane({ path: null, content: '', meta: {}, isDirty: false, reloadVersion: 0, revisionRail: createEmptyPaneRevisionRail() })
   }
-
   updatePaneMeta(path: string, meta: DocumentMeta): void {
     this.updatePaneState('primary', (prev) => prev.path === path ? { ...prev, meta } : prev)
     this.updatePaneState('secondary', (prev) => prev.path === path ? { ...prev, meta } : prev)
+  }
+
+  updateRevisionRail(pane: WorkspacePane, updater: RevisionRailState | ((prev: RevisionRailState) => RevisionRailState)): void {
+    this.updatePaneState(pane, (prev) => ({
+      ...prev,
+      revisionRail: typeof updater === 'function' ? updater(prev.revisionRail) : updater,
+    }))
+  }
+  setPanePreviewContent(pane: WorkspacePane, content: string): void {
+    this.updatePaneState(pane, (prev) => buildPreviewLoadedPaneState(prev, content))
+  }
+
+  exitRevisionPreview(pane: WorkspacePane): void {
+    this.updateRevisionRail(pane, buildExitedRevisionRailState)
   }
 
   private markPaneSaved(pane: WorkspacePane, path: string, content: string): void {
     this.lastSavedContentMap.set(path, content)
     this.updatePaneState(pane, (prev) => prev.path === path ? { ...prev, isDirty: false } : prev)
   }
-
   async checkExternalChangeMatchesSavedSnapshot(path: string, externalContent: string): Promise<boolean> {
     const savedContent = this.getLastSavedContent(path)
     const matches = savedContent !== null && savedContent === externalContent

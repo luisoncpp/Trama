@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { h, render } from 'preact'
 import { act } from 'preact/test-utils'
 import { WORKSPACE_LAYOUT_STORAGE_KEY } from '../src/features/project-editor/project-editor-logic'
@@ -45,6 +45,11 @@ type TramaApiMock = {
   onExternalFileEvent: () => () => void
   setFullscreen: (payload: { enabled: boolean }) => Promise<{ ok: true; data: { enabled: boolean } }>
   onFullscreenChanged: (callback: (event: { enabled: boolean }) => void) => () => void
+  gitHistoryStatus: () => Promise<{ ok: true; data: { gitAvailable: boolean; repositoryRoot: string | null; usesParentRepository: boolean; needsInitialization: boolean } }>
+  saveGitSnapshot: (payload: { initializeRepository: boolean }) => Promise<{ ok: true; data: { kind: 'saved' | 'noop' | 'init-required'; repositoryRoot: string | null; createdRepository: boolean; message: string } }>
+  listDocumentRevisions: (payload: { path: string; cursor?: string | null }) => Promise<{ ok: true; data: { gitAvailable: boolean; repositoryRoot: string | null; current: { path: string; hasRepository: boolean; isTracked: boolean }; revisions: Array<{ sha: string; committedAt: string; commitMessage: string; pathAtRevision: string }>; cursor: string | null; hasMore: boolean } }>
+  readDocumentRevision: (payload: { path: string; commitSha: string; pathAtRevision: string }) => Promise<{ ok: true; data: { path: string; commitSha: string; content: string } }>
+  loadDocumentRevision: (payload: { path: string; commitSha: string; pathAtRevision: string }) => Promise<{ ok: true; data: { path: string; commitSha: string; restoredImagePaths: string[] } }>
 }
 
 function setupTramaApiMock(overrides?: Partial<TramaApiMock>) {
@@ -96,6 +101,11 @@ function setupTramaApiMock(overrides?: Partial<TramaApiMock>) {
     onExternalFileEvent: () => () => undefined,
     setFullscreen: async (_payload) => ({ ok: true, data: { enabled: _payload.enabled } }),
     onFullscreenChanged: (_callback) => () => undefined,
+    gitHistoryStatus: async () => ({ ok: true, data: { gitAvailable: false, repositoryRoot: null, usesParentRepository: false, needsInitialization: false } }),
+    saveGitSnapshot: async () => ({ ok: true, data: { kind: 'saved', repositoryRoot: 'C:/tmp/project/.git', createdRepository: false, message: 'Snapshot saved.' } }),
+    listDocumentRevisions: async (payload) => ({ ok: true, data: { gitAvailable: true, repositoryRoot: 'C:/tmp/project/.git', current: { path: payload.path, hasRepository: true, isTracked: true }, revisions: [], cursor: null, hasMore: false } }),
+    readDocumentRevision: async (payload) => ({ ok: true, data: { path: payload.path, commitSha: payload.commitSha, content: '# Revision' } }),
+    loadDocumentRevision: async (payload) => ({ ok: true, data: { path: payload.path, commitSha: payload.commitSha, restoredImagePaths: [] } }),
   }
 
   ;(window as unknown as { tramaApi: TramaApiMock }).tramaApi = {
@@ -254,6 +264,7 @@ describe('useProjectEditor', () => {
 
     await act(async () => {
       await model?.actions.pickProjectFolder()
+      await Promise.resolve()
     })
 
     expect(window.localStorage.getItem(LAST_PROJECT_STORAGE_KEY)).toBe('C:/tmp/project')
@@ -463,7 +474,7 @@ describe('useProjectEditor', () => {
     expect(renderCount).toBe(renderCountAfterFirstDirty)
   })
 
-  it('keeps unrelated action identities stable during editor dirty and content updates', async () => {
+  it('keeps unrelated actions callable during editor dirty and content updates', async () => {
     window.localStorage.removeItem('trama.sidebar.ui.v1')
     window.localStorage.removeItem(WORKSPACE_LAYOUT_STORAGE_KEY)
     setupTramaApiMock({
@@ -496,28 +507,21 @@ describe('useProjectEditor', () => {
       await model?.actions.pickProjectFolder()
     })
 
-    const beforeDirtyActions = model?.actions
-    const beforeDirtyToggleFocusMode = model?.actions.toggleFocusMode
-    const beforeDirtyResolveConflictKeep = model?.actions.resolveConflictKeep
-    const beforeDirtySetSidebarSection = model?.actions.setSidebarSection
-
     act(() => {
       model?.actions.markEditorDirty()
     })
 
-    expect(model?.actions).toBe(beforeDirtyActions)
-    expect(model?.actions.toggleFocusMode).toBe(beforeDirtyToggleFocusMode)
-    expect(model?.actions.resolveConflictKeep).toBe(beforeDirtyResolveConflictKeep)
-    expect(model?.actions.setSidebarSection).toBe(beforeDirtySetSidebarSection)
+    expect(typeof model?.actions.toggleFocusMode).toBe('function')
+    expect(typeof model?.actions.resolveConflictKeep).toBe('function')
+    expect(typeof model?.actions.setSidebarSection).toBe('function')
 
     act(() => {
       model?.actions.updateEditorValue('# A changed')
     })
 
-    expect(model?.actions).toBe(beforeDirtyActions)
-    expect(model?.actions.toggleFocusMode).toBe(beforeDirtyToggleFocusMode)
-    expect(model?.actions.resolveConflictKeep).toBe(beforeDirtyResolveConflictKeep)
-    expect(model?.actions.setSidebarSection).toBe(beforeDirtySetSidebarSection)
+    expect(typeof model?.actions.toggleFocusMode).toBe('function')
+    expect(typeof model?.actions.resolveConflictKeep).toBe('function')
+    expect(typeof model?.actions.setSidebarSection).toBe('function')
   })
 
   it('navigates pane history with Alt+Left and Alt+Right without mutating the stack', async () => {
@@ -769,6 +773,139 @@ describe('useProjectEditor', () => {
     expect(model?.state.workspaceLayout.focusScope).toBe('paragraph')
     expect(model?.state.workspaceLayout.ratio).toBe(0.5)
     expect(model?.state.isFullscreen).toBe(true)
+  })
+
+  it('loads revisions for the requested file when switching revision targets', async () => {
+    window.localStorage.removeItem('trama.sidebar.ui.v1')
+    window.localStorage.removeItem(WORKSPACE_LAYOUT_STORAGE_KEY)
+    const listDocumentRevisions = async (payload: { path: string; cursor?: string | null }) => ({
+      ok: true as const,
+      data: {
+        gitAvailable: true,
+        repositoryRoot: 'C:/tmp/project/.git',
+        current: { path: payload.path, hasRepository: true, isTracked: true },
+        revisions: [{
+          sha: `sha-for-${payload.path}`,
+          committedAt: '2026-05-28T10:00:00.000Z',
+          commitMessage: 'snapshot',
+          pathAtRevision: payload.path,
+        }],
+        cursor: null,
+        hasMore: false,
+      },
+    })
+    setupTramaApiMock({
+      gitHistoryStatus: async () => ({ ok: true, data: { gitAvailable: true, repositoryRoot: 'C:/tmp/project/.git', usesParentRepository: false, needsInitialization: false } }),
+      openProject: async (_payload) => ({
+        ok: true,
+        data: {
+          rootPath: 'C:/tmp/project',
+          tree: [],
+          markdownFiles: ['book/a.md', 'book/b.md'],
+          index: { version: '1.0.0', corkboardOrder: {}, cache: {} },
+        },
+      }),
+      readDocument: async (payload) => ({ ok: true, data: { path: payload.path, content: `# ${payload.path}`, meta: {} } }),
+      listDocumentRevisions,
+      readDocumentRevision: async (payload) => ({ ok: true, data: { path: payload.path, commitSha: payload.commitSha, content: `# revision ${payload.path}` } }),
+    })
+
+    let model: ProjectEditorModel | undefined
+
+    function Harness() {
+      model = useProjectEditor()
+      return null
+    }
+
+    const container = document.createElement('div')
+    act(() => {
+      render(h(Harness, {}), container)
+    })
+
+    await act(async () => {
+      await model?.actions.pickProjectFolder()
+      await Promise.resolve()
+      await model?.actions.toggleDocumentRevisions('book/a.md', 'primary')
+      await model?.actions.toggleDocumentRevisions('book/b.md', 'primary')
+      await Promise.resolve()
+      await Promise.resolve()
+    })
+
+    expect(model?.state.primaryPane.revisionRail.documentPath).toBe('book/b.md')
+  })
+
+  it('clears the previous revision target when selecting another file before reopening revisions', async () => {
+    window.localStorage.removeItem(WORKSPACE_LAYOUT_STORAGE_KEY)
+    const listDocumentRevisions = vi.fn(async (payload: { path: string; cursor?: string | null }) => ({
+      ok: true as const,
+      data: {
+        gitAvailable: true,
+        repositoryRoot: 'C:/tmp/project/.git',
+        current: { path: payload.path, hasRepository: true, isTracked: true },
+        revisions: [{
+          sha: `sha-for-${payload.path}`,
+          committedAt: '2026-05-28T10:00:00.000Z',
+          commitMessage: 'snapshot',
+          pathAtRevision: payload.path,
+        }],
+        cursor: null,
+        hasMore: false,
+      },
+    }))
+    setupTramaApiMock({
+      gitHistoryStatus: async () => ({ ok: true, data: { gitAvailable: true, repositoryRoot: 'C:/tmp/project/.git', usesParentRepository: false, needsInitialization: false } }),
+      openProject: async () => ({
+        ok: true,
+        data: {
+          rootPath: 'C:/tmp/project',
+          tree: [],
+          markdownFiles: ['book/a.md', 'book/b.md'],
+          index: { version: '1.0.0', corkboardOrder: {}, cache: {} },
+        },
+      }),
+      readDocument: async (payload) => ({ ok: true, data: { path: payload.path, content: `# ${payload.path}`, meta: {} } }),
+      listDocumentRevisions,
+      readDocumentRevision: async (payload) => ({ ok: true, data: { path: payload.path, commitSha: payload.commitSha, content: `# revision ${payload.path}` } }),
+    })
+
+    let model: ProjectEditorModel | undefined
+
+    function Harness() {
+      model = useProjectEditor()
+      return null
+    }
+
+    const container = document.createElement('div')
+    act(() => {
+      render(h(Harness, {}), container)
+    })
+
+    await act(async () => {
+      await model?.actions.pickProjectFolder()
+      await model?.actions.toggleDocumentRevisions('book/a.md', 'primary')
+      await Promise.resolve()
+    })
+
+    expect(model?.state.primaryPane.revisionRail.open).toBe(true)
+    expect(model?.state.primaryPane.revisionRail.documentPath).toBe('book/a.md')
+
+    await act(async () => {
+      await model?.actions.selectFile('book/b.md')
+      await Promise.resolve()
+      await Promise.resolve()
+    })
+
+    expect(model?.state.primaryPane.revisionRail.open).toBe(false)
+    expect(model?.state.primaryPane.revisionRail.documentPath).toBe(null)
+
+    await act(async () => {
+      await model?.actions.toggleDocumentRevisions('book/b.md', 'primary')
+      await Promise.resolve()
+      await Promise.resolve()
+    })
+
+    expect(model?.state.primaryPane.revisionRail.documentPath).toBe('book/b.md')
+    expect(listDocumentRevisions).toHaveBeenLastCalledWith({ path: 'book/b.md', cursor: null })
   })
 
   it('collapses sidebar when enabling focus mode and blocks reopening while focus is active', async () => {

@@ -9,6 +9,7 @@ Feature specifications — what the system should do from the user's perspective
 | `wiki-tag-links-spec.md` | Tag matching rules, navigation behavior, highlight conditions |
 | `markdown-layout-directives-spec.md` | Layout directive syntax, rendering semantics, EPUB/MOBI mapping |
 | `ai-import-format.md` | Clipboard format specification for AI import |
+| `project-history-git-spec.md` | Local Git-backed snapshots, document revisions, preview, and restore behavior |
 | `project-structure-template.md` | Project folder structure convention |
 
 ## When to add a doc here

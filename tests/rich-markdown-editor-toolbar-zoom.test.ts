@@ -157,6 +157,27 @@ describe('Zoom Toolbar', () => {
       expect(enabledSaveButton?.disabled).toBe(false)
     })
 
+    it('replaces save and revert with a restore button during preview', async () => {
+      act(() => {
+        render(
+          h(RichMarkdownEditor, buildEditorProps({
+            documentId: 'preview-restore-doc',
+            value: '# Test',
+            syncState: 'preview',
+            syncStateLabel: 'Revision preview',
+            readOnlyPreview: true,
+          })),
+          container,
+        )
+      })
+
+      await sleep(200)
+
+      expect(container.querySelector('button.ql-preview-restore')).toBeTruthy()
+      expect(container.querySelector('button.ql-save-changes')).toBeFalsy()
+      expect(container.querySelector('button.ql-revert-changes')).toBeFalsy()
+    })
+
     it('calls onZoomChange when the toolbar select changes', async () => {
       let capturedLevel: number | null = null
 

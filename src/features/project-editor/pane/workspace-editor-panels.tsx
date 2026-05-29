@@ -34,16 +34,27 @@ function ActiveEditorPanel({ model, spellcheckEnabled, tagIndex, onTagClick, zoo
   return (
     <EditorPanel
       selectedPath={state.selectedPath}
+      pane={state.workspaceLayout.activePane}
+      gitAvailable={state.gitHistory.gitAvailable}
       saving={state.saving}
       isDirty={state.isDirty}
       reloadVersion={activePaneState.reloadVersion}
+      previewReadOnly={activePaneState.revisionRail.previewReadOnly}
+      previewVersion={activePaneState.revisionRail.previewVersion}
       loadingDocument={state.loadingDocument}
-      editorValue={state.editorValue}
+      editorValue={activePaneState.revisionRail.previewReadOnly ? (activePaneState.revisionRail.previewValue ?? state.editorValue) : state.editorValue}
       spellcheckEnabled={spellcheckEnabled}
       historyBackDisabled={!state.selectedPath}
       onHistoryBack={() => { void actions.openPreviousInPaneHistory() }}
       onSaveNow={actions.saveNow}
       onRevertNow={actions.revertChanges}
+      onCloseRevisions={() => actions.closeDocumentRevisions()}
+      onOpenRevisionsCurrent={() => actions.selectRevisionCurrent()}
+      onOpenRevision={(commitSha) => { void actions.selectDocumentRevision(commitSha) }}
+      onLoadMoreRevisions={() => { void actions.loadMoreDocumentRevisions() }}
+      onRequestLoadRevision={() => actions.requestLoadDocumentRevision()}
+      onCancelLoadRevision={() => actions.cancelLoadDocumentRevision()}
+      onConfirmLoadRevision={() => { void actions.confirmLoadDocumentRevision() }}
       onEditorChange={actions.updateEditorValue}
       focusModeEnabled={state.workspaceLayout.focusModeEnabled}
       focusScope={state.workspaceLayout.focusScope}
@@ -54,6 +65,7 @@ function ActiveEditorPanel({ model, spellcheckEnabled, tagIndex, onTagClick, zoo
       zoomRef={zoomRef}
       zoomLevel={zoomLevel}
       onZoomChange={onZoomChange}
+      revisionRail={activePaneState.revisionRail}
     />
   )
 }

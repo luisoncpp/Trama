@@ -13,48 +13,62 @@ interface PaneEditorProps {
   onZoomChange: (level: number) => void
 }
 
-export function PaneEditor({ model, spellcheckEnabled, pane, tagIndex, onTagClick, zoomRef, zoomLevel, onZoomChange }: PaneEditorProps) {
+function buildPaneEditorPanelProps(props: PaneEditorProps) {
+  const { model, spellcheckEnabled, pane, tagIndex, onTagClick, zoomRef, zoomLevel, onZoomChange } = props
   const { state, actions, serializationRefs } = model
   const paneState = pane === 'secondary' ? state.secondaryPane : state.primaryPane
   const isActive = state.workspaceLayout.activePane === pane
-  const serializationRef = pane === 'primary' ? serializationRefs.primary : serializationRefs.secondary
-  const historyBackDisabled = !paneState.path
-  const onMarkDirty = () => { actions.markEditorDirty(pane) }
-  const onPaneEditorChange = (nextValue: string) => { actions.updateEditorValue(nextValue, pane) }
-  const onPaneHistoryBack = () => { void actions.openPreviousInPaneHistory(pane) }
-  const onPaneSaveNow = () => { actions.saveNow(pane) }
-  const onPaneRevertNow = () => { actions.revertChanges(pane) }
-  const onActivate = () => { if (!isActive) { void actions.setWorkspaceActivePane(pane) } }
+  return {
+    paneState,
+    isActive,
+    panelProps: {
+      selectedPath: paneState.path,
+      pane,
+      gitAvailable: state.gitHistory.gitAvailable,
+      saving: state.saving && isActive,
+      isDirty: paneState.isDirty,
+      reloadVersion: paneState.reloadVersion,
+      previewReadOnly: paneState.revisionRail.previewReadOnly,
+      previewVersion: paneState.revisionRail.previewVersion,
+      loadingDocument: state.loadingDocument && isActive,
+      editorValue: paneState.revisionRail.previewReadOnly ? (paneState.revisionRail.previewValue ?? paneState.content) : paneState.content,
+      spellcheckEnabled,
+      historyBackDisabled: !paneState.path,
+      onHistoryBack: () => { void actions.openPreviousInPaneHistory(pane) },
+      onSaveNow: () => { void actions.saveNow(pane) },
+      onRevertNow: () => { actions.revertChanges(pane) },
+      onCloseRevisions: () => { actions.closeDocumentRevisions(pane) },
+      onOpenRevisionsCurrent: () => actions.selectRevisionCurrent(pane),
+      onOpenRevision: (commitSha: string) => { void actions.selectDocumentRevision(commitSha, pane) },
+      onLoadMoreRevisions: () => { void actions.loadMoreDocumentRevisions(pane) },
+      onRequestLoadRevision: () => actions.requestLoadDocumentRevision(pane),
+      onCancelLoadRevision: () => actions.cancelLoadDocumentRevision(pane),
+      onConfirmLoadRevision: () => { void actions.confirmLoadDocumentRevision(pane) },
+      onEditorChange: (nextValue: string) => { actions.updateEditorValue(nextValue, pane) },
+      focusModeEnabled: state.workspaceLayout.focusModeEnabled,
+      focusScope: state.workspaceLayout.focusScope,
+      onInteract: () => { if (!isActive) { void actions.setWorkspaceActivePane(pane) } },
+      tagIndex,
+      onTagClick,
+      isActive,
+      editorSerializationRef: pane === 'primary' ? serializationRefs.primary : serializationRefs.secondary,
+      onMarkDirty: () => { actions.markEditorDirty(pane) },
+      zoomRef,
+      zoomLevel,
+      onZoomChange,
+      revisionRail: paneState.revisionRail,
+    },
+  }
+}
+
+export function PaneEditor({ model, spellcheckEnabled, pane, tagIndex, onTagClick, zoomRef, zoomLevel, onZoomChange }: PaneEditorProps) {
+  const { paneState, isActive, panelProps } = buildPaneEditorPanelProps({ model, spellcheckEnabled, pane, tagIndex, onTagClick, zoomRef, zoomLevel, onZoomChange })
 
   return (
-    <section class={`workspace-split-pane ${isActive ? 'is-active' : ''}`} onPointerDownCapture={onActivate}>
+    <section class={`workspace-split-pane ${isActive ? 'is-active' : ''}`} onPointerDownCapture={panelProps.onInteract}>
       <PaneHeader paneState={paneState} isActive={isActive} />
       <div class="workspace-split-pane__body">
-        <EditorPanel
-          selectedPath={paneState.path}
-          saving={state.saving && isActive}
-          isDirty={paneState.isDirty}
-          reloadVersion={paneState.reloadVersion}
-          loadingDocument={state.loadingDocument && isActive}
-          editorValue={paneState.content}
-          spellcheckEnabled={spellcheckEnabled}
-          historyBackDisabled={historyBackDisabled}
-          onHistoryBack={onPaneHistoryBack}
-          onSaveNow={onPaneSaveNow}
-          onRevertNow={onPaneRevertNow}
-          onEditorChange={onPaneEditorChange}
-          focusModeEnabled={state.workspaceLayout.focusModeEnabled}
-          focusScope={state.workspaceLayout.focusScope}
-          onInteract={onActivate}
-          tagIndex={tagIndex}
-          onTagClick={onTagClick}
-          isActive={isActive}
-          editorSerializationRef={serializationRef}
-          onMarkDirty={onMarkDirty}
-          zoomRef={zoomRef}
-          zoomLevel={zoomLevel}
-          onZoomChange={onZoomChange}
-        />
+        <EditorPanel {...panelProps} />
       </div>
     </section>
   )

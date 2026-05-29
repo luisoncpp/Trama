@@ -16,6 +16,9 @@ export function useSyncToolbarControls({
   revertDisabled,
   revertLabel,
   onRevertNow,
+  previewRestoreDisabled,
+  previewRestoreLabel,
+  onPreviewRestore,
   syncState,
   syncStateLabel,
   zoomLevel,
@@ -37,12 +40,16 @@ export function useSyncToolbarControls({
       revertDisabled,
       revertLabel,
       onRevertNow,
+      previewRestoreDisabled,
+      previewRestoreLabel,
+      onPreviewRestore,
       syncState,
       syncStateLabel,
       zoomLevel,
       onZoomChange,
     })
   }, [documentId, editorRef, hostRef, historyBackDisabled, onHistoryBack, saveDisabled, saveLabel, onSaveNow,
-      revertDisabled, revertLabel, onRevertNow, syncState, syncStateLabel, zoomLevel,
+      revertDisabled, revertLabel, onRevertNow, previewRestoreDisabled, previewRestoreLabel,
+      onPreviewRestore, syncState, syncStateLabel, zoomLevel,
       onZoomChange] /*Inputs for syncToolbarController*/)
 }

@@ -19,6 +19,9 @@ export interface SyncToolbarControlsParams {
   revertDisabled: boolean
   revertLabel: string
   onRevertNow: () => void
+  previewRestoreDisabled?: boolean
+  previewRestoreLabel?: string
+  onPreviewRestore?: () => void
   syncState: RichEditorSyncState
   syncStateLabel: string
   zoomLevel?: number
@@ -65,6 +68,10 @@ export class RichEditorToolbarController {
 
   private syncDocumentControls(params: SyncToolbarControlsParams): void {
     if (!this.elements) return
+    const isPreview = params.syncState === 'preview'
+    this.elements.toolbarRight.replaceChildren(...(isPreview
+      ? [this.elements.restoreButton]
+      : [this.elements.revertButton, this.elements.saveButton]))
     this.syncButton(this.elements.historyBackButton, {
       disabled: params.historyBackDisabled,
       title: 'Previous Document',
@@ -72,16 +79,22 @@ export class RichEditorToolbarController {
       onClick: params.onHistoryBack,
     })
     this.syncButton(this.elements.revertButton, {
-      disabled: params.revertDisabled,
+      disabled: params.revertDisabled || isPreview,
       title: params.revertLabel,
       ariaLabel: params.revertLabel,
       onClick: params.onRevertNow,
     })
     this.syncButton(this.elements.saveButton, {
-      disabled: params.saveDisabled,
+      disabled: params.saveDisabled || isPreview,
       title: params.saveLabel,
       ariaLabel: params.saveLabel,
       onClick: params.onSaveNow,
+    })
+    this.syncButton(this.elements.restoreButton, {
+      disabled: !isPreview || Boolean(params.previewRestoreDisabled),
+      title: params.previewRestoreLabel ?? 'Restore revision',
+      ariaLabel: params.previewRestoreLabel ?? 'Restore revision',
+      onClick: params.onPreviewRestore ?? (() => {}),
     })
   }
 

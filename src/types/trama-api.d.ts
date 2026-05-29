@@ -17,7 +17,12 @@ import type {
   DebugLogRequest,
   ExternalFileEvent,
   FullscreenChangedEvent,
+  GitHistoryStatusResponse,
   IpcEnvelope,
+  ListDocumentRevisionsRequest,
+  ListDocumentRevisionsResponse,
+  LoadDocumentRevisionRequest,
+  LoadDocumentRevisionResponse,
   OpenProjectRequest,
   PingRequest,
   PingResponse,
@@ -25,12 +30,16 @@ import type {
   ProjectSnapshot,
   ReadDocumentRequest,
   ReadDocumentResponse,
+  ReadDocumentRevisionRequest,
+  ReadDocumentRevisionResponse,
   RenameDocumentRequest,
   RenameDocumentResponse,
   RenameFolderRequest,
   RenameFolderResponse,
   SaveDocumentRequest,
   SaveDocumentResponse,
+  SaveGitSnapshotRequest,
+  SaveGitSnapshotResponse,
   SetSpellcheckSettingsRequest,
   SetFullscreenRequest,
   SetFullscreenResponse,
@@ -80,6 +89,11 @@ declare global {
       aiImport(payload: AiImportRequest): Promise<IpcEnvelope<AiImportResponse>>
       aiExport(payload: AiExportRequest): Promise<IpcEnvelope<AiExportResponse>>
       bookExport(payload: BookExportRequest): Promise<IpcEnvelope<BookExportResponse>>
+      gitHistoryStatus(): Promise<IpcEnvelope<GitHistoryStatusResponse>>
+      saveGitSnapshot(payload: SaveGitSnapshotRequest): Promise<IpcEnvelope<SaveGitSnapshotResponse>>
+      listDocumentRevisions(payload: ListDocumentRevisionsRequest): Promise<IpcEnvelope<ListDocumentRevisionsResponse>>
+      readDocumentRevision(payload: ReadDocumentRevisionRequest): Promise<IpcEnvelope<ReadDocumentRevisionResponse>>
+      loadDocumentRevision(payload: LoadDocumentRevisionRequest): Promise<IpcEnvelope<LoadDocumentRevisionResponse>>
       getTagIndex(): Promise<IpcEnvelope<TagGetIndexResponse>>
       resolveTag(payload: TagResolveRequest): Promise<IpcEnvelope<TagResolveResponse>>
       reorderFiles(payload: ReorderFilesRequest): Promise<IpcEnvelope<ReorderFilesResponse>>

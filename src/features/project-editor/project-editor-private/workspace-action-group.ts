@@ -1,4 +1,5 @@
 import type { FocusScope, ProjectEditorActions, WorkspacePane } from '../project-editor-types'
+import { buildGitHistoryActions } from '../git-history-actions'
 import * as workspaceActions from '../workspace-actions'
 import type { ActionGroupParams } from './action-group-types'
 
@@ -17,10 +18,20 @@ export function buildWorkspaceActions(params: ActionGroupParams): Pick<ProjectEd
   | 'updateEditorValue'
   | 'saveNow'
   | 'revertChanges'
+  | 'saveSnapshot'
+  | 'toggleDocumentRevisions'
+  | 'closeDocumentRevisions'
+  | 'selectRevisionCurrent'
+  | 'selectDocumentRevision'
+  | 'loadMoreDocumentRevisions'
+  | 'requestLoadDocumentRevision'
+  | 'cancelLoadDocumentRevision'
+  | 'confirmLoadDocumentRevision'
 > {
   return {
     ...buildWorkspaceLayoutActions(params),
     ...buildWorkspaceEditorActions(params),
+    ...buildGitHistoryActions(params),
   }
 }
 

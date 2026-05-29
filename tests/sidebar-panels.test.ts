@@ -35,11 +35,19 @@ function buildPanelProps(
     loadingProject: false,
     rootPath: 'C:/Proyectos/test_trama',
     statusMessage: '',
+    gitHistory: {
+      gitAvailable: true,
+      repositoryRoot: 'C:/Proyectos/test_trama/.git',
+      usesParentRepository: false,
+      needsInitialization: false,
+      loading: false,
+    },
     onPickFolder: () => undefined,
     onImport: () => undefined,
     onImportZulu: () => undefined,
     onExportBook: (_format) => undefined,
     onExport: () => undefined,
+    onSaveSnapshot: () => undefined,
     themePreference: 'dark',
     resolvedTheme: 'dark',
     onThemePreferenceChange: () => undefined,
@@ -112,6 +120,7 @@ describe('sidebar panels', () => {
     expect(container.textContent).toContain('Import AI Content')
     expect(container.textContent).toContain('Export Book')
     expect(container.textContent).toContain('Export Files')
+    expect(container.textContent).toContain('Save Snapshot')
     expect(container.textContent).toContain('Markdown (.md)')
     expect(container.textContent).toContain('HTML (.html)')
     expect(container.textContent).toContain('DOCX (.docx)')
@@ -130,6 +139,26 @@ describe('sidebar panels', () => {
     expect(container.textContent).toContain('Focus Mode Scope')
     expect(container.textContent).toContain('Resolved now: Dark')
     expect(container.textContent).toContain('Panel width: 320px')
+  })
+
+  it('hides Save Snapshot when Git is unavailable', () => {
+    act(() => {
+      render(
+        h(SidebarPanel, buildPanelProps({
+          sidebarActiveSection: 'transfer',
+          gitHistory: {
+            gitAvailable: false,
+            repositoryRoot: null,
+            usesParentRepository: false,
+            needsInitialization: false,
+            loading: false,
+          },
+        })),
+        container,
+      )
+    })
+
+    expect(container.textContent).not.toContain('Save Snapshot')
   })
 
   it('maps scoped file selections back to project-relative paths', () => {

@@ -1,0 +1,3 @@
+# Restore document revision images for historical fidelity
+
+When loading a document revision, Trama will restore the exact historical markdown and the `res/*.png` files referenced by that selected revision when those image blobs exist in Git. If a referenced image path already exists in the working tree with different content, Trama will overwrite it. This favors making the restored document render as it did in the selected revision, even though a shared image path may affect other documents; the alternative of preserving current assets would silently create a hybrid revision that never existed.

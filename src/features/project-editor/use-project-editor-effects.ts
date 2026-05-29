@@ -6,6 +6,7 @@ import { usePaneWorkspace, useProjectEditorAutosaveEffect, useProjectEditorClose
 import type { PaneBindings } from './pane'
 import type { EditorZoomRef } from './project-editor-types'
 import { restoreLastProjectOrPickFolder } from './startup-project-open'
+import { syncGitHistoryState } from './git-history-actions'
 import { useProjectEditorContextMenuEffect } from './use-project-editor-context-menu-effect'
 import { useProjectEditorExternalEventsEffect, useReloadProjectShortcutEffect } from './use-project-editor-external-events-effect'
 import { useProjectEditorFullscreenEffect } from './use-project-editor-fullscreen-effect'
@@ -50,6 +51,7 @@ function useProjectEditorStartupEffects(
   documentState: ReturnType<typeof useProjectEditorState>['documentState'],
   layoutState: ReturnType<typeof useProjectEditorState>['layoutState'],
   paneBindings: PaneBindings,
+  setters: ReturnType<typeof useProjectEditorState>['setters'],
   actions: ReturnType<typeof useProjectEditorActions>['actions'],
   core: ReturnType<typeof useProjectEditorActions>['core'],
   autoPickProjectFolderOnStart: boolean,
@@ -77,6 +79,9 @@ function useProjectEditorStartupEffects(
     primaryIsDirty: paneBindings.primaryPane.isDirty,
     secondaryIsDirty: paneBindings.secondaryPane.isDirty,
   })
+  useEffect(/* syncGitHistoryOnProjectRoot */ () => {
+    void syncGitHistoryState({ projectState, setters })
+  }, [projectState, setters] /*Inputs for syncGitHistoryOnProjectRoot*/)
 }
 
 function useProjectEditorWindowEffects(
@@ -112,6 +117,7 @@ function useProjectEditorWindowEffects(
   )
   useProjectEditorContextMenuEffect({
     isFullscreen: uiState.isFullscreen,
+    gitAvailable: uiState.gitHistory.gitAvailable,
     toggleWorkspaceLayoutMode: actions.toggleWorkspaceLayoutMode,
     openPreviousInPaneHistory: actions.openPreviousInPaneHistory,
     openNextInPaneHistory: actions.openNextInPaneHistory,
@@ -119,6 +125,7 @@ function useProjectEditorWindowEffects(
     toggleFocusMode: actions.toggleFocusMode,
     setFocusScope: actions.setFocusScope,
     setWorkspaceLayoutRatio: actions.setWorkspaceLayoutRatio,
+    toggleDocumentRevisions: actions.toggleDocumentRevisions,
   })
 }
 
@@ -142,6 +149,7 @@ export function useProjectEditorEffects(
     documentState,
     layoutState,
     paneBindings,
+    setters,
     actions,
     core,
     autoPickProjectFolderOnStart,

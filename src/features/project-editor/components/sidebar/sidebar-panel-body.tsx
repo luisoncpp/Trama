@@ -160,10 +160,13 @@ export function SidebarPanelBody(props: SidebarPanelBodyProps) {
     return (
       <SidebarTransferContent
         disabled={props.contentProps.loadingProject || !props.contentProps.apiAvailable}
+        gitAvailable={props.contentProps.gitHistory.gitAvailable}
+        savingSnapshot={props.contentProps.gitHistory.loading}
         onImport={props.onImport}
         onImportZulu={props.onImportZulu}
         onExportBook={props.onExportBook}
         onExport={props.onExport}
+        onSaveSnapshot={props.contentProps.onSaveSnapshot}
       />
     )
   }

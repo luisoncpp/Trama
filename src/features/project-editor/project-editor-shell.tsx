@@ -31,6 +31,7 @@ export function useProjectEditorShellState(model: ProjectEditorModel): ProjectEd
       sidebarPanelCollapsed: state.sidebarPanelCollapsed,
       sidebarPanelWidth: state.sidebarPanelWidth,
       workspaceLayout: state.workspaceLayout,
+      gitHistory: state.gitHistory,
     }),
     [
       state.apiAvailable,
@@ -45,6 +46,7 @@ export function useProjectEditorShellState(model: ProjectEditorModel): ProjectEd
       state.sidebarPanelCollapsed,
       state.sidebarPanelWidth,
       state.workspaceLayout,
+      state.gitHistory,
     ] /*Inputs for buildProjectEditorShellState*/,
   )
 }
@@ -69,6 +71,7 @@ export function useProjectEditorShellActions(model: ProjectEditorModel): Project
       moveFolder: actions.moveFolder,
       pickProjectFolder: actions.pickProjectFolder,
       setFocusScope: actions.setFocusScope,
+      saveSnapshot: actions.saveSnapshot,
     }),
     [
       actions.selectFile,
@@ -87,6 +90,7 @@ export function useProjectEditorShellActions(model: ProjectEditorModel): Project
       actions.moveFolder,
       actions.pickProjectFolder,
       actions.setFocusScope,
+      actions.saveSnapshot,
     ] /*Inputs for buildProjectEditorShellActions*/,
   )
 }

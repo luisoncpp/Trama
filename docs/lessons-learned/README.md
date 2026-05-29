@@ -27,6 +27,9 @@ Avoid: "bug description + fix". Prefer: "what I learned that applies to future w
 
 | File | Topic | Date |
 |------|-------|------|
+| `document-scoped-ephemeral-ui-state-should-reset-on-navigation.md` | Document-scoped transient UI like revision rails must clear hidden target state when navigation closes them | 2026-05-29 |
+| `revision-preview-should-use-explicit-read-only-mode.md` | Git revision previews need an explicit read-only editor mode, not the generic disabled state | 2026-05-28 |
+| `git-add-should-stage-changed-managed-paths-not-missing-roots.md` | For scoped Git snapshots, stage exact changed managed paths instead of broad roots that may not exist | 2026-05-28 |
 | `startup-project-restore-should-clear-invalid-memory.md` | Remembered startup project paths should be cleared on validation failure before falling back to the picker | 2026-05-28 |
 | `toolbar-icon-buttons-should-sync-labels-not-text.md` | Icon toolbar controls should preserve SVG markup and express state through tooltip/ARIA sync instead of replacing button text | 2026-05-22 |
 | `incremental-project-updates.md` | Centralize incremental state updates in `openProject` with a backend cache; let the frontend own the delta; fall back to full scan for external events | 2026-05-20 |
