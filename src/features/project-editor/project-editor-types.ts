@@ -135,6 +135,7 @@ export interface ProjectEditorActions {
   setFocusScope: (scope: FocusScope) => void
   setZoomLevel: (level: number) => void
   markEditorDirty: (pane?: WorkspacePane) => void
+  updateEditorMeta: (meta: DocumentMeta, pane?: WorkspacePane) => void
   updateEditorValue: (value: string, pane?: WorkspacePane) => void
   saveNow: (pane?: WorkspacePane) => Promise<void>
   saveSnapshot: () => Promise<void>

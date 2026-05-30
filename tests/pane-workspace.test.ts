@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { act } from 'preact/test-utils'
 import { PaneWorkspace, type PaneBindings } from '../src/features/project-editor/pane'
 import type { PaneDocumentState, WorkspaceLayoutState } from '../src/features/project-editor/project-editor-types'
+import { createEmptyRevisionRailState } from '../src/features/project-editor/project-editor-git-history-state'
 
 function makeLayout(activePane: 'primary' | 'secondary', primaryPath: string | null, secondaryPath: string | null): WorkspaceLayoutState {
   return {
@@ -17,7 +18,7 @@ function makeLayout(activePane: 'primary' | 'secondary', primaryPath: string | n
 }
 
 function makePane(path: string | null, content: string, isDirty: boolean): PaneDocumentState {
-  return { path, content, meta: {}, isDirty, reloadVersion: 0 }
+  return { path, content, meta: {}, isDirty, reloadVersion: 0, revisionRail: createEmptyRevisionRailState() }
 }
 
 function makeRefs() {
@@ -111,6 +112,9 @@ describe('PaneWorkspace', () => {
         path: 'docs/a.md',
         content: '# A modified',
         isDirty: true,
+        meta: {},
+        reloadVersion: 0,
+        revisionRail: createEmptyRevisionRailState(),
       })
     })
 
@@ -121,6 +125,9 @@ describe('PaneWorkspace', () => {
         path: 'docs/b.md',
         content: '# B modified',
         isDirty: true,
+        meta: {},
+        reloadVersion: 0,
+        revisionRail: createEmptyRevisionRailState(),
       })
     })
   })
@@ -450,6 +457,24 @@ describe('PaneWorkspace', () => {
       ws.updatePaneContent('primary', '# A changed')
 
       expect(nextPrimary.content).toBe('# A changed')
+      expect(nextPrimary.isDirty).toBe(true)
+    })
+
+    it('updatePaneMetaForPane updates meta and marks dirty', () => {
+      let nextPrimary = primaryClean
+      const paneBindings: PaneBindings = {
+        primaryPane: primaryClean,
+        secondaryPane: secondaryClean,
+        setPrimaryPane: (value) => {
+          nextPrimary = typeof value === 'function' ? value(nextPrimary) : value
+        },
+        setSecondaryPane: () => {},
+      }
+      const ws = new PaneWorkspace(makeLayout('primary', primaryClean.path, secondaryClean.path), paneBindings, makeRefs(), saveDocumentFn)
+
+      ws.updatePaneMetaForPane('primary', { type: 'map', name: 'Realm Map' })
+
+      expect(nextPrimary.meta).toEqual({ type: 'map', name: 'Realm Map' })
       expect(nextPrimary.isDirty).toBe(true)
     })
   })

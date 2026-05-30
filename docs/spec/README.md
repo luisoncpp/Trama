@@ -6,6 +6,7 @@ Feature specifications — what the system should do from the user's perspective
 
 | File | Feature |
 |------|---------|
+| `map-document-markers-spec.md` | Map documents with image backgrounds, interactive markers, and tag-based navigation |
 | `wiki-tag-links-spec.md` | Tag matching rules, navigation behavior, highlight conditions |
 | `markdown-layout-directives-spec.md` | Layout directive syntax, rendering semantics, EPUB/MOBI mapping |
 | `ai-import-format.md` | Clipboard format specification for AI import |

@@ -1,4 +1,5 @@
 import type { FocusScope, ProjectEditorActions, WorkspacePane } from '../project-editor-types'
+import type { DocumentMeta } from '../../../shared/ipc'
 import { buildGitHistoryActions } from '../git-history-actions'
 import * as workspaceActions from '../workspace-actions'
 import type { ActionGroupParams } from './action-group-types'
@@ -15,6 +16,7 @@ export function buildWorkspaceActions(params: ActionGroupParams): Pick<ProjectEd
   | 'setFocusScope'
   | 'setZoomLevel'
   | 'markEditorDirty'
+  | 'updateEditorMeta'
   | 'updateEditorValue'
   | 'saveNow'
   | 'revertChanges'
@@ -92,6 +94,7 @@ function buildWorkspaceEditorActions({
 }: ActionGroupParams) {
   return {
     markEditorDirty: (pane?: WorkspacePane) => workspaceActions.markEditorDirty(pane, paneWorkspace),
+    updateEditorMeta: (meta: DocumentMeta, pane?: WorkspacePane) => workspaceActions.updateEditorMeta(meta, pane, paneWorkspace),
     updateEditorValue: (value: string, pane?: WorkspacePane) => workspaceActions.updateEditorValue(value, pane, paneWorkspace),
     saveNow: (pane?: WorkspacePane) => workspaceActions.saveNow(pane, {
       workspace: paneWorkspace,

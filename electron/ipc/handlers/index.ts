@@ -22,6 +22,7 @@ export {
   handleAiExport,
 } from './ai-handlers.js'
 export { handleBookExport } from './book-export-handler.js'
+export { handleReadImageFile } from './image-handlers.js'
 export {
   handleGitHistoryStatus,
   handleListDocumentRevisions,

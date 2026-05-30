@@ -4,7 +4,7 @@ export { IPC_CHANNELS } from './ipc-channels.js'
 export const pingRequestSchema = z.object({ message: z.string().trim().min(1).max(120) })
 export const pingResponseSchema = z.object({ echo: z.string(), timestamp: z.string() })
 export const debugLogRequestSchema = z.object({ source: z.string().trim().min(1).max(80), message: z.string().trim().min(1).max(300), details: z.unknown().optional() })
-export const documentMetaSchema = z.object({ id: z.string().trim().min(1).optional(), type: z.enum(['character', 'location', 'scene', 'note', 'outline']).optional(), name: z.string().trim().min(1).optional(), tags: z.array(z.string()).optional() }).catchall(z.unknown())
+export const documentMetaSchema = z.object({ id: z.string().trim().min(1).optional(), type: z.enum(['character', 'location', 'scene', 'note', 'outline', 'map']).optional(), name: z.string().trim().min(1).optional(), tags: z.array(z.string()).optional() }).catchall(z.unknown())
 export const treeItemSchema: z.ZodType<TreeItem> = z.lazy(() => z.object({ id: z.string(), title: z.string(), path: z.string(), type: z.enum(['file', 'folder']), children: z.array(treeItemSchema).optional() }))
 export const projectIndexSchema = z.object({ version: z.string(), corkboardOrder: z.record(z.string(), z.array(z.string())), cache: z.record(z.string(), documentMetaSchema) })
 export const projectSnapshotSchema = z.object({ rootPath: z.string(), tree: z.array(treeItemSchema), markdownFiles: z.array(z.string()), index: projectIndexSchema })
@@ -97,6 +97,8 @@ export const moveFolderRequestSchema = z.object({
   targetParent: z.string(),
 })
 export const moveFolderResponseSchema = z.object({ sourcePath: z.string(), renamedTo: z.string(), updatedAt: z.string() })
+export const readImageFileRequestSchema = z.object({ path: z.string().trim().min(1) })
+export const readImageFileResponseSchema = z.object({ path: z.string(), dataUrl: z.string(), mimeType: z.string() })
 export {
   gitHistoryStatusResponseSchema,
   saveGitSnapshotRequestSchema,
@@ -165,6 +167,8 @@ export type MoveFileRequest = z.infer<typeof moveFileRequestSchema>
 export type MoveFileResponse = z.infer<typeof moveFileResponseSchema>
 export type MoveFolderRequest = z.infer<typeof moveFolderRequestSchema>
 export type MoveFolderResponse = z.infer<typeof moveFolderResponseSchema>
+export type ReadImageFileRequest = z.infer<typeof readImageFileRequestSchema>
+export type ReadImageFileResponse = z.infer<typeof readImageFileResponseSchema>
 export type NotifyCloseState = { hasUnsavedChanges: boolean }
 export type {
   GitHistoryStatusResponse,

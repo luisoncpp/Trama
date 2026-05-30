@@ -33,6 +33,8 @@ import {
   type ProjectSnapshot,
   type ReadDocumentRequest,
   type ReadDocumentResponse,
+  type ReadImageFileRequest,
+  type ReadImageFileResponse,
   type ReadDocumentRevisionRequest,
   type ReadDocumentRevisionResponse,
   type RenameDocumentRequest,
@@ -88,6 +90,9 @@ const tramaApi = {
   },
   readDocument(payload: ReadDocumentRequest): Promise<IpcEnvelope<ReadDocumentResponse>> {
     return ipcRenderer.invoke(IPC_CHANNELS.readDocument, payload)
+  },
+  readImageFile(payload: ReadImageFileRequest): Promise<IpcEnvelope<ReadImageFileResponse>> {
+    return ipcRenderer.invoke(IPC_CHANNELS.readImageFile, payload)
   },
   saveDocument(payload: SaveDocumentRequest): Promise<IpcEnvelope<SaveDocumentResponse>> {
     return ipcRenderer.invoke(IPC_CHANNELS.saveDocument, payload)

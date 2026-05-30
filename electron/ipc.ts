@@ -37,6 +37,7 @@ import {
   handleGetIndex,
   handleOpenProject,
   handleReadDocument,
+  handleReadImageFile,
   handleRenameDocument,
   handleRenameFolder,
   handleSaveDocument,
@@ -127,6 +128,7 @@ function registerProjectHandlers(ipcMain: IpcMain): void {
 
 function registerDocumentHandlers(ipcMain: IpcMain): void {
   ipcMain.handle(IPC_CHANNELS.readDocument, (_event, payload) => handleReadDocument(payload))
+  ipcMain.handle(IPC_CHANNELS.readImageFile, (_event, payload) => handleReadImageFile(payload))
   ipcMain.handle(IPC_CHANNELS.saveDocument, (_event, payload) => handleSaveDocument(payload))
   ipcMain.handle(IPC_CHANNELS.createDocument, (_event, payload) => handleCreateDocument(payload))
   ipcMain.handle(IPC_CHANNELS.renameDocument, (_event, payload) => handleRenameDocument(payload))

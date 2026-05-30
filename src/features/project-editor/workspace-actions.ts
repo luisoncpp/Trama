@@ -1,5 +1,6 @@
 import { canSelectFile } from './project-editor-logic'
 import { PROJECT_EDITOR_STRINGS } from './project-editor-strings'
+import type { DocumentMeta } from '../../shared/ipc'
 import type { WorkspaceLayoutState, WorkspacePane } from './project-editor-types'
 import type { PaneWorkspace } from './pane'
 export {
@@ -138,6 +139,15 @@ export function updateEditorValue(
 ): void {
   const targetPane = pane ?? workspace.layout.activePane
   workspace.updatePaneContent(targetPane, nextValue)
+}
+
+export function updateEditorMeta(
+  nextMeta: DocumentMeta,
+  pane: WorkspacePane | undefined,
+  workspace: PaneWorkspace,
+): void {
+  const targetPane = pane ?? workspace.layout.activePane
+  workspace.updatePaneMetaForPane(targetPane, nextMeta)
 }
 
 export function markEditorDirty(

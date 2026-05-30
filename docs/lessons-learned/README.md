@@ -27,6 +27,7 @@ Avoid: "bug description + fix". Prefer: "what I learned that applies to future w
 
 | File | Topic | Date |
 |------|-------|------|
+| `non-text-editor-surfaces-should-update-pane-meta-directly.md` | Non-text editors that edit frontmatter-backed behavior should mutate pane `meta` directly and reuse the normal save pipeline instead of encoding YAML into the body string | 2026-05-30 |
 | `document-scoped-ephemeral-ui-state-should-reset-on-navigation.md` | Document-scoped transient UI like revision rails must clear hidden target state when navigation closes them | 2026-05-29 |
 | `revision-preview-should-use-explicit-read-only-mode.md` | Git revision previews need an explicit read-only editor mode, not the generic disabled state | 2026-05-28 |
 | `git-add-should-stage-changed-managed-paths-not-missing-roots.md` | For scoped Git snapshots, stage exact changed managed paths instead of broad roots that may not exist | 2026-05-28 |

@@ -33,6 +33,10 @@ Unrelated staged or unstaged repository changes are not part of a **Snapshot**.
 The content Trama owns inside a **Project**: `book/`, `outline/`, `lore/`, `res/`, and the root `.trama.index.json` file.
 _Avoid_: Whole repository, whole worktree
 
+**Map Document**:
+A writing document of type `map` stored as a standard `.md` file, whose metadata configuration (frontmatter) defines a background image and interactive points (markers) with destination tag links, and whose contents are rendered visually as an interactive zoomable/pannable map layer instead of a text editor.
+_Avoid_: JSON document, standalone image map
+
 **Git available**:
 The user's machine has a usable local Git command. This does not imply GitHub, a remote, authentication, network access, cloud sync, or that the opened **Project** is already inside a Git repository.
 _Avoid_: GitHub available

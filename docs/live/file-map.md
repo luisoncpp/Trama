@@ -485,6 +485,8 @@ Mandatory doc navigation for new chats: start with `docs/START-HERE.md` — it p
 Core and regression suites:
 
 - `tests/ipc-contract.test.ts`
+- `tests/map-editor-helpers.test.ts`
+  - Pure coverage for map config parsing/normalization and destination tag resolution.
 - `tests/git-history-service.test.ts`
   - Focused backend coverage for Git history: parent-repo scoping, unrelated staged abort, ignored-file noop, rename-follow listing, preview fallback, restore behavior.
 - `tests/fullscreen-ipc.test.ts`

@@ -30,6 +30,8 @@ import type {
   ProjectSnapshot,
   ReadDocumentRequest,
   ReadDocumentResponse,
+  ReadImageFileRequest,
+  ReadImageFileResponse,
   ReadDocumentRevisionRequest,
   ReadDocumentRevisionResponse,
   RenameDocumentRequest,
@@ -71,6 +73,7 @@ declare global {
       selectProjectFolder(): Promise<IpcEnvelope<SelectProjectFolderResponse>>
       validateProjectFolder(payload: ValidateProjectFolderRequest): Promise<IpcEnvelope<ValidateProjectFolderResponse>>
       readDocument(payload: ReadDocumentRequest): Promise<IpcEnvelope<ReadDocumentResponse>>
+      readImageFile(payload: ReadImageFileRequest): Promise<IpcEnvelope<ReadImageFileResponse>>
       saveDocument(payload: SaveDocumentRequest): Promise<IpcEnvelope<SaveDocumentResponse>>
       createDocument(payload: CreateDocumentRequest): Promise<IpcEnvelope<CreateDocumentResponse>>
       createFolder(payload: CreateFolderRequest): Promise<IpcEnvelope<CreateFolderResponse>>

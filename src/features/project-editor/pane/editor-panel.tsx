@@ -1,13 +1,17 @@
 import { PROJECT_EDITOR_STRINGS } from '../project-editor-strings'
-import type { EditorSerializationRefs, FocusScope, EditorZoomRef } from '../project-editor-types'
+import type { EditorSerializationRefs, FocusScope, EditorZoomRef, WorkspaceLayoutMode } from '../project-editor-types'
 import { WORKSPACE_CONTEXT_MENU_STATE_GLOBAL, type WorkspaceContextMenuState } from '../../../shared/workspace-context-menu'
 import { RichMarkdownEditor } from './rich-markdown-editor/rich-markdown-editor'
+import { MapEditor } from './map-editor/map-editor'
 import { RevisionsRail } from './revisions/revisions-rail'
 import type { RichEditorSyncState } from './rich-markdown-editor/rich-markdown-editor-toolbar'
+import type { DocumentMeta } from '../../../shared/ipc'
 
 interface EditorPanelProps {
   selectedPath: string | null
+  projectRoot: string
   pane: 'primary' | 'secondary'
+  layoutMode: WorkspaceLayoutMode
   gitAvailable: boolean
   saving: boolean
   isDirty: boolean
@@ -16,12 +20,14 @@ interface EditorPanelProps {
   previewVersion?: number
   loadingDocument: boolean
   editorValue: string
+  editorMeta: DocumentMeta
   spellcheckEnabled: boolean
   historyBackDisabled: boolean
   onHistoryBack: () => void
   onSaveNow: () => void
   onRevertNow: () => void
   onEditorChange: (value: string) => void
+  onEditorMetaChange: (meta: DocumentMeta) => void
   focusModeEnabled: boolean
   focusScope: FocusScope
   onInteract?: () => void
@@ -34,6 +40,7 @@ interface EditorPanelProps {
   onConfirmLoadRevision: () => void
   tagIndex?: Record<string, string> | null
   onTagClick?: (filePath: string) => void
+  onMapMarkerNavigate?: (filePath: string, pane: 'primary' | 'secondary') => void
   isActive?: boolean
   editorSerializationRef?: { current: EditorSerializationRefs }
   onMarkDirty?: () => void
@@ -129,30 +136,41 @@ function renderEditorPanelBody(
       onContextMenuCapture={() => syncWorkspaceContextMenuState(contextMenuState)}
     >
       <div class={`editor-manuscript ${!selectedPath || loadingDocument ? 'is-muted' : ''}`}>
-        <RichMarkdownEditor
-          documentId={selectedPath} value={props.editorValue}
-          forceApplyVersion={(props.previewVersion ?? 0) > 0 ? (props.previewVersion ?? 0) : props.reloadVersion}
-          disabled={!selectedPath || loadingDocument}
-          readOnlyPreview={Boolean(props.previewReadOnly)}
-          spellcheckEnabled={props.spellcheckEnabled} onChange={props.onEditorChange}
-          historyBackDisabled={props.historyBackDisabled}
-          onHistoryBack={props.onHistoryBack}
-          saveDisabled={state.saveDisabled} saveLabel={state.saveLabel}
-          onSaveNow={props.onSaveNow}
-          revertDisabled={state.revertDisabled} revertLabel={PROJECT_EDITOR_STRINGS.revertChanges}
-          onRevertNow={props.onRevertNow}
-          previewRestoreDisabled={props.saving || !props.selectedPath || props.revisionRail.selected.kind !== 'revision'}
-          previewRestoreLabel="Restore revision"
-          onPreviewRestore={props.onRequestLoadRevision}
-          syncState={state.syncState} syncStateLabel={state.syncStateLabel}
-          focusModeEnabled={props.focusModeEnabled} focusScope={props.focusScope}
-          tagIndex={props.tagIndex} onTagClick={props.onTagClick} isActive={props.isActive}
-          editorSerializationRef={props.editorSerializationRef}
-          onMarkDirty={props.onMarkDirty}
-          zoomRef={props.zoomRef}
-          zoomLevel={props.zoomLevel}
-          onZoomChange={props.onZoomChange}
-        />
+        {props.editorMeta.type === 'map'
+          ? <MapEditor
+              projectRoot={props.projectRoot}
+              meta={props.editorMeta}
+              pane={props.pane}
+              layoutMode={props.layoutMode}
+              readOnlyPreview={Boolean(props.previewReadOnly)}
+              tagIndex={props.tagIndex}
+              onMetaChange={props.onEditorMetaChange}
+              onNavigate={(filePath, pane) => props.onMapMarkerNavigate?.(filePath, pane)}
+            />
+          : <RichMarkdownEditor
+              documentId={selectedPath} value={props.editorValue}
+              forceApplyVersion={(props.previewVersion ?? 0) > 0 ? (props.previewVersion ?? 0) : props.reloadVersion}
+              disabled={!selectedPath || loadingDocument}
+              readOnlyPreview={Boolean(props.previewReadOnly)}
+              spellcheckEnabled={props.spellcheckEnabled} onChange={props.onEditorChange}
+              historyBackDisabled={props.historyBackDisabled}
+              onHistoryBack={props.onHistoryBack}
+              saveDisabled={state.saveDisabled} saveLabel={state.saveLabel}
+              onSaveNow={props.onSaveNow}
+              revertDisabled={state.revertDisabled} revertLabel={PROJECT_EDITOR_STRINGS.revertChanges}
+              onRevertNow={props.onRevertNow}
+              previewRestoreDisabled={props.saving || !props.selectedPath || props.revisionRail.selected.kind !== 'revision'}
+              previewRestoreLabel="Restore revision"
+              onPreviewRestore={props.onRequestLoadRevision}
+              syncState={state.syncState} syncStateLabel={state.syncStateLabel}
+              focusModeEnabled={props.focusModeEnabled} focusScope={props.focusScope}
+              tagIndex={props.tagIndex} onTagClick={props.onTagClick} isActive={props.isActive}
+              editorSerializationRef={props.editorSerializationRef}
+              onMarkDirty={props.onMarkDirty}
+              zoomRef={props.zoomRef}
+              zoomLevel={props.zoomLevel}
+              onZoomChange={props.onZoomChange}
+            />}
       </div>
       {renderRevisionsRail(props)}
     </article>

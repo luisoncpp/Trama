@@ -31,9 +31,6 @@
       "book/Act-02/Chapter-03/Scene-003.md",
       "book/Act-02/Chapter-03/Scene-001.md"
     ],
-    "exports": [
-      "exports/book.md"
-    ],
     "lore/characters": [
       "lore/characters/Aina.md",
       "lore/characters/Corin.md",
@@ -50,6 +47,9 @@
     "lore/systems": [
       "lore/systems/politica.md",
       "lore/systems/magia.md"
+    ],
+    "lore": [
+      "lore/world-map.md"
     ],
     "outline/Act-01/Chapter-01": [
       "outline/Act-01/Chapter-01/chapter-beats.md"
@@ -71,9 +71,6 @@
     ],
     "outline/Misc": [
       "outline/Misc/arc-general.md"
-    ],
-    "": [
-      "README.md"
     ]
   },
   "cache": {
@@ -95,7 +92,6 @@
     "book/Act-02/Chapter-03/Scene-001.md": {},
     "book/Act-02/Chapter-03/Scene-002.md": {},
     "book/Act-02/Chapter-03/Scene-003.md": {},
-    "exports/book.md": {},
     "lore/characters/Aina.md": {
       "tags": [
         "aina"
@@ -163,13 +159,45 @@
       ]
     },
     "lore/systems/politica.md": {},
+    "lore/world-map.md": {
+      "type": "map",
+      "name": "Realm Map",
+      "mapConfig": {
+        "backgroundImage": "res/realm-map.svg",
+        "markers": [
+          {
+            "x": 342,
+            "y": 622,
+            "label": "Lirio-Amanecer",
+            "destinationTag": "#lirio",
+            "color": "#e0b56c",
+            "description": "Ciudad portuaria y centro del reino."
+          },
+          {
+            "x": 1167,
+            "y": 616,
+            "label": "Bosque Encantado",
+            "destinationTag": "#bosque",
+            "color": "#5fcf88",
+            "description": "Reserva rúnica del norte."
+          },
+          {
+            "x": 786,
+            "y": 744,
+            "label": "Aina",
+            "destinationTag": "#aina",
+            "color": "#8db6ff",
+            "description": "Punto de entrada para probar navegación a personaje."
+          }
+        ]
+      }
+    },
     "outline/Act-01/Chapter-01/chapter-beats.md": {},
     "outline/Act-01/Chapter-02/chapter-beats.md": {},
     "outline/Act-01/Chapter-03/chapter-beats.md": {},
     "outline/Act-02/Chapter-01/chapter-beats.md": {},
     "outline/Act-02/Chapter-02/chapter-beats.md": {},
     "outline/Act-02/Chapter-03/chapter-beats.md": {},
-    "outline/Misc/arc-general.md": {},
-    "README.md": {}
+    "outline/Misc/arc-general.md": {}
   }
 }

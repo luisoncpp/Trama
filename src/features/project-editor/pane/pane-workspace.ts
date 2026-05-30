@@ -161,6 +161,10 @@ export class PaneWorkspace {
     this.updatePaneState('secondary', (prev) => prev.path === path ? { ...prev, meta } : prev)
   }
 
+  updatePaneMetaForPane(pane: WorkspacePane, meta: DocumentMeta): void {
+    this.updatePaneState(pane, (prev) => ({ ...prev, meta, isDirty: true }))
+  }
+
   updateRevisionRail(pane: WorkspacePane, updater: RevisionRailState | ((prev: RevisionRailState) => RevisionRailState)): void {
     this.updatePaneState(pane, (prev) => ({
       ...prev,

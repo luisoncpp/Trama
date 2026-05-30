@@ -1,4 +1,4 @@
-import type { ProjectEditorModel, EditorZoomRef } from '../project-editor-types'
+import type { ProjectEditorModel, EditorZoomRef, WorkspacePane } from '../project-editor-types'
 import { EditorPanel } from './editor-panel'
 import { toPaneTitle } from './pane-title'
 
@@ -23,7 +23,9 @@ function buildPaneEditorPanelProps(props: PaneEditorProps) {
     isActive,
     panelProps: {
       selectedPath: paneState.path,
+      projectRoot: state.rootPath,
       pane,
+      layoutMode: state.workspaceLayout.mode,
       gitAvailable: state.gitHistory.gitAvailable,
       saving: state.saving && isActive,
       isDirty: paneState.isDirty,
@@ -32,6 +34,7 @@ function buildPaneEditorPanelProps(props: PaneEditorProps) {
       previewVersion: paneState.revisionRail.previewVersion,
       loadingDocument: state.loadingDocument && isActive,
       editorValue: paneState.revisionRail.previewReadOnly ? (paneState.revisionRail.previewValue ?? paneState.content) : paneState.content,
+      editorMeta: paneState.meta,
       spellcheckEnabled,
       historyBackDisabled: !paneState.path,
       onHistoryBack: () => { void actions.openPreviousInPaneHistory(pane) },
@@ -45,11 +48,13 @@ function buildPaneEditorPanelProps(props: PaneEditorProps) {
       onCancelLoadRevision: () => actions.cancelLoadDocumentRevision(pane),
       onConfirmLoadRevision: () => { void actions.confirmLoadDocumentRevision(pane) },
       onEditorChange: (nextValue: string) => { actions.updateEditorValue(nextValue, pane) },
+      onEditorMetaChange: (nextMeta: typeof paneState.meta) => { actions.updateEditorMeta(nextMeta, pane) },
       focusModeEnabled: state.workspaceLayout.focusModeEnabled,
       focusScope: state.workspaceLayout.focusScope,
       onInteract: () => { if (!isActive) { void actions.setWorkspaceActivePane(pane) } },
       tagIndex,
       onTagClick,
+      onMapMarkerNavigate: (filePath: string, targetPane: WorkspacePane) => { actions.openFileInPane(filePath, targetPane) },
       isActive,
       editorSerializationRef: pane === 'primary' ? serializationRefs.primary : serializationRefs.secondary,
       onMarkDirty: () => { actions.markEditorDirty(pane) },

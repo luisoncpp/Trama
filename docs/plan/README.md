@@ -6,6 +6,7 @@ Active implementation plans — work that is in progress or planned but not yet 
 
 | File | Scope |
 |------|-------|
+| `map-document-markers-implementation-plan.md` | Map document editor surface, marker management, and panel switch wiring |
 | `tag-overlay-deepening-plan.md` | Tag overlay index types, state seam, hook interface, and helper tests |
 | `phase-4-detailed-plan.md` | Phase 4 master plan: Wiki Tag Links, folder operations, templates, AI import/export |
 | `implementation-overview.md` | Phase 3 closure summary |

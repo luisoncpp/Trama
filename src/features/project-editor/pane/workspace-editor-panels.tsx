@@ -32,18 +32,21 @@ function ActiveEditorPanel({ model, spellcheckEnabled, tagIndex, onTagClick, zoo
   }
 
   return (
-    <EditorPanel
-      selectedPath={state.selectedPath}
-      pane={state.workspaceLayout.activePane}
-      gitAvailable={state.gitHistory.gitAvailable}
+      <EditorPanel
+        selectedPath={state.selectedPath}
+        projectRoot={state.rootPath}
+        pane={state.workspaceLayout.activePane}
+        layoutMode={state.workspaceLayout.mode}
+        gitAvailable={state.gitHistory.gitAvailable}
       saving={state.saving}
       isDirty={state.isDirty}
       reloadVersion={activePaneState.reloadVersion}
       previewReadOnly={activePaneState.revisionRail.previewReadOnly}
       previewVersion={activePaneState.revisionRail.previewVersion}
-      loadingDocument={state.loadingDocument}
-      editorValue={activePaneState.revisionRail.previewReadOnly ? (activePaneState.revisionRail.previewValue ?? state.editorValue) : state.editorValue}
-      spellcheckEnabled={spellcheckEnabled}
+        loadingDocument={state.loadingDocument}
+        editorValue={activePaneState.revisionRail.previewReadOnly ? (activePaneState.revisionRail.previewValue ?? state.editorValue) : state.editorValue}
+        editorMeta={activePaneState.meta}
+        spellcheckEnabled={spellcheckEnabled}
       historyBackDisabled={!state.selectedPath}
       onHistoryBack={() => { void actions.openPreviousInPaneHistory() }}
       onSaveNow={actions.saveNow}
@@ -54,13 +57,15 @@ function ActiveEditorPanel({ model, spellcheckEnabled, tagIndex, onTagClick, zoo
       onLoadMoreRevisions={() => { void actions.loadMoreDocumentRevisions() }}
       onRequestLoadRevision={() => actions.requestLoadDocumentRevision()}
       onCancelLoadRevision={() => actions.cancelLoadDocumentRevision()}
-      onConfirmLoadRevision={() => { void actions.confirmLoadDocumentRevision() }}
-      onEditorChange={actions.updateEditorValue}
-      focusModeEnabled={state.workspaceLayout.focusModeEnabled}
-      focusScope={state.workspaceLayout.focusScope}
-      tagIndex={tagIndex}
-      onTagClick={onTagClick}
-      editorSerializationRef={serializationRefs.primary}
+        onConfirmLoadRevision={() => { void actions.confirmLoadDocumentRevision() }}
+        onEditorChange={actions.updateEditorValue}
+        onEditorMetaChange={actions.updateEditorMeta}
+        focusModeEnabled={state.workspaceLayout.focusModeEnabled}
+        focusScope={state.workspaceLayout.focusScope}
+        tagIndex={tagIndex}
+        onTagClick={onTagClick}
+        onMapMarkerNavigate={(filePath, pane) => { actions.openFileInPane(filePath, pane) }}
+        editorSerializationRef={serializationRefs.primary}
       onMarkDirty={onMarkDirty}
       zoomRef={zoomRef}
       zoomLevel={zoomLevel}
