@@ -121,6 +121,36 @@
   justify-content: center;
 }
 
+/* Sidebar actions: same subtle hover as project tree rows (accent border, no lift/glow) */
+.project-menu__actions .editor-button:hover:not(:disabled),
+.project-menu__actions .editor-button:focus-visible:not(:disabled),
+.book-export-controls .editor-button:hover:not(:disabled),
+.book-export-controls .editor-button:focus-visible:not(:disabled),
+.sidebar-footer-actions > .editor-button:hover:not(:disabled),
+.sidebar-footer-actions > .editor-button:focus-visible:not(:disabled),
+.theme-preference-option:hover:not(:disabled),
+.theme-preference-option:focus-visible:not(:disabled) {
+  transform: none;
+  border-color: var(--accent-border);
+  color: var(--text-main);
+}
+
+.theme-preference-option.is-active:hover:not(:disabled),
+.theme-preference-option.is-active:focus-visible:not(:disabled) {
+  border-color: var(--accent-border-strong);
+}
+
+.sidebar-footer-actions .sidebar-split-button:hover:not(:has(button:disabled)) {
+  transform: none;
+}
+
+.sidebar-footer-actions .sidebar-split-button:hover:not(:has(button:disabled)) .editor-button:not(:disabled),
+.sidebar-footer-actions .sidebar-split-button:focus-within:not(:has(button:disabled)) .editor-button:not(:disabled) {
+  transform: none;
+  border-color: var(--accent-border);
+  color: var(--text-main);
+}
+
 .book-export-controls {
   display: flex;
   flex-direction: column;
@@ -213,6 +243,10 @@
 
 .sidebar-split-button:hover:not(:has(button:disabled)) {
   transform: translateY(-1px);
+}
+
+.sidebar-footer-actions .sidebar-split-button:hover:not(:has(button:disabled)) {
+  transform: none;
 }
 
 /* Suppress per-button lift — the container handles it */
