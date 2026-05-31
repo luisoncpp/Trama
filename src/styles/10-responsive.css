@@ -24,8 +24,24 @@
     padding: 10px;
   }
 
+  html.has-overlay-titlebar .editor-shell {
+    padding: 8px 10px 10px;
+  }
+
+  html.has-overlay-titlebar .editor-shell:not(.is-split) {
+    padding: 12px 10px 10px;
+  }
+
   .editor-app {
     height: calc(100svh - 20px);
+  }
+
+  html.has-overlay-titlebar .editor-app {
+    height: calc(100svh - 18px);
+  }
+
+  html.has-overlay-titlebar .editor-shell:not(.is-split) .editor-app {
+    height: calc(100svh - 22px);
   }
 
   .workspace-panel--sidebar,

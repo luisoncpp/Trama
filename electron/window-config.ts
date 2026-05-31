@@ -11,12 +11,12 @@ export function createMainWindowOptions(preloadPath: string): BrowserWindowConst
     minHeight: 640,
     show: false,
     backgroundColor: DARK_SHELL,
-    /* Native Win11 title bars pick up accent tint; overlay pins --shell-bg without losing window controls. */
+    /* Hidden title bar + transparent overlay so native controls blend with the shell. */
     ...(isWin32
       ? {
           titleBarStyle: 'hidden',
           titleBarOverlay: {
-            color: DARK_SHELL,
+            color: 'rgba(0, 0, 0, 0)',
             symbolColor: '#cccccc',
           },
         }

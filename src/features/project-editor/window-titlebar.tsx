@@ -13,9 +13,5 @@ export function WindowTitlebar() {
     return null
   }
 
-  return (
-    <div class="window-titlebar">
-      <span class="window-titlebar__title">Trama</span>
-    </div>
-  )
+  return <div class="window-drag-region" aria-hidden="true" />
 }
