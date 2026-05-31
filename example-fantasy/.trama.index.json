@@ -1,15 +1,179 @@
 {
   "version": "1.0.0",
   "corkboardOrder": {
+    "book": [
+      "book/chapter-01.md",
+      "book/chapter-02.md",
+      "book/chapter-03.md",
+      "book/chapter-04.md",
+      "book/chapter-05.md",
+      "book/chapter-06.md",
+      "book/chapter-07.md",
+      "book/chapter-08.md",
+      "book/chapter-09.md",
+      "book/chapter-10.md",
+      "book/chapter-11.md"
+    ],
+    "lore/characters": [
+      "lore/characters/cael.md",
+      "lore/characters/maren.md",
+      "lore/characters/oswin.md",
+      "lore/characters/corvin.md",
+      "lore/characters/aldren.md"
+    ],
+    "lore": [
+      "lore/map.md",
+      "lore/image-prompts.md"
+    ],
+    "lore/places": [
+      "lore/places/monastery-of-the-bound-hand.md",
+      "lore/places/solens-crossing.md",
+      "lore/places/the-hollow-of-drest.md",
+      "lore/places/the-osswall.md",
+      "lore/places/valdenmere.md"
+    ],
     "outline": [
-      "outline/arc-general-v2.md",
-      "outline/arc-general.md",
-      "outline/layout-directives-test.md"
+      "outline/layout-directives-test.md",
+      "outline/arc-general-v3.md"
+    ],
+    "outline/arcs": [
+      "outline/arcs/arc-01-the-call.md",
+      "outline/arcs/arc-02-the-hollow-of-drest.md",
+      "outline/arcs/arc-03-the-archive-of-solen.md",
+      "outline/arcs/arc-04-the-monastery.md",
+      "outline/arcs/arc-05-the-osswall.md",
+      "outline/arcs/arc-06-the-truth.md"
+    ],
+    "outline/chapters": [
+      "outline/chapters/chapter-01.md",
+      "outline/chapters/chapter-02.md",
+      "outline/chapters/chapter-03.md",
+      "outline/chapters/chapter-04.md",
+      "outline/chapters/chapter-05.md",
+      "outline/chapters/chapter-06.md",
+      "outline/chapters/chapter-07.md",
+      "outline/chapters/chapter-08.md",
+      "outline/chapters/chapter-09.md",
+      "outline/chapters/chapter-10.md",
+      "outline/chapters/chapter-11.md"
+    ],
+    "outline/outdated": [
+      "outline/outdated/arc-general-v2.md",
+      "outline/outdated/arc-general-v1.md"
     ]
   },
   "cache": {
-    "outline/arc-general-v2.md": {},
-    "outline/arc-general.md": {},
-    "outline/layout-directives-test.md": {}
+    "book/chapter-01.md": {},
+    "book/chapter-02.md": {},
+    "book/chapter-03.md": {},
+    "book/chapter-04.md": {},
+    "book/chapter-05.md": {},
+    "book/chapter-06.md": {},
+    "book/chapter-07.md": {},
+    "book/chapter-08.md": {},
+    "book/chapter-09.md": {},
+    "book/chapter-10.md": {},
+    "book/chapter-11.md": {},
+    "lore/characters/aldren.md": {},
+    "lore/characters/cael.md": {},
+    "lore/characters/corvin.md": {},
+    "lore/characters/maren.md": {},
+    "lore/characters/oswin.md": {},
+    "lore/image-prompts.md": {},
+    "lore/map.md": {
+      "type": "map",
+      "name": "Map of the Kingdom",
+      "mapConfig": {
+        "backgroundImage": "res/map.png",
+        "markers": [
+          {
+            "x": 724,
+            "y": 920,
+            "label": "Valdenmere",
+            "destinationTag": "valdenmere",
+            "color": "#e74c3c",
+            "description": "The capital city and seat of government."
+          },
+          {
+            "x": 450,
+            "y": 724,
+            "label": "The Hollow of Drest",
+            "destinationTag": "the-hollow-of-drest",
+            "color": "#2ecc71",
+            "description": "A small village in a depression surrounded by old-growth forest."
+          },
+          {
+            "x": 724,
+            "y": 543,
+            "label": "Solen's Crossing",
+            "destinationTag": "solens-crossing",
+            "color": "#3498db",
+            "description": "A town spanning the Solen river, known for its bridge and Archive."
+          },
+          {
+            "x": 900,
+            "y": 362,
+            "label": "Monastery of the Bound Hand",
+            "destinationTag": "monastery-of-the-bound-hand",
+            "color": "#f1c40f",
+            "description": "An austere monastery carved into the mountain face."
+          },
+          {
+            "x": 724,
+            "y": 150,
+            "label": "The Osswall",
+            "destinationTag": "the-osswall",
+            "color": "#9b59b6",
+            "description": "A formidable fortress guarding the northern reaches."
+          }
+        ]
+      }
+    },
+    "lore/places/monastery-of-the-bound-hand.md": {
+      "tags": [
+        "monastery-of-the-bound-hand"
+      ]
+    },
+    "lore/places/solens-crossing.md": {
+      "tags": [
+        "solens-crossing"
+      ]
+    },
+    "lore/places/the-hollow-of-drest.md": {
+      "tags": [
+        "the-hollow-of-drest"
+      ]
+    },
+    "lore/places/the-osswall.md": {
+      "tags": [
+        "the-osswall"
+      ]
+    },
+    "lore/places/valdenmere.md": {
+      "tags": [
+        "valdenmere"
+      ]
+    },
+    "outline/arc-general-v3.md": {},
+    "outline/arcs/arc-01-the-call.md": {},
+    "outline/arcs/arc-02-the-hollow-of-drest.md": {},
+    "outline/arcs/arc-03-the-archive-of-solen.md": {},
+    "outline/arcs/arc-04-the-monastery.md": {},
+    "outline/arcs/arc-05-the-osswall.md": {},
+    "outline/arcs/arc-06-the-truth.md": {},
+    "outline/chapters/chapter-01.md": {},
+    "outline/chapters/chapter-02.md": {},
+    "outline/chapters/chapter-03.md": {},
+    "outline/chapters/chapter-04.md": {},
+    "outline/chapters/chapter-05.md": {},
+    "outline/chapters/chapter-06.md": {},
+    "outline/chapters/chapter-07.md": {},
+    "outline/chapters/chapter-08.md": {},
+    "outline/chapters/chapter-09.md": {},
+    "outline/chapters/chapter-10.md": {},
+    "outline/chapters/chapter-11.md": {},
+    "outline/layout-directives-test.md": {},
+    "outline/outdated/arc-general-v1.md": {},
+    "outline/outdated/arc-general-v2.md": {}
   }
 }
