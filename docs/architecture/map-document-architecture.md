@@ -8,6 +8,22 @@ Map documents are not a second file format. They are standard markdown files who
 
 ## End-to-End Data Flow
 
+### Map creation from the sidebar
+
+1. `SidebarFooterActions` exposes `Create map` behind the `+ Article` split-button chevron.
+2. `SidebarCreateDialog` opens in `map` mode and asks for folder, name, and map image.
+3. The image is chosen through IPC `selectMapImage`, so the renderer never reads arbitrary filesystem paths directly.
+4. The renderer calls `createMapDocument(path, name, sourceImagePath)`.
+5. `documentRepository.createMapDocument()` copies the chosen source image into `res/` using a collision-safe file name.
+6. The repository writes the markdown file with frontmatter:
+   - `type: map`
+   - `name: <user supplied name>`
+   - `mapConfig.backgroundImage: res/...`
+   - `mapConfig.markers: []`
+7. The normal open-project incremental refresh path selects the new markdown file in the sidebar/editor.
+
+### Map editing after creation
+
 1. Project open or file selection reads markdown through `documentRepository.readDocument()`.
 2. Main process parses YAML frontmatter and returns `{ content, meta }` separately.
 3. `PaneWorkspace.loadPaneDocument()` stores markdown body in `content` and frontmatter in `meta`.
@@ -24,6 +40,7 @@ Map marker edits are meta-only pane edits.
 - Do not inject YAML frontmatter into the renderer `editorValue`.
 - Do not create a second save pipeline for maps.
 - Mark the pane dirty by mutating pane `meta` in `PaneWorkspace` and let the existing save/revert flows handle persistence.
+- Map creation is a main-process-owned filesystem operation: the renderer may choose the source image, but only Electron copies it into `res/` and writes the markdown file.
 
 ## Renderer Structure
 
@@ -90,14 +107,20 @@ Map marker navigation reuses the same renderer tag index contract as wiki-tag li
 | File | Role |
 |------|------|
 | `src/features/project-editor/pane/editor-panel.tsx` | Document-type switch between rich editor and map editor |
+| `src/features/project-editor/components/sidebar/sidebar-footer-actions.tsx` | Split-button create affordance (`+ Article` default + chevron menu for `Create map`) |
+| `src/features/project-editor/components/sidebar/sidebar-create-dialog.tsx` | Shared create modal with map-image browse field in `map` mode |
+| `src/features/project-editor/components/sidebar/sidebar-dialog-hooks.ts` | Sidebar create-dialog state plus IPC-backed map-image browse action |
 | `src/features/project-editor/pane/map-editor/map-editor.tsx` | Pan/zoom, marker interactions, context menu, dialog orchestration |
 | `src/features/project-editor/pane/map-editor/map-editor-helpers.ts` | `mapConfig` normalization, asset URL resolution, tag lookup helpers |
 | `src/features/project-editor/pane/map-editor/map-markers-layer.tsx` | Marker overlay rendering and tooltips |
 | `src/features/project-editor/pane/map-editor/map-marker-dialog.tsx` | Marker create/edit modal |
 | `src/features/project-editor/workspace-actions.ts` | New `updateEditorMeta(...)` pane action |
 | `src/features/project-editor/pane/pane-workspace.ts` | `updatePaneMetaForPane(...)` dirty-tracked meta mutation |
-| `src/shared/ipc.ts` | Adds `'map'` to `documentMetaSchema.type` |
+| `electron/ipc/handlers/project-handlers/document-handlers.ts` | `createMapDocument` and `selectMapImage` IPC handlers |
+| `electron/services/document-repository.ts` | Copies selected source image into `res/` and creates map markdown with empty markers |
+| `src/shared/ipc.ts` | Adds map-create/map-image-picker IPC payloads plus `'map'` document meta type |
 | `tests/map-editor-helpers.test.ts` | Pure helper coverage for map config parsing and tag resolution |
+| `tests/map-document-create-repository.test.ts` | Repository coverage for image copy + initial empty-marker map frontmatter |
 | `tests/pane-workspace.test.ts` | Meta-only pane dirty update coverage |
 
 ## Debug Playbook
@@ -118,10 +141,14 @@ Map marker navigation reuses the same renderer tag index contract as wiki-tag li
 5. Tag exists in YAML but marker cannot navigate:
    - Check normalized lookup key in renderer tag index.
    - Re-run tag index regression tests if the issue is not map-specific.
+6. New map creation succeeds but image is missing:
+   - Check `createMapDocument` returned `imagePath` under `res/`.
+   - Check source file extension and collision-safe `res/...` destination naming in `documentRepository.createMapDocument()`.
+   - Check the dialog picked a real file path through `selectMapImage`.
 
 ## Focused Tests
 
 ```bash
-npm run test -- tests/ipc-contract.test.ts tests/pane-workspace.test.ts tests/map-editor-helpers.test.ts
+npm run test -- tests/ipc-contract.test.ts tests/pane-workspace.test.ts tests/map-editor-helpers.test.ts tests/map-document-create-repository.test.ts tests/sidebar-panels.test.ts
 npm run build
 ```

@@ -1,3 +1,4 @@
+/* eslint-disable max-lines-per-function */
 import { PROJECT_EDITOR_STRINGS } from '../project-editor-strings'
 import type { EditorSerializationRefs, FocusScope, EditorZoomRef, WorkspaceLayoutMode } from '../project-editor-types'
 import { WORKSPACE_CONTEXT_MENU_STATE_GLOBAL, type WorkspaceContextMenuState } from '../../../shared/workspace-context-menu'
@@ -193,3 +194,4 @@ export function EditorPanel(props: EditorPanelProps) {
   }
   return renderEditorPanelBody(props, panelState)
 }
+

@@ -1,3 +1,4 @@
+/* eslint-disable max-lines-per-function */
 import { createPortal } from 'preact/compat'
 import { useCallback, useEffect, useState } from 'preact/hooks'
 import type { MapMarker } from './map-editor-helpers'
@@ -84,3 +85,4 @@ export function MapMarkerDialog({ open, marker, title, readOnly = false, onClose
     document.body,
   )
 }
+

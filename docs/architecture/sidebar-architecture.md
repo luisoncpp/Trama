@@ -178,11 +178,29 @@ Each dialog type is managed by a dedicated hook:
 
 | Hook | Manages |
 |------|---------|
-| `useSidebarCreateDialog` | Article/Category creation mode, input state |
+| `useSidebarCreateDialog` | Article/Map/Category creation mode, input state, native map-image picker |
 | `useSidebarFileActionsDialog` | File rename/delete/edit-tags mode |
 | `useSidebarFolderActionsDialog` | Folder rename/delete mode |
 
 Pattern: `openX(path) → set mode + target → render dialog → confirm/close → reset`
+
+### Footer create affordance
+
+- `SidebarFooterActions` uses a split button for the primary create affordance:
+  - left side: one-click `+ Article`
+  - right chevron: opens a small menu with `Create map`
+- `+ Category` remains a separate sibling button.
+- `Create map` still reuses the same create-dialog shell, but adds a third field backed by native file browsing.
+- The map image path is chosen through Electron IPC (`selectMapImage`) instead of raw renderer filesystem access.
+
+### Map creation data flow
+
+1. User clicks the split-button chevron and chooses `Create map`.
+2. `useSidebarCreateDialog` opens the normal create modal in `map` mode.
+3. The dialog's `Browse...` button calls `window.tramaApi.selectMapImage()`.
+4. On submit, the renderer calls `createMapDocument` with the project-relative markdown target path, display name, and absolute source image path.
+5. Main-process `documentRepository.createMapDocument()` copies the selected image into `res/`, creates the markdown file with `type: map`, `mapConfig.backgroundImage`, and an empty `markers: []` array.
+6. The existing sidebar open-project refresh path reloads the new file and focuses it like normal article creation.
 
 ### Context menus
 

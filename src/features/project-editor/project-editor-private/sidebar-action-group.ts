@@ -9,6 +9,7 @@ export function buildSidebarActions(params: ActionGroupParams): Pick<ProjectEdit
   | 'toggleSidebarPanelCollapsed'
   | 'setSidebarPanelWidth'
   | 'createArticle'
+  | 'createMap'
   | 'createCategory'
   | 'renameFile'
   | 'deleteFile'
@@ -61,6 +62,12 @@ function buildSidebarUiActions({
 function buildSidebarFileCreateActions({ projectState, sidebarState, setters, openProject }: ActionGroupParams) {
   return {
     createArticle: (input: any) => sidebarFileActions.createArticle(input, {
+      projectState,
+      sidebarState,
+      setStatusMessage: setters.setStatusMessage,
+      openProject,
+    }),
+    createMap: (input: any) => sidebarFileActions.createMap(input, {
       projectState,
       sidebarState,
       setStatusMessage: setters.setStatusMessage,

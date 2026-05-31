@@ -23,7 +23,7 @@ When a change affects behavior (not only formatting) or when detecting anything 
 
 Trama is a file-first desktop writing tool (Electron + Preact + TypeScript). The app opens a project folder, scans markdown files, edits with a rich visual editor, saves via typed IPC, reconciles `.trama.index.json`, and handles external file conflicts safely.
 
-**Sidebar** — Section-scoped trees (`book/`, `outline/`, `lore/`), filter, keyboard basics, responsive collapse, create article/category, rename/delete from right-click.
+**Sidebar** — Section-scoped trees (`book/`, `outline/`, `lore/`), filter, keyboard basics, responsive collapse, split `+ Article` create flow (article default + map option), `+ Category`, rename/delete from right-click.
 
 **Workspace split mode** — Both panes visible, active pane follows editor clicks, draggable center divider, pane headers show document name, split toggle via `Ctrl/Cmd + .` or context menu, per-pane session history via `Alt+Left` / `Alt+Right` plus menu-bar Back/Forward.
 

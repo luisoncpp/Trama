@@ -14,6 +14,8 @@ interface FooterAndCreateDialogProps {
   createInput: SidebarCreateInput
   onDirectoryChange: (value: string) => void
   onNameChange: (value: string) => void
+  onSourceImagePathChange: (value: string) => void
+  onBrowseSourceImage: () => Promise<void>
   submitCreateDialog: () => void
   closeCreateDialog: () => void
 }
@@ -27,6 +29,8 @@ export function FooterAndCreateDialog({
   createInput,
   onDirectoryChange,
   onNameChange,
+  onSourceImagePathChange,
+  onBrowseSourceImage,
   submitCreateDialog,
   closeCreateDialog,
 }: FooterAndCreateDialogProps) {
@@ -35,6 +39,7 @@ export function FooterAndCreateDialog({
       <SidebarFooterActions
         disabled={loadingProject || !apiAvailable}
         onCreateArticle={() => openCreateDialog('article')}
+        onCreateMap={() => openCreateDialog('map')}
         onCreateCategory={() => openCreateDialog('category')}
       />
       <SidebarCreateDialog
@@ -43,6 +48,8 @@ export function FooterAndCreateDialog({
         value={createInput}
         onDirectoryChange={onDirectoryChange}
         onNameChange={onNameChange}
+        onSourceImagePathChange={onSourceImagePathChange}
+        onBrowseSourceImage={onBrowseSourceImage}
         onSubmit={submitCreateDialog}
         onCancel={closeCreateDialog}
       />

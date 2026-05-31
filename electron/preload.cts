@@ -1,3 +1,4 @@
+/* eslint-disable max-lines */
 import { contextBridge, ipcRenderer } from 'electron'
 import {
   debugLogRequestSchema,
@@ -11,6 +12,9 @@ import {
   type AiImportResponse,
   type CreateDocumentRequest,
   type CreateDocumentResponse,
+  type CreateMapDocumentRequest,
+  type CreateMapDocumentResponse,
+  type SelectMapImageResponse,
   type CreateFolderRequest,
   type CreateFolderResponse,
   type DeleteFolderRequest,
@@ -99,6 +103,12 @@ const tramaApi = {
   },
   createDocument(payload: CreateDocumentRequest): Promise<IpcEnvelope<CreateDocumentResponse>> {
     return ipcRenderer.invoke(IPC_CHANNELS.createDocument, payload)
+  },
+  createMapDocument(payload: CreateMapDocumentRequest): Promise<IpcEnvelope<CreateMapDocumentResponse>> {
+    return ipcRenderer.invoke(IPC_CHANNELS.createMapDocument, payload)
+  },
+  selectMapImage(): Promise<IpcEnvelope<SelectMapImageResponse>> {
+    return ipcRenderer.invoke(IPC_CHANNELS.selectMapImage)
   },
   createFolder(payload: CreateFolderRequest): Promise<IpcEnvelope<CreateFolderResponse>> {
     return ipcRenderer.invoke(IPC_CHANNELS.createFolder, payload)
@@ -225,3 +235,4 @@ const tramaApi = {
 }
 
 contextBridge.exposeInMainWorld('tramaApi', tramaApi)
+

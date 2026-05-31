@@ -56,6 +56,7 @@ export interface SidebarWorkspacePrefsProps {
 
 export interface SidebarFileActions {
   onCreateArticle: (input: SidebarCreateInput) => void
+  onCreateMap: (input: SidebarCreateInput) => void
   onCreateCategory: (input: SidebarCreateInput) => void
   onRenameFile: (path: string, newName: string) => void
   onRenameFolder: (path: string, newName: string) => void

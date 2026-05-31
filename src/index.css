@@ -456,6 +456,70 @@ select {
   flex: 1 1 50%;
 }
 
+.sidebar-footer-actions .sidebar-split-button > .editor-button {
+  flex: none;
+}
+
+.sidebar-split-button {
+  position: relative;
+  flex: 1 1 50%;
+  display: flex;
+  transition: transform 160ms ease;
+}
+
+.sidebar-split-button:hover:not(:has(button:disabled)) {
+  transform: translateY(-1px);
+}
+
+/* Suppress per-button lift — the container handles it */
+.sidebar-split-button .editor-button:hover:not(:disabled) {
+  transform: none;
+}
+
+.editor-button.sidebar-split-button__main {
+  flex: 1 1 auto !important;
+  white-space: nowrap;
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+  border-right: 0;
+}
+
+.editor-button.sidebar-split-button__toggle {
+  flex: 0 0 32px !important;
+  padding-inline: 0;
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+
+.sidebar-split-button__menu {
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 0;
+  min-width: 148px;
+  padding: 6px;
+  border: 1px solid var(--border-strong);
+  border-radius: 10px;
+  background: var(--context-menu-bg);
+  box-shadow: var(--shadow-float);
+  z-index: 46;
+}
+
+.sidebar-split-button__menu-item {
+  width: 100%;
+  appearance: none;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-main);
+  text-align: left;
+  font-size: 0.73rem;
+  padding: 7px 9px;
+}
+
+.sidebar-split-button__menu-item:hover {
+  background: var(--surface-hover-bg);
+}
+
 .sidebar-context-menu-layer {
   position: fixed;
   inset: 0;
@@ -1907,6 +1971,16 @@ select {
 .revisions-rail__confirm p {
   margin: 0;
   font-size: 0.78rem;
+}
+
+.sidebar-create-dialog__browse-row {
+  display: flex;
+  gap: 8px;
+}
+
+.sidebar-create-dialog__browse-row input {
+  flex: 1 1 auto;
+  min-width: 0;
 }
 
 .revisions-rail__error {

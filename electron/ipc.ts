@@ -30,6 +30,7 @@ import {
   buildPingResponse,
   configureMainWindowResolver,
   handleCreateDocument,
+  handleCreateMapDocument,
   handleCreateFolder,
   handleDeleteFolder,
   handleDeleteDocument,
@@ -41,6 +42,7 @@ import {
   handleRenameDocument,
   handleRenameFolder,
   handleSaveDocument,
+  handleSelectMapImage,
   handleSelectProjectFolder,
   handleValidateProjectFolder,
   shutdownIpcServices,
@@ -131,6 +133,8 @@ function registerDocumentHandlers(ipcMain: IpcMain): void {
   ipcMain.handle(IPC_CHANNELS.readImageFile, (_event, payload) => handleReadImageFile(payload))
   ipcMain.handle(IPC_CHANNELS.saveDocument, (_event, payload) => handleSaveDocument(payload))
   ipcMain.handle(IPC_CHANNELS.createDocument, (_event, payload) => handleCreateDocument(payload))
+  ipcMain.handle(IPC_CHANNELS.createMapDocument, (_event, payload) => handleCreateMapDocument(payload))
+  ipcMain.handle(IPC_CHANNELS.selectMapImage, () => handleSelectMapImage())
   ipcMain.handle(IPC_CHANNELS.renameDocument, (_event, payload) => handleRenameDocument(payload))
   ipcMain.handle(IPC_CHANNELS.deleteDocument, (_event, payload) => handleDeleteDocument(payload))
 }

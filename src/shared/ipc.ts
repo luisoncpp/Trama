@@ -1,3 +1,4 @@
+/* eslint-disable max-lines */
 import { z } from 'zod'
 export { IPC_CHANNELS } from './ipc-channels.js'
 
@@ -14,6 +15,19 @@ export const saveDocumentRequestSchema = z.object({ path: z.string().trim().min(
 export const saveDocumentResponseSchema = z.object({ path: z.string(), version: z.string(), affectedImagePaths: z.array(z.string()).optional() })
 export const createDocumentRequestSchema = z.object({ path: z.string().trim().min(1), initialContent: z.string().optional() })
 export const createDocumentResponseSchema = z.object({ path: z.string(), createdAt: z.string() })
+export const createMapDocumentRequestSchema = z.object({
+  path: z.string().trim().min(1),
+  name: z.string().trim().min(1),
+  sourceImagePath: z.string().trim().min(1),
+})
+export const createMapDocumentResponseSchema = z.object({
+  path: z.string(),
+  createdAt: z.string(),
+  imagePath: z.string(),
+})
+export const selectMapImageResponseSchema = z.object({
+  filePath: z.string(),
+})
 export const createFolderRequestSchema = z.object({ path: z.string().trim().min(1) })
 export const createFolderResponseSchema = z.object({ path: z.string(), createdAt: z.string() })
 export const renameFolderRequestSchema = z.object({ path: z.string().trim().min(1), newName: z.string().trim().min(1) })
@@ -135,6 +149,9 @@ export type SaveDocumentRequest = z.infer<typeof saveDocumentRequestSchema>
 export type SaveDocumentResponse = z.infer<typeof saveDocumentResponseSchema>
 export type CreateDocumentRequest = z.infer<typeof createDocumentRequestSchema>
 export type CreateDocumentResponse = z.infer<typeof createDocumentResponseSchema>
+export type CreateMapDocumentRequest = z.infer<typeof createMapDocumentRequestSchema>
+export type CreateMapDocumentResponse = z.infer<typeof createMapDocumentResponseSchema>
+export type SelectMapImageResponse = z.infer<typeof selectMapImageResponseSchema>
 export type CreateFolderRequest = z.infer<typeof createFolderRequestSchema>
 export type CreateFolderResponse = z.infer<typeof createFolderResponseSchema>
 export type RenameFolderRequest = z.infer<typeof renameFolderRequestSchema>
@@ -200,3 +217,4 @@ export type {
 } from './ipc-zulu.js'
 export type IpcError = z.infer<typeof ipcErrorSchema>
 export type IpcEnvelope<T> = { ok: true; data: T } | { ok: false; error: IpcError }
+

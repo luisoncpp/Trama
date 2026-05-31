@@ -107,6 +107,8 @@ interface SidebarExplorerBodyProps {
   closeFolderActionDialog: () => void
   onDirectoryChange: (value: string) => void
   onNameChange: (value: string) => void
+  onSourceImagePathChange: (value: string) => void
+  onBrowseSourceImage: () => Promise<void>
   filterInputRef: (element: HTMLInputElement | null) => void
   corkboardOrder?: Record<string, string[]>
   onReorderFiles?: (folderPath: string, orderedIds: string[]) => Promise<void>
@@ -119,11 +121,13 @@ function buildDialogsProps(props: SidebarExplorerBodyProps, fileContextMenu: Ret
     loadingProject: props.loadingProject,
     apiAvailable: props.apiAvailable,
     openCreateDialog: props.openCreateDialog,
-    createMode: props.createMode,
+  createMode: props.createMode,
     createInput: props.createInput,
     onDirectoryChange: props.onDirectoryChange,
-    onNameChange: props.onNameChange,
-    submitCreateDialog: props.submitCreateDialog,
+     onNameChange: props.onNameChange,
+     onSourceImagePathChange: props.onSourceImagePathChange,
+     onBrowseSourceImage: props.onBrowseSourceImage,
+     submitCreateDialog: props.submitCreateDialog,
     closeCreateDialog: props.closeCreateDialog,
     title: props.title,
     fileActionMode: props.fileActionMode,

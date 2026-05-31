@@ -308,7 +308,7 @@ describe('useProjectEditor', () => {
     })
 
     await act(async () => {
-      await model?.actions.createArticle({ directory: '', name: 'New-Article' })
+      await model?.actions.createArticle({ directory: '', name: 'New-Article', sourceImagePath: '' })
     })
 
     expect(createDocumentCalls[0]).toBe('book/New-Article.md')

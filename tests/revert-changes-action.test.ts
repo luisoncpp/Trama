@@ -17,6 +17,7 @@ function makeUiState(externalConflictPath: string | null = null): ProjectEditorU
     loadingDocument: false,
     saving: false,
     isFullscreen: false,
+    gitHistory: { gitAvailable: false, repositoryRoot: null, usesParentRepository: false, needsInitialization: false, loading: false },
     externalConflictPath,
     conflictComparisonContent: null,
     statusMessage: '',
@@ -37,7 +38,7 @@ function makeLayout(activePane: 'primary' | 'secondary', primaryPath: string | n
 }
 
 function makePane(path: string | null, content: string, isDirty: boolean): PaneDocumentState {
-  return { path, content, meta: {}, isDirty, reloadVersion: 0 }
+  return { path, content, meta: {}, isDirty, reloadVersion: 0, revisionRail: {} as any }
 }
 
 function makeSerializationRefs(): { primary: { current: EditorSerializationRefs }; secondary: { current: EditorSerializationRefs } } {

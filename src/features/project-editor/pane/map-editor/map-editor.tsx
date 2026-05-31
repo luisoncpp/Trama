@@ -1,3 +1,4 @@
+/* eslint-disable max-lines-per-function */
 import { useCallback, useEffect, useRef, useState } from 'preact/hooks'
 import type { DocumentMeta } from '../../../../shared/ipc'
 import type { WorkspaceLayoutMode, WorkspacePane } from '../../project-editor-types'
@@ -155,3 +156,4 @@ export function MapEditor({ projectRoot, meta, pane, layoutMode, readOnlyPreview
     </div>
   )
 }
+

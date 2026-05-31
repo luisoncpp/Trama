@@ -24,7 +24,8 @@ function buildPanelProps(
     onSelectSidebarSection: () => undefined,
     onToggleSidebarPanelCollapsed: () => undefined,
     onSidebarPanelWidthChange: () => undefined,
-    onCreateArticle: () => undefined,
+          onCreateArticle: () => undefined,
+          onCreateMap: () => undefined,
     onCreateCategory: () => undefined,
     onRenameFile: () => undefined,
     onRenameFolder: () => undefined,
@@ -200,7 +201,8 @@ describe('sidebar panels', () => {
           scopePathLabel: 'C:/Proyectos/test_trama/book',
           filterQuery: '',
           onFilterQueryChange,
-          onCreateArticle: () => undefined,
+                onCreateArticle: () => undefined,
+          onCreateMap: () => undefined,
           onCreateCategory: () => undefined,
           onRenameFile: () => undefined,
           onRenameFolder: () => undefined,
@@ -245,7 +247,8 @@ describe('sidebar panels', () => {
           scopePathLabel: 'C:/Proyectos/test_trama/book',
           filterQuery: '',
           onFilterQueryChange: () => undefined,
-          onCreateArticle: () => undefined,
+                onCreateArticle: () => undefined,
+          onCreateMap: () => undefined,
           onCreateCategory: () => undefined,
           onRenameFile: () => undefined,
           onRenameFolder: () => undefined,
@@ -286,7 +289,8 @@ describe('sidebar panels', () => {
           scopePathLabel: 'C:/Proyectos/test_trama/book',
           filterQuery: '',
           onFilterQueryChange: () => undefined,
-          onCreateArticle: () => undefined,
+                onCreateArticle: () => undefined,
+          onCreateMap: () => undefined,
           onCreateCategory: () => undefined,
           onRenameFile: () => undefined,
           onRenameFolder: () => undefined,
@@ -319,7 +323,8 @@ describe('sidebar panels', () => {
           scopePathLabel: 'C:/Proyectos/test_trama/book',
           filterQuery: '',
           onFilterQueryChange: () => undefined,
-          onCreateArticle: () => undefined,
+                onCreateArticle: () => undefined,
+          onCreateMap: () => undefined,
           onCreateCategory: () => undefined,
           onRenameFile: () => undefined,
           onRenameFolder: () => undefined,
@@ -339,13 +344,14 @@ describe('sidebar panels', () => {
     expect(container.textContent).toContain('Preload API unavailable.')
   })
 
-  it('triggers create article/category callbacks from footer actions', () => {
+  it('triggers create article/category callbacks from footer actions', async () => {
     const onCreateArticle = vi.fn()
+    const onCreateMap = vi.fn()
     const onCreateCategory = vi.fn()
 
     act(() => {
       render(
-        h(SidebarPanel, buildPanelProps({ onCreateArticle, onCreateCategory })),
+        h(SidebarPanel, buildPanelProps({ onCreateArticle, onCreateMap, onCreateCategory })),
         container,
       )
     })
@@ -392,9 +398,74 @@ describe('sidebar panels', () => {
     expect(onCreateArticle).toHaveBeenCalledWith({
       directory: 'Act-01/Chapter-03',
       name: 'Scene-007',
+      sourceImagePath: '',
     })
 
+    const articleMenuButton = container.querySelector('.sidebar-split-button__toggle') as HTMLButtonElement
+    expect(articleMenuButton).toBeTruthy()
+
     act(() => {
+      articleMenuButton.click()
+    })
+
+    const createMapMenuItem = container.querySelector('.sidebar-split-button__menu-item') as HTMLButtonElement
+    expect(createMapMenuItem).toBeTruthy()
+
+    ;(window as unknown as { tramaApi: { selectMapImage: () => Promise<{ ok: true; data: { filePath: string } }> } }).tramaApi = {
+      selectMapImage: () => Promise.resolve({ ok: true, data: { filePath: 'C:/maps/world.png' } }),
+    }
+
+    await act(async () => {
+      createMapMenuItem.click()
+      await Promise.resolve()
+    })
+
+    const mapDirectoryInput = container.querySelector(
+      '.sidebar-create-dialog input[placeholder="Act-01/Chapter-01"]',
+    ) as HTMLInputElement
+    const mapNameInput = container.querySelector(
+      '.sidebar-create-dialog input[placeholder="World Map"]',
+    ) as HTMLInputElement
+    const browseButton = Array.from(container.querySelectorAll('.sidebar-create-dialog .editor-button')).find((node) =>
+      node.textContent?.includes('Browse...'),
+    ) as HTMLButtonElement
+    const mapSubmitButton = Array.from(container.querySelectorAll('.sidebar-create-dialog .editor-button')).find((node) =>
+      node.textContent?.includes('Create map'),
+    ) as HTMLButtonElement
+
+    expect(mapDirectoryInput).toBeTruthy()
+    expect(mapNameInput).toBeTruthy()
+    expect(browseButton).toBeTruthy()
+    expect(mapSubmitButton).toBeTruthy()
+
+    act(() => {
+      mapDirectoryInput.value = 'World'
+      mapDirectoryInput.dispatchEvent(new Event('input', { bubbles: true }))
+      mapNameInput.value = 'Realm Atlas'
+      mapNameInput.dispatchEvent(new Event('input', { bubbles: true }))
+    })
+
+    await act(async () => {
+      browseButton.click()
+      await Promise.resolve()
+      await Promise.resolve()
+    })
+
+    const selectedMapImageInput = container.querySelector(
+      '.sidebar-create-dialog input[placeholder="No image selected"]',
+    ) as HTMLInputElement
+
+    expect(selectedMapImageInput.value).toBe('C:/maps/world.png')
+
+    await act(async () => {
+      mapSubmitButton.click()
+
+      expect(onCreateMap).toHaveBeenCalledWith({
+        directory: 'World',
+        name: 'Realm Atlas',
+        sourceImagePath: 'C:/maps/world.png',
+      })
+
       createCategoryButton.click()
     })
 
@@ -424,9 +495,11 @@ describe('sidebar panels', () => {
     })
 
     expect(onCreateArticle).toHaveBeenCalledTimes(1)
+    expect(onCreateMap).toHaveBeenCalledTimes(1)
     expect(onCreateCategory).toHaveBeenCalledWith({
       directory: 'World',
       name: 'Cities',
+      sourceImagePath: '',
     })
   })
 
@@ -845,3 +918,4 @@ describe('sidebar panels', () => {
     Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalInnerWidth })
   })
 })
+

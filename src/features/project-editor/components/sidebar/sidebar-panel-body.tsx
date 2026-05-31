@@ -45,6 +45,7 @@ export interface SidebarPanelBodyProps {
   focusScope: SidebarWorkspacePrefsProps['focusScope']
   onFocusScopeChange: SidebarWorkspacePrefsProps['onFocusScopeChange']
   onCreateArticle: SidebarFileActions['onCreateArticle']
+  onCreateMap: SidebarFileActions['onCreateMap']
   onCreateCategory: SidebarFileActions['onCreateCategory']
   onRenameFile: SidebarFileActions['onRenameFile']
   onRenameFolder: SidebarFileActions['onRenameFolder']
@@ -88,7 +89,7 @@ function loadFileDeleteInfo(sectionRoot: (typeof SIDEBAR_SECTION_CONFIG)[Content
 function renderExplorer(props: SidebarPanelBodyProps) {
   const {
     contentProps, sectionConfig, rootPath, scopedFiles, scopedSelectedPath,
-    activeFilterQuery, onFilterQueryChange, onCreateArticle, onCreateCategory,
+    activeFilterQuery, onFilterQueryChange, onCreateArticle, onCreateMap, onCreateCategory,
     onRenameFile, onRenameFolder, onDeleteFolder, onDeleteFile, onEditFileTags,
     onSelectFile, onReorderFiles, onMoveFile, onMoveFolder, corkboardOrder,
   } = props
@@ -103,6 +104,7 @@ function renderExplorer(props: SidebarPanelBodyProps) {
       filterQuery={activeFilterQuery}
       onFilterQueryChange={onFilterQueryChange}
       onCreateArticle={onCreateArticle}
+      onCreateMap={onCreateMap}
       onCreateCategory={onCreateCategory}
       onRenameFile={(path, newName) => onRenameFile(toProjectPath(toSectionRelativePath(path), sectionConfig.root), newName)}
       onRenameFolder={(path, newName) => onRenameFolder(toProjectPath(toSectionRelativePath(path), sectionConfig.root), newName)}

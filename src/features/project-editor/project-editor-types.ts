@@ -31,6 +31,7 @@ export interface PaneDocumentState {
 export interface SidebarCreateInput {
   directory: string
   name: string
+  sourceImagePath: string
 }
 
 export interface SidebarRenameInput {
@@ -115,6 +116,7 @@ export interface ProjectEditorActions {
   openPreviousInPaneHistory: (pane?: WorkspacePane) => Promise<void>
   openNextInPaneHistory: (pane?: WorkspacePane) => Promise<void>
   createArticle: (input: SidebarCreateInput) => Promise<void>
+  createMap: (input: SidebarCreateInput) => Promise<void>
   createCategory: (input: SidebarCreateInput) => Promise<void>
   renameFile: (input: SidebarRenameInput) => Promise<void>
   renameFolder: (input: SidebarRenameInput) => Promise<void>

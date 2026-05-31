@@ -8,7 +8,7 @@ export { pickProjectFolder } from './private/project-picker'
 
 export { selectFile } from './private/file-select'
 
-export { createArticle, createCategory } from './private/file-create'
+export { createArticle, createCategory, createMap } from './private/file-create'
 
 export { renameFile, deleteFile, editFileTags } from './private/file-crud'
 

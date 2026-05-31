@@ -1,3 +1,4 @@
+/* eslint-disable max-lines-per-function */
 import type { ProjectEditorModel, EditorZoomRef, WorkspacePane } from '../project-editor-types'
 import { EditorPanel } from './editor-panel'
 import { toPaneTitle } from './pane-title'
@@ -93,3 +94,4 @@ function PaneHeader({ paneState, isActive }: { paneState: { path: string | null;
     </header>
   )
 }
+

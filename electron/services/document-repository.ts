@@ -1,5 +1,6 @@
+/* eslint-disable max-lines */
 import path from 'node:path'
-import { mkdir, readFile, rename, rm, stat, writeFile } from 'node:fs/promises'
+import { copyFile, mkdir, readFile, rename, rm, stat, writeFile } from 'node:fs/promises'
 import { parseMarkdownWithFrontmatter, serializeMarkdownWithFrontmatter } from './frontmatter.js'
 import {
   collectLinkedImagePaths,
@@ -28,6 +29,10 @@ function resolveProjectPath(projectRoot: string, relativePath: string): string {
   }
 
   return absoluteTarget
+}
+
+function resolveInsideProject(projectRoot: string, ...segments: string[]): string {
+  return resolveProjectPath(projectRoot, path.posix.join(...segments))
 }
 
 const INVALID_NAME_CHARS = /[<>:"|?*\x00-\x1F]/
@@ -75,6 +80,40 @@ function extractNextRelativePath(relativePath: string, newName: string, isDocume
     ? (normalizedName.toLowerCase().endsWith('.md') ? normalizedName : `${normalizedName}.md`)
     : normalizedName
   return directory === '.' ? targetName : `${directory}/${targetName}`
+}
+
+function sanitizeFileStem(value: string): string {
+  const normalized = value
+    .trim()
+    .replace(/\s+/g, '-')
+    .replace(/[^A-Za-z0-9._-]/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^[-.]+|[-.]+$/g, '')
+
+  return validateNameSegment(normalized || 'map')
+}
+
+async function ensureUniqueRelativePath(projectRoot: string, relativePath: string): Promise<string> {
+  const normalized = validateRelativePath(relativePath)
+  const extension = path.posix.extname(normalized)
+  const directory = path.posix.dirname(normalized)
+  const stem = path.posix.basename(normalized, extension)
+
+  for (let attempt = 0; attempt < 20; attempt += 1) {
+    const candidateName = attempt === 0 ? `${stem}${extension}` : `${stem}-${attempt}${extension}`
+    const candidatePath = directory === '.' ? candidateName : `${directory}/${candidateName}`
+
+    try {
+      await stat(resolveProjectPath(projectRoot, candidatePath))
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+        return candidatePath
+      }
+      throw error
+    }
+  }
+
+  throw new Error('Too many name collisions while creating map image')
 }
 
 async function renamePath(projectRoot: string, sourceRelativePath: string, targetRelativePath: string): Promise<void> {
@@ -139,6 +178,53 @@ export class DocumentRepository {
     await ensurePathDoesNotExist(fullPath)
     await mkdir(fullPath, { recursive: true })
     return { path: normalizeRelative(normalizedPath), createdAt: new Date().toISOString() }
+  }
+
+  async createMapDocument(
+    projectRoot: string,
+    relativePath: string,
+    name: string,
+    sourceImagePath: string,
+  ): Promise<{ path: string; createdAt: string; imagePath: string }> {
+    const normalizedPath = validateRelativePath(relativePath)
+    if (!normalizedPath.endsWith('.md')) throw new Error('Only markdown files are supported')
+
+    const documentFullPath = resolveProjectPath(projectRoot, normalizedPath)
+    await ensurePathDoesNotExist(documentFullPath)
+
+    const sourceAbsolutePath = path.resolve(sourceImagePath)
+    const sourceInfo = await stat(sourceAbsolutePath)
+    if (!sourceInfo.isFile()) throw new Error('Selected map image is not a file')
+
+    const sourceExtension = path.extname(sourceAbsolutePath).toLowerCase()
+    const imageRelativePath = await ensureUniqueRelativePath(
+      projectRoot,
+      path.posix.join('res', `${sanitizeFileStem(path.posix.basename(normalizedPath, '.md'))}${sourceExtension || '.png'}`),
+    )
+    const imageFullPath = resolveInsideProject(projectRoot, imageRelativePath)
+
+    await mkdir(path.dirname(documentFullPath), { recursive: true })
+    await mkdir(path.dirname(imageFullPath), { recursive: true })
+    await copyFile(sourceAbsolutePath, imageFullPath)
+
+    const markdown = serializeMarkdownWithFrontmatter(
+      {
+        type: 'map',
+        name: name.trim(),
+        mapConfig: {
+          backgroundImage: imageRelativePath,
+          markers: [],
+        },
+      },
+      '',
+    )
+    await writeFile(documentFullPath, markdown, { encoding: 'utf8', flag: 'wx' })
+
+    return {
+      path: normalizeRelative(normalizedPath),
+      createdAt: new Date().toISOString(),
+      imagePath: normalizeRelative(imageRelativePath),
+    }
   }
 
   async renameFolder(projectRoot: string, relativePath: string, newName: string): Promise<{ path: string; renamedTo: string; updatedAt: string }> {
@@ -226,3 +312,4 @@ export class DocumentRepository {
     return { sourcePath: normalizeRelative(normalizedSource), renamedTo: normalizeRelative(targetRelativePath), updatedAt: new Date().toISOString() }
   }
 }
+

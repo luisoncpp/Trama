@@ -24,6 +24,7 @@ export interface ProjectEditorShellActions {
   toggleSidebarPanelCollapsed: ProjectEditorModel['actions']['toggleSidebarPanelCollapsed']
   setSidebarPanelWidth: ProjectEditorModel['actions']['setSidebarPanelWidth']
   createArticle: ProjectEditorModel['actions']['createArticle']
+  createMap: ProjectEditorModel['actions']['createMap']
   createCategory: ProjectEditorModel['actions']['createCategory']
   renameFile: ProjectEditorModel['actions']['renameFile']
   renameFolder: ProjectEditorModel['actions']['renameFolder']
@@ -60,6 +61,9 @@ function buildSidebarFileActionProps(shellActions: ProjectEditorShellActions) {
   return {
     onCreateArticle: (input: Parameters<typeof shellActions.createArticle>[0]) => {
       void shellActions.createArticle(input)
+    },
+    onCreateMap: (input: Parameters<typeof shellActions.createMap>[0]) => {
+      void shellActions.createMap(input)
     },
     onCreateCategory: (input: Parameters<typeof shellActions.createCategory>[0]) => {
       void shellActions.createCategory(input)

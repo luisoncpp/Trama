@@ -34,6 +34,7 @@ interface SidebarExplorerContentProps {
   filterQuery: string
   onFilterQueryChange: (value: string) => void
   onCreateArticle: SidebarExplorerCommonProps['onCreateArticle']
+  onCreateMap: SidebarExplorerCommonProps['onCreateMap']
   onCreateCategory: SidebarExplorerCommonProps['onCreateCategory']
   onRenameFile: SidebarExplorerCommonProps['onRenameFile']
   onRenameFolder: SidebarExplorerCommonProps['onRenameFolder']
@@ -53,6 +54,7 @@ function useSidebarExplorerDialogs(props: SidebarExplorerContentProps) {
   const createDialog = useSidebarCreateDialog({
     selectedPath: props.selectedPath,
     onCreateArticle: props.onCreateArticle,
+    onCreateMap: props.onCreateMap,
     onCreateCategory: props.onCreateCategory,
   })
 
@@ -122,6 +124,7 @@ export function SidebarExplorerContent(props: SidebarExplorerContentProps) {
     onFolderRenameValueChange: folderDialog.setRenameValue,
     confirmFolderActionDialog: folderDialog.confirm, closeFolderActionDialog: folderDialog.closeDialog,
     onDirectoryChange: createDialog.setCreateDirectory, onNameChange: createDialog.setCreateName,
+    onSourceImagePathChange: createDialog.setCreateSourceImagePath, onBrowseSourceImage: createDialog.browseCreateImage,
     filterInputRef: setFilterInputRef, corkboardOrder: props.corkboardOrder, onReorderFiles: props.onReorderFiles, onMoveFile: props.onMoveFile, onMoveFolder: props.onMoveFolder,
   }
 

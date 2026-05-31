@@ -17,6 +17,8 @@ interface SidebarExplorerDialogsProps {
   createInput: SidebarCreateInput
   onDirectoryChange: (value: string) => void
   onNameChange: (value: string) => void
+  onSourceImagePathChange: (value: string) => void
+  onBrowseSourceImage: () => Promise<void>
   submitCreateDialog: () => void
   closeCreateDialog: () => void
   title: string
@@ -55,6 +57,8 @@ function ActionDialogs(props: SidebarExplorerDialogsProps) {
         createInput={props.createInput}
         onDirectoryChange={props.onDirectoryChange}
         onNameChange={props.onNameChange}
+        onSourceImagePathChange={props.onSourceImagePathChange}
+        onBrowseSourceImage={props.onBrowseSourceImage}
         submitCreateDialog={props.submitCreateDialog}
         closeCreateDialog={props.closeCreateDialog}
       />

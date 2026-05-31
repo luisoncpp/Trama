@@ -1,17 +1,21 @@
+import { dialog } from 'electron'
 import {
   createDocumentRequestSchema,
+  createMapDocumentRequestSchema,
   createFolderRequestSchema,
   deleteDocumentRequestSchema,
   readDocumentRequestSchema,
   renameDocumentRequestSchema,
   saveDocumentRequestSchema,
   type CreateDocumentResponse,
+  type CreateMapDocumentResponse,
   type CreateFolderResponse,
   type DeleteDocumentResponse,
   type IpcEnvelope,
   type ReadDocumentResponse,
   type RenameDocumentResponse,
   type SaveDocumentResponse,
+  type SelectMapImageResponse,
 } from '../../../../src/shared/ipc.js'
 import { errorEnvelope } from '../../../ipc-errors.js'
 import { getActiveProjectRoot, markInternalWrite } from '../../../ipc-runtime.js'
@@ -92,6 +96,61 @@ export async function handleCreateDocument(rawPayload: unknown): Promise<IpcEnve
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unable to create document'
     return errorEnvelope('DOCUMENT_CREATE_FAILED', message)
+  }
+}
+
+export async function handleCreateMapDocument(rawPayload: unknown): Promise<IpcEnvelope<CreateMapDocumentResponse>> {
+  const payload = createMapDocumentRequestSchema.safeParse(rawPayload)
+  if (!payload.success) {
+    return errorEnvelope('VALIDATION_ERROR', 'Invalid payload for map document create', payload.error.flatten())
+  }
+
+  try {
+    const projectRoot = getActiveProjectRoot()
+    const result = await documentRepository.createMapDocument(
+      projectRoot,
+      payload.data.path,
+      payload.data.name,
+      payload.data.sourceImagePath,
+    )
+    markInternalWrite(result.path)
+    markInternalWrite(result.imagePath)
+
+    await reconcileActiveProjectIndex(projectRoot, { changedFiles: [result.path] })
+
+    return {
+      ok: true,
+      data: result,
+    }
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unable to create map document'
+    return errorEnvelope('DOCUMENT_CREATE_FAILED', message)
+  }
+}
+
+export async function handleSelectMapImage(): Promise<IpcEnvelope<SelectMapImageResponse>> {
+  try {
+    const result = await dialog.showOpenDialog({
+      properties: ['openFile'],
+      title: 'Select map image',
+      filters: [
+        { name: 'Image Files', extensions: ['png', 'jpg', 'jpeg', 'webp', 'svg', 'gif', 'bmp'] },
+      ],
+    })
+
+    if (result.canceled || result.filePaths.length === 0) {
+      return { ok: true, data: { filePath: '' } }
+    }
+
+    return {
+      ok: true,
+      data: {
+        filePath: result.filePaths[0],
+      },
+    }
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unable to select map image'
+    return errorEnvelope('MAP_IMAGE_SELECT_FAILED', message)
   }
 }
 

@@ -1,11 +1,13 @@
 export { handleGetIndex } from './index-handler.js'
 export {
 	handleCreateDocument,
+	handleCreateMapDocument,
 	handleCreateFolder,
 	handleDeleteDocument,
 	handleReadDocument,
 	handleRenameDocument,
 	handleSaveDocument,
+	handleSelectMapImage,
 } from './document-handlers.js'
 export { handleDeleteFolder, handleMoveFolder, handleRenameFolder } from './folder-handlers.js'
 export { handleOpenProject } from './project-open-handler.js'

@@ -1,3 +1,4 @@
+/* eslint-disable max-lines-per-function */
 import { useState } from 'preact/hooks'
 import type { SidebarCreateInput } from '../../project-editor-types'
 import type { SidebarCreateMode } from './sidebar-create-dialog.tsx'
@@ -7,6 +8,7 @@ import type { SidebarFolderActionMode } from './sidebar-folder-actions-dialog.ts
 interface UseSidebarCreateDialogParams {
   selectedPath: string | null
   onCreateArticle: (input: SidebarCreateInput) => void
+  onCreateMap: (input: SidebarCreateInput) => void
   onCreateCategory: (input: SidebarCreateInput) => void
 }
 
@@ -31,12 +33,14 @@ function buildInitialInput(selectedPath: string | null): SidebarCreateInput {
   return {
     directory: getSelectedDirectory(selectedPath),
     name: '',
+    sourceImagePath: '',
   }
 }
 
 export function useSidebarCreateDialog({
   selectedPath,
   onCreateArticle,
+  onCreateMap,
   onCreateCategory,
 }: UseSidebarCreateDialogParams) {
   const [createMode, setCreateMode] = useState<SidebarCreateMode | null>(null)
@@ -49,20 +53,36 @@ export function useSidebarCreateDialog({
 
   const closeCreateDialog = () => {
     setCreateMode(null)
-    setCreateInput({ directory: '', name: '' })
+    setCreateInput({ directory: '', name: '', sourceImagePath: '' })
   }
 
   const setCreateDirectory = (value: string) => setCreateInput((current) => ({ ...current, directory: value }))
   const setCreateName = (value: string) => setCreateInput((current) => ({ ...current, name: value }))
+  const setCreateSourceImagePath = (value: string) => setCreateInput((current) => ({ ...current, sourceImagePath: value }))
+  const browseCreateImage = async () => {
+    const response = await window.tramaApi.selectMapImage()
+    if (!response.ok || !response.data.filePath) {
+      return
+    }
+
+    setCreateSourceImagePath(response.data.filePath)
+  }
 
   const submitCreateDialog = () => {
     const payload = {
       directory: normalizeDirectory(createInput.directory),
       name: createInput.name.trim(),
+      sourceImagePath: createInput.sourceImagePath.trim(),
     }
 
     if (createMode === 'article') {
       onCreateArticle(payload)
+      closeCreateDialog()
+      return
+    }
+
+    if (createMode === 'map') {
+      onCreateMap(payload)
       closeCreateDialog()
       return
     }
@@ -73,7 +93,17 @@ export function useSidebarCreateDialog({
     }
   }
 
-  return { createMode, createInput, setCreateDirectory, setCreateName, openCreateDialog, closeCreateDialog, submitCreateDialog }
+  return {
+    createMode,
+    createInput,
+    setCreateDirectory,
+    setCreateName,
+    setCreateSourceImagePath,
+    browseCreateImage,
+    openCreateDialog,
+    closeCreateDialog,
+    submitCreateDialog,
+  }
 }
 
 interface UseSidebarFolderActionsDialogParams {
@@ -137,3 +167,4 @@ export function useSidebarFolderActionsDialog({ onRenameFolder, onDeleteFolder }
     confirm,
   }
 }
+

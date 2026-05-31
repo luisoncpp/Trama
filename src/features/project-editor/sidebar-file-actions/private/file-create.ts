@@ -14,6 +14,10 @@ function isInvalidCreateInput(input: SidebarCreateInput): boolean {
   return normalizedName.length === 0 || normalizedName.includes('/')
 }
 
+function hasSelectedImage(input: SidebarCreateInput): boolean {
+  return input.sourceImagePath.trim().length > 0
+}
+
 function isContentSection(value: ProjectEditorSidebarState['sidebarActiveSection']): value is keyof typeof SIDEBAR_SECTION_CONFIG {
   return Object.hasOwn(SIDEBAR_SECTION_CONFIG, value)
 }
@@ -25,13 +29,18 @@ function getSectionRoot(activeSection: ProjectEditorSidebarState['sidebarActiveS
   return SIDEBAR_SECTION_CONFIG[activeSection].root
 }
 
-export async function createArticle(
+async function createFileWithRetries(
   input: SidebarCreateInput,
   deps: {
     projectState: ProjectEditorProjectState
     sidebarState: ProjectEditorSidebarState
     setStatusMessage: (value: string) => void
     openProject: (projectRoot: string, options?: OpenProjectOptions) => Promise<void>
+  },
+  options: {
+    label: 'article' | 'map'
+    createPath: (sectionRoot: SidebarSectionRoot, directory: string, name: string, attempt: number) => string
+    submit: (path: string, name: string) => Promise<{ ok: true; data: { path: string } } | { ok: false; error: { message: string } }>
   },
 ): Promise<void> {
   if (!deps.projectState.rootPath) {
@@ -46,7 +55,7 @@ export async function createArticle(
   }
 
   if (isInvalidCreateInput(input)) {
-    deps.setStatusMessage('Provide an article name without path separators.')
+    deps.setStatusMessage(`Provide a ${options.label} name without path separators.`)
     return
   }
 
@@ -55,10 +64,10 @@ export async function createArticle(
 
   const maxAttempts = 20
   for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
-    const createPath = buildProjectCandidatePath({ sectionRoot, directory, name, attempt, asMarkdown: true })
-    const response = await window.tramaApi.createDocument({ path: createPath, initialContent: '' })
+    const createPath = options.createPath(sectionRoot, directory, name, attempt)
+    const response = await options.submit(createPath, input.name.trim())
     if (response.ok) {
-      deps.setStatusMessage(`Created article: ${response.data.path}`)
+      deps.setStatusMessage(`Created ${options.label}: ${response.data.path}`)
       await deps.openProject(deps.projectState.rootPath, {
         preferredFilePath: response.data.path,
         incrementalUpdate: { createdFiles: [response.data.path] },
@@ -67,12 +76,53 @@ export async function createArticle(
     }
 
     if (!isPathExistsError(response.error.message)) {
-      deps.setStatusMessage(`Could not create article: ${response.error.message}`)
+      deps.setStatusMessage(`Could not create ${options.label}: ${response.error.message}`)
       return
     }
   }
 
-  deps.setStatusMessage('Could not create article: too many name collisions.')
+  deps.setStatusMessage(`Could not create ${options.label}: too many name collisions.`)
+}
+
+export async function createArticle(
+  input: SidebarCreateInput,
+  deps: {
+    projectState: ProjectEditorProjectState
+    sidebarState: ProjectEditorSidebarState
+    setStatusMessage: (value: string) => void
+    openProject: (projectRoot: string, options?: OpenProjectOptions) => Promise<void>
+  },
+): Promise<void> {
+  await createFileWithRetries(input, deps, {
+    label: 'article',
+    createPath: (sectionRoot, directory, name, attempt) => buildProjectCandidatePath({ sectionRoot, directory, name, attempt, asMarkdown: true }),
+    submit: (path) => window.tramaApi.createDocument({ path, initialContent: '' }),
+  })
+}
+
+export async function createMap(
+  input: SidebarCreateInput,
+  deps: {
+    projectState: ProjectEditorProjectState
+    sidebarState: ProjectEditorSidebarState
+    setStatusMessage: (value: string) => void
+    openProject: (projectRoot: string, options?: OpenProjectOptions) => Promise<void>
+  },
+): Promise<void> {
+  if (!hasSelectedImage(input)) {
+    deps.setStatusMessage('Select an image file for the new map.')
+    return
+  }
+
+  await createFileWithRetries(input, deps, {
+    label: 'map',
+    createPath: (sectionRoot, directory, name, attempt) => buildProjectCandidatePath({ sectionRoot, directory, name, attempt, asMarkdown: true }),
+    submit: (path, name) => window.tramaApi.createMapDocument({
+      path,
+      name,
+      sourceImagePath: input.sourceImagePath.trim(),
+    }),
+  })
 }
 
 export async function createCategory(

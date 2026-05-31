@@ -60,6 +60,7 @@ Mandatory doc navigation for new chats: start with `docs/START-HERE.md` — it p
   - Also validates remembered startup project roots through the same folder-structure rules.
 - `electron/ipc/handlers/project-handlers/document-handlers.ts`
   - Read/save/create/rename/delete document + create folder handlers.
+  - Also owns map-document creation (`createMapDocument`) and native map-image selection (`selectMapImage`).
 - `electron/ipc/handlers/project-handlers/folder-handlers.ts`
   - Folder rename handler with subtree internal-write tagging and index/tag reconcile.
 - `electron/ipc/handlers/project-handlers/index-handler.ts`
@@ -82,6 +83,7 @@ Mandatory doc navigation for new chats: start with `docs/START-HERE.md` — it p
 - `electron/services/document-repository.ts`
   - Read/save/create/rename/delete markdown files + folder rename/create.
   - Persists markdown images to project-local `res/*.png` files on save and resolves them back to embedded data URLs on read.
+  - Also copies chosen map base images into `res/` and writes initial map-document frontmatter with empty markers.
 - `electron/services/document-image-persistence.ts`
   - Repository helper for markdown image persistence: rewrites embedded images to `res/*.png`, rehydrates local image links back to embedded PNG data URLs, degrades missing linked images to editor-only placeholders, and collects associated image paths for delete flows.
 - `electron/services/frontmatter.ts`
@@ -427,9 +429,9 @@ Mandatory doc navigation for new chats: start with `docs/START-HERE.md` — it p
 - `src/features/project-editor/components/sidebar/sidebar-explorer-hooks.ts`
   - Consolidated explorer hooks: filter shortcut, responsive collapse, file context menu, folder context menu.
 - `src/features/project-editor/components/sidebar/sidebar-dialog-hooks.ts`
-  - Consolidated dialog hooks: create dialog state, folder actions dialog state.
+  - Consolidated dialog hooks: create dialog state (article/map/category, including native map-image picker), folder actions dialog state.
 - `src/features/project-editor/components/sidebar/sidebar-create-dialog.tsx`
-  - Create modal dialog.
+  - Shared create modal dialog for article/map/category; map mode adds a browse-backed image field.
 - `src/features/project-editor/components/sidebar/sidebar-file-context-menu.tsx`
   - Right-click file action menu.
 - `src/features/project-editor/components/sidebar/sidebar-folder-context-menu.tsx`
@@ -445,7 +447,7 @@ Mandatory doc navigation for new chats: start with `docs/START-HERE.md` — it p
 - `src/features/project-editor/components/sidebar/use-sidebar-folder-actions-dialog.ts`
   - Folder rename dialog state.
 - `src/features/project-editor/components/sidebar/sidebar-footer-actions.tsx`
-  - Create buttons (`+Article`, `+Category`).
+  - Footer create controls: split `+Article` button with chevron menu for `Create map`, plus `+Category`.
 - `src/features/project-editor/components/sidebar/sidebar-settings.tsx`
   - Sidebar settings panel with `SettingsField` layout component and all control subcomponents (theme preference buttons, focus scope select, spellcheck controls, spellcheck language select, panel width control).
 - `src/features/project-editor/components/sidebar/sidebar-transfer-content.tsx`
@@ -507,6 +509,9 @@ Core and regression suites:
 - `tests/sidebar-path-scoping-types.test.ts`
   - Runtime smoke coverage for the new path-scoping seam plus compile-time brand assertions enforced through `tests/typescript-compile.test.ts`.
 - `tests/sidebar-filter.test.ts`
+- `tests/sidebar-panels.test.ts`
+- `tests/map-document-create-repository.test.ts`
+  - Repository coverage for map creation: copies selected source image into `res/`, writes map frontmatter, and handles image-name collisions.
 - `tests/sidebar-panels.test.ts`
 - `tests/spellcheck-settings.test.ts`
 - `tests/sidebar-scroll-regression.test.ts`

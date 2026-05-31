@@ -1,6 +1,6 @@
 import type { JSX } from 'preact'
 import type { SidebarSection } from '../../project-editor-types'
-import { LoreIcon, ManuscriptIcon, OutlineIcon, SettingsIcon, TransferIcon } from './sidebar-rail-icons.tsx'
+import { LoreIcon, ManuscriptIcon, OutlineIcon, SettingsIcon, TransferIcon, CollapseLeftIcon, ExpandRightIcon } from './sidebar-rail-icons.tsx'
 
 interface SidebarRailProps {
   activeSection: SidebarSection
@@ -55,7 +55,7 @@ export function SidebarRail({ activeSection, collapsed, focusModeEnabled, onSele
         aria-label={collapsed ? 'Expand sidebar panel' : 'Collapse sidebar panel'}
         title={focusModeEnabled ? 'Sidebar is locked while focus mode is active' : collapsed ? 'Expand panel' : 'Collapse panel'}
       >
-        {collapsed ? '>>' : '<<'}
+        {collapsed ? <ExpandRightIcon /> : <CollapseLeftIcon />}
       </button>
     </nav>
   )
