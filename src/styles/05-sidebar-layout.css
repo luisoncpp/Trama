@@ -56,11 +56,21 @@
 }
 
 .sidebar-rail__item:hover,
-.sidebar-rail__toggle:hover,
+.sidebar-rail__toggle:hover {
+  background: var(--surface-accent-bg);
+  color: var(--text-main);
+  border-color: var(--border);
+}
+
 .sidebar-rail__item.is-active {
   background: var(--surface-accent-bg);
   color: var(--text-main);
   border-color: var(--border);
+  box-shadow: inset 2px 0 0 0 var(--accent);
+}
+
+.sidebar-rail__item.is-active .sidebar-rail__icon {
+  color: var(--accent);
 }
 
 .sidebar-rail__icon {

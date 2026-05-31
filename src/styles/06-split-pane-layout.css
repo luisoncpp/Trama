@@ -9,6 +9,7 @@
 }
 
 .workspace-split-pane {
+  position: relative;
   border: 1px solid var(--border);
   border-radius: 16px;
   background: var(--split-pane-bg);
@@ -18,7 +19,14 @@
 
 .workspace-split-pane.is-active {
   border-color: var(--split-pane-active-border);
-  box-shadow: var(--split-pane-active-shadow);
+  box-shadow:
+    0 0 0 1px color-mix(in oklab, var(--split-pane-active-border) 35%, transparent),
+    inset 0 3px 0 0 var(--split-pane-active-top-accent);
+}
+
+.workspace-split-pane.is-active .workspace-split-pane__header {
+  background: var(--surface-accent-bg);
+  border-bottom-color: var(--border);
 }
 
 .workspace-split-pane:not(.is-active) {
@@ -33,11 +41,6 @@
   padding: 8px 12px;
   border-bottom: 1px solid var(--border);
   transition: background-color 0.2s ease;
-}
-
-.workspace-split-pane.is-active .workspace-split-pane__header {
-  background: var(--surface-accent-bg);
-  border-bottom-color: var(--split-pane-active-border);
 }
 
 .workspace-split-pane__meta {
@@ -72,18 +75,6 @@
 .workspace-split-pane__path-inline.is-empty {
   font-family: 'Segoe UI Variable Text', 'Trebuchet MS', sans-serif;
   color: var(--text-dim);
-}
-
-.workspace-split-pane__active-indicator {
-  font-size: 0.66rem;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--text-dim);
-  transition: color 0.2s ease;
-}
-
-.workspace-split-pane__active-indicator.is-active {
-  color: var(--accent-strong);
 }
 
 /* Unsaved/Dirty indicator badge */

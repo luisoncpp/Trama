@@ -72,7 +72,7 @@ export function PaneEditor({ model, spellcheckEnabled, pane, tagIndex, onTagClic
 
   return (
     <section class={`workspace-split-pane editor-fill-column ${isActive ? 'is-active' : ''}`} onPointerDownCapture={panelProps.onInteract}>
-      <PaneHeader paneState={paneState} isActive={isActive} />
+      <PaneHeader paneState={paneState} />
       <div class="workspace-split-pane__body">
         <EditorPanel {...panelProps} />
       </div>
@@ -80,7 +80,7 @@ export function PaneEditor({ model, spellcheckEnabled, pane, tagIndex, onTagClic
   )
 }
 
-function PaneHeader({ paneState, isActive }: { paneState: { path: string | null; isDirty: boolean }; isActive: boolean }) {
+function PaneHeader({ paneState }: { paneState: { path: string | null; isDirty: boolean } }) {
   return (
     <header class="workspace-split-pane__header">
       <span class="workspace-split-pane__meta" title={paneState.path ?? undefined}>
@@ -90,7 +90,6 @@ function PaneHeader({ paneState, isActive }: { paneState: { path: string | null;
           {paneState.path ?? 'Click a file to assign it to this pane.'}
         </span>
       </span>
-      <span class={`workspace-split-pane__active-indicator ${isActive ? 'is-active' : ''}`}>{isActive ? 'Active' : 'Inactive'}</span>
     </header>
   )
 }

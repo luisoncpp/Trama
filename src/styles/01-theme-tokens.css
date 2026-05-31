@@ -14,10 +14,9 @@
   --text-main: #d4d4d4;
   --text-muted: #9a9a9a;
   --text-dim: #6e6e6e;
-  /* Blue accent: reserved for TRANSIENT cues (hover, focus/drag, modal confirm). */
-  --accent: #6ea6ff;
-  /* accent-strong backs PERSISTENT active labels -> neutral grey, not cream. */
-  --accent-strong: #cccccc;
+  /* Bright cyan-blue for readable focus cues on dark chrome (#007acc is too dim). */
+  --accent: #4db8ff;
+  --accent-strong: #8ad4ff;
   --warning-soft: rgba(216, 156, 104, 0.16);
   --canvas: #151515;
   --canvas-ink: #d4d4d4;
@@ -25,13 +24,13 @@
   --body-bg: var(--shell-bg);
   --panel-badge-bg: rgba(255, 255, 255, 0.03);
   --surface-input-bg: #3c3c3c;
-  /* Hover is transient -> blue. */
-  --surface-hover-bg: rgba(110, 166, 255, 0.1);
+  /* Hover is transient -> blue (#007acc family). */
+  --surface-hover-bg: rgba(77, 184, 255, 0.16);
   /* surface-accent backs sidebar/pane selection states. */
   --surface-accent-bg: #37373d;
   --surface-accent-strong-bg: #3e3e42;
-  --accent-border: rgba(255, 255, 255, 0.12);
-  --accent-border-strong: rgba(255, 255, 255, 0.18);
+  --accent-border: rgba(77, 184, 255, 0.45);
+  --accent-border-strong: rgba(77, 184, 255, 0.65);
   --shadow-float: 0 12px 28px rgba(0, 0, 0, 0.4);
   --menu-bg: #2d2d2d;
   --context-menu-bg: #252526;
@@ -46,8 +45,8 @@
   --sidebar-rail-bg: #2A2A2A;
   --workspace-control-bg: #252526;
   --split-pane-bg: #252526;
-  --split-pane-active-border: rgba(255, 255, 255, 0.12);
-  --split-pane-active-shadow: none;
+  --split-pane-active-border: var(--accent);
+  --split-pane-active-top-accent: var(--accent);
   --split-pane-inactive-border: rgba(255, 255, 255, 0.06);
   --split-divider-bg: var(--shell-bg);
   --split-divider-handle: rgba(128, 128, 128, 0.55);
@@ -56,12 +55,12 @@
   /* Selected file persists on screen -> neutral grey highlight, not warm. */
   --tree-row-active-bg: #37373d;
   --tree-row-active-border: rgba(255, 255, 255, 0.08);
-  --tree-icon: #afafaf;
-  --tree-folder-icon: #afafaf;
-  --tree-file-icon: #afafaf;
+  --tree-icon: #cccccc;
+  --tree-folder-icon: #dcb67a;
+  --tree-file-icon: #6a9955;
   --document-meta-bg: #252526;
-  --dirty-text: #569cd6;
-  --dirty-badge-bg: #569cd6;
+  --dirty-text: #e2c08d;
+  --dirty-badge-bg: #e2c08d;
   --clean-text: #9a9a9a;
   --conflict-banner-border: rgba(216, 156, 104, 0.3);
   --conflict-banner-bg: linear-gradient(180deg, rgba(58, 39, 24, 0.92), rgba(37, 24, 16, 0.95));
@@ -80,7 +79,7 @@
   --editor-heading: #cccccc;
   /* Links persist in the prose -> neutral (distinguished by underline, not color). */
   --editor-link: #d4d4d4;
-  --editor-quote-border: #6ea6ff;
+  --editor-quote-border: var(--accent);
   --editor-quote-text: #cccccc;
   --editor-code-bg: #151515;
   --editor-code-text: #d4d4d4;
@@ -89,7 +88,7 @@
   --quill-picker-bg: #2d2d2d;
   --quill-picker-border: rgb(72 72 72);
   --quill-picker-text: rgb(212 212 212);
-  --quill-active: rgb(110 166 255);
+  --quill-active: var(--accent);
 }
 
 html[data-theme='light'] {
@@ -134,7 +133,7 @@ html[data-theme='light'] {
   --sidebar-rail-bg: rgba(229, 237, 248, 0.9);
   --workspace-control-bg: rgba(244, 248, 255, 0.88);
   --split-pane-bg: linear-gradient(180deg, rgba(252, 253, 255, 0.96), rgba(239, 245, 255, 0.98));
-  --split-pane-active-border: rgba(42, 114, 235, 0.28);
+  --split-pane-active-border: #007acc;
   --split-pane-active-shadow: inset 0 0 0 1px rgba(42, 114, 235, 0.12);
   --split-pane-inactive-border: rgba(145, 161, 188, 0.62);
   --split-divider-bg: linear-gradient(180deg, rgba(154, 174, 205, 0.24), rgba(154, 174, 205, 0.45));
@@ -144,8 +143,8 @@ html[data-theme='light'] {
   --tree-row-active-bg: linear-gradient(90deg, rgba(42, 114, 235, 0.12), transparent 70%), rgba(235, 243, 255, 0.98);
   --tree-row-active-border: rgba(42, 114, 235, 0.24);
   --tree-icon: #5d6f89;
-  --tree-folder-icon: #a07c35;
-  --tree-file-icon: #5476aa;
+  --tree-folder-icon: #dcb67a;
+  --tree-file-icon: #6a9955;
   --document-meta-bg: rgba(243, 248, 255, 0.9);
   --dirty-text: #b36a2f;
   --clean-text: #57739d;
