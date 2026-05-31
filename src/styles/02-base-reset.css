@@ -1,0 +1,28 @@
+/* ===== 2. BASE / RESET ===== */
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  background: var(--app-bg);
+  color-scheme: var(--color-scheme);
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  background: var(--body-bg);
+  color: var(--text-main);
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+#app {
+  min-height: 100svh;
+}

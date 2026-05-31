@@ -13,6 +13,7 @@ export interface SidebarSelectionProps {
 export interface SidebarPanelLayoutProps {
   sidebarActiveSection: SidebarSection
   sidebarPanelCollapsed: boolean
+  effectiveCollapsed: boolean
   sidebarPanelWidth: number
   onSelectSidebarSection: (section: SidebarSection) => void
   onToggleSidebarPanelCollapsed: () => void

@@ -14,6 +14,12 @@ Phase 2, Phase 3 (WS1–WS5), and Phase 4 WS1/wiki-tag-links, WS2/folder-operati
 - `pane-isolation-plan-v2` — Módulo `pane/` fully encapsulates all pane mutation; `PaneWorkspace` is the exclusive mutation surface; Preact setters are injected via `usePaneWorkspace` factory hook; `markPaneSaved` is private; `saveNow` is awaitable (see `docs/plan/done/pane-isolation-plan-v2.md`, `docs/lessons-learned/awaitable-save-actions.md`).
 - `useProjectEditor-keystroke-churn` — Issues #1–#4 completed end-to-end: (1) dirty signal split so already-dirty panes are no-ops, (2) stable `PaneWorkspace` identity, (3) memoized action groups, (4) narrowed shell/dialog subscriptions so typing only re-renders pane/editor surfaces. See `docs/plan/done/use-project-editor-keystroke-churn-plan.md`.
 
+## Maintenance notes
+
+- Project editor layout ownership is now consolidated: `useSidebarLayout()` owns effective sidebar collapse/width, `.editor-workspace` is the sole sidebar-width writer, and `.editor-fill-column` names the shared editor height-fill contract.
+- Project editor CSS is physically split under `src/styles/01-10-*.css`, imported in numeric order from `src/index.css` to preserve cascade order while making layout ownership inspectable by file.
+- Theme architecture is now documented in `docs/architecture/theme-architecture.md`; dark-mode editor interaction states use the blue accent model instead of an accidental warm Quill-specific active token.
+
 **Next step:** Folder move/reparent reintroduced in dedicated slice after merge.
 
 ## Reliability

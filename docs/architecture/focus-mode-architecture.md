@@ -206,6 +206,8 @@ title={focusModeEnabled ? 'Sidebar is locked while focus mode is active' : ...}
 
 The sidebar cannot be reopened while focus mode is active (`use-project-editor-sidebar-actions.ts:21-27`).
 
+Layout ownership note: focus-mode sidebar collapse is CSS-only. Keep the `display:none` sidebar rule paired with the `grid-template-columns: 1fr` override in the layout block; do not reintroduce a JS `--sidebar-width: 0px` branch. See `docs/architecture/layout-ownership.md`.
+
 ---
 
 ## Keyboard Shortcuts
@@ -260,6 +262,7 @@ The ESC handler lives in `use-project-editor-shortcuts-effect.ts`. It checks for
 ## References
 
 - Rich markdown editor architecture: `docs/architecture/rich-markdown-editor-core-architecture.md`
+- Layout ownership: `docs/architecture/layout-ownership.md`
 - Split pane coordination: `docs/architecture/split-pane-coordination.md`
 - Lessons learned: `docs/lessons-learned/focus-mode-centered-scroll-spacers.md`, `docs/lessons-learned/focus-mode-rich-editor-highlight-vs-overlay.md`
 - Tests: `tests/focus-mode-scope.test.ts`, `tests/rich-markdown-editor-focus-rendering.test.ts`, `tests/rich-markdown-editor-focus-split-pane.test.ts`

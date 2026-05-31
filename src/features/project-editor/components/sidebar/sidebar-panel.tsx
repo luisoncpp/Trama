@@ -2,7 +2,6 @@ import { SidebarPanelBody, buildSidebarPanelBodyProps } from './sidebar-panel-bo
 import { SidebarRail } from './sidebar-rail'
 import { useSidebarContentSection } from './sidebar-panel-logic'
 import type { SidebarPanelCommonProps } from './sidebar-types'
-import { useSidebarResponsiveCollapse } from './sidebar-explorer-hooks'
 
 type SidebarPanelProps = SidebarPanelCommonProps & {
   onReorderFiles?: (folderPath: string, orderedIds: string[]) => Promise<void>
@@ -27,6 +26,7 @@ function buildSidebarPanelContentProps(props: SidebarPanelProps) {
     onSelectSidebarSection: props.onSelectSidebarSection,
     onToggleSidebarPanelCollapsed: props.onToggleSidebarPanelCollapsed,
     sidebarPanelCollapsed: props.sidebarPanelCollapsed,
+    effectiveCollapsed: props.effectiveCollapsed,
     sidebarPanelWidth: props.sidebarPanelWidth,
     onSidebarPanelWidthChange: props.onSidebarPanelWidthChange,
     onCreateArticle: props.onCreateArticle,
@@ -61,10 +61,8 @@ function buildSidebarPanelContentProps(props: SidebarPanelProps) {
 }
 
 function useSidebarPanelRenderState(props: SidebarPanelProps) {
-  const isResponsiveCollapsed = useSidebarResponsiveCollapse()
-  const effectiveCollapsed = props.sidebarPanelCollapsed || isResponsiveCollapsed
   const sectionState = useSidebarContentSection(props.sidebarActiveSection, props.visibleFiles, props.selectedPath)
-  return { effectiveCollapsed, sectionState }
+  return { effectiveCollapsed: props.effectiveCollapsed, sectionState }
 }
 
 function buildSidebarBodyProps(props: SidebarPanelProps, effectiveCollapsed: boolean, sectionState: ReturnType<typeof useSidebarContentSection>) {
@@ -116,10 +114,7 @@ export function SidebarPanel(props: SidebarPanelProps) {
   const bodyProps = buildSidebarBodyProps(props, effectiveCollapsed, sectionState)
 
   return (
-    <aside
-      class={`sidebar-shell ${effectiveCollapsed ? 'is-collapsed' : ''}`}
-      style={{ width: `${effectiveCollapsed ? 72 : props.sidebarPanelWidth}px` }}
-    >
+    <aside class={`sidebar-shell ${effectiveCollapsed ? 'is-collapsed' : ''}`}>
       <SidebarRail
         activeSection={props.sidebarActiveSection}
         collapsed={effectiveCollapsed}

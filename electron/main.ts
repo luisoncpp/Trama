@@ -6,6 +6,7 @@ import { setupContextMenu } from './main-process/context-menu.js'
 import { setupSmokeTestHooks } from './main-process/smoke-hooks.js'
 import { configureWindowCloseBehavior } from './main-process/window-close.js'
 import { createMainWindowOptions } from './window-config.js'
+import { applyWindowChrome } from './window-chrome.js'
 import { setupApplicationMenu } from './main-process/application-menu.js'
 import { IPC_CHANNELS } from '../src/shared/ipc.js'
 
@@ -151,6 +152,7 @@ function configureFullscreenEvents(win: BrowserWindow): void {
 async function createMainWindow(): Promise<void> {
   const preloadPath = path.join(__dirname, 'preload.cjs')
   const win = new BrowserWindow(createMainWindowOptions(preloadPath))
+  win.setTitle('Trama')
   mainWindow = win
 
   if (isSmokeTest) {
@@ -161,6 +163,7 @@ async function createMainWindow(): Promise<void> {
 
   configureFullscreenEvents(win)
   configureWindowCloseBehavior(win)
+  applyWindowChrome(win, 'dark')
 
   win.webContents.on('before-input-event', (event, input) => {
     const isReloadShortcut = (input.control || input.meta) && input.key.toLowerCase() === 'r'

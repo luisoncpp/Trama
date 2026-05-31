@@ -1,0 +1,32 @@
+/* ===== 3. APP SHELL LAYOUT ===== */
+
+.editor-shell {
+  min-height: 100svh;
+  padding: 18px;
+}
+
+.editor-shell.is-fullscreen {
+  padding: 8px;
+}
+
+.editor-app {
+  width: min(1500px, 100%);
+  height: calc(100svh - 36px);
+  margin: 0 auto;
+}
+
+.editor-shell.is-split .editor-app {
+  width: 100%;
+}
+
+.editor-workspace {
+  display: grid;
+  grid-template-columns: var(--sidebar-width, 300px) minmax(0, 1fr);
+  gap: 14px;
+  height: 100%;
+  min-height: 0;
+}
+
+.editor-main {
+  gap: 12px;
+}

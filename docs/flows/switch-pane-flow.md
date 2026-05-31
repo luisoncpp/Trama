@@ -72,7 +72,7 @@ This flow mixes synchronous layout state with asynchronous document state. It is
 
 | File | Why inspect it |
 |------|----------------|
-| `src/features/project-editor/components/workspace-editor-panels.tsx` | Pane activation wiring and explicit pane identity |
+| `src/features/project-editor/pane/workspace-editor-panels.tsx` | Pane activation wiring and explicit pane identity |
 | `src/features/project-editor/pane/pane-workspace.ts` | Centralized outgoing-pane flush/save policy |
 | `src/features/project-editor/workspace-actions.ts` | Switch-pane action and flush-before-switch |
 | `src/features/project-editor/project-editor-private/state.ts` | Active-pane UI projection layer (produces `documentState`) |

@@ -20,6 +20,7 @@ Canonical technical guides — the single source of truth for each subsystem's d
 | `focus-mode-architecture.md` | Highlights API rendering, overlay fallback, scope dimming | |
 | `image-handling-architecture.md` | Inline base64 image workflow: dual-representation strategy, image cache, load-edit-save lifecycle | |
 | `ipc-architecture.md` | IPC channel taxonomy, extension workflow, envelope pattern, cache invalidation | |
+| `layout-ownership.md` | Project editor layout ownership map: sidebar width, focus overrides, split ratio, editor fill contract | |
 | `map-document-architecture.md` | Map document renderer path: meta-only marker edits, pan/zoom view state, pane-targeted navigation | |
 | `project-index-architecture.md` | `.trama.index.json` model, reconciliation, scanner coordination | |
 | `project-history-git-architecture.md` | Local Git snapshot/history backend: repo discovery, scoped staging, revision listing, preview hydration, restore writes | |
@@ -29,6 +30,7 @@ Canonical technical guides — the single source of truth for each subsystem's d
 | `sidebar-path-scoping-model.md` | Section-relative vs project-relative path conversion | |
 | `spellcheck-architecture.md` | Electron session API, renderer state, Quill sync, optimistic toggle | |
 | `split-pane-coordination.md` | Per-pane state model, pane-targeted actions, layout persistence | |
+| `theme-architecture.md` | Theme preference resolution, root `data-theme` application, CSS token model | |
 | `tree-building-and-implicit-folders.md` | Implicit folder derivation, path normalization, ordering rules | |
 | `wiki-tag-links-architecture.md` | Tag index service, matching model, overlay rendering, IPC contract | |
 | `window-close-architecture.md` | Window close flow: `close` handler, dirty-state IPC cache, `__tramaSaveAll` bridge, promise-chain cancel pattern | |

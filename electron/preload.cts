@@ -62,6 +62,8 @@ import {
   type SetSpellcheckSettingsRequest,
   type SetFullscreenRequest,
   type SetFullscreenResponse,
+  type SetWindowAppearanceRequest,
+  type SetWindowAppearanceResponse,
   type SpellcheckSettingsResponse,
   type ZuluImportPreviewRequest,
   type ZuluImportPreviewResponse,
@@ -130,6 +132,9 @@ const tramaApi = {
   },
   setFullscreen(payload: SetFullscreenRequest): Promise<IpcEnvelope<SetFullscreenResponse>> {
     return ipcRenderer.invoke(IPC_CHANNELS.setFullscreen, payload)
+  },
+  setWindowAppearance(payload: SetWindowAppearanceRequest): Promise<IpcEnvelope<SetWindowAppearanceResponse>> {
+    return ipcRenderer.invoke(IPC_CHANNELS.setWindowAppearance, payload)
   },
   getSpellcheckSettings(): Promise<IpcEnvelope<SpellcheckSettingsResponse>> {
     return ipcRenderer.invoke(IPC_CHANNELS.getSpellcheckSettings)

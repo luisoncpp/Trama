@@ -180,7 +180,7 @@ See: `docs/lessons-learned/quill-getbounds-container-reference.md`, `docs/lesson
 | `src/features/project-editor/components/rich-markdown-editor-tag-overlay.ts` | Build overlay ranges and match bounds |
 | `src/features/project-editor/components/rich-markdown-editor-tag-highlights.tsx` | Visual underline overlay rendering |
 | `src/features/project-editor/components/rich-markdown-editor.tsx` | Ctrl/Cmd interaction and click routing |
-| `src/features/project-editor/components/workspace-editor-panels.tsx` | Tag click target pane behavior |
+| `src/features/project-editor/pane/workspace-editor-panels.tsx` | Tag click target pane behavior |
 
 ### Tests
 

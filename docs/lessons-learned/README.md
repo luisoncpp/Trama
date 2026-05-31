@@ -27,6 +27,9 @@ Avoid: "bug description + fix". Prefer: "what I learned that applies to future w
 
 | File | Topic | Date |
 |------|-------|------|
+| `flat-dark-surfaces-reduce-warm-illusion.md` | In dark themes, gradients, shadows, and permanently filled rows can make neutral greys read warm; flatten surfaces before chasing hue tweaks | 2026-05-31 |
+| `theme-interaction-tokens-should-follow-the-accent-model.md` | Editor interaction tokens must stay aligned with the theme's transient accent model, or normal chrome picks up warning-colored brown casts | 2026-05-31 |
+| `layout-ownership-single-writer.md` | Layout bugs stay debuggable when sidebar width has one writer, the editor fill chain has one named contract, and JS/CSS share one breakpoint | 2026-05-31 |
 | `project-local-asset-import-should-stay-in-electron.md` | External asset import flows that must copy files into the project should keep the filesystem copy and collision handling in Electron, not the renderer | 2026-05-30 |
 | `non-text-editor-surfaces-should-update-pane-meta-directly.md` | Non-text editors that edit frontmatter-backed behavior should mutate pane `meta` directly and reuse the normal save pipeline instead of encoding YAML into the body string | 2026-05-30 |
 | `document-scoped-ephemeral-ui-state-should-reset-on-navigation.md` | Document-scoped transient UI like revision rails must clear hidden target state when navigation closes them | 2026-05-29 |

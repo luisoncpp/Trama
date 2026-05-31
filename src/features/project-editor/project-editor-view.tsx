@@ -8,6 +8,7 @@ import { ProjectEditorLayout } from './project-editor-view-layout'
 import type { ResolvedTheme, ThemePreference } from '../../theme/theme-types'
 import type { BookExportFormat } from '../../shared/ipc'
 import type { ProjectEditorShellActions, ProjectEditorShellState } from './project-editor-shell-props'
+import { useSidebarLayout } from './layout/use-sidebar-layout'
 
 interface ProjectEditorViewProps {
   model: ProjectEditorModel
@@ -33,9 +34,9 @@ function buildShellClassName(model: ProjectEditorModel): string {
   ].filter(Boolean).join(' ')
 }
 
-function buildSidebarStyle(sidebarPanelCollapsed: boolean, sidebarPanelWidth: number, focusModeEnabled: boolean) {
+function buildSidebarStyle(sidebarWidthPx: number) {
   return {
-    '--sidebar-width': focusModeEnabled ? '0px' : `${sidebarPanelCollapsed ? 72 : sidebarPanelWidth}px`,
+    '--sidebar-width': `${sidebarWidthPx}px`,
   }
 }
 
@@ -69,6 +70,7 @@ function buildProjectEditorLayoutProps(
   model: ProjectEditorModel,
   shellState: ProjectEditorShellState,
   shellActions: ProjectEditorShellActions,
+  effectiveCollapsed: boolean,
   sidebarStyle: ReturnType<typeof buildSidebarStyle>,
   themePreference: ThemePreference,
   resolvedTheme: ResolvedTheme,
@@ -88,6 +90,7 @@ function buildProjectEditorLayoutProps(
     model,
     shellState,
     shellActions,
+    effectiveCollapsed,
     sidebarStyle,
     themePreference,
     resolvedTheme,
@@ -105,49 +108,31 @@ function buildProjectEditorLayoutProps(
   }
 }
 
-export function ProjectEditorView({
-  model,
-  themePreference,
-  resolvedTheme,
-  onThemePreferenceChange,
-  spellcheckEnabled,
-  spellcheckLanguage,
-  spellcheckLanguageOptions,
-  spellcheckLanguageSelectionSupported,
-  onSpellcheckEnabledChange,
-  onSpellcheckLanguageChange,
-}: ProjectEditorViewProps) {
+function useProjectEditorViewState(model: ProjectEditorModel, props: Omit<ProjectEditorViewProps, 'model'>) {
   const shellState = useProjectEditorShellState(model)
   const shellActions = useProjectEditorShellActions(model)
+  const { effectiveCollapsed, sidebarWidthPx } = useSidebarLayout({
+    sidebarPanelCollapsed: shellState.sidebarPanelCollapsed,
+    sidebarPanelWidth: shellState.sidebarPanelWidth,
+  })
   const { dialogsProps, openAiImport, openZuluImport, openAiExport, openBookExport } = useProjectEditorViewDialogs(
     shellState.rootPath,
     shellState.visibleFiles,
   )
-  const sidebarStyle = buildSidebarStyle(
-    shellState.sidebarPanelCollapsed,
-    shellState.sidebarPanelWidth,
-    shellState.workspaceLayout.focusModeEnabled,
-  )
+  const sidebarStyle = buildSidebarStyle(sidebarWidthPx)
   const layoutProps = buildProjectEditorLayoutProps(
-    model,
-    shellState,
-    shellActions,
-    sidebarStyle,
-    themePreference,
-    resolvedTheme,
-    onThemePreferenceChange,
-    spellcheckEnabled,
-    spellcheckLanguage,
-    spellcheckLanguageOptions,
-    spellcheckLanguageSelectionSupported,
-    onSpellcheckEnabledChange,
-    onSpellcheckLanguageChange,
-    openAiImport,
-    openZuluImport,
-    openBookExport,
-    openAiExport,
+    model, shellState, shellActions, effectiveCollapsed, sidebarStyle,
+    props.themePreference, props.resolvedTheme, props.onThemePreferenceChange,
+    props.spellcheckEnabled, props.spellcheckLanguage, props.spellcheckLanguageOptions,
+    props.spellcheckLanguageSelectionSupported, props.onSpellcheckEnabledChange,
+    props.onSpellcheckLanguageChange,
+    openAiImport, openZuluImport, openBookExport, openAiExport,
   )
+  return { layoutProps, dialogsProps }
+}
 
+export function ProjectEditorView({ model, ...rest }: ProjectEditorViewProps) {
+  const { layoutProps, dialogsProps } = useProjectEditorViewState(model, rest)
   return (
     <main class={buildShellClassName(model)}>
       <ProjectEditorConflictOverlays model={model} />

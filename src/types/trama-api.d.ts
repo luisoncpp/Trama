@@ -48,6 +48,8 @@ import type {
   SetSpellcheckSettingsRequest,
   SetFullscreenRequest,
   SetFullscreenResponse,
+  SetWindowAppearanceRequest,
+  SetWindowAppearanceResponse,
   SelectProjectFolderResponse,
   ValidateProjectFolderRequest,
   ValidateProjectFolderResponse,
@@ -88,6 +90,7 @@ declare global {
       deleteDocument(payload: DeleteDocumentRequest): Promise<IpcEnvelope<DeleteDocumentResponse>>
       getIndex(): Promise<IpcEnvelope<ProjectIndex>>
       setFullscreen(payload: SetFullscreenRequest): Promise<IpcEnvelope<SetFullscreenResponse>>
+      setWindowAppearance(payload: SetWindowAppearanceRequest): Promise<IpcEnvelope<SetWindowAppearanceResponse>>
       getSpellcheckSettings(): Promise<IpcEnvelope<SpellcheckSettingsResponse>>
       setSpellcheckSettings(payload: SetSpellcheckSettingsRequest): Promise<IpcEnvelope<SpellcheckSettingsResponse>>
       onExternalFileEvent(callback: (event: ExternalFileEvent) => void): () => void

@@ -64,6 +64,7 @@ import {
   handleZuluImport,
 } from './ipc/handlers/index.js'
 import { registerSpellcheckHandler } from './ipc/spellcheck.js'
+import { registerWindowAppearanceHandler } from './ipc/window-appearance.js'
 
 export { buildPingResponse, shutdownIpcServices }
 
@@ -203,6 +204,7 @@ export function registerIpcHandlers(ipcMain: IpcMain, getMainWindow: () => Brows
   configureMainWindowResolver(getMainWindow)
   registerCoreHandlers(ipcMain)
   registerFullscreenHandler(ipcMain, getMainWindow)
+  registerWindowAppearanceHandler(ipcMain, getMainWindow)
   registerSpellcheckHandler(ipcMain, getMainWindow)
   registerAiHandlers(ipcMain)
   registerGitHistoryHandlers(ipcMain)

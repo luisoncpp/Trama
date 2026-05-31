@@ -1,0 +1,31 @@
+/* ===== 7. EDITOR FILL CONTRACT ===== */
+
+.editor-panel-root {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: row;
+  min-height: 0;
+}
+
+.editor-manuscript {
+  border-radius: 0;
+  border: 0;
+  background: var(--editor-canvas-bg);
+  overflow: hidden;
+}
+
+.editor-fill-column {
+  min-height: 0;
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.map-editor {
+  position: relative;
+  display: flex;
+  flex: 1 1 auto;
+  min-height: 0;
+  flex-direction: column;
+  background: var(--editor-canvas-bg);
+}

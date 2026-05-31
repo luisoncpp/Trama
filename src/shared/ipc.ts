@@ -41,6 +41,8 @@ export const deleteDocumentResponseSchema = z.object({ path: z.string(), deleted
 export const externalFileEventSchema = z.object({ path: z.string(), event: z.enum(['add', 'change', 'unlink']), source: z.enum(['internal', 'external']), timestamp: z.string() })
 export const setFullscreenRequestSchema = z.object({ enabled: z.boolean() })
 export const setFullscreenResponseSchema = z.object({ enabled: z.boolean() })
+export const setWindowAppearanceRequestSchema = z.object({ theme: z.enum(['light', 'dark']) })
+export const setWindowAppearanceResponseSchema = z.object({ theme: z.enum(['light', 'dark']) })
 export const fullscreenChangedEventSchema = z.object({ enabled: z.boolean(), timestamp: z.string() })
 export const spellcheckSettingsResponseSchema = z.object({
   enabled: z.boolean(),
@@ -165,6 +167,8 @@ export type DeleteDocumentResponse = z.infer<typeof deleteDocumentResponseSchema
 export type ExternalFileEvent = z.infer<typeof externalFileEventSchema>
 export type SetFullscreenRequest = z.infer<typeof setFullscreenRequestSchema>
 export type SetFullscreenResponse = z.infer<typeof setFullscreenResponseSchema>
+export type SetWindowAppearanceRequest = z.infer<typeof setWindowAppearanceRequestSchema>
+export type SetWindowAppearanceResponse = z.infer<typeof setWindowAppearanceResponseSchema>
 export type FullscreenChangedEvent = z.infer<typeof fullscreenChangedEventSchema>
 export type SpellcheckSettingsResponse = z.infer<typeof spellcheckSettingsResponseSchema>
 export type SetSpellcheckSettingsRequest = z.infer<typeof setSpellcheckSettingsRequestSchema>

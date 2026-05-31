@@ -144,6 +144,20 @@ Mandatory doc navigation for new chats: start with `docs/START-HERE.md` — it p
 
 - `src/app.tsx`
   - Top-level app composition.
+- `src/index.css`
+  - CSS import manifest only. Owns the ordered `@import` chain for `src/styles/01-10-*.css` after `@import 'tailwindcss'`.
+- `src/styles/`
+  - Physical CSS ownership split for the renderer shell, imported in numeric order from `src/index.css`.
+  - `01-theme-tokens.css` — app theme tokens and light-theme overrides.
+  - `02-base-reset.css` — global base/reset rules.
+  - `03-app-shell-layout.css` — editor shell/app/workspace structural layout.
+  - `04-focus-mode-layout-overrides.css` — grid-safe focus-mode sidebar hiding rules.
+  - `05-sidebar-layout.css` — sidebar shell/rail structural layout.
+  - `06-split-pane-layout.css` — split pane tracks, headers, divider, body shell.
+  - `07-editor-fill-contract.css` — named editor fill contract and editor host surfaces.
+  - `08-component-cosmetics.css` — non-Quill component cosmetics, dialogs, trees, revisions, conflict UI.
+  - `09-quill-theme-overrides.css` — global `.ql-*` and related rich-editor styling; must stay late in the cascade.
+  - `10-responsive.css` — all media queries, including the `900px` sidebar breakpoint.
 - `src/spellcheck/use-spellcheck-settings.ts`
   - Renderer hook for spellcheck preferences: boot-time sync against Electron session, local persistence, enable/disable, language updates, and optimistic UI updates with rollback on IPC failure.
 - `src/features/project-editor/use-project-editor.ts`
@@ -163,6 +177,10 @@ Mandatory doc navigation for new chats: start with `docs/START-HERE.md` — it p
   - Memoized sidebar shell boundary plus narrow shell state/action selectors over the full project editor model.
 - `src/features/project-editor/project-editor-shell-props.ts`
   - Shell prop types and sidebar prop-builder helpers used to adapt the flat project-editor action surface to `SidebarPanel` without inline churn in the view.
+- `src/features/project-editor/layout/layout-metrics.ts`
+  - Single TS source for project-editor layout constants and pure width/ratio math (`sidebarWidthPx`, `clampSplitRatio`).
+- `src/features/project-editor/layout/use-sidebar-layout.ts`
+  - Single renderer hook for effective sidebar collapse + width, combining persisted sidebar state with responsive collapse.
 - `src/features/project-editor/project-editor-revision-types.ts`
   - Shared renderer-side Git-history types: pane-local revisions rail selection/confirmation state plus top-level Git availability state.
 - `src/features/project-editor/project-editor-git-history-state.ts`
@@ -282,7 +300,7 @@ Mandatory doc navigation for new chats: start with `docs/START-HERE.md` — it p
 
 ### Editor workspace components
 
-- `src/features/project-editor/components/workspace-editor-panels.tsx`
+- `src/features/project-editor/pane/workspace-editor-panels.tsx`
   - Single/split editor rendering and pane interactions.
   - Split-pane dirty routing source of truth: each pane editor must route onChange to its own pane (`updateEditorValue(..., pane)`).
 - `src/features/project-editor/pane/editor-panel.tsx`
@@ -383,7 +401,7 @@ Mandatory doc navigation for new chats: start with `docs/START-HERE.md` — it p
 ### Sidebar components
 
 - `src/features/project-editor/components/sidebar/sidebar-panel.tsx`
-  - Sidebar shell/orchestrator.
+  - Sidebar shell/orchestrator. Consumes `effectiveCollapsed` from the layout seam; no longer computes responsive collapse or writes inline width.
 - `src/features/project-editor/components/sidebar/sidebar-panel-body.tsx`
   - Active section body composition. Thin adapter that converts raw sidebar callback strings through `sidebar-path-scoping.ts` before invoking project-level actions.
 - `src/features/project-editor/components/sidebar/sidebar-panel-logic.ts`
@@ -427,7 +445,7 @@ Mandatory doc navigation for new chats: start with `docs/START-HERE.md` — it p
 - `src/features/project-editor/components/sidebar/sidebar-filter.tsx`
   - Filter input UI.
 - `src/features/project-editor/components/sidebar/sidebar-explorer-hooks.ts`
-  - Consolidated explorer hooks: filter shortcut, responsive collapse, file context menu, folder context menu.
+  - Consolidated explorer hooks: filter shortcut, responsive collapse, file context menu, folder context menu. `useSidebarResponsiveCollapse()` is the viewport-only breakpoint seam consumed by `use-sidebar-layout.ts`.
 - `src/features/project-editor/components/sidebar/sidebar-dialog-hooks.ts`
   - Consolidated dialog hooks: create dialog state (article/map/category, including native map-image picker), folder actions dialog state.
 - `src/features/project-editor/components/sidebar/sidebar-create-dialog.tsx`

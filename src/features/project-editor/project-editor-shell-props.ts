@@ -42,6 +42,7 @@ export interface ProjectEditorShellActions {
 export interface ProjectEditorSidebarShellProps {
   shellState: ProjectEditorShellState
   shellActions: ProjectEditorShellActions
+  effectiveCollapsed: boolean
   themePreference: ThemePreference
   resolvedTheme: ResolvedTheme
   onThemePreferenceChange: (preference: ThemePreference) => void
@@ -144,6 +145,7 @@ export function buildSidebarSectionProps(props: ProjectEditorSidebarShellProps) 
     loadingDocument: shellState.loadingDocument,
     sidebarActiveSection: shellState.sidebarActiveSection,
     sidebarPanelCollapsed: shellState.sidebarPanelCollapsed,
+    effectiveCollapsed: props.effectiveCollapsed,
     sidebarPanelWidth: shellState.sidebarPanelWidth,
     ...buildSidebarFileActionProps(shellActions),
     ...buildSidebarWorkspaceActionProps(shellActions),

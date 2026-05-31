@@ -136,7 +136,7 @@ function renderEditorPanelBody(
       }}
       onContextMenuCapture={() => syncWorkspaceContextMenuState(contextMenuState)}
     >
-      <div class={`editor-manuscript ${!selectedPath || loadingDocument ? 'is-muted' : ''}`}>
+      <div class={`editor-manuscript editor-fill-column ${!selectedPath || loadingDocument ? 'is-muted' : ''}`}>
         {props.editorMeta.type === 'map'
           ? <MapEditor
               projectRoot={props.projectRoot}

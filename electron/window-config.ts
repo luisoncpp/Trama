@@ -7,6 +7,8 @@ export function createMainWindowOptions(preloadPath: string): BrowserWindowConst
     minWidth: 960,
     minHeight: 640,
     show: false,
+    /* Match --shell-bg / --title-bar-bg; keep the native title bar so "Trama" stays visible. */
+    backgroundColor: '#121212',
     autoHideMenuBar: true,
     webPreferences: {
       preload: preloadPath,

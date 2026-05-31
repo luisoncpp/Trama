@@ -20,6 +20,7 @@ function buildPanelProps(
     onSelectFile: async () => undefined,
     sidebarActiveSection: 'explorer',
     sidebarPanelCollapsed: false,
+    effectiveCollapsed: false,
     sidebarPanelWidth: 320,
     onSelectSidebarSection: () => undefined,
     onToggleSidebarPanelCollapsed: () => undefined,
@@ -903,19 +904,14 @@ describe('sidebar panels', () => {
     expect(onSpellcheckLanguageChange).toHaveBeenCalledWith('es-ES')
   })
 
-  it('auto-collapses sidebar on narrow viewport', () => {
-    const originalInnerWidth = window.innerWidth
-    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 860 })
-
+  it('hides panel body when effectiveCollapsed is true', () => {
     act(() => {
-      render(h(SidebarPanel, buildPanelProps()), container)
+      render(h(SidebarPanel, buildPanelProps({ effectiveCollapsed: true })), container)
     })
 
     const shell = container.querySelector('.sidebar-shell') as HTMLElement
     expect(shell.className).toContain('is-collapsed')
     expect(container.textContent).not.toContain('Scene-001.md')
-
-    Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalInnerWidth })
   })
 })
 

@@ -71,7 +71,7 @@ export function PaneEditor({ model, spellcheckEnabled, pane, tagIndex, onTagClic
   const { paneState, isActive, panelProps } = buildPaneEditorPanelProps({ model, spellcheckEnabled, pane, tagIndex, onTagClick, zoomRef, zoomLevel, onZoomChange })
 
   return (
-    <section class={`workspace-split-pane ${isActive ? 'is-active' : ''}`} onPointerDownCapture={panelProps.onInteract}>
+    <section class={`workspace-split-pane editor-fill-column ${isActive ? 'is-active' : ''}`} onPointerDownCapture={panelProps.onInteract}>
       <PaneHeader paneState={paneState} isActive={isActive} />
       <div class="workspace-split-pane__body">
         <EditorPanel {...panelProps} />

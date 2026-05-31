@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'preact/hooks'
 
-const RESPONSIVE_COLLAPSE_BREAKPOINT = 900
+import { SIDEBAR_RESPONSIVE_BREAKPOINT_PX } from '../../layout/layout-metrics'
 
 function isNarrowViewport(): boolean {
-  return window.innerWidth <= RESPONSIVE_COLLAPSE_BREAKPOINT
+  return window.innerWidth <= SIDEBAR_RESPONSIVE_BREAKPOINT_PX
 }
 
 export function useSidebarResponsiveCollapse(): boolean {

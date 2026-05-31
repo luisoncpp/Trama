@@ -27,7 +27,7 @@ Trama is a file-first desktop writing tool (Electron + Preact + TypeScript). The
 
 **Workspace split mode** — Both panes visible, active pane follows editor clicks, draggable center divider, pane headers show document name, split toggle via `Ctrl/Cmd + .` or context menu, per-pane session history via `Alt+Left` / `Alt+Right` plus menu-bar Back/Forward.
 
-**Theme** — Settings exposes `light`, `dark`, `system`; preference persists through root `data-theme` tokens; system mode listens to OS theme changes.
+**Theme** — Settings exposes `light`, `dark`, `system`; preference persists through root `data-theme` tokens; system mode listens to OS theme changes. Architecture: `docs/architecture/theme-architecture.md`.
 
 **Fullscreen/Focus Mode** — Native fullscreen toggle via `Ctrl/Cmd+Shift+F`; focus mode with `line | sentence | paragraph` scope dimming around caret via `Ctrl/Cmd+Shift+M`; `ESC` deactivates fullscreen, focus mode, or both; state persists in `trama.workspace.layout.v1`; focus Scope selector in sidebar Settings tab; sidebar hidden completely (display:none) during focus, editor grid collapses to single column, scrollbar dimmed.
 
@@ -56,8 +56,10 @@ Trama is a file-first desktop writing tool (Electron + Preact + TypeScript). The
 | Change filesystem/repo layer | `electron/services/document-repository.ts` → `electron/ipc/handlers/project-handlers/document-handlers.ts` |
 | Add a test | `tests/` + `docs/dev-workflow.md` (checklist) |
 | Understand split pane coordination | `docs/architecture/split-pane-coordination.md` (canonical: per-pane state contracts, two-layer model, pane-targeted action rules) |
-| Debug split-pane issues | `docs/architecture/split-pane-coordination.md` → `src/features/project-editor/components/workspace-editor-panels.tsx` → `src/features/project-editor/workspace-actions.ts` → `tests/project-editor-conflict-flow.test.ts` |
-| Change focus mode visuals | `src/features/project-editor/project-editor-view.tsx` (grid style) → `src/index.css` (focus mode CSS rules) → `src/features/project-editor/workspace-actions.ts` (toggle logic) |
+| Debug split-pane issues | `docs/architecture/split-pane-coordination.md` → `src/features/project-editor/pane/workspace-editor-panels.tsx` → `src/features/project-editor/workspace-actions.ts` → `tests/project-editor-conflict-flow.test.ts` |
+| Debug layout/flex/grid ownership | `docs/architecture/layout-ownership.md` → `src/features/project-editor/layout/use-sidebar-layout.ts` → `src/features/project-editor/project-editor-view.tsx` → `src/styles/03-app-shell-layout.css` / `04-focus-mode-layout-overrides.css` / `07-editor-fill-contract.css` / `10-responsive.css` |
+| Change theme behavior or colors | `docs/architecture/theme-architecture.md` → `src/theme/use-theme-preference.ts` → `src/styles/01-theme-tokens.css` → `src/features/project-editor/components/sidebar/sidebar-settings.tsx` → `tests/theme-preference.test.ts` |
+| Change focus mode visuals | `src/features/project-editor/project-editor-view.tsx` (grid style) → `src/styles/04-focus-mode-layout-overrides.css` → `src/features/project-editor/workspace-actions.ts` (toggle logic) |
 | Implement Wiki Tag Links (WS1) | `docs/spec/wiki-tag-links-spec.md` → `docs/architecture/wiki-tag-links-architecture.md` → `docs/plan/done/wiki-tag-links-implementation-plan.md` → `docs/plan/phase-4-detailed-plan.md` |
 | Debug Wiki Tag Links (stale index, underline offsets, Ctrl/Cmd click) | `docs/architecture/wiki-tag-links-architecture.md` → `docs/plan/done/wiki-tag-links-system-guide.md` → `docs/lessons-learned/README.md` (tag/quill lessons) → `tests/tag-index-ipc-regression.test.ts` + `tests/rich-markdown-editor-tag-overlay.test.ts` |
 | Debug AI import/export | `docs/architecture/ai-import-export-architecture.md` → `src/shared/ai-import-parser.ts` → `electron/services/ai-import-service.ts` / `electron/services/ai-export-service.ts` → `electron/ipc/handlers/ai-handlers.ts` |

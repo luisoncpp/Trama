@@ -205,7 +205,7 @@ When things break after refactors, run the recovery sequence per `docs/dev-workf
 ### Quick checks (fast path)
 
 1. Open `docs/split-pane-coordination.md` to confirm source-of-truth and action-flow assumptions before editing.
-2. Open `src/features/project-editor/components/workspace-editor-panels.tsx` and verify split-pane editors call `updateEditorValue(..., pane)`.
+2. Open `src/features/project-editor/pane/workspace-editor-panels.tsx` and verify split-pane editors call `updateEditorValue(..., pane)`.
 3. Open `src/features/project-editor/use-project-editor-ui-actions.ts` and verify pane-targeted update behavior exists and fallback is only for legacy/single-pane paths.
 4. Run focused regression: `npm run test -- tests/project-editor-conflict-flow.test.ts`.
 5. If needed, run compile guard: `npm run test -- tests/typescript-compile.test.ts`.

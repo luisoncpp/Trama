@@ -14,6 +14,7 @@ interface ProjectEditorLayoutProps {
   model: ProjectEditorModel
   shellState: ProjectEditorShellState
   shellActions: ProjectEditorShellActions
+  effectiveCollapsed: boolean
   sidebarStyle: { '--sidebar-width': string }
   themePreference: ThemePreference
   resolvedTheme: ResolvedTheme
@@ -32,7 +33,7 @@ interface ProjectEditorLayoutProps {
 
 function ProjectEditorMainPane({ model, spellcheckEnabled }: ProjectEditorMainPaneProps) {
   return (
-    <div class="editor-main">
+    <div class="editor-main editor-fill-column">
       <WorkspaceLayoutPanel model={model} spellcheckEnabled={spellcheckEnabled} />
     </div>
   )
@@ -42,6 +43,7 @@ export function ProjectEditorLayout({
   model,
   shellState,
   shellActions,
+  effectiveCollapsed,
   sidebarStyle,
   themePreference,
   resolvedTheme,
@@ -63,6 +65,7 @@ export function ProjectEditorLayout({
         <ProjectEditorSidebarShell
           shellState={shellState}
           shellActions={shellActions}
+          effectiveCollapsed={effectiveCollapsed}
           themePreference={themePreference}
           resolvedTheme={resolvedTheme}
           onThemePreferenceChange={onThemePreferenceChange}

@@ -3,14 +3,11 @@ import type { ProjectEditorModel, EditorZoomRef } from '../project-editor-types'
 import { EditorPanel } from './editor-panel'
 import { useTagIndex } from '../use-tag-index'
 import { PaneEditor } from './pane-editor'
+import { clampSplitRatio } from '../layout/layout-metrics'
 
 interface LayoutControlsProps {
   model: ProjectEditorModel
   spellcheckEnabled: boolean
-}
-
-function clampRatio(value: number): number {
-  return Math.min(0.8, Math.max(0.2, value))
 }
 
 interface ActiveEditorPanelProps {
@@ -94,7 +91,7 @@ function WorkspaceSplitEditorPanels({ model, spellcheckEnabled, tagIndex, onTagC
     if (!splitElement) return
     const bounds = splitElement.getBoundingClientRect()
     if (bounds.width <= 0) return
-    actions.setWorkspaceLayoutRatio(clampRatio((clientX - bounds.left) / bounds.width))
+    actions.setWorkspaceLayoutRatio(clampSplitRatio((clientX - bounds.left) / bounds.width))
   }
 
   const startResizeDrag = (startClientX: number) => {

@@ -2,6 +2,14 @@ import { useEffect, useState } from 'preact/hooks'
 import { readThemePreference, resolveThemePreference, THEME_MEDIA_QUERY, THEME_PREFERENCE_STORAGE_KEY } from './theme-logic'
 import type { ResolvedTheme, ThemePreference } from './theme-types'
 
+function syncWindowAppearance(theme: ResolvedTheme) {
+  if (typeof window === 'undefined' || !window.tramaApi?.setWindowAppearance) {
+    return
+  }
+
+  void window.tramaApi.setWindowAppearance({ theme })
+}
+
 function getStoredPreference(): ThemePreference {
   if (typeof window === 'undefined') {
     return 'dark'
@@ -21,6 +29,7 @@ function getSystemPrefersDark(): boolean {
 function applyResolvedTheme(theme: ResolvedTheme) {
   document.documentElement.dataset.theme = theme
   document.documentElement.style.colorScheme = theme
+  syncWindowAppearance(theme)
 }
 
 export function useThemePreference() {

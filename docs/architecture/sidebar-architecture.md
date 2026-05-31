@@ -308,6 +308,7 @@ SidebarPanelBody
 ## See also
 
 - Drag-and-drop architecture: `docs/architecture/sidebar-drag-drop-architecture.md`
+- Layout ownership: `docs/architecture/layout-ownership.md`
 - Path scoping model: `docs/architecture/sidebar-path-scoping-model.md`
 - Tree building: `docs/architecture/tree-building-and-implicit-folders.md`
 - Project index architecture: `docs/architecture/project-index-architecture.md`

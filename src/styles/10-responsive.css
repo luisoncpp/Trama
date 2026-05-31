@@ -1,0 +1,71 @@
+/* ===== 10. RESPONSIVE / MEDIA QUERIES ===== */
+
+@media (max-width: 720px) {
+  .ai-export-toast {
+    right: 12px;
+    bottom: 12px;
+    left: 12px;
+    max-width: none;
+  }
+}
+
+@media (max-width: 900px) { /* == SIDEBAR_RESPONSIVE_BREAKPOINT_PX */
+  .editor-workspace {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 720px) {
+  .editor-shell {
+    padding: 10px;
+  }
+
+  .editor-app {
+    height: calc(100svh - 20px);
+  }
+
+  .workspace-panel--sidebar,
+  .editor-conflict-banner {
+    padding: 12px;
+  }
+
+  .editor-document-meta,
+  .workspace-panel__header--editor,
+  .editor-conflict-banner,
+  .editor-conflict-compare__header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .editor-conflict-compare__columns {
+    grid-template-columns: 1fr;
+  }
+
+  .rich-editor .ql-container.ql-snow {
+    padding: 0;
+  }
+
+  .rich-toolbar-right {
+    width: 100%;
+    justify-content: flex-end;
+  }
+
+  .rich-editor .ql-editor {
+    min-height: 100%;
+    padding: 0.9rem 0.85rem 1.1rem;
+    font-size: 0.98rem;
+    line-height: 1.56;
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 960px) {
+  .workspace-split {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .workspace-split-divider {
+    display: none;
+  }
+}

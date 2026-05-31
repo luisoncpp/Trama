@@ -1,0 +1,130 @@
+/* ===== 6. SPLIT-PANE LAYOUT ===== */
+
+.workspace-split {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(0, var(--split-ratio, 50%)) 12px minmax(0, 1fr); /* 12px == SPLIT_DIVIDER_WIDTH_PX */
+  gap: 0;
+}
+
+.workspace-split-pane {
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--split-pane-bg);
+  overflow: hidden;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.workspace-split-pane.is-active {
+  border-color: var(--split-pane-active-border);
+  box-shadow: var(--split-pane-active-shadow);
+}
+
+.workspace-split-pane:not(.is-active) {
+  border-color: var(--split-pane-inactive-border);
+}
+
+.workspace-split-pane__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border);
+  transition: background-color 0.2s ease;
+}
+
+.workspace-split-pane.is-active .workspace-split-pane__header {
+  background: var(--surface-accent-bg);
+  border-bottom-color: var(--split-pane-active-border);
+}
+
+.workspace-split-pane__meta {
+  min-width: 0;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.workspace-split-pane__label {
+  font-size: 0.8rem;
+  letter-spacing: 0.01em;
+  color: var(--text-main);
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 0 0 auto;
+}
+
+.workspace-split-pane__path-inline {
+  color: var(--text-muted);
+  font-family: 'Cascadia Code', Consolas, 'Courier New', monospace;
+  font-size: 0.72rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.workspace-split-pane__path-inline.is-empty {
+  font-family: 'Segoe UI Variable Text', 'Trebuchet MS', sans-serif;
+  color: var(--text-dim);
+}
+
+.workspace-split-pane__active-indicator {
+  font-size: 0.66rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-dim);
+  transition: color 0.2s ease;
+}
+
+.workspace-split-pane__active-indicator.is-active {
+  color: var(--accent-strong);
+}
+
+/* Unsaved/Dirty indicator badge */
+.workspace-split-pane__dirty-badge {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  background: var(--dirty-badge-bg);
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.workspace-split-pane.is-active .workspace-split-pane__dirty-badge {
+  background: var(--dirty-badge-bg);
+}
+
+.workspace-split-pane__body {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex; /* Child row wrapper inside the editor fill contract. */
+  background: var(--editor-canvas-bg);
+}
+
+.workspace-split-divider {
+  position: relative;
+  cursor: col-resize;
+  background: var(--split-divider-bg);
+}
+
+.workspace-split-divider::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 4px;
+  height: 68px;
+  transform: translate(-50%, -50%);
+  border-radius: 999px;
+  background: var(--split-divider-handle);
+}
+
+.workspace-split-divider:hover::before {
+  background: var(--split-divider-handle-hover);
+}

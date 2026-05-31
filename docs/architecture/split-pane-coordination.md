@@ -153,7 +153,7 @@ onPaneEditorChange = (nextValue: string) => {
 
 **Why it matters:** Pointer/focus timing can leave `workspaceLayout.activePane` pointing at the wrong pane when the secondary editor's `onChange` fires. Explicit routing avoids this race.
 
-**File:** `src/features/project-editor/components/workspace-editor-panels.tsx:37-39`
+**File:** `src/features/project-editor/pane/workspace-editor-panels.tsx:37-39`
 
 ### Contract 3: Manual save should pass explicit pane identity
 
@@ -175,7 +175,7 @@ onPaneSaveNow = () => actions.saveNow(pane)
 
 **Why it matters:** `workspaceLayout.activePane` can differ from the pane whose save button was clicked if focus hasn't followed the pointer.
 
-**File:** `src/features/project-editor/components/workspace-editor-panels.tsx:40-42`
+**File:** `src/features/project-editor/pane/workspace-editor-panels.tsx:40-42`
 
 ### Contract 4: Dirty guard protects the active projected document only
 
@@ -285,7 +285,7 @@ To prevent false re-render cascades caused by a single `values` object changing 
 | `src/features/project-editor/project-editor-private/actions.ts` | Private action assembly over `workspace-actions`, `sidebar-file-actions`, and `conflict-actions` |
 | `src/features/project-editor/project-editor-private/open-project.ts` | `applyOpenedProject` with `preferredPane` handling |
 | `src/features/project-editor/project-editor-logic.ts` | `reconcileWorkspaceLayout`, `canSelectFile` |
-| `src/features/project-editor/components/workspace-editor-panels.tsx` | Split UI with explicit pane routing in `PaneEditor` |
+| `src/features/project-editor/pane/workspace-editor-panels.tsx` | Split UI with explicit pane routing in `PaneEditor` |
 
 ## Regression Tests
 

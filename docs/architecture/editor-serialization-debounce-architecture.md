@@ -186,7 +186,7 @@ This makes true disk reloads/removals of unsaved DOM state deterministic and ind
 | `src/features/project-editor/components/rich-markdown-editor.tsx` | Props `editorSerializationRef` + `onMarkDirty`, ref mutation sync |
 | `src/features/project-editor/components/rich-markdown-editor-value-sync.ts` | Canonical editor-value normalization/equality used by `lastEditorValueRef` and external sync |
 | `src/features/project-editor/components/editor-panel.tsx` | Passes props through |
-| `src/features/project-editor/components/workspace-editor-panels.tsx` | Reads `serializationRefs` from model, routes per pane |
+| `src/features/project-editor/pane/workspace-editor-panels.tsx` | Reads `serializationRefs` from model, routes per pane |
 | `src/features/project-editor/project-editor-types.ts` | `EditorSerializationRefs` type, `serializationRefs` in model |
 | `src/features/project-editor/use-project-editor.ts` | Creates refs, wires into actions and effects |
 | `src/features/project-editor/project-editor-private/actions.ts` | Private action assembly that owns `loadDocument`/`saveDocumentNow` alongside serialization-aware editor flows |

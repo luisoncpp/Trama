@@ -1,0 +1,16 @@
+/* ===== 4. FOCUS-MODE LAYOUT OVERRIDES ===== */
+
+.editor-shell.is-focus-mode .sidebar-panel-content {
+  display: none;
+}
+
+/* display:none on a grid child must be paired with
+   a recalculated grid template so the editor does not auto-place into a removed column. */
+.editor-shell.is-focus-mode .sidebar-shell {
+  display: none;
+}
+
+.editor-shell.is-focus-mode .editor-workspace {
+  grid-template-columns: 1fr;
+  gap: 0;
+}
