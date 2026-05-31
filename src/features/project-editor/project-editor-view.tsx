@@ -9,6 +9,7 @@ import type { ResolvedTheme, ThemePreference } from '../../theme/theme-types'
 import type { BookExportFormat } from '../../shared/ipc'
 import type { ProjectEditorShellActions, ProjectEditorShellState } from './project-editor-shell-props'
 import { useSidebarLayout } from './layout/use-sidebar-layout'
+import { WindowTitlebar } from './window-titlebar'
 
 interface ProjectEditorViewProps {
   model: ProjectEditorModel
@@ -134,10 +135,13 @@ function useProjectEditorViewState(model: ProjectEditorModel, props: Omit<Projec
 export function ProjectEditorView({ model, ...rest }: ProjectEditorViewProps) {
   const { layoutProps, dialogsProps } = useProjectEditorViewState(model, rest)
   return (
-    <main class={buildShellClassName(model)}>
-      <ProjectEditorConflictOverlays model={model} />
-      <ProjectEditorLayout {...layoutProps} />
-      <ProjectEditorDialogs {...dialogsProps} />
-    </main>
+    <>
+      <WindowTitlebar />
+      <main class={buildShellClassName(model)}>
+        <ProjectEditorConflictOverlays model={model} />
+        <ProjectEditorLayout {...layoutProps} />
+        <ProjectEditorDialogs {...dialogsProps} />
+      </main>
+    </>
   )
 }

@@ -1,5 +1,8 @@
 import type { BrowserWindowConstructorOptions } from 'electron'
 
+const isWin32 = process.platform === 'win32'
+const DARK_SHELL = '#121212'
+
 export function createMainWindowOptions(preloadPath: string): BrowserWindowConstructorOptions {
   return {
     width: 1280,
@@ -7,8 +10,17 @@ export function createMainWindowOptions(preloadPath: string): BrowserWindowConst
     minWidth: 960,
     minHeight: 640,
     show: false,
-    /* Match --shell-bg / --title-bar-bg; keep the native title bar so "Trama" stays visible. */
-    backgroundColor: '#121212',
+    backgroundColor: DARK_SHELL,
+    /* Native Win11 title bars pick up accent tint; overlay pins --shell-bg without losing window controls. */
+    ...(isWin32
+      ? {
+          titleBarStyle: 'hidden',
+          titleBarOverlay: {
+            color: DARK_SHELL,
+            symbolColor: '#cccccc',
+          },
+        }
+      : {}),
     autoHideMenuBar: true,
     webPreferences: {
       preload: preloadPath,

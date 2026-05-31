@@ -1,7 +1,10 @@
 import { render } from 'preact'
 import 'quill/dist/quill.snow.css'
 import './index.css'
+import { markOverlayTitleBar } from './features/project-editor/window-titlebar'
 import { App } from './app.tsx'
+
+markOverlayTitleBar()
 
 const root = document.getElementById('app')
 
