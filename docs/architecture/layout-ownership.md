@@ -7,9 +7,10 @@ Goal: document which module owns each layout decision in the project editor so s
 | Concern | Single owner | Notes |
 |------|------|------|
 | Sidebar effective collapse + width math | `src/features/project-editor/layout/use-sidebar-layout.ts` | Calls `useSidebarResponsiveCollapse()`, computes `effectiveCollapsed`, returns `sidebarWidthPx` |
-| Layout constants and pure width/ratio math | `src/features/project-editor/layout/layout-metrics.ts` | Single TS source for `72`, `300`, `900`, split ratio bounds, divider width |
+| Layout constants and pure width/ratio math | `src/features/project-editor/layout/layout-metrics.ts` | Single TS source for `72`, `300`, `260–460`, `900`, split ratio bounds, divider width |
 | Sidebar viewport breakpoint detection | `src/features/project-editor/components/sidebar/sidebar-explorer-hooks.ts` | Exposes `useSidebarResponsiveCollapse()`, consumed only through `useSidebarLayout` |
 | Sidebar width allocation | `.editor-workspace` grid track in `src/styles/03-app-shell-layout.css` + `--sidebar-width` from `project-editor-view.tsx` | `.sidebar-shell` no longer owns width inline |
+| Sidebar drag resize writes | `src/features/project-editor/layout/sidebar-resize-handle.tsx` + `project-editor-view-layout.tsx` | Handle mounts on `.editor-workspace` (not inside `.sidebar-column`); positioned with `left: calc(var(--sidebar-width) + 1px)` |
 | Sidebar rendering state | `src/features/project-editor/components/sidebar/sidebar-panel.tsx` | Consumes `effectiveCollapsed` prop; `is-collapsed` changes appearance only |
 | Focus-mode sidebar collapse | CSS in `src/styles/04-focus-mode-layout-overrides.css` | Must keep `display:none` paired with `grid-template-columns: 1fr` |
 | Split ratio state and drag writes | `src/features/project-editor/pane/workspace-editor-panels.tsx` | Sole writer of `--split-ratio`; clamping uses `clampSplitRatio()` |
@@ -24,6 +25,7 @@ Goal: document which module owns each layout decision in the project editor so s
 3. `ProjectEditorView` writes the returned `sidebarWidthPx` into `--sidebar-width`.
 4. `.editor-workspace` consumes `--sidebar-width` as the first grid track.
 5. `SidebarPanel` receives the same `effectiveCollapsed` value for rail/body rendering.
+6. When expanded and not in focus mode, `SidebarResizeHandle` in `project-editor-view-layout.tsx` writes width changes through `setSidebarPanelWidth`.
 
 Invariant: the grid track and the rendered sidebar always derive from the same hook output.
 
@@ -46,6 +48,7 @@ Invariant: any new editor surface should mount inside an `.editor-fill-column` h
 ## Key files
 
 - `src/features/project-editor/layout/layout-metrics.ts`
+- `src/features/project-editor/layout/sidebar-resize-handle.tsx`
 - `src/features/project-editor/layout/use-sidebar-layout.ts`
 - `src/features/project-editor/project-editor-view.tsx`
 - `src/features/project-editor/project-editor-view-layout.tsx`
@@ -67,6 +70,7 @@ Invariant: any new editor surface should mount inside an `.editor-fill-column` h
 2. Focus mode makes editor disappear: verify the focus-mode CSS block still pairs `display:none` on `.sidebar-shell` with `grid-template-columns: 1fr` on `.editor-workspace`.
 3. Map/text editor collapses vertically: verify each host in the active path still carries `.editor-fill-column`.
 4. Split divider behaves oddly: check `WorkspaceSplitEditorPanels` for the only `--split-ratio` write and `clampSplitRatio()` in `layout-metrics.ts`.
+5. Sidebar drag resize ignored or jumps: verify `SidebarResizeHandle` is mounted from `project-editor-view-layout.tsx`, `.editor-workspace` ref bounds match the grid track, and `clampSidebarWidth()` in `layout-metrics.ts`.
 
 ## References
 

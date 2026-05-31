@@ -155,7 +155,7 @@ See `docs/architecture/tree-building-and-implicit-folders.md` for the complete e
 Persisted in `trama.sidebar.ui.v1`:
 - `activeSection`: which rail section is active
 - `panelCollapsed`: whether the entire sidebar is collapsed
-- `panelWidth`: panel width in pixels
+- `panelWidth`: total sidebar width in pixels (260–460); adjusted by dragging the sidebar edge, persisted in localStorage
 
 ### Rail click expands sidebar
 

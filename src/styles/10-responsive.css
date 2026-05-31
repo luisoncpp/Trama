@@ -13,6 +13,10 @@
   .editor-workspace {
     grid-template-columns: 1fr;
   }
+
+  .sidebar-resize-handle {
+    display: none;
+  }
 }
 
 @media (max-width: 720px) {

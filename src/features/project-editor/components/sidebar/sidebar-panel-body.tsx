@@ -31,8 +31,6 @@ export interface SidebarPanelBodyProps {
   activeFilterQuery: string
   onFilterQueryChange: (value: string) => void
   onSelectFile: SidebarSelectionProps['onSelectFile']
-  sidebarPanelWidth: number
-  onSidebarPanelWidthChange: (width: number) => void
   themePreference: SidebarThemeProps['themePreference']
   resolvedTheme: SidebarThemeProps['resolvedTheme']
   onThemePreferenceChange: SidebarThemeProps['onThemePreferenceChange']
@@ -142,8 +140,6 @@ export function SidebarPanelBody(props: SidebarPanelBodyProps) {
   if (props.sidebarActiveSection === 'settings') {
     return (
       <SidebarSettingsContent
-        panelWidth={props.sidebarPanelWidth}
-        onPanelWidthChange={props.onSidebarPanelWidthChange}
         themePreference={props.themePreference}
         resolvedTheme={props.resolvedTheme}
         onThemePreferenceChange={props.onThemePreferenceChange}

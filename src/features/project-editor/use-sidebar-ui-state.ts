@@ -1,9 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from 'preact/hooks'
+import { SIDEBAR_DEFAULT_WIDTH_PX, clampSidebarWidth } from './layout/layout-metrics'
 import type { SidebarSection } from './project-editor-types'
 
 const SIDEBAR_UI_STORAGE_KEY = 'trama.sidebar.ui.v1'
-const SIDEBAR_MIN_WIDTH = 260
-const SIDEBAR_MAX_WIDTH = 460
 
 interface PersistedSidebarUiState {
   activeSection: SidebarSection
@@ -11,15 +10,11 @@ interface PersistedSidebarUiState {
   panelWidth: number
 }
 
-function clampSidebarWidth(width: number): number {
-  return Math.min(SIDEBAR_MAX_WIDTH, Math.max(SIDEBAR_MIN_WIDTH, width))
-}
-
 function readSidebarUiState(): PersistedSidebarUiState {
   const fallback: PersistedSidebarUiState = {
     activeSection: 'explorer',
     panelCollapsed: false,
-    panelWidth: 300,
+    panelWidth: SIDEBAR_DEFAULT_WIDTH_PX,
   }
 
   try {

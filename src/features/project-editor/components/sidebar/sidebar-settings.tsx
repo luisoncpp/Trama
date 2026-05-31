@@ -20,8 +20,6 @@ function SettingsField({ label, children, note }: SettingsFieldProps) {
 }
 
 interface SidebarSettingsContentProps {
-  panelWidth: number
-  onPanelWidthChange: (width: number) => void
   themePreference: ThemePreference
   resolvedTheme: ResolvedTheme
   onThemePreferenceChange: (preference: ThemePreference) => void
@@ -36,7 +34,6 @@ interface SidebarSettingsContentProps {
 }
 
 export function SidebarSettingsContent({
-  panelWidth, onPanelWidthChange,
   themePreference, resolvedTheme, onThemePreferenceChange,
   spellcheckEnabled, spellcheckLanguage, spellcheckLanguageOptions,
   spellcheckLanguageSelectionSupported, onSpellcheckEnabledChange, onSpellcheckLanguageChange,
@@ -59,9 +56,6 @@ export function SidebarSettingsContent({
         </SettingsField>
         <SettingsField label="Focus Mode Scope">
           <FocusScopeSelect focusScope={focusScope} onFocusScopeChange={onFocusScopeChange} />
-        </SettingsField>
-        <SettingsField label={`Panel width: ${panelWidth}px`}>
-          <PanelWidthControl panelWidth={panelWidth} onPanelWidthChange={onPanelWidthChange} />
         </SettingsField>
       </aside>
     </div>
@@ -155,16 +149,5 @@ function FocusScopeSelect({ focusScope, onFocusScopeChange }: FocusScopeSelectPr
       <option value="sentence">Sentence</option>
       <option value="paragraph">Paragraph</option>
     </select>
-  )
-}
-
-interface PanelWidthControlProps {
-  panelWidth: number
-  onPanelWidthChange: (width: number) => void
-}
-function PanelWidthControl({ panelWidth, onPanelWidthChange }: PanelWidthControlProps) {
-  return (
-    <input type="range" min={260} max={460} step={10} value={panelWidth}
-      onInput={(event) => onPanelWidthChange(Number((event.currentTarget as HTMLInputElement).value))} />
   )
 }

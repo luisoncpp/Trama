@@ -21,10 +21,8 @@ function buildPanelProps(
     sidebarActiveSection: 'explorer',
     sidebarPanelCollapsed: false,
     effectiveCollapsed: false,
-    sidebarPanelWidth: 320,
     onSelectSidebarSection: () => undefined,
     onToggleSidebarPanelCollapsed: () => undefined,
-    onSidebarPanelWidthChange: () => undefined,
           onCreateArticle: () => undefined,
           onCreateMap: () => undefined,
     onCreateCategory: () => undefined,
@@ -140,7 +138,6 @@ describe('sidebar panels', () => {
     expect(container.textContent).toContain('Theme')
     expect(container.textContent).toContain('Focus Mode Scope')
     expect(container.textContent).toContain('Resolved now: Dark')
-    expect(container.textContent).toContain('Panel width: 320px')
   })
 
   it('hides Save Snapshot when Git is unavailable', () => {
@@ -725,49 +722,12 @@ describe('sidebar panels', () => {
     expect(onDeleteFolder).toHaveBeenCalledWith('book/Act-01/Chapter-01')
   })
 
-  it('updates panel width from settings slider', () => {
-    const onPanelWidthChange = vi.fn()
-
-    act(() => {
-      render(
-        h(SidebarSettingsContent, {
-          panelWidth: 320,
-          onPanelWidthChange,
-          themePreference: 'dark',
-          resolvedTheme: 'dark',
-          onThemePreferenceChange: () => undefined,
-          spellcheckEnabled: true,
-          spellcheckLanguage: 'en-US',
-          spellcheckLanguageOptions: ['en-US', 'es-ES'],
-          spellcheckLanguageSelectionSupported: true,
-          onSpellcheckEnabledChange: () => undefined,
-          onSpellcheckLanguageChange: () => undefined,
-          focusScope: 'paragraph',
-          onFocusScopeChange: () => undefined,
-        }),
-        container,
-      )
-    })
-
-    const slider = container.querySelector('input[type="range"]') as HTMLInputElement
-    expect(slider).toBeTruthy()
-
-    act(() => {
-      slider.value = '410'
-      slider.dispatchEvent(new Event('input', { bubbles: true }))
-    })
-
-    expect(onPanelWidthChange).toHaveBeenCalledWith(410)
-  })
-
   it('updates theme preference from settings buttons', () => {
     const onThemePreferenceChange = vi.fn<(preference: ThemePreference) => void>()
 
     act(() => {
       render(
         h(SidebarSettingsContent, {
-          panelWidth: 320,
-          onPanelWidthChange: () => undefined,
           themePreference: 'dark',
           resolvedTheme: 'dark',
           onThemePreferenceChange,
@@ -803,8 +763,6 @@ describe('sidebar panels', () => {
     act(() => {
       render(
         h(SidebarSettingsContent, {
-          panelWidth: 320,
-          onPanelWidthChange: () => undefined,
           themePreference: 'dark',
           resolvedTheme: 'dark',
           onThemePreferenceChange: () => undefined,
@@ -839,8 +797,6 @@ describe('sidebar panels', () => {
     act(() => {
       render(
         h(SidebarSettingsContent, {
-          panelWidth: 320,
-          onPanelWidthChange: () => undefined,
           themePreference: 'dark',
           resolvedTheme: 'dark',
           onThemePreferenceChange: () => undefined,
@@ -874,8 +830,6 @@ describe('sidebar panels', () => {
     act(() => {
       render(
         h(SidebarSettingsContent, {
-          panelWidth: 320,
-          onPanelWidthChange: () => undefined,
           themePreference: 'dark',
           resolvedTheme: 'dark',
           onThemePreferenceChange: () => undefined,

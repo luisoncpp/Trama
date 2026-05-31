@@ -10,6 +10,10 @@
   display: none;
 }
 
+.editor-shell.is-focus-mode .sidebar-column {
+  display: none;
+}
+
 .editor-shell.is-focus-mode .editor-workspace {
   grid-template-columns: 1fr;
   gap: 0;

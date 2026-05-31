@@ -178,7 +178,9 @@ Mandatory doc navigation for new chats: start with `docs/START-HERE.md` — it p
 - `src/features/project-editor/project-editor-shell-props.ts`
   - Shell prop types and sidebar prop-builder helpers used to adapt the flat project-editor action surface to `SidebarPanel` without inline churn in the view.
 - `src/features/project-editor/layout/layout-metrics.ts`
-  - Single TS source for project-editor layout constants and pure width/ratio math (`sidebarWidthPx`, `clampSplitRatio`).
+  - Single TS source for project-editor layout constants and pure width/ratio math (`sidebarWidthPx`, `clampSplitRatio`, `clampSidebarWidth`).
+- `src/features/project-editor/layout/sidebar-resize-handle.tsx`
+  - Draggable sidebar edge handle; writes width through `setSidebarPanelWidth` using workspace bounds + `clampSidebarWidth()`.
 - `src/features/project-editor/layout/use-sidebar-layout.ts`
   - Single renderer hook for effective sidebar collapse + width, combining persisted sidebar state with responsive collapse.
 - `src/features/project-editor/project-editor-revision-types.ts`
