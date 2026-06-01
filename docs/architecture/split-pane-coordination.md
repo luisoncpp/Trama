@@ -79,9 +79,12 @@ class PaneWorkspace {
   clearPanes(): void                                                    // limpia ambos paneles (no toca layout)
   updatePaneMeta(path: string, meta: DocumentMeta): void                // actualiza meta del pane con ese path
 
-  // Persistence methods
-  savePaneIfDirty(pane: WorkspacePane): Promise<void>  // flush + save + markPaneSaved
-  saveAllDirtyPanes(): Promise<void>                    // flush + save both panes
+  // Persistence methods (Pane exit seam)
+  savePaneNow(pane: WorkspacePane): Promise<SavePaneNowResult>           // manual save intent
+  preparePaneExit(pane: WorkspacePane): Promise<PreparePaneExitResult>   // save-before-leave intent
+  preparePaneRevert(pane: WorkspacePane): PreparePaneRevertResult         // flush-before-reload intent
+  saveAllDirtyPanes(): Promise<void>                                       // close / Snapshot pre-save
+  flushPaneContent(pane: WorkspacePane): string | null                     // live editor snapshot
 
   // Coordination methods
   scheduleAutosave(pane: WorkspacePane, delay: number): void  // sin callback,interno
@@ -99,14 +102,14 @@ class PaneWorkspace {
 **Responsibilities:**
 - Query facade: exposes pane state without mutating Preact state
 - Mutation facade: `updatePaneContent`, `loadPaneDocument`, `clearPanes`, `updatePaneMeta` — únicos puntos de entrada para mutar paneles
-- Persistence coordinator: owns flush, save, and autosave timer internally; `markPaneSaved` is **private** and called by `savePaneIfDirty` after successful IPC save
+- Persistence coordinator: owns flush, save, autosave timer, and **Pane exit** intent methods internally; `markPaneSaved` is **private** and called after successful IPC save
 - `scheduleAutosave` no longer takes a callback — save policy lives inside the module
 
 **Files:**
-- `src/features/project-editor/pane/pane-workspace.ts` — the class with `PaneBindings` interface and mutation methods
+- `src/features/project-editor/pane/pane-workspace-exit.ts` — Pane exit intent types and pure helpers consumed by `PaneWorkspace`
+- `src/features/project-editor/pane/pane-workspace.ts` — the class with `PaneBindings` interface, mutation methods, and Pane exit intent methods
 - `src/features/project-editor/pane/index.ts` — barrel export (`PaneWorkspace`, `usePaneWorkspace`, `PaneBindings`, and public types)
 - `src/features/project-editor/pane/use-pane-workspace.ts` — factory hook that encapsulates Preact setter injection, creates one stable `PaneWorkspace` via `useRef`, and syncs live dependencies into it
-- `src/features/project-editor/pane/pane-save-logic.ts` — `executePaneSave` (internal, not exported)
 
 ## The Formal Contracts
 
@@ -273,10 +276,9 @@ To prevent false re-render cascades caused by a single `values` object changing 
 | File | Role |
 |---|---|---|
 | `src/features/project-editor/project-editor-types.ts` | `WorkspaceLayoutState`, `PaneDocumentState`, `WorkspacePane`, and 6 sub-state type definitions |
-| `src/features/project-editor/pane/pane-workspace.ts` | `PaneWorkspace` coordinator: read methods + mutation methods (`updatePaneContent`, `loadPaneDocument`, `clearPanes`, `updatePaneMeta`) + `savePaneIfDirty`/`saveAllDirtyPanes` + `scheduleAutosave`; `markPaneSaved` is private; receives `PaneBindings` with Preact setters |
+| `src/features/project-editor/pane/pane-workspace.ts` | `PaneWorkspace` coordinator: read methods + mutation methods + Pane exit intent methods (`savePaneNow`, `preparePaneExit`, `preparePaneRevert`, `saveAllDirtyPanes`); `markPaneSaved` is private; receives `PaneBindings` with Preact setters |
 | `src/features/project-editor/pane/use-pane-workspace.ts` | Factory hook that encapsulates setter injection via `useMemo`, creating a `PaneWorkspace` instance from `paneBindings` + `serializationRefs` + `saveDocumentFn` |
 | `src/features/project-editor/pane/index.ts` | Barrel: exports `PaneWorkspace`, `usePaneWorkspace`, `PaneBindings`, and public types |
-| `src/features/project-editor/pane/pane-save-logic.ts` | `executePaneSave` helper (internal, not in barrel) |
 | `src/features/project-editor/use-project-editor.ts` | Composition root and public seam: creates `PaneWorkspace`, wires `serializationRefs`/`saveDocumentFn`, and is the only importer of `project-editor-private/` |
 | `src/features/project-editor/project-editor-private/state.ts` | Private state assembly: layout+document projection to shared state, visible-files derivation, setters, and `paneBindings` |
 | `src/features/project-editor/workspace-actions.ts` | Deep module for workspace layout, pane activation, focus, fullscreen, editor view, save, and revert |

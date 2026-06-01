@@ -9,7 +9,15 @@ import type {
   WorkspacePane,
 } from '../project-editor-types'
 import { buildActivePaneDocumentInfo, buildPaneDocumentInfo } from './pane-workspace-document-info'
-import { executePaneSave } from './pane-save-logic'
+import {
+  preparePaneExitIntent,
+  preparePaneRevertIntent,
+  savePaneIfDirtyIntent,
+  savePaneNowIntent,
+  type PreparePaneExitResult,
+  type PreparePaneRevertResult,
+  type SavePaneNowResult,
+} from './pane-workspace-exit'
 import {
   buildExitedRevisionRailState,
   buildLoadedPaneDocumentState,
@@ -23,6 +31,7 @@ import type { ActivePaneDocumentInfo, PaneBindings, PaneDocumentInfo } from './p
 
 export type { WorkspacePane }
 export type { ActivePaneDocumentInfo, PaneBindings, PaneDocumentInfo } from './pane-workspace-types'
+export type { PaneExitReason, PreparePaneExitResult, PreparePaneRevertResult, SavePaneNowResult } from './pane-workspace-exit'
 
 export class PaneWorkspace {
   private autosaveTimer: number | null = null
@@ -117,12 +126,25 @@ export class PaneWorkspace {
 
   async savePaneIfDirty(pane: WorkspacePane): Promise<void> {
     const paneDocument = this.getPaneState(pane)
-    if (!paneDocument.isDirty || !paneDocument.path) return
-    const flushResult = this.flushPaneContent(pane)
-    const contentToSave = flushResult ?? paneDocument.content
-    await executePaneSave(paneDocument, flushResult, this.saveDocumentFn)
-    this.markPaneSaved(pane, paneDocument.path, contentToSave)
+    await savePaneIfDirtyIntent(
+      paneDocument,
+      () => this.flushPaneContent(pane),
+      this.saveDocumentFn,
+      (path, content) => this.markPaneSaved(pane, path, content),
+    )
   }
+  async savePaneNow(pane: WorkspacePane): Promise<SavePaneNowResult> {
+    return savePaneNowIntent(this.getPaneState(pane), () => this.savePaneIfDirty(pane))
+  }
+
+  async preparePaneExit(pane: WorkspacePane): Promise<PreparePaneExitResult> {
+    return preparePaneExitIntent(this.getPaneState(pane), () => this.savePaneIfDirty(pane))
+  }
+
+  preparePaneRevert(pane: WorkspacePane): PreparePaneRevertResult {
+    return preparePaneRevertIntent(this.getPaneState(pane), () => this.flushPaneContent(pane))
+  }
+
   async saveAllDirtyPanes(): Promise<void> {
     await Promise.all((['primary', 'secondary'] as const).map((p) => this.savePaneIfDirty(p)))
   }

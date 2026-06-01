@@ -30,11 +30,10 @@ When these conditions are not met, the action returns immediately without callin
 3. `revertChanges` determines the target pane:
    - If `pane` argument is provided → use that pane (split mode, explicit routing)
    - If `pane` is omitted → use `workspace.layout.activePane`
-4. Guard check: `workspace.getPaneDocument(targetPane)` returns `{ path, isDirty }`.
-5. If `!isDirty || !path`: return immediately — button should be disabled but double-check.
-6. If guard passes: call `workspace.flushPaneContent(targetPane)`.
-7. `flushPaneContent()` cancels any pending debounce timer and snapshots the live Quill DOM while the current editor instance is still mounted.
-8. `revertChanges` then calls `loadDocument(path, targetPane)`.
+4. Guard check: `workspace.preparePaneRevert(targetPane)` returns `{ kind: 'no-op' }` when `!isDirty || !path`.
+5. If guard passes: `preparePaneRevert` flushes live editor content and returns `{ kind: 'reverted', path }`.
+6. `flushPaneContent()` cancels any pending debounce timer and snapshots the live Quill DOM while the current editor instance is still mounted.
+7. `revertChanges` then calls `loadDocument(path, targetPane)`.
 9. `loadDocument` sets `loadingDocument = true`.
 10. `loadDocument` calls `window.tramaApi.readDocument({ path })` via IPC `trama:document:read`.
 11. The main process handler reads the file from disk (`document-repository.ts`).
@@ -124,7 +123,7 @@ When these conditions are not met, the action returns immediately without callin
 
 | Aspect | `selectFile` | `revertChanges` |
 |--------|-------------|-----------------|
-| Saves dirty content first | ✅ Yes (calls `savePaneIfDirty`) | ❌ No |
+| Saves dirty content first | ✅ Yes (calls `preparePaneExit`) | ❌ No |
 | Changes active pane | ✅ Yes (calls `assignFileToActivePane`) | ❌ No |
 | Reloads from disk | ✅ Yes (calls `loadDocument`) | ✅ Yes (calls `loadDocument`) |
 | Guard condition | `canSelectFile(isDirty, path, filePath)` | `isDirty && path` |

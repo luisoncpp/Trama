@@ -287,10 +287,10 @@ describe('project editor conflict flow', () => {
     expect(model?.state.secondaryPane.path).toBe('docs/b.md')
     expect(model?.state.secondaryPane.content).toBe('# B')
 
-    act(() => {
+    await act(async () => {
       model?.actions.updateEditorValue('# A\n\nprimary dirty', 'primary')
       model?.actions.updateEditorValue('# B\n\nsecondary dirty', 'secondary')
-      model?.actions.setWorkspaceActivePane('primary')
+      await model?.actions.setWorkspaceActivePane('primary')
     })
 
     expect(model?.state.workspaceLayout.activePane).toBe('primary')

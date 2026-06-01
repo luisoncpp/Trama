@@ -1,0 +1,3 @@
+# Pane exit lives in PaneWorkspace
+
+When Trama needs to leave a pane's current document state, the `Pane exit` preconditions live in `PaneWorkspace`, not in caller-specific action Modules. We keep layout mutation, document loading, revision-rail state, conflict UI clearing, and status messages outside that seam, but `PaneWorkspace` owns the save / revert preparation and saved-snapshot tracking because that concentrates pane persistence rules in one Module and keeps future refactors from re-fragmenting the same behavior across `workspace-actions.ts`, sidebar file selection, and `Snapshot` pre-save flows.

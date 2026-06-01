@@ -10,7 +10,6 @@ import {
   restoreWorkspaceLayoutState,
   shouldRefreshTreeOnExternalEvent,
 } from '../src/features/project-editor/project-editor-logic'
-import { executePaneSave } from '../src/features/project-editor/pane/pane-save-logic'
 import type { ProjectSnapshot } from '../src/shared/ipc'
 
 function buildSnapshot(paths: string[]): ProjectSnapshot {
@@ -189,45 +188,6 @@ describe('project editor logic helpers', () => {
       expect(result.selectedPath).toBe('docs/b.md')
       expect(result.editorValue).toBe('# Secondary')
       expect(result.isDirty).toBe(true)
-    })
-  })
-
-  describe('executePaneSave', () => {
-    const makePaneDoc = (path: string | null, content: string, isDirty: boolean) => ({
-      path,
-      content,
-      meta: {},
-      isDirty,
-      reloadVersion: 0,
-      revisionRail: {} as any,
-    })
-
-    const mockSave = vi.fn().mockResolvedValue(undefined)
-
-    beforeEach(() => mockSave.mockClear())
-
-    it('pane limpio → no-op', async () => {
-      const pane = makePaneDoc('docs/a.md', '# content', false)
-      await executePaneSave(pane, 'flushed', mockSave)
-      expect(mockSave).not.toHaveBeenCalled()
-    })
-
-    it('pane sucio sin path → no-op', async () => {
-      const pane = makePaneDoc(null, '# content', true)
-      await executePaneSave(pane, 'flushed', mockSave)
-      expect(mockSave).not.toHaveBeenCalled()
-    })
-
-    it('pane sucio, flush devuelve string → usa el string', async () => {
-      const pane = makePaneDoc('docs/a.md', '# stale content', true)
-      await executePaneSave(pane, '# fresh flushed content', mockSave)
-      expect(mockSave).toHaveBeenCalledWith('docs/a.md', '# fresh flushed content', {})
-    })
-
-    it('pane sucio, flush devuelve null → usa paneDocument.content', async () => {
-      const pane = makePaneDoc('docs/a.md', '# fallback content', true)
-      await executePaneSave(pane, null, mockSave)
-      expect(mockSave).toHaveBeenCalledWith('docs/a.md', '# fallback content', {})
     })
   })
 })

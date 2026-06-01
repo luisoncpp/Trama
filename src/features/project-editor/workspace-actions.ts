@@ -65,10 +65,7 @@ export async function setWorkspaceActivePane(
   },
 ): Promise<void> {
   const outgoingPane = deps.workspace.layout.activePane
-  const outgoingState = deps.workspace.getPaneDocument(outgoingPane)
-  if (outgoingState.isDirty && outgoingState.path) {
-    await deps.workspace.savePaneIfDirty(outgoingPane)
-  }
+  await deps.workspace.preparePaneExit(outgoingPane)
   deps.workspace.exitRevisionPreview(pane)
 
   const nextPath = pane === 'secondary' ? deps.workspace.layout.secondaryPath : deps.workspace.layout.primaryPath
@@ -172,8 +169,8 @@ export async function saveNow(
   if (!paneStateLocal.path || deps.uiState.saving || !paneStateLocal.isDirty) {
     return
   }
-  await deps.workspace.savePaneIfDirty(targetPane)
-  if (paneStateLocal.path === deps.uiState.externalConflictPath) {
+  const result = await deps.workspace.savePaneNow(targetPane)
+  if (result.kind === 'saved' && result.path === deps.uiState.externalConflictPath) {
     deps.setExternalConflictPath(null)
     deps.setConflictComparisonContent(null)
   }
@@ -190,14 +187,13 @@ export function revertChanges(
   },
 ): void {
   const targetPane = pane ?? deps.workspace.layout.activePane
-  const paneDocument = deps.workspace.getPaneDocument(targetPane)
-  if (!paneDocument.isDirty || !paneDocument.path) {
+  const result = deps.workspace.preparePaneRevert(targetPane)
+  if (result.kind !== 'reverted') {
     return
   }
-  deps.workspace.flushPaneContent(targetPane)
-  if (paneDocument.path === deps.uiState.externalConflictPath) {
+  if (result.path === deps.uiState.externalConflictPath) {
     deps.setExternalConflictPath(null)
     deps.setConflictComparisonContent(null)
   }
-  void deps.loadDocument(paneDocument.path, targetPane)
+  void deps.loadDocument(result.path, targetPane)
 }

@@ -46,12 +46,17 @@ function makeRefs() {
 
 const saveDocumentFn = vi.fn().mockResolvedValue(undefined)
 
-function makeWs(activePane: 'primary' | 'secondary', primary: PaneDocumentState, secondary: PaneDocumentState) {
+function makeWs(
+  activePane: 'primary' | 'secondary',
+  primary: PaneDocumentState,
+  secondary: PaneDocumentState,
+  bindings?: Partial<Pick<PaneBindings, 'setPrimaryPane' | 'setSecondaryPane'>>,
+) {
   const paneBindings: PaneBindings = {
     primaryPane: primary,
     secondaryPane: secondary,
-    setPrimaryPane: () => {},
-    setSecondaryPane: () => {},
+    setPrimaryPane: bindings?.setPrimaryPane ?? (() => {}),
+    setSecondaryPane: bindings?.setSecondaryPane ?? (() => {}),
   }
   return new PaneWorkspace(makeLayout(activePane, primary.path, secondary.path), paneBindings, makeRefs(), saveDocumentFn)
 }
@@ -257,6 +262,22 @@ describe('PaneWorkspace', () => {
 
       expect(saveDocumentFn).toHaveBeenCalledWith('docs/a.md', '# flushed', {})
     })
+
+    it('uses pane content when flush returns null', async () => {
+      const refs = makeRefs()
+      refs.primary.current.flush = () => null
+      const paneBindings: PaneBindings = {
+        primaryPane: primaryDirty,
+        secondaryPane: secondaryClean,
+        setPrimaryPane: () => {},
+        setSecondaryPane: () => {},
+      }
+      const ws = new PaneWorkspace(makeLayout('primary', primaryDirty.path, secondaryClean.path), paneBindings, refs, saveDocumentFn)
+
+      await ws.savePaneIfDirty('primary')
+
+      expect(saveDocumentFn).toHaveBeenCalledWith('docs/a.md', '# A modified', {})
+    })
   })
 
   describe('saveAllDirtyPanes', () => {
@@ -275,6 +296,124 @@ describe('PaneWorkspace', () => {
 
       expect(saveDocumentFn).toHaveBeenCalledTimes(1)
       expect(saveDocumentFn).toHaveBeenCalledWith('docs/a.md', '# flushed', {})
+    })
+  })
+
+  describe('savePaneNow', () => {
+    it('returns no-op for clean pane', async () => {
+      const ws = makeWs('primary', primaryClean, secondaryClean)
+
+      const result = await ws.savePaneNow('primary')
+
+      expect(result).toEqual({ kind: 'no-op', path: 'docs/a.md' })
+      expect(saveDocumentFn).not.toHaveBeenCalled()
+    })
+
+    it('returns saved for dirty pane with path', async () => {
+      const ws = makeWs('primary', primaryDirty, secondaryClean)
+
+      const result = await ws.savePaneNow('primary')
+
+      expect(result).toEqual({ kind: 'saved', path: 'docs/a.md' })
+      expect(saveDocumentFn).toHaveBeenCalledWith('docs/a.md', '# flushed', {})
+    })
+
+    it('returns failed when save throws', async () => {
+      saveDocumentFn.mockRejectedValueOnce(new Error('disk full'))
+      const ws = makeWs('primary', primaryDirty, secondaryClean)
+
+      const result = await ws.savePaneNow('primary')
+
+      expect(result).toEqual({ kind: 'failed', path: 'docs/a.md', error: 'disk full' })
+    })
+  })
+
+  describe('preparePaneExit', () => {
+    it('returns empty reason when pane has no path', async () => {
+      const dirtyNoPath = makePane(null, '# content', true)
+      const paneBindings: PaneBindings = {
+        primaryPane: dirtyNoPath,
+        secondaryPane: emptyPane,
+        setPrimaryPane: () => {},
+        setSecondaryPane: () => {},
+      }
+      const ws = new PaneWorkspace(makeLayout('primary', null, null), paneBindings, makeRefs(), saveDocumentFn)
+
+      const result = await ws.preparePaneExit('primary')
+
+      expect(result).toEqual({ kind: 'continued', reason: 'empty', path: null })
+      expect(saveDocumentFn).not.toHaveBeenCalled()
+    })
+
+    it('returns clean reason without saving', async () => {
+      const ws = makeWs('primary', primaryClean, secondaryClean)
+
+      const result = await ws.preparePaneExit('primary')
+
+      expect(result).toEqual({ kind: 'continued', reason: 'clean', path: 'docs/a.md' })
+      expect(saveDocumentFn).not.toHaveBeenCalled()
+    })
+
+    it('returns saved reason after saving dirty pane', async () => {
+      const ws = makeWs('primary', primaryDirty, secondaryClean)
+
+      const result = await ws.preparePaneExit('primary')
+
+      expect(result).toEqual({ kind: 'continued', reason: 'saved', path: 'docs/a.md' })
+      expect(saveDocumentFn).toHaveBeenCalledWith('docs/a.md', '# flushed', {})
+    })
+
+    it('returns failed when save throws', async () => {
+      saveDocumentFn.mockRejectedValueOnce(new Error('write denied'))
+      const ws = makeWs('primary', primaryDirty, secondaryClean)
+
+      const result = await ws.preparePaneExit('primary')
+
+      expect(result).toEqual({ kind: 'failed', path: 'docs/a.md', error: 'write denied' })
+    })
+  })
+
+  describe('preparePaneRevert', () => {
+    it('returns no-op when pane is clean', () => {
+      const ws = makeWs('primary', primaryClean, secondaryClean)
+
+      const result = ws.preparePaneRevert('primary')
+
+      expect(result).toEqual({ kind: 'no-op', path: 'docs/a.md' })
+    })
+
+    it('returns no-op when pane has no path', () => {
+      const dirtyNoPath = makePane(null, '# content', true)
+      const paneBindings: PaneBindings = {
+        primaryPane: dirtyNoPath,
+        secondaryPane: emptyPane,
+        setPrimaryPane: () => {},
+        setSecondaryPane: () => {},
+      }
+      const ws = new PaneWorkspace(makeLayout('primary', null, null), paneBindings, makeRefs(), saveDocumentFn)
+
+      const result = ws.preparePaneRevert('primary')
+
+      expect(result).toEqual({ kind: 'no-op', path: null })
+    })
+
+    it('flushes and returns reverted path for dirty pane', () => {
+      const flushSpy = vi.fn(() => '# flushed for revert')
+      const refs = makeRefs()
+      refs.primary.current.flush = flushSpy
+      const paneBindings: PaneBindings = {
+        primaryPane: primaryDirty,
+        secondaryPane: secondaryClean,
+        setPrimaryPane: () => {},
+        setSecondaryPane: () => {},
+      }
+      const ws = new PaneWorkspace(makeLayout('primary', primaryDirty.path, secondaryClean.path), paneBindings, refs, saveDocumentFn)
+
+      const result = ws.preparePaneRevert('primary')
+
+      expect(flushSpy).toHaveBeenCalledTimes(1)
+      expect(result).toEqual({ kind: 'reverted', path: 'docs/a.md' })
+      expect(saveDocumentFn).not.toHaveBeenCalled()
     })
   })
 

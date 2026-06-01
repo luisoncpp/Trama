@@ -8,6 +8,8 @@ Active implementation plans — work that is in progress or planned but not yet 
 |------|-------|
 | `map-document-markers-implementation-plan.md` | Map document editor surface, marker management, and panel switch wiring |
 | `tag-overlay-deepening-plan.md` | Tag overlay index types, state seam, hook interface, and helper tests |
+| `pane-exit-deepening-tech-design.md` | Technical design for deepening the `Pane exit` seam in `PaneWorkspace` while preserving current behavior |
+| `pane-exit-deepening-implementation-plan.md` | Implementation slices for the behavior-preserving `Pane exit` refactor |
 | `phase-4-detailed-plan.md` | Phase 4 master plan: Wiki Tag Links, folder operations, templates, AI import/export |
 | `implementation-overview.md` | Phase 3 closure summary |
 | `ai-import-export-implementation-map.md` | AI import/export feature mapping |

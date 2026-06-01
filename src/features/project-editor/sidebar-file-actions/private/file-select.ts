@@ -12,7 +12,7 @@ export async function selectFile(
 ): Promise<void> {
   const activePane = deps.workspace.layout.activePane
   const activePaneState = deps.workspace.getPaneDocument(activePane)
-  await deps.workspace.savePaneIfDirty(activePane)
+  await deps.workspace.preparePaneExit(activePane)
   deps.workspace.exitRevisionPreview(activePane)
 
   deps.workspace.recordPaneNavigation(activePane, filePath)

@@ -153,16 +153,16 @@ Slice 1 of the rich-editor refactor centralized pane-targeted persistence in:
 
 - `src/features/project-editor/use-project-editor-pane-persistence.ts`
 
-That helper owns serialization-ref lookup, pane-state lookup, `flushPane(pane)`, `savePaneIfDirty(pane)`, and `saveAllDirtyPanes()`.
+That helper owns serialization-ref lookup, pane-state lookup, `flushPaneContent(pane)`, Pane exit intent methods, and `saveAllDirtyPanes()`.
 
 | Action | File | Target |
 |--------|------|--------|
-| `saveNow` | `use-project-editor-ui-actions-helpers.ts:editorViewActions` | Active pane via `savePaneIfDirty()` |
-| `selectFile` | `use-project-editor-ui-actions-helpers.ts:selectFileAction` | Active pane via `savePaneIfDirty()` |
-| `setWorkspaceActivePane` | `use-project-editor-layout-actions.ts` | Outgoing pane via `savePaneIfDirty()` |
-| Autosave effect | `use-project-editor-autosave-effect.ts` | Active pane via `savePaneIfDirty()` |
+| `saveNow` | `workspace-actions.ts` | Active pane via `savePaneNow()` |
+| `selectFile` | `sidebar-file-actions/private/file-select.ts` | Active pane via `preparePaneExit()` |
+| `setWorkspaceActivePane` | `workspace-actions.ts` | Outgoing pane via `preparePaneExit()` |
+| Autosave effect | `use-project-editor-autosave-effect.ts` | Active pane via internal `savePaneIfDirty()` |
 | Close effect (`__tramaSaveAll`) | `use-project-editor-close-effect.ts` | Both panes via `saveAllDirtyPanes()` |
-| `revertChanges` | `src/features/project-editor/workspace-actions.ts` | Target pane via `flushPaneContent()` before `loadDocument()` |
+| `revertChanges` | `workspace-actions.ts` | Target pane via `preparePaneRevert()` before caller `loadDocument()` |
 
 ## Force-apply rule for revert and disk reload
 

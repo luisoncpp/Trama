@@ -268,7 +268,8 @@ Mandatory doc navigation for new chats: start with `docs/START-HERE.md` — it p
 - `src/features/project-editor/pane/`
   - Private module for pane coordination. All pane state, flush, save, and autosave access goes through this module.
   - `pane/index.ts` — barrel exporting `PaneWorkspace`, `usePaneWorkspace`, and public types
-  - `pane/pane-workspace.ts` — coordinator class with read methods (`getPaneDocument`, `isPaneDirty`) and write methods (`savePaneIfDirty`, `saveAllDirtyPanes`, `scheduleAutosave`, `updatePaneContent`, etc.); `markPaneSaved` is private.
+  - `pane/pane-workspace.ts` — coordinator class with read methods (`getPaneDocument`, `isPaneDirty`) and write methods (`savePaneNow`, `preparePaneExit`, `preparePaneRevert`, `saveAllDirtyPanes`, `scheduleAutosave`, `updatePaneContent`, etc.); `savePaneIfDirty` and `markPaneSaved` are internal.
+  - `pane/pane-workspace-exit.ts` — Pane exit intent types and pure helpers (`savePaneNowIntent`, `preparePaneExitIntent`, `preparePaneRevertIntent`); consumed by `PaneWorkspace`.
   - `loadPaneDocument()` increments pane `reloadVersion` so disk reloads/removals of dirty DOM advance the editor force-apply signal.
   - `pane/pane-workspace-types.ts` — extracted `PaneWorkspace` public info/binding types.
   - `pane/pane-workspace-document-info.ts` — pure builders for active-pane and pane document projections.
@@ -278,9 +279,8 @@ Mandatory doc navigation for new chats: start with `docs/START-HERE.md` — it p
   - `pane/pane-editor.tsx` — `PaneEditor` component extracted from `workspace-editor-panels.tsx`.
   - Wires pane-local revision rail state, preview-mode props, and explicit pane-targeted revision actions into `EditorPanel`.
   - `pane/pane-title.ts` — `toPaneTitle` helper for deriving display labels from pane paths.
-  - `pane/use-pane-workspace.ts` — factory hook that encapsulates Preact setter injection, creating a `PaneWorkspace` instance via `useMemo`
-  - `pane/pane-save-logic.ts` — `executePaneSave` (internal, not exported from barrel)
   - `pane/snapshot-compare-logger.ts` — `logSnapshotComparison` helper for diagnosing false-positive external-change conflicts
+  - `pane/use-pane-workspace.ts` — factory hook that encapsulates Preact setter injection, creating a `PaneWorkspace` instance via `useMemo`
 - `src/features/project-editor/use-project-editor-external-events-effect.ts`
   - Subscribes to external file events (watcher) and handles reloads/conflicts/tree refresh.
 - `src/features/project-editor/use-project-editor-context-menu-effect.ts`
