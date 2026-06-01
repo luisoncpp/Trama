@@ -296,6 +296,11 @@
   padding: 1.1rem 1.25rem 1.35rem;
 }
 
+/* Caret inherits dimmed `color` from scope rules; keep insertion point fully visible. */
+.rich-editor .ql-editor.is-focus-mode {
+  caret-color: var(--canvas-ink);
+}
+
 .rich-editor .ql-editor.is-focus-mode::before,
 .rich-editor .ql-editor.is-focus-mode::after {
   content: '';

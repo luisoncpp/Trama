@@ -192,6 +192,8 @@ Even if persisted layout has `focusModeEnabled: true`, it is force-reset to `fal
 | `is-focus-emphasis` | Line/paragraph node | Dimming applied via CSS |
 | `is-focus-text-highlight` | `.ql-editor` | Using CSS Highlights API |
 
+Active editors set `caret-color: var(--canvas-ink)` on `.ql-editor.is-focus-mode` so the insertion caret stays full contrast while surrounding text is dimmed via `color-mix` or `opacity` (the caret otherwise inherits the dimmed `color`).
+
 ---
 
 ## Sidebar Behavior
