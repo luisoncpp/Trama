@@ -9,7 +9,8 @@
   --app-shell-padding: 18px;
   --app-shell-padding-compact: 8px;
   --editor-column-max-width: 1500px;
-  --win-titlebar-controls-width: 140px;
+  /* Native Win32 caption band; tune if controls overlap (DPI/theme can shift ~few px). */
+  --win-titlebar-controls-width: 120px;
   --win-titlebar-drag-height: 32px;
   --win-titlebar-controls-gap: 8px;
   --editor-toolbar-padding-block: 10px; /* matches .rich-editor .ql-toolbar.ql-snow padding */
@@ -65,6 +66,8 @@ html.has-overlay-titlebar .editor-shell.is-fullscreen {
 /* Single pane: editor column can sit under the native window-control band. */
 html.has-overlay-titlebar .editor-shell:not(.is-split) {
   --shell-padding-top: var(--app-shell-padding-overlay-single-top);
+  container-type: inline-size;
+  container-name: editor-shell;
 }
 
 html.has-overlay-titlebar .editor-shell:not(.is-split).is-fullscreen {
@@ -75,11 +78,6 @@ html.has-overlay-titlebar .editor-shell:not(.is-split).is-fullscreen {
   width: min(var(--editor-column-max-width), 100%);
   height: calc(100svh - var(--shell-padding-top) - var(--shell-padding-bottom));
   margin: 0 auto;
-}
-
-html.has-overlay-titlebar .editor-shell:not(.is-split) .editor-app {
-  container-type: inline-size;
-  container-name: editor-app;
 }
 
 html.has-overlay-titlebar .editor-shell:not(.is-split) .rich-editor .ql-toolbar.ql-snow {
@@ -94,10 +92,12 @@ html.has-overlay-titlebar .editor-shell:not(.is-split) .rich-editor .ql-toolbar.
 }
 
 /*
- * When the editor column is narrower than --editor-column-max-width (viewport-limited).
- * Query uses 1499px (= max width - 1px); @container cannot evaluate var() in the condition.
+ * Shift save/revert when the centered .editor-app (max 1500px) cannot clear window controls.
+ * .editor-app lives inside this shell; measuring .editor-main always looked narrow (~1200px).
+ * While shell width < max + 2*controls + 2*inline-padding, the 1500px block sits under the buttons.
+ * Literal 1775px = 1500 + 240 + 36 - 1 (18px inline padding); @container cannot use var().
  */
-@container editor-app (max-width: 1499px) {
+@container editor-shell (max-width: 1775px) {
   html.has-overlay-titlebar .editor-shell:not(.is-split) .rich-editor .ql-toolbar.ql-snow .rich-toolbar-right {
     right: calc(var(--win-titlebar-controls-width) - var(--win-titlebar-controls-gap));
   }
