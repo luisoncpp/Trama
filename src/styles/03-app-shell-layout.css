@@ -1,51 +1,85 @@
 /* ===== 3. APP SHELL LAYOUT ===== */
 
-/* Click-through drag strip; panels extend underneath. Native controls stay in titleBarOverlay. */
+/*
+ * Shell padding drives .editor-app height: 100svh minus top and bottom inset.
+ * Win32 overlay titlebar tweaks use html.has-overlay-titlebar (see window-titlebar.tsx).
+ */
+
+:root {
+  --app-shell-padding: 18px;
+  --app-shell-padding-compact: 8px;
+  --editor-column-max-width: 1500px;
+  --win-titlebar-controls-width: 140px;
+  --win-titlebar-drag-height: 32px;
+  --win-titlebar-controls-gap: 8px;
+  --editor-toolbar-padding-block: 10px; /* matches .rich-editor .ql-toolbar.ql-snow padding */
+  --toolbar-save-cluster-inset-inline: 12px;
+}
+
+html.has-overlay-titlebar {
+  --app-shell-padding-overlay-top: 8px;
+  --app-shell-padding-overlay-inline: 18px;
+  --app-shell-padding-overlay-bottom: 18px;
+  --app-shell-padding-overlay-single-top: 4px;
+  --app-shell-padding-overlay-single-fullscreen-top: 12px;
+}
+
+/* Click-through drag strip; native min/max/close stay in titleBarOverlay. */
 .window-drag-region {
   position: fixed;
   top: 0;
   left: 0;
-  right: 140px;
-  height: 32px;
+  right: var(--win-titlebar-controls-width);
+  height: var(--win-titlebar-drag-height);
   z-index: 100;
   pointer-events: none;
   -webkit-app-region: drag;
 }
 
-/* Tighter top inset than default; panels keep their rounded chrome. */
+.editor-shell {
+  --shell-padding-top: var(--app-shell-padding);
+  --shell-padding-inline: var(--app-shell-padding);
+  --shell-padding-bottom: var(--app-shell-padding);
+  min-height: 100svh;
+  padding: var(--shell-padding-top) var(--shell-padding-inline) var(--shell-padding-bottom);
+}
+
+.editor-shell.is-fullscreen {
+  --shell-padding-top: var(--app-shell-padding-compact);
+  --shell-padding-inline: var(--app-shell-padding-compact);
+  --shell-padding-bottom: var(--app-shell-padding-compact);
+}
+
 html.has-overlay-titlebar .editor-shell {
-  padding: 8px 18px 18px;
+  --shell-padding-top: var(--app-shell-padding-overlay-top);
+  --shell-padding-inline: var(--app-shell-padding-overlay-inline);
+  --shell-padding-bottom: var(--app-shell-padding-overlay-bottom);
 }
 
 html.has-overlay-titlebar .editor-shell.is-fullscreen {
-  padding: 8px;
+  --shell-padding-top: var(--app-shell-padding-compact);
+  --shell-padding-inline: var(--app-shell-padding-compact);
+  --shell-padding-bottom: var(--app-shell-padding-compact);
 }
 
-html.has-overlay-titlebar .editor-app {
-  height: calc(100svh - 26px);
-}
-
-html.has-overlay-titlebar .editor-shell.is-fullscreen .editor-app {
-  height: calc(100svh - 16px);
-}
-
-/* Single pane: centered editor reaches the window-control band on the right. */
+/* Single pane: editor column can sit under the native window-control band. */
 html.has-overlay-titlebar .editor-shell:not(.is-split) {
-  padding: 4px 18px 18px;
-}
-
-html.has-overlay-titlebar .editor-shell:not(.is-split) .editor-app {
-  height: calc(100svh - 30px);
-  container-type: inline-size;
-  container-name: editor-app;
+  --shell-padding-top: var(--app-shell-padding-overlay-single-top);
 }
 
 html.has-overlay-titlebar .editor-shell:not(.is-split).is-fullscreen {
-  padding: 12px 8px 8px;
+  --shell-padding-top: var(--app-shell-padding-overlay-single-fullscreen-top);
 }
 
-html.has-overlay-titlebar .editor-shell:not(.is-split).is-fullscreen .editor-app {
-  height: calc(100svh - 20px);
+.editor-app {
+  width: min(var(--editor-column-max-width), 100%);
+  height: calc(100svh - var(--shell-padding-top) - var(--shell-padding-bottom));
+  margin: 0 auto;
+}
+
+html.has-overlay-titlebar .editor-shell:not(.is-split) .editor-app {
+  container-type: inline-size;
+  container-name: editor-app;
 }
 
 html.has-overlay-titlebar .editor-shell:not(.is-split) .rich-editor .ql-toolbar.ql-snow {
@@ -54,14 +88,18 @@ html.has-overlay-titlebar .editor-shell:not(.is-split) .rich-editor .ql-toolbar.
 
 html.has-overlay-titlebar .editor-shell:not(.is-split) .rich-editor .ql-toolbar.ql-snow .rich-toolbar-right {
   position: absolute;
-  top: 10px;
-  right: 12px;
+  top: var(--editor-toolbar-padding-block);
+  right: var(--toolbar-save-cluster-inset-inline);
   margin-left: 0;
 }
 
+/*
+ * When the editor column is narrower than --editor-column-max-width (viewport-limited).
+ * Query uses 1499px (= max width - 1px); @container cannot evaluate var() in the condition.
+ */
 @container editor-app (max-width: 1499px) {
   html.has-overlay-titlebar .editor-shell:not(.is-split) .rich-editor .ql-toolbar.ql-snow .rich-toolbar-right {
-    right: 132px;
+    right: calc(var(--win-titlebar-controls-width) - var(--win-titlebar-controls-gap));
   }
 }
 
@@ -76,21 +114,6 @@ html.has-overlay-titlebar .workspace-split-pane__header *,
 html.has-overlay-titlebar .rich-editor .ql-toolbar.ql-snow button,
 html.has-overlay-titlebar .rich-editor .ql-toolbar.ql-snow select {
   -webkit-app-region: no-drag;
-}
-
-.editor-shell {
-  min-height: 100svh;
-  padding: 18px;
-}
-
-.editor-shell.is-fullscreen {
-  padding: 8px;
-}
-
-.editor-app {
-  width: min(1500px, 100%);
-  height: calc(100svh - 36px);
-  margin: 0 auto;
 }
 
 .editor-shell.is-split .editor-app {
