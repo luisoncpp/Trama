@@ -16,9 +16,15 @@ export const openProjectRequestSchema = z.object({
 export const selectProjectFolderResponseSchema = z.object({ rootPath: z.string().nullable() })
 export const validateProjectFolderRequestSchema = z.object({ rootPath: z.string().trim().min(1) })
 export const validateProjectFolderResponseSchema = z.object({ valid: z.boolean() })
+export const closeProjectResponseSchema = z.object({ closed: z.literal(true) })
+export const revealProjectInFileManagerRequestSchema = z.object({ rootPath: z.string().trim().min(1) })
+export const revealProjectInFileManagerResponseSchema = z.object({ rootPath: z.string() })
 
 export type IncrementalUpdate = z.infer<typeof incrementalUpdateSchema>
 export type OpenProjectRequest = z.infer<typeof openProjectRequestSchema>
 export type SelectProjectFolderResponse = z.infer<typeof selectProjectFolderResponseSchema>
 export type ValidateProjectFolderRequest = z.infer<typeof validateProjectFolderRequestSchema>
 export type ValidateProjectFolderResponse = z.infer<typeof validateProjectFolderResponseSchema>
+export type CloseProjectResponse = z.infer<typeof closeProjectResponseSchema>
+export type RevealProjectInFileManagerRequest = z.infer<typeof revealProjectInFileManagerRequestSchema>
+export type RevealProjectInFileManagerResponse = z.infer<typeof revealProjectInFileManagerResponseSchema>

@@ -61,5 +61,12 @@ export function markInternalWrite(relativePath: string): void {
 }
 
 export async function shutdownIpcServices(): Promise<void> {
+  await clearActiveProject()
+}
+
+export async function clearActiveProject(): Promise<void> {
   await watcherService.stop()
+  activeProjectRoot = null
+  activeIndexService = null
+  activeTagIndexService = null
 }

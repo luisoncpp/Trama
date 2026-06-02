@@ -25,6 +25,8 @@ export interface SidebarProjectContextProps {
   statusMessage: string
   gitHistory: GitHistoryState
   onPickFolder: () => void
+  onCloseProject: () => void
+  onRevealInFileManager: () => void
   onImport: () => void
   onImportZulu: () => void
   onExportBook: (format: BookExportFormat) => void

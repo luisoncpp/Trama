@@ -26,7 +26,10 @@ import type {
   ListDocumentRevisionsResponse,
   LoadDocumentRevisionRequest,
   LoadDocumentRevisionResponse,
+  CloseProjectResponse,
   OpenProjectRequest,
+  RevealProjectInFileManagerRequest,
+  RevealProjectInFileManagerResponse,
   PingRequest,
   PingResponse,
   ProjectIndex,
@@ -75,6 +78,10 @@ declare global {
       ping(payload: PingRequest): Promise<IpcEnvelope<PingResponse>>
       debugLog(payload: DebugLogRequest): Promise<void>
       openProject(payload: OpenProjectRequest): Promise<IpcEnvelope<ProjectSnapshot>>
+      closeProject(): Promise<IpcEnvelope<CloseProjectResponse>>
+      revealProjectInFileManager(
+        payload: RevealProjectInFileManagerRequest,
+      ): Promise<IpcEnvelope<RevealProjectInFileManagerResponse>>
       selectProjectFolder(): Promise<IpcEnvelope<SelectProjectFolderResponse>>
       validateProjectFolder(payload: ValidateProjectFolderRequest): Promise<IpcEnvelope<ValidateProjectFolderResponse>>
       readDocument(payload: ReadDocumentRequest): Promise<IpcEnvelope<ReadDocumentResponse>>

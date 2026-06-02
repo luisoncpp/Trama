@@ -111,6 +111,8 @@ export interface ProjectEditorUiState {
 
 export interface ProjectEditorActions {
   pickProjectFolder: () => Promise<void>
+  closeProject: () => Promise<void>
+  revealProjectInFileManager: () => Promise<void>
   selectFile: (filePath: string) => Promise<void>
   openFileInPane: (filePath: string, pane: WorkspacePane) => void
   openPreviousInPaneHistory: (pane?: WorkspacePane) => Promise<void>

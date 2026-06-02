@@ -82,7 +82,8 @@ describe('sidebar panels', () => {
     })
 
     expect(container.textContent).toContain('Manuscript')
-    expect(container.textContent).toContain('C:/Proyectos/test_trama/book')
+    expect(container.textContent).toContain('test_trama')
+    expect(container.textContent).not.toContain('.../book')
     expect(container.textContent).toContain('Scene-001.md')
     expect(container.textContent).not.toContain('arc-general.md')
 
@@ -94,7 +95,7 @@ describe('sidebar panels', () => {
     })
 
     expect(container.textContent).toContain('Outline')
-    expect(container.textContent).toContain('C:/Proyectos/test_trama/outline')
+    expect(container.textContent).toContain('test_trama')
     expect(container.textContent).toContain('arc-general.md')
     expect(container.textContent).not.toContain('Scene-001.md')
 
@@ -106,7 +107,7 @@ describe('sidebar panels', () => {
     })
 
     expect(container.textContent).toContain('Lore')
-    expect(container.textContent).toContain('C:/Proyectos/test_trama/lore')
+    expect(container.textContent).toContain('test_trama')
     expect(container.textContent).toContain('protagonista.md')
 
     act(() => {
@@ -181,7 +182,7 @@ describe('sidebar panels', () => {
     expect(onSelectFile).toHaveBeenCalledWith('book/Act-01/Chapter-01/Scene-001.md')
   })
 
-  it('uses explorer gear button to pick a folder and does not render status text', () => {
+  it('uses project-root breadcrumb to pick a folder and does not render status text', () => {
     const onPickFolder = vi.fn()
     const onFilterQueryChange = vi.fn()
 
@@ -196,7 +197,8 @@ describe('sidebar panels', () => {
           apiAvailable: true,
           loadingProject: false,
           statusMessage: '',
-          scopePathLabel: 'C:/Proyectos/test_trama/book',
+          projectRootPath: 'C:/Proyectos/test_trama',
+          pickFolderDisabled: false,
           filterQuery: '',
           onFilterQueryChange,
                 onCreateArticle: () => undefined,
@@ -208,17 +210,19 @@ describe('sidebar panels', () => {
           onDeleteFile: () => undefined,
           onEditFileTags: () => undefined,
           onPickFolder,
+          onCloseProject: () => undefined,
+          onRevealInFileManager: () => undefined,
           onLoadFileTags: () => Promise.resolve([]),
         }),
         container,
       )
     })
 
-    const folderButton = container.querySelector('[aria-label="Select Project Folder..."]') as HTMLButtonElement
+    const folderButton = container.querySelector('.path-breadcrumb-trigger') as HTMLButtonElement
     expect(folderButton).toBeTruthy()
-    expect(folderButton?.getAttribute('title')).toBe('Select Project Folder...')
     expect(container.textContent).not.toContain('Loaded document:')
     expect(container.textContent).not.toContain('Project folder selection was canceled.')
+    expect(container.querySelector('[aria-label="Select Project Folder..."]')).toBeNull()
 
     act(() => {
       folderButton.click()
@@ -242,7 +246,8 @@ describe('sidebar panels', () => {
           apiAvailable: true,
           loadingProject: false,
           statusMessage: '',
-          scopePathLabel: 'C:/Proyectos/test_trama/book',
+          projectRootPath: 'C:/Proyectos/test_trama',
+          pickFolderDisabled: false,
           filterQuery: '',
           onFilterQueryChange: () => undefined,
                 onCreateArticle: () => undefined,
@@ -254,6 +259,8 @@ describe('sidebar panels', () => {
           onDeleteFile: () => undefined,
           onEditFileTags: () => undefined,
           onPickFolder: () => undefined,
+          onCloseProject: () => undefined,
+          onRevealInFileManager: () => undefined,
           onLoadFileTags: () => Promise.resolve([]),
         }),
         container,
@@ -284,7 +291,8 @@ describe('sidebar panels', () => {
           apiAvailable: true,
           loadingProject: true,
           statusMessage: '',
-          scopePathLabel: 'C:/Proyectos/test_trama/book',
+          projectRootPath: 'C:/Proyectos/test_trama',
+          pickFolderDisabled: true,
           filterQuery: '',
           onFilterQueryChange: () => undefined,
                 onCreateArticle: () => undefined,
@@ -296,6 +304,8 @@ describe('sidebar panels', () => {
           onDeleteFile: () => undefined,
           onEditFileTags: () => undefined,
           onPickFolder: () => undefined,
+          onCloseProject: () => undefined,
+          onRevealInFileManager: () => undefined,
           onLoadFileTags: () => Promise.resolve([]),
         }),
         container,
@@ -318,7 +328,8 @@ describe('sidebar panels', () => {
           apiAvailable: false,
           loadingProject: false,
           statusMessage: '',
-          scopePathLabel: 'C:/Proyectos/test_trama/book',
+          projectRootPath: 'C:/Proyectos/test_trama',
+          pickFolderDisabled: true,
           filterQuery: '',
           onFilterQueryChange: () => undefined,
                 onCreateArticle: () => undefined,

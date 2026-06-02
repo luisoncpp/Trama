@@ -4,21 +4,8 @@ import type { SidebarExplorerCommonProps } from './sidebar-types'
 import { useSidebarFileActionsDialog } from './use-sidebar-file-actions-dialog'
 import { useSidebarCreateDialog, useSidebarFolderActionsDialog } from './sidebar-dialog-hooks'
 
-function SelectProjectFolderIcon() {
-  return (
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true">
-      <path d="M3 6.5A2.5 2.5 0 0 1 5.5 4H10l2 2h6.5A2.5 2.5 0 0 1 21 8.5V17a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3V6.5Z" />
-      <path d="M8 13h8" />
-      <path d="M12 9v8" />
-    </svg>
-  )
-}
-
 interface SidebarHeaderProps {
   title: string
-  apiAvailable: boolean
-  loadingProject: boolean
-  onPickFolder: () => void
 }
 
 interface SidebarExplorerContentProps {
@@ -30,7 +17,11 @@ interface SidebarExplorerContentProps {
   apiAvailable: SidebarExplorerCommonProps['apiAvailable']
   loadingProject: SidebarExplorerCommonProps['loadingProject']
   statusMessage: SidebarExplorerCommonProps['statusMessage']
-  scopePathLabel: string
+  projectRootPath: string
+  onPickFolder: SidebarExplorerCommonProps['onPickFolder']
+  onCloseProject: SidebarExplorerCommonProps['onCloseProject']
+  onRevealInFileManager: SidebarExplorerCommonProps['onRevealInFileManager']
+  pickFolderDisabled: boolean
   filterQuery: string
   onFilterQueryChange: (value: string) => void
   onCreateArticle: SidebarExplorerCommonProps['onCreateArticle']
@@ -43,7 +34,6 @@ interface SidebarExplorerContentProps {
   onEditFileTags: SidebarExplorerCommonProps['onEditFileTags']
   onLoadFileTags: (path: string) => Promise<string[]>
   onLoadFileDeleteInfo?: (path: string) => Promise<{ linkedImagePaths: string[] }>
-  onPickFolder: SidebarExplorerCommonProps['onPickFolder']
   corkboardOrder?: Record<string, string[]>
   onReorderFiles?: (folderPath: string, orderedIds: string[]) => Promise<void>
   onMoveFile?: (sourcePath: string, targetFolder: string) => Promise<void>
@@ -73,24 +63,10 @@ function useSidebarExplorerDialogs(props: SidebarExplorerContentProps) {
   return { createDialog, fileDialog, folderDialog }
 }
 
-function SidebarHeader({ title, apiAvailable, loadingProject, onPickFolder }: SidebarHeaderProps) {
+function SidebarHeader({ title }: SidebarHeaderProps) {
   return (
     <div class="workspace-panel__header">
-      <div>
-        <p class="workspace-panel__eyebrow">{title}</p>
-      </div>
-      <div class="sidebar-controls">
-        <button
-          type="button"
-          class="sidebar-menu-btn"
-          onClick={onPickFolder}
-          disabled={loadingProject || !apiAvailable}
-          aria-label="Select Project Folder..."
-          title="Select Project Folder..."
-        >
-          <SelectProjectFolderIcon />
-        </button>
-      </div>
+      <p class="workspace-panel__eyebrow">{title}</p>
     </div>
   )
 }
@@ -105,7 +81,12 @@ export function SidebarExplorerContent(props: SidebarExplorerContentProps) {
     loadingDocument: props.loadingDocument, onSelectFile: props.onSelectFile,
     loadingProject: props.loadingProject, apiAvailable: props.apiAvailable,
     statusMessage: props.statusMessage,
-    scopePathLabel: props.scopePathLabel, filterQuery: props.filterQuery,
+    projectRootPath: props.projectRootPath,
+    onPickFolder: props.onPickFolder,
+    onCloseProject: props.onCloseProject,
+    onRevealInFileManager: props.onRevealInFileManager,
+    pickFolderDisabled: props.pickFolderDisabled,
+    filterQuery: props.filterQuery,
     onFilterQueryChange: props.onFilterQueryChange,
     createMode: createDialog.createMode, createInput: createDialog.createInput,
     openCreateDialog: createDialog.openCreateDialog, closeCreateDialog: createDialog.closeCreateDialog,
@@ -131,7 +112,7 @@ export function SidebarExplorerContent(props: SidebarExplorerContentProps) {
   return (
     <div class="sidebar-panel-content">
       <aside class="workspace-panel workspace-panel--sidebar" aria-busy={props.loadingProject ? 'true' : 'false'}>
-        <SidebarHeader title={props.title} apiAvailable={props.apiAvailable} loadingProject={props.loadingProject} onPickFolder={props.onPickFolder} />
+        <SidebarHeader title={props.title} />
         <SidebarExplorerBody {...bodyProps} />
       </aside>
     </div>

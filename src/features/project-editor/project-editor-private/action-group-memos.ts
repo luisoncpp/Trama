@@ -18,14 +18,28 @@ interface ActionMemoParams {
   projectState: ProjectEditorProjectState
   uiState: ProjectEditorUiState
   sidebarState: ProjectEditorSidebarState
-  setters: ProjectEditorActionSetters
+  setters: ProjectEditorActionSetters & {
+    setLastProjectRootPath: (value: string) => void
+    clearLastProjectRootPath: () => void
+  }
   paneWorkspace: PaneWorkspace
   loadDocument: (path: string, targetPane: WorkspacePane) => Promise<void>
   openProject: (projectRoot: string, options?: OpenProjectOptions) => Promise<void>
+  clearEditor: () => void
 }
 
 export function useSidebarProjectEditorActions(params: ActionMemoParams) {
-  const { layoutState, projectState, uiState, sidebarState, setters, paneWorkspace, loadDocument, openProject } = params
+  const {
+    layoutState,
+    projectState,
+    uiState,
+    sidebarState,
+    setters,
+    paneWorkspace,
+    loadDocument,
+    openProject,
+    clearEditor,
+  } = params
   return useMemo(
     /* buildSidebarProjectEditorActions */ () => buildSidebarActions({
       layoutState,
@@ -36,6 +50,7 @@ export function useSidebarProjectEditorActions(params: ActionMemoParams) {
       paneWorkspace,
       loadDocument,
       openProject,
+      clearEditor,
     }),
     [
       layoutState,
@@ -45,6 +60,7 @@ export function useSidebarProjectEditorActions(params: ActionMemoParams) {
       paneWorkspace,
       loadDocument,
       openProject,
+      clearEditor,
     ] /*Inputs for buildSidebarProjectEditorActions*/,
   )
 }

@@ -18,6 +18,8 @@ function buildSidebarPanelContentProps(props: SidebarPanelProps) {
     statusMessage: props.statusMessage,
     gitHistory: props.gitHistory,
     onPickFolder: props.onPickFolder,
+    onCloseProject: props.onCloseProject,
+    onRevealInFileManager: props.onRevealInFileManager,
     onImport: props.onImport,
     onImportZulu: props.onImportZulu,
     onExportBook: props.onExportBook,

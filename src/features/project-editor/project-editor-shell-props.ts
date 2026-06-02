@@ -35,6 +35,8 @@ export interface ProjectEditorShellActions {
   moveFile: ProjectEditorModel['actions']['moveFile']
   moveFolder: ProjectEditorModel['actions']['moveFolder']
   pickProjectFolder: ProjectEditorModel['actions']['pickProjectFolder']
+  closeProject: ProjectEditorModel['actions']['closeProject']
+  revealProjectInFileManager: ProjectEditorModel['actions']['revealProjectInFileManager']
   setFocusScope: ProjectEditorModel['actions']['setFocusScope']
   saveSnapshot: ProjectEditorModel['actions']['saveSnapshot']
 }
@@ -113,6 +115,12 @@ function buildSidebarProjectContextProps(
     gitHistory: shellState.gitHistory,
     onPickFolder: () => {
       void shellActions.pickProjectFolder()
+    },
+    onCloseProject: () => {
+      void shellActions.closeProject()
+    },
+    onRevealInFileManager: () => {
+      void shellActions.revealProjectInFileManager()
     },
     onImport: props.onImportClick,
     onImportZulu: props.onImportZuluClick,

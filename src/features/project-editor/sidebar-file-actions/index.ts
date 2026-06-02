@@ -5,6 +5,8 @@ export {
 } from './private/sidebar-ui'
 
 export { pickProjectFolder } from './private/project-picker'
+export { closeProject } from './private/project-close'
+export { revealProjectInFileManager } from './private/project-reveal'
 
 export { selectFile } from './private/file-select'
 

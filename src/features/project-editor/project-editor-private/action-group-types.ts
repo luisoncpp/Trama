@@ -31,8 +31,12 @@ export interface ActionGroupParams {
   projectState: ProjectEditorProjectState
   uiState: ProjectEditorUiState
   sidebarState: ProjectEditorSidebarState
-  setters: ProjectEditorActionSetters
+  setters: ProjectEditorActionSetters & {
+    setLastProjectRootPath: (value: string) => void
+    clearLastProjectRootPath: () => void
+  }
   paneWorkspace: PaneWorkspace
   loadDocument: (path: string, targetPane: WorkspacePane) => Promise<void>
   openProject: (projectRoot: string, options?: OpenProjectOptions) => Promise<void>
+  clearEditor: () => void
 }

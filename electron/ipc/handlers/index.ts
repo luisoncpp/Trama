@@ -7,6 +7,8 @@ export {
   handleDeleteDocument,
   handleGetIndex,
   handleOpenProject,
+  handleCloseProject,
+  handleRevealProjectInFileManager,
   handleReadDocument,
   handleRenameDocument,
   handleRenameFolder,

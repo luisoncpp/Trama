@@ -140,7 +140,17 @@ export function useProjectEditorActions({
     seedPaneNavigationHistory,
   )
   const saveDocumentNow = useSaveDocumentNow(setters)
-  const actionParams = { layoutState, projectState, uiState, sidebarState, setters, paneWorkspace, loadDocument, openProject }
+  const actionParams = {
+    layoutState,
+    projectState,
+    uiState,
+    sidebarState,
+    setters,
+    paneWorkspace,
+    loadDocument,
+    openProject,
+    clearEditor,
+  }
   const sidebarActions = useSidebarProjectEditorActions(actionParams)
   const workspaceActions = useWorkspaceProjectEditorActions(actionParams)
   const conflictActions = useConflictProjectEditorActions(actionParams)

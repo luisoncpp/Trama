@@ -100,7 +100,7 @@ name: 'my-article',
 
 **`joinProjectPath(rootPath, sectionRoot)`** — `sidebar-panel-logic.ts`
 
-Builds the absolute section label shown in the UI:
+Builds the absolute scope path string passed to the sidebar breadcrumb:
 
 ```typescript
 joinProjectPath('C:\\Proyectos\\my-novel\\', 'book/')
@@ -108,6 +108,10 @@ joinProjectPath('C:\\Proyectos\\my-novel\\', 'book/')
 ```
 
 Strips trailing separators before joining.
+
+**`formatProjectRootBreadcrumbLabel(projectRootPath)`** — `sidebar-panel-logic.ts`
+
+Normalizes the project root path for the sidebar breadcrumb label (forward slashes, no trailing slash). When space is tight, the label uses end-anchored truncation (RTL wrapper + `text-overflow: ellipsis`) so the project folder name at the end of the path stays visible and the start is clipped — the same convention as Explorer/Finder path fields. When `rootPath` is empty, the control shows `Select project folder...` and still opens the folder picker on click.
 
 ## Conversion table
 
@@ -123,7 +127,7 @@ Strips trailing separators before joining.
 | Move file (drag-drop) | Section-relative | Project-relative | `toProjectPath()` + `toProjectFolderPath()` |
 | Reorder files | Section-relative | Project-relative | `buildScopedReorderHandler()` in `sidebar-path-scoping.ts` |
 | CorkboardOrder → tree | Project-relative | Section-relative | `scopeCorkboardOrder()` in `sidebar-path-scoping.ts` |
-| UI label display | Project root + section root | Absolute display path | `joinProjectPath()` |
+| UI project-root breadcrumb | Project root only | Full normalized root path; ellipsis via CSS when narrow | `formatProjectRootBreadcrumbLabel()` |
 | Select file | Section-relative | Project-relative | `toProjectPath()` |
 | Load file tags | Section-relative | Project-relative | `toProjectPath()` inside `loadFileTags()` |
 

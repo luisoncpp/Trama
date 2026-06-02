@@ -409,7 +409,21 @@ Mandatory doc navigation for new chats: start with `docs/START-HERE.md` — it p
 - `src/features/project-editor/components/sidebar/sidebar-panel-body.tsx`
   - Active section body composition. Thin adapter that converts raw sidebar callback strings through `sidebar-path-scoping.ts` before invoking project-level actions.
 - `src/features/project-editor/components/sidebar/sidebar-panel-logic.ts`
-  - Section scoping + filter-state helpers. Delegates path branding/scoping to `sidebar-path-scoping.ts`.
+  - Section scoping + filter-state helpers. Delegates path branding/scoping to `sidebar-path-scoping.ts`. Exports `formatProjectRootBreadcrumbLabel()` for the sidebar project-root breadcrumb.
+- `src/features/project-editor/components/sidebar/sidebar-scope-path-breadcrumb.tsx`
+  - Clickable project-root breadcrumb above the sidebar filter (full root path; CSS ellipsis when narrow). Left click and context menu **Select project folder...** open the picker; **Show in File Explorer** / **Reveal in Finder** and **Close project** are in the right-click menu.
+- `src/features/project-editor/components/sidebar/sidebar-project-root-context-menu.tsx`
+  - Context menu UI for the project-root breadcrumb.
+- `src/features/project-editor/components/sidebar/use-sidebar-project-root-context-menu.ts`
+  - Context menu open/close state and action wiring for the project-root breadcrumb.
+- `src/features/project-editor/sidebar-file-actions/private/project-close.ts`
+  - Closes the active project via IPC and resets renderer project/editor state.
+- `src/features/project-editor/sidebar-file-actions/private/project-reveal.ts`
+  - Opens the project root in the OS file manager via IPC.
+- `electron/ipc/handlers/project-handlers/project-close-handler.ts`
+  - Stops the watcher and clears active project runtime state.
+- `electron/ipc/handlers/project-handlers/project-reveal-handler.ts`
+  - Opens a project root path with `shell.openPath`.
 - `src/features/project-editor/components/sidebar/sidebar-path-scoping.ts`
   - Canonical sidebar path-scoping module. Owns branded path types (`SectionRelativePath`, `ProjectRelativePath`, `SidebarSectionRoot`) and all conversions between section-relative/project-relative paths, reorder payload scoping, and create-path building.
 - `src/features/project-editor/components/sidebar/sidebar-rail.tsx`

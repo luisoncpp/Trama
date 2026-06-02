@@ -188,10 +188,11 @@ export function usePaneWorkspaceLifecycle(
 export function useProjectEditorActionSetters(
   setters: ReturnType<typeof useProjectEditorState>['setters'],
   setLastProjectRootPath: (value: string) => void,
+  clearLastProjectRootPath: () => void,
 ) {
   return useMemo(
-    /* buildActionSetters */ () => ({ ...setters, setLastProjectRootPath }),
-    [setters, setLastProjectRootPath] /*Inputs for buildActionSetters*/,
+    /* buildActionSetters */ () => ({ ...setters, setLastProjectRootPath, clearLastProjectRootPath }),
+    [setters, setLastProjectRootPath, clearLastProjectRootPath] /*Inputs for buildActionSetters*/,
   )
 }
 

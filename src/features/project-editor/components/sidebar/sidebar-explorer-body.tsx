@@ -1,5 +1,5 @@
 import { useMemo } from 'preact/hooks'
-import { PROJECT_EDITOR_STRINGS } from '../../project-editor-strings'
+import { SidebarScopePathBreadcrumb } from './sidebar-scope-path-breadcrumb.tsx'
 import type { SidebarCreateInput } from '../../project-editor-types'
 import type { SidebarCreateMode } from './sidebar-create-dialog.tsx'
 import type { SidebarFileActionMode } from './sidebar-file-actions-dialog.tsx'
@@ -77,7 +77,11 @@ interface SidebarExplorerBodyProps {
   loadingProject: boolean
   apiAvailable: boolean
   statusMessage: string
-  scopePathLabel: string
+  projectRootPath: string
+  onPickFolder: () => void
+  onCloseProject: () => void
+  onRevealInFileManager: () => void
+  pickFolderDisabled: boolean
   filterQuery: string
   onFilterQueryChange: (value: string) => void
   createMode: SidebarCreateMode | null
@@ -171,7 +175,13 @@ export function SidebarExplorerBody(props: SidebarExplorerBodyProps) {
 
   return (
     <>
-      <p class="project-menu__path">{props.scopePathLabel || PROJECT_EDITOR_STRINGS.noFolderSelected}</p>
+      <SidebarScopePathBreadcrumb
+        projectRootPath={props.projectRootPath}
+        onPickFolder={props.onPickFolder}
+        onCloseProject={props.onCloseProject}
+        onRevealInFileManager={props.onRevealInFileManager}
+        disabled={props.pickFolderDisabled}
+      />
       {props.statusMessage && <p class="project-menu__status">{props.statusMessage}</p>}
       <SidebarFilter
         value={props.filterQuery}

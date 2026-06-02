@@ -3,7 +3,6 @@ import { SidebarExplorerContent } from './sidebar-explorer-content.tsx'
 import { SIDEBAR_SECTION_CONFIG, type ContentSidebarSection } from './sidebar-section-roots'
 import { SidebarSettingsContent } from './sidebar-settings.tsx'
 import { SidebarTransferContent } from './sidebar-transfer-content.tsx'
-import { joinProjectPath } from './sidebar-panel-logic'
 import {
   buildScopedReorderHandler,
   scopeCorkboardOrder,
@@ -96,7 +95,11 @@ function renderExplorer(props: SidebarPanelBodyProps) {
     <SidebarExplorerContent
       {...contentProps}
       title={sectionConfig.title}
-      scopePathLabel={joinProjectPath(rootPath, sectionConfig.root)}
+      projectRootPath={rootPath}
+      onPickFolder={contentProps.onPickFolder}
+      onCloseProject={contentProps.onCloseProject}
+      onRevealInFileManager={contentProps.onRevealInFileManager}
+      pickFolderDisabled={contentProps.loadingProject || !contentProps.apiAvailable}
       visibleFiles={scopedFiles}
       selectedPath={scopedSelectedPath}
       filterQuery={activeFilterQuery}

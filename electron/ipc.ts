@@ -37,6 +37,8 @@ import {
   handleMoveFolder,
   handleGetIndex,
   handleOpenProject,
+  handleCloseProject,
+  handleRevealProjectInFileManager,
   handleReadDocument,
   handleReadImageFile,
   handleRenameDocument,
@@ -122,6 +124,8 @@ function registerPingHandler(ipcMain: IpcMain): void {
 
 function registerProjectHandlers(ipcMain: IpcMain): void {
   ipcMain.handle(IPC_CHANNELS.openProject, (_event, payload) => handleOpenProject(payload))
+  ipcMain.handle(IPC_CHANNELS.closeProject, () => handleCloseProject())
+  ipcMain.handle(IPC_CHANNELS.revealProjectInFileManager, (_event, payload) => handleRevealProjectInFileManager(payload))
   ipcMain.handle(IPC_CHANNELS.selectProjectFolder, () => handleSelectProjectFolder())
   ipcMain.handle(IPC_CHANNELS.validateProjectFolder, (_event, payload) => handleValidateProjectFolder(payload))
   ipcMain.handle(IPC_CHANNELS.getIndex, () => handleGetIndex())

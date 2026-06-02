@@ -209,6 +209,9 @@ export type {
   SelectProjectFolderResponse,
   ValidateProjectFolderRequest,
   ValidateProjectFolderResponse,
+  CloseProjectResponse,
+  RevealProjectInFileManagerRequest,
+  RevealProjectInFileManagerResponse,
 } from './ipc-project.js'
 export type {
   ZuluTagMode,

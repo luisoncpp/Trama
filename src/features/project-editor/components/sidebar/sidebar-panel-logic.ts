@@ -10,6 +10,10 @@ export function joinProjectPath(rootPath: string, sectionRoot: string): string {
   return `${rootPath.replace(/[\\/]$/, '')}/${sectionRoot.replace(/\/$/, '')}`
 }
 
+export function formatProjectRootBreadcrumbLabel(projectRootPath: string): string {
+  return projectRootPath.replace(/\\/g, '/').replace(/\/$/, '')
+}
+
 export function useSidebarContentSection(
   sidebarActiveSection: SidebarSection,
   visibleFiles: string[],

@@ -61,7 +61,11 @@ export function useProjectEditor(): ProjectEditorModel {
 
   usePaneWorkspaceLifecycle(workspace.paneWorkspace, workspace.lastSavedContentMapRef, projectState.rootPath)
 
-  const actionSetters = useProjectEditorActionSetters(setters, lastProjectState.setLastProjectRootPath)
+  const actionSetters = useProjectEditorActionSetters(
+    setters,
+    lastProjectState.setLastProjectRootPath,
+    lastProjectState.clearLastProjectRootPath,
+  )
   const { actions, core } = useProjectEditorActions({
     layoutState,
     projectState,
