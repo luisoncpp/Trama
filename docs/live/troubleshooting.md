@@ -179,11 +179,28 @@ When things break after refactors, run the recovery sequence per `docs/dev-workf
 - Use silent selection updates for active match and a separate visual overlay (`editor-find-highlight`) to make the match visible.
 - Keep find modules split (`rich-markdown-editor-find.tsx`, `rich-markdown-editor-find-overlay.tsx`, `rich-markdown-editor-find-visual.ts`) to satisfy lint limits.
 
+### Find bar buttons not clickable (Windows overlay titlebar)
+
+#### Symptom
+
+- Ctrl/Cmd+F opens the find bar and the query input works, but Prev/Next/Close/Replace buttons ignore clicks.
+
+#### Root cause seen
+
+- `.editor-findbar` overlaps `.ql-toolbar`, which uses `-webkit-app-region: drag` on `html.has-overlay-titlebar`. Without `no-drag` on the find bar, Electron treats clicks as window-drag instead of button activation.
+
+#### Current fix
+
+- `.editor-findbar` uses higher `z-index`, `-webkit-app-region: no-drag`, and non-shrinking flex children. Editor shell capture handlers skip events inside the find bar.
+
+See `docs/lessons-learned/find-bar-toolbar-click-blocked.md`.
+
 ### Quick checks
 
 1. Run `npm run test -- tests/rich-markdown-editor.test.ts` and verify find tests pass.
 2. In app: focus editor, press Ctrl/Cmd+F, type query, confirm focus remains in input.
 3. Press Enter/Shift+Enter and confirm highlight moves with counter updates.
+4. Click Prev/Next/Close and confirm they respond (especially on Windows with overlay titlebar).
 
 ## 12) Split-pane dirty flag appears in wrong pane
 
