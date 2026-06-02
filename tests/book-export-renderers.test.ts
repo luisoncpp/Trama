@@ -5,7 +5,12 @@ import { mkdir, mkdtemp, readFile, stat, writeFile } from 'node:fs/promises'
 import os from 'node:os'
 import path from 'node:path'
 import { PDFDocument } from 'pdf-lib'
-import { renderMarkdownBook, renderHtmlBook, type BookExportChapter } from '../electron/services/book-export-renderers'
+import {
+  renderMarkdownBook,
+  renderHtmlBook,
+  renderChapterHtmlFragment,
+  type BookExportChapter,
+} from '../electron/services/book-export-renderers'
 import { renderDocxBook } from '../electron/services/book-export-docx-renderer'
 import { renderEpubBook } from '../electron/services/book-export-epub-renderer'
 import { renderPdfBook } from '../electron/services/book-export-pdf-renderer'
@@ -24,6 +29,20 @@ async function createProjectWithImageFixture(): Promise<{ projectRoot: string; i
   return {
     projectRoot,
     imageRelativeFromChapter: '../assets/pixel.png',
+  }
+}
+
+function inlineFormattingChapter(): BookExportChapter {
+  return {
+    path: 'book/chapter-inline.md',
+    title: 'Inline Formatting',
+    content: [
+      '## *Styled Title*',
+      '',
+      'He asked about _The Weight of Three_ again.',
+      '',
+      'Also **bold** and *italic* in one line.',
+    ].join('\n'),
   }
 }
 
@@ -58,6 +77,50 @@ describe('book export renderers', () => {
     expect(markdown).toContain('---')
     expect(markdown).toContain('# Chapter 1')
     expect(markdown).toContain('# Chapter 2')
+  })
+
+  it('renders html with em and strong for underscore and asterisk emphasis', async () => {
+    const html = await renderHtmlBook([inlineFormattingChapter()], {
+      title: 'Inline HTML Test',
+      author: 'QA Team',
+    })
+
+    expect(html).toContain('<em>The Weight of Three</em>')
+    expect(html).not.toMatch(/_The Weight of Three_/)
+    expect(html).toMatch(/<h2>[\s\S]*<em>Styled Title<\/em>[\s\S]*<\/h2>/)
+    expect(html).toContain('<strong>bold</strong>')
+  })
+
+  it('renders chapter html fragment with emphasis tags', async () => {
+    const fragment = await renderChapterHtmlFragment(inlineFormattingChapter())
+
+    expect(fragment).toContain('<em>The Weight of Three</em>')
+    expect(fragment).not.toContain('_The Weight of Three_')
+  })
+
+  it('renders docx without raw emphasis markers for underscore and asterisk syntax', async () => {
+    const docx = await renderDocxBook([inlineFormattingChapter()], {
+      title: 'Inline DOCX Test',
+      author: 'QA Team',
+    })
+
+    const { default: JSZip } = await import('jszip')
+    const zip = await JSZip.loadAsync(docx)
+    const documentXml = await zip.file('word/document.xml')?.async('string')
+
+    expect(documentXml).toBeDefined()
+    expect(documentXml).toContain('The Weight of Three')
+    expect(documentXml).not.toContain('_The Weight of Three_')
+    expect(documentXml).toContain('Styled Title')
+    expect(documentXml).not.toMatch(/\*Styled Title\*/)
+  })
+
+  it('renders pdf for inline emphasis chapter', async () => {
+    const pdf = await renderPdfBook([inlineFormattingChapter()])
+    const doc = await PDFDocument.load(pdf)
+
+    expect(doc.getPageCount()).toBeGreaterThanOrEqual(1)
+    expect(pdf.byteLength).toBeGreaterThan(500)
   })
 
   it('renders html with directive conversion and metadata', async () => {
@@ -452,6 +515,23 @@ it('renders pdf with reference-style images', async () => {
 
     const signature = await readFile(outputPath)
     expect(signature.subarray(0, 2).toString()).toBe('PK')
+  })
+
+  it('renders epub with em tags for underscore emphasis', async () => {
+    const tempDir = await mkdtemp(path.join(os.tmpdir(), 'trama-epub-inline-'))
+    const outputPath = path.join(tempDir, 'book-inline.epub')
+
+    await renderEpubBook([inlineFormattingChapter()], { title: 'EPUB Inline Test', author: 'QA Team' }, outputPath)
+
+    const { default: JSZip } = await import('jszip')
+    const zip = await JSZip.loadAsync(await readFile(outputPath))
+    const chapterEntry = Object.keys(zip.files).find((name) => name.endsWith('.xhtml') && !name.includes('toc'))
+    expect(chapterEntry).toBeDefined()
+
+    const chapterHtml = await zip.file(chapterEntry!)?.async('string')
+    expect(chapterHtml).toBeDefined()
+    expect(chapterHtml).toContain('<em>The Weight of Three</em>')
+    expect(chapterHtml).not.toContain('_The Weight of Three_')
   })
 
   it('renders epub when chapter contains data-url images', async () => {

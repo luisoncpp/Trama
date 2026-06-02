@@ -5,15 +5,16 @@ import { getImageDimensions, calculateDocxImageSize } from './book-export-image-
 import { resolveImagePath, loadImageBytes } from './book-export-image-utils.js'
 import { processChapterContent, type ExtractedImageInfo, type ParagraphSegment } from './book-export-line-processor.js'
 import type { BookExportChapter, BookExportMetadata } from './book-export-renderers.js'
+import { parseInlineMarkdownRuns, type InlineTextRun } from './book-export-inline-markdown.js'
 
-function stripInlineMarkdown(text: string): string {
-  return text
-    .replace(/`([^`]+)`/g, '$1')
-    .replace(/\*\*([^*]+)\*\*/g, '$1')
-    .replace(/\*([^*]+)\*/g, '$1')
-    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '$1')
-    .replace(/^#{1,6}\s+/g, '')
-    .trim()
+function toDocxTextRuns(runs: InlineTextRun[], defaultBold = false): TextRun[] {
+  return runs
+    .filter((run) => run.text.length > 0)
+    .map((run) => new TextRun({
+      text: run.text,
+      bold: defaultBold || run.bold,
+      italics: run.italic,
+    }))
 }
 
 function createImageParagraph(bytes: Uint8Array, type: string): Paragraph {
@@ -34,16 +35,19 @@ function createImageParagraph(bytes: Uint8Array, type: string): Paragraph {
   })
 }
 
-function createTextParagraph(text: string, centered: boolean): Paragraph {
+function createTextParagraphFromRuns(runs: InlineTextRun[], centered: boolean): Paragraph {
+  const children = toDocxTextRuns(runs)
   return new Paragraph({
-    children: [new TextRun(text)],
+    children: children.length > 0 ? children : [new TextRun('')],
     alignment: centered ? AlignmentType.CENTER : AlignmentType.LEFT,
   })
 }
 
 function createHeadingParagraph(text: string, level: 1 | 2 | 3 | 4 | 5 | 6, centered: boolean): Paragraph {
+  const runs = parseInlineMarkdownRuns(text)
+  const hasInlineStyle = runs.some((run) => run.bold || run.italic)
   return new Paragraph({
-    children: [new TextRun({ text, bold: true })],
+    children: toDocxTextRuns(runs, !hasInlineStyle),
     heading: `Heading${level}` as 'Heading1' | 'Heading2' | 'Heading3' | 'Heading4' | 'Heading5' | 'Heading6',
     alignment: centered ? AlignmentType.CENTER : AlignmentType.LEFT,
   })
@@ -127,19 +131,18 @@ function buildDocxHandlers(
       paragraphs.push(createHeadingParagraph(text, level as 1 | 2 | 3 | 4 | 5 | 6, state.centered))
     },
     onParagraph: (text: string) => {
-      const stripped = stripInlineMarkdown(text)
-      if (!stripped) {
+      const runs = parseInlineMarkdownRuns(text)
+      if (runs.length === 0) {
         paragraphs.push(new Paragraph({ text: '' }))
         return
       }
-      paragraphs.push(createTextParagraph(stripped, state.centered))
+      paragraphs.push(createTextParagraphFromRuns(runs, state.centered))
     },
     onParagraphWithImages: async (segments: ParagraphSegment[]) => {
       const children: (TextRun | ImageRun)[] = []
       for (const segment of segments) {
         if (segment.type === 'text') {
-          const stripped = stripInlineMarkdown(segment.text)
-          if (stripped) children.push(new TextRun({ text: stripped }))
+          children.push(...toDocxTextRuns(parseInlineMarkdownRuns(segment.text)))
         } else {
           const imageRun = await buildDocxImageChild(segment, projectRoot, dir)
           if (imageRun) children.push(imageRun)

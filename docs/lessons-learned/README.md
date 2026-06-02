@@ -27,6 +27,7 @@ Avoid: "bug description + fix". Prefer: "what I learned that applies to future w
 
 | File | Topic | Date |
 |------|-------|------|
+| `book-export-inline-markdown-emphasis.md` | PDF/DOCX line-by-line export must share a marked-based inline parser with HTML/EPUB or `_multi word_` and heading `*...*` show raw markers | 2026-06-01 |
 | `flat-dark-surfaces-reduce-warm-illusion.md` | In dark themes, gradients, shadows, and permanently filled rows can make neutral greys read warm; flatten surfaces before chasing hue tweaks | 2026-05-31 |
 | `theme-interaction-tokens-should-follow-the-accent-model.md` | Editor interaction tokens must stay aligned with the theme's transient accent model, or normal chrome picks up warning-colored brown casts | 2026-05-31 |
 | `layout-ownership-single-writer.md` | Layout bugs stay debuggable when sidebar width has one writer, the editor fill chain has one named contract, and JS/CSS share one breakpoint | 2026-05-31 |

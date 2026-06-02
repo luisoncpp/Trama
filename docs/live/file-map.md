@@ -124,10 +124,12 @@ Mandatory doc navigation for new chats: start with `docs/START-HERE.md` — it p
   - Book export sanitize pipeline: strips frontmatter for all formats, strips HTML comments only for markdown output, and normalizes line endings/trailing whitespace.
 - `electron/services/book-export-directives.ts`
   - Shared directive parsing helpers for `trama:center`, `trama:spacer`, and `trama:pagebreak`, including canonical comment tokens and HTML artifact variants.
+- `electron/services/book-export-inline-markdown.ts`
+  - Shared inline emphasis parser for PDF/DOCX: `marked.lexer()` → `{ text, bold, italic }` runs (`**`, `__`, `*`, `_`, links, legacy `<strong>`/`<em>`).
 - `electron/services/book-export-pdf-fonts.ts`
-  - PDF font loading strategy: registers `@pdf-lib/fontkit`, resolves Unicode-capable system serif fonts, and falls back to standard fonts.
+  - PDF font loading strategy: registers `@pdf-lib/fontkit`, resolves Unicode-capable system serif fonts (regular/bold/italic/bold-italic), and falls back to standard fonts.
 - `electron/services/book-export-pdf-inline.ts`
-  - PDF inline text helpers: markdown inline tokenization (`**bold**`/`__bold__`), line wrapping, and width measurement for mixed regular/bold runs.
+  - PDF inline text helpers: word tokens from shared inline parser, line wrapping, font resolution, and width measurement for mixed-style runs.
 - `electron/services/book-export-pdf-font-utils.ts`
   - Font normalization utilities: `normalizeForFont`, `safeTextForFont`, `normalizeRunsForFonts`. Shared between PDF rendering functions.
 - `electron/services/book-export-pdf-utils.ts`

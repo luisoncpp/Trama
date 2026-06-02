@@ -15,11 +15,12 @@ book-export-service.ts          — Orquestador: compila capítulos, sanitiza, d
 ├── book-export-directives.ts   — Parsea directivas layout (center/spacer/pagebreak)
 ├── book-export-image-utils.ts  — Resolve paths, carga bytes, parsea data URLs, lee dimensiones PNG/JPEG, escala para DOCX, extrae referencias markdown
 │
+├── book-export-inline-markdown.ts — Inline bold/italic runs via marked.lexer (shared by PDF/DOCX)
 ├── book-export-renderers.ts    — Modelo común BookExportChapter + renderer HTML/Markdown
 │
 ├── book-export-pdf-fonts.ts           — Carga fuentes del sistema (Times New Roman, etc.) vía @pdf-lib/fontkit; fallback a StandardFonts
 ├── book-export-pdf-font-utils.ts      — Normalización Unicode: normalizeForFont, safeTextForFont, normalizeRunsForFonts
-├── book-export-pdf-inline.ts          — Tokeniza inline bold (**text**) y word-wrap para layout PDF
+├── book-export-pdf-inline.ts          — Convierte runs inline a tokens por palabra + word-wrap para layout PDF
 ├── book-export-pdf-utils.ts            — createPdfWriter, PdfWriter, PdfLayoutState, drawRuns, drawHeading, drawPdfImage, drawWrappedParagraph
 ├── book-export-pdf-chapters.ts         — renderPdfChapter: parsea contenido (directivas, imágenes, headings, párrafos), emite al writer
 ├── book-export-pdf-renderer.ts         — BARRIL (2 líneas): re-exporta desde pdf-utils.ts
@@ -57,8 +58,9 @@ renderPdfBook()   [book-export-pdf-utils.ts]
           │      │    ├── Si pagebreak → addPage() forzado
           │      │    ├── Si línea de imagen (![alt](path)) → writer.drawImage(resolvedPath)
           │      │    ├── Si heading → writer.drawHeading(text, centered)
+          │      │    │         └── parseInlineMarkdownRuns → headingTokens → drawRuns (tamaño heading)
           │      │    └── Si párrafo → writer.drawParagraphLine(text, centered)
-          │      │         └── drawParagraphLine usa inlineTokens → wrapTokens → drawRuns
+          │      │         └── drawParagraphLine usa inlineTokens (marked) → wrapTokens → drawRuns
           │      │
           │      └── Retorna si último elemento fue pagebreak
          │
@@ -269,6 +271,19 @@ Línea nueva cuando cursorY < MARGIN → addPage() automático (ensureLineCapaci
 
 ---
 
+## Inline emphasis (bold / italic)
+
+| Formato | Motor inline |
+|---------|----------------|
+| `html`, `epub` | `marked.parse()` en capítulo completo |
+| `pdf`, `docx` | `book-export-inline-markdown.ts` → `marked.lexer()` por línea |
+
+Soporta `**bold**`, `__bold__`, `*italic*`, `_italic_` (incl. frases con espacios), enlaces (texto visible), y HTML legacy `<strong>` / `<em>` convertido antes del lexer.
+
+PDF carga fuentes italic/bold-italic del sistema cuando existen (`timesi.ttf`, etc.); si no, hace fallback a regular/bold.
+
+DOCX aplica `TextRun` con `bold` / `italics` por run. Headings sin marcadores inline se renderizan en negrita por defecto; si el título trae `*...*` o `_..._`, se respeta el estilo inline.
+
 ## Errores Comunes Documentados
 
 - **`WinAnsi cannot encode`**: Fuente del sistema no disponible → fallback a StandardFonts → falla en Unicode. Fix: asegurar que `@pdf-lib/fontkit` encuentra fuente serif del sistema.
@@ -276,6 +291,7 @@ Línea nueva cuando cursorY < MARGIN → addPage() automático (ensureLineCapaci
 - **Center regression**: `drawHeading()` no recibía `centered` flag → headings ignoraban directivas de centrado. Fix: pasó `centered` a `drawHeading()` y calculó `x` igual que párrafos.
 - **Imágenes reference-style ignoradas en DOCX**: el renderer solo parseaba `![alt](url)`, por lo que `![][ref]` + `[ref]: url` se renderizaba como texto plano. Fix: `extractImageReferences` + `extractImageInfo` soportan inline, explicit-ref e implicit-ref; las líneas de definición se skippean.
 - **DOCX ImageRun con EMU en lugar de píxeles**: pasar EMU directamente a `transformation` produce imágenes gigantescas (página entera en Calibre) o invisibles (LibreOffice). Fix: `calculateDocxImageSize` retorna píxeles; la librería `docx` hace la conversión interna a EMU.
+- **Énfasis inline con guiones bajos visibles en PDF/DOCX**: regex `_([^_]+)_` no cubre `_texto con espacios_`; headings PDF no parseaban `*...*`. Fix: parser compartido `book-export-inline-markdown.ts` basado en `marked.lexer`.
 
 ---
 

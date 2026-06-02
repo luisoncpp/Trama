@@ -1,4 +1,5 @@
-import type { PdfTextToken } from './book-export-pdf-inline.js'
+import type { PdfFontPair } from './book-export-pdf-fonts.js'
+import { resolvePdfFont, type PdfTextToken } from './book-export-pdf-inline.js'
 
 export function normalizeForFont(text: string): string {
   return text
@@ -24,10 +25,10 @@ export function safeTextForFont(text: string, font: { encodeText: (value: string
   }
 }
 
-export function normalizeRunsForFonts(runs: PdfTextToken[], regular: { encodeText: (value: string) => unknown }, bold: { encodeText: (value: string) => unknown }): PdfTextToken[] {
+export function normalizeRunsForFonts(runs: PdfTextToken[], fonts: PdfFontPair): PdfTextToken[] {
   const normalizedRuns: PdfTextToken[] = []
   for (const run of runs) {
-    const font = run.bold ? bold : regular
+    const font = resolvePdfFont(run, fonts)
     const safeText = safeTextForFont(run.text, font)
     if (safeText.trim()) {
       normalizedRuns.push({ ...run, text: safeText })

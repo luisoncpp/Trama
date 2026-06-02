@@ -1,46 +1,23 @@
 import type { PDFFont } from 'pdf-lib'
+import { parseInlineMarkdownRuns } from './book-export-inline-markdown.js'
 
 export interface PdfTextToken {
   text: string
   bold: boolean
+  italic: boolean
 }
 
 export function inlineTokens(text: string): PdfTextToken[] {
-  const source = text
-    .replace(/^#{1,6}\s+/g, '')
-    .replace(/!\[([^\]]*)\]\([^)]+\)/g, '')
-    .replace(/`([^`]+)`/g, '$1')
-    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '$1')
-    .replace(/<(strong|b)>([\s\S]*?)<\/(strong|b)>/gi, '**$2**')
-    .trim()
-
-  if (!source) {
-    return []
-  }
-
+  const runs = parseInlineMarkdownRuns(text)
   const tokens: PdfTextToken[] = []
-  const strongPattern = /(\*\*[^*]+\*\*|__[^_]+__)/g
-  let cursor = 0
 
-  const pushWords = (raw: string, bold: boolean) => {
-    const normalized = raw
-      .replace(/\*([^*]+)\*/g, '$1')
-      .replace(/_([^_]+)_/g, '$1')
-      .trim()
-
-    for (const word of normalized.split(/\s+/).filter(Boolean)) {
-      tokens.push({ text: word, bold })
+  for (const run of runs) {
+    const words = run.text.split(/\s+/).filter(Boolean)
+    for (const word of words) {
+      tokens.push({ text: word, bold: run.bold, italic: run.italic })
     }
   }
 
-  for (const match of source.matchAll(strongPattern)) {
-    const start = match.index ?? 0
-    pushWords(source.slice(cursor, start), false)
-    pushWords(match[0].slice(2, -2), true)
-    cursor = start + match[0].length
-  }
-
-  pushWords(source.slice(cursor), false)
   return tokens
 }
 
@@ -74,10 +51,30 @@ export function wrapTokens(
   return lines
 }
 
-export function measureTokenLine(tokens: PdfTextToken[], regular: PDFFont, bold: PDFFont, fontSize: number): number {
-  const spaceWidth = regular.widthOfTextAtSize(' ', fontSize)
+export function resolvePdfFont(
+  token: PdfTextToken,
+  fonts: { regular: PDFFont; bold: PDFFont; italic: PDFFont; boldItalic: PDFFont },
+): PDFFont {
+  if (token.bold && token.italic) {
+    return fonts.boldItalic
+  }
+  if (token.bold) {
+    return fonts.bold
+  }
+  if (token.italic) {
+    return fonts.italic
+  }
+  return fonts.regular
+}
+
+export function measureTokenLine(
+  tokens: PdfTextToken[],
+  fonts: { regular: PDFFont; bold: PDFFont; italic: PDFFont; boldItalic: PDFFont },
+  fontSize: number,
+): number {
+  const spaceWidth = fonts.regular.widthOfTextAtSize(' ', fontSize)
   return tokens.reduce((sum, token, index) => {
-    const font = token.bold ? bold : regular
+    const font = resolvePdfFont(token, fonts)
     return sum + font.widthOfTextAtSize(token.text, fontSize) + (index > 0 ? spaceWidth : 0)
   }, 0)
 }
