@@ -19,6 +19,8 @@ export const IPC_CHANNELS = {
   getIndex: 'trama:index:get',
   externalFileEvent: 'trama:project:external-file-event',
   setFullscreen: 'trama:window:set-fullscreen',
+  revealMenuBar: 'trama:window:reveal-menu-bar',
+  hideMenuBar: 'trama:window:hide-menu-bar',
   setWindowAppearance: 'trama:window:set-appearance',
   fullscreenChanged: 'trama:window:fullscreen-changed',
   getSpellcheckSettings: 'trama:window:get-spellcheck-settings',

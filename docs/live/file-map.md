@@ -36,6 +36,14 @@ Mandatory doc navigation for new chats: start with `docs/START-HERE.md` — it p
 - `electron/main-process/application-menu.ts`
   - Custom application menu setup: replaces Electron's default menu bar with a trimmed-down version (File, Edit, View, Help) that removes zoom controls to avoid confusion with Trama's custom zoom in the toolbar.
   - View menu dispatches pane-history Back/Forward commands via the workspace command bridge.
+- `electron/main-process/menu-bar-auto-hide.ts`
+  - Alt menu behavior: Win32 overlay titlebars use `Menu.popup()`; other platforms use auto-hidden native menu bar. Wired from renderer via IPC.
+- `electron/ipc/menu-bar-handlers.ts`
+  - IPC handlers for `revealMenuBar` / `hideMenuBar`.
+- `src/shared/menu-bar-alt-key.ts`
+  - Detects bare Left Alt (not Alt+arrow shortcuts).
+- `src/features/project-editor/use-menu-bar-reveal-on-alt.ts`
+  - Renderer hook: Left Alt → `tramaApi.revealMenuBar()`.
 - `electron/ipc.ts`
   - Thin IPC registration/orchestration.
 - `electron/ipc/spellcheck.ts`

@@ -8,6 +8,7 @@ import { configureWindowCloseBehavior } from './main-process/window-close.js'
 import { createMainWindowOptions } from './window-config.js'
 import { applyWindowChrome } from './window-chrome.js'
 import { setupApplicationMenu } from './main-process/application-menu.js'
+import { configureAutoHideMenuBar } from './main-process/menu-bar-auto-hide.js'
 import { IPC_CHANNELS } from '../src/shared/ipc.js'
 
 const __filename = fileURLToPath(import.meta.url)
@@ -183,6 +184,7 @@ async function createMainWindow(): Promise<void> {
   }
   setupContextMenu(win)
   setupApplicationMenu(win)
+  configureAutoHideMenuBar(win)
 
   win.on('closed', () => {
     mainWindow = null

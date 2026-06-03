@@ -202,7 +202,29 @@ See `docs/lessons-learned/find-bar-toolbar-click-blocked.md`.
 3. Press Enter/Shift+Enter and confirm highlight moves with counter updates.
 4. Click Prev/Next/Close and confirm they respond (especially on Windows with overlay titlebar).
 
-## 12) Split-pane dirty flag appears in wrong pane
+## 12) Native menu bar does not appear on Alt (Windows overlay titlebar)
+
+### Symptom
+
+- After enabling the hidden Win32 title bar, pressing Alt does not reveal File / Edit / View.
+
+### Root cause seen
+
+- `autoHideMenuBar: true` is set in `electron/window-config.ts`, but Electron’s built-in Alt toggle is unreliable with `titleBarStyle: 'hidden'` (and was briefly regressed in Electron 39.7+).
+
+### Current fix
+
+- Renderer: `use-menu-bar-reveal-on-alt.ts` listens for bare Left Alt and calls `tramaApi.revealMenuBar()`.
+- Main: `electron/main-process/menu-bar-auto-hide.ts` — on Win32 opens `Menu.popup()`; on other platforms toggles the native menu bar.
+- **Note:** Menu-bar debugging logs appear in the **terminal running Electron** (`npm run dev`), not in the renderer DevTools console.
+
+### Quick checks
+
+1. Run `npm run test -- tests/menu-bar-alt-key.test.ts tests/menu-bar-auto-hide.test.ts`.
+2. Restart `npm run dev`, press **Left Alt** — a menu with File / Edit / View should open (Win32: popup at top-left; macOS/Linux: native strip).
+3. On macOS/Linux, click in the editor — the menu bar should hide again.
+
+## 13) Split-pane dirty flag appears in wrong pane
 
 ### Symptom
 

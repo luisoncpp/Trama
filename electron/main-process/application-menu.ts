@@ -61,5 +61,9 @@ export function setupApplicationMenu(win: BrowserWindow): void {
     { role: 'help' },
   ]
 
-  Menu.setApplicationMenu(Menu.buildFromTemplate(template))
+  const menu = Menu.buildFromTemplate(template)
+  Menu.setApplicationMenu(menu)
+  if (process.platform === 'win32') {
+    win.setMenu(menu)
+  }
 }

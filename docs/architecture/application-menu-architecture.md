@@ -24,12 +24,15 @@ The custom menu is applied via `Menu.setApplicationMenu(Menu.buildFromTemplate(t
 
 The `autoHideMenuBar: true` setting in `window-config.ts` is preserved — the menu bar still hides and appears on Alt press, but now it shows the custom template without zoom options.
 
+On Windows with `titleBarStyle: 'hidden'`, Electron does not paint a native menu strip. Pressing **Left Alt** in the renderer calls `tramaApi.revealMenuBar()` (IPC), and the main process opens the application menu via `Menu.popup()` at the top-left. On macOS/Linux, the native auto-hidden menu bar is shown with `setMenuBarVisibility(true)` instead.
+
 ## Key Files
 
 | File | Role |
 |------|------|
 | `electron/main-process/application-menu.ts` | Defines and applies the custom `Menu.setApplicationMenu()` template |
-| `electron/main.ts` | Calls `setupApplicationMenu()` after `setupContextMenu()` in `createMainWindow()` |
+| `electron/main-process/menu-bar-auto-hide.ts` | Alt-to-show fallback for the auto-hidden native menu bar |
+| `electron/main.ts` | Calls `setupApplicationMenu()` and `configureAutoHideMenuBar()` in `createMainWindow()` |
 | `electron/window-config.ts` | Contains `autoHideMenuBar: true` — the menu bar appears on Alt press |
 
 ## Menu Structure

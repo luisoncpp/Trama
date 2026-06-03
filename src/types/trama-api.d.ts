@@ -97,6 +97,8 @@ declare global {
       deleteDocument(payload: DeleteDocumentRequest): Promise<IpcEnvelope<DeleteDocumentResponse>>
       getIndex(): Promise<IpcEnvelope<ProjectIndex>>
       setFullscreen(payload: SetFullscreenRequest): Promise<IpcEnvelope<SetFullscreenResponse>>
+      revealMenuBar(): Promise<void>
+      hideMenuBar(): Promise<void>
       setWindowAppearance(payload: SetWindowAppearanceRequest): Promise<IpcEnvelope<SetWindowAppearanceResponse>>
       getSpellcheckSettings(): Promise<IpcEnvelope<SpellcheckSettingsResponse>>
       setSpellcheckSettings(payload: SetSpellcheckSettingsRequest): Promise<IpcEnvelope<SpellcheckSettingsResponse>>

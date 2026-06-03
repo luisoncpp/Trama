@@ -144,6 +144,12 @@ const tramaApi = {
   setFullscreen(payload: SetFullscreenRequest): Promise<IpcEnvelope<SetFullscreenResponse>> {
     return ipcRenderer.invoke(IPC_CHANNELS.setFullscreen, payload)
   },
+  revealMenuBar(): Promise<void> {
+    return ipcRenderer.invoke(IPC_CHANNELS.revealMenuBar)
+  },
+  hideMenuBar(): Promise<void> {
+    return ipcRenderer.invoke(IPC_CHANNELS.hideMenuBar)
+  },
   setWindowAppearance(payload: SetWindowAppearanceRequest): Promise<IpcEnvelope<SetWindowAppearanceResponse>> {
     return ipcRenderer.invoke(IPC_CHANNELS.setWindowAppearance, payload)
   },
