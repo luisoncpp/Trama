@@ -1,6 +1,8 @@
 import type {
   AiExportRequest,
   AiExportResponse,
+  AiExportPickStagingRequest,
+  AiExportPickStagingResponse,
   AiImportPreview,
   AiImportRequest,
   AiImportResponse,
@@ -108,6 +110,7 @@ declare global {
       aiImportPreview(payload: AiImportRequest): Promise<IpcEnvelope<AiImportPreview>>
       aiImport(payload: AiImportRequest): Promise<IpcEnvelope<AiImportResponse>>
       aiExport(payload: AiExportRequest): Promise<IpcEnvelope<AiExportResponse>>
+      aiExportPickStaging(payload: AiExportPickStagingRequest): Promise<IpcEnvelope<AiExportPickStagingResponse>>
       bookExport(payload: BookExportRequest): Promise<IpcEnvelope<BookExportResponse>>
       gitHistoryStatus(): Promise<IpcEnvelope<GitHistoryStatusResponse>>
       saveGitSnapshot(payload: SaveGitSnapshotRequest): Promise<IpcEnvelope<SaveGitSnapshotResponse>>

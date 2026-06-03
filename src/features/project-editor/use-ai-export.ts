@@ -110,6 +110,8 @@ export function useAiExport(projectRoot: string | null) {
     setIncludeFrontmatter: state.setIncludeFrontmatter,
     exporting: state.exporting,
     lastError: state.lastError,
+    setLastError: state.setLastError,
+    setCopyToastMessage: state.setCopyToastMessage,
     handleExport,
     copyToastMessage,
     dismissCopyToast,

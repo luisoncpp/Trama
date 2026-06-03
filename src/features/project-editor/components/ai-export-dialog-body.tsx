@@ -1,3 +1,5 @@
+import { AiExportStagingBasket } from './ai-export-staging-basket'
+
 interface AiExportDialogBodyProps {
   closeDialog: () => void
   handleExport: () => void
@@ -5,17 +7,12 @@ interface AiExportDialogBodyProps {
   onSelectedPathsChange: (paths: string[]) => void
   includeFrontmatter: boolean
   onIncludeFrontmatterChange: (include: boolean) => void
-  visibleFiles: string[]
+  projectRoot: string
   exporting: boolean
   canClose: boolean
   lastError: string | null
-}
-
-interface AiExportFileListProps {
-  selectedPaths: string[]
-  onSelectedPathsChange: (paths: string[]) => void
-  visibleFiles: string[]
-  exporting: boolean
+  setLastError: (message: string | null) => void
+  setCopyToastMessage: (message: string | null) => void
 }
 
 interface AiExportActionsProps {
@@ -24,81 +21,6 @@ interface AiExportActionsProps {
   canClose: boolean
   exporting: boolean
   selectedCount: number
-}
-
-function useAiExportDialogSelection({
-  selectedPaths,
-  onSelectedPathsChange,
-  visibleFiles,
-}: Pick<AiExportFileListProps, 'selectedPaths' | 'onSelectedPathsChange' | 'visibleFiles'>) {
-  const allSelected = selectedPaths.length === visibleFiles.length && visibleFiles.length > 0
-  const someSelected = selectedPaths.length > 0 && selectedPaths.length < visibleFiles.length
-
-  const toggleFileSelection = (filePath: string) => {
-    if (selectedPaths.includes(filePath)) {
-      onSelectedPathsChange(selectedPaths.filter((p) => p !== filePath))
-      return
-    }
-    onSelectedPathsChange([...selectedPaths, filePath])
-  }
-
-  const toggleAllFiles = () => {
-    if (selectedPaths.length === visibleFiles.length) {
-      onSelectedPathsChange([])
-      return
-    }
-    onSelectedPathsChange(visibleFiles)
-  }
-
-  return { allSelected, someSelected, toggleFileSelection, toggleAllFiles }
-}
-
-function AiExportFileList({
-  selectedPaths,
-  onSelectedPathsChange,
-  visibleFiles,
-  exporting,
-}: AiExportFileListProps) {
-  const { allSelected, someSelected, toggleFileSelection, toggleAllFiles } = useAiExportDialogSelection({
-    selectedPaths,
-    onSelectedPathsChange,
-    visibleFiles,
-  })
-
-  return (
-    <div class="ai-export-dialog__file-list">
-      <label class="ai-export-dialog__select-all">
-        <input
-          type="checkbox"
-          checked={allSelected}
-          indeterminate={someSelected}
-          onChange={toggleAllFiles}
-          disabled={visibleFiles.length === 0 || exporting}
-        />
-        <span>
-          Select all files <span class="ai-export-dialog__file-count">({selectedPaths.length} of {visibleFiles.length})</span>
-        </span>
-      </label>
-
-      <div class="ai-export-dialog__files">
-        {visibleFiles.length === 0 ? (
-          <p class="ai-export-dialog__no-files">No files available</p>
-        ) : (
-          visibleFiles.map((filePath) => (
-            <label key={filePath} class="ai-export-dialog__file-item">
-              <input
-                type="checkbox"
-                checked={selectedPaths.includes(filePath)}
-                onChange={() => toggleFileSelection(filePath)}
-                disabled={exporting}
-              />
-              <span>{filePath}</span>
-            </label>
-          ))
-        )}
-      </div>
-    </div>
-  )
 }
 
 function AiExportActions({ closeDialog, handleExport, canClose, exporting, selectedCount }: AiExportActionsProps) {
@@ -126,10 +48,12 @@ export function AiExportDialogBody({
   onSelectedPathsChange,
   includeFrontmatter,
   onIncludeFrontmatterChange,
-  visibleFiles,
+  projectRoot,
   exporting,
   canClose,
   lastError,
+  setLastError,
+  setCopyToastMessage,
 }: AiExportDialogBodyProps) {
   return (
     <div class="ai-export-dialog" role="dialog" aria-modal="true" aria-label="Export Files" onClick={(e) => e.stopPropagation()}>
@@ -149,11 +73,13 @@ export function AiExportDialogBody({
         </label>
       </div>
 
-      <AiExportFileList
+      <AiExportStagingBasket
+        projectRoot={projectRoot}
         selectedPaths={selectedPaths}
         onSelectedPathsChange={onSelectedPathsChange}
-        visibleFiles={visibleFiles}
         exporting={exporting}
+        setLastError={setLastError}
+        setCopyToastMessage={setCopyToastMessage}
       />
 
       <AiExportActions

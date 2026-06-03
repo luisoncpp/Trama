@@ -10,9 +10,11 @@ interface AiExportDialogProps {
   onSelectedPathsChange: (paths: string[]) => void
   includeFrontmatter: boolean
   onIncludeFrontmatterChange: (include: boolean) => void
-  visibleFiles: string[]
+  projectRoot: string
   exporting: boolean
   lastError: string | null
+  setLastError: (message: string | null) => void
+  setCopyToastMessage: (message: string | null) => void
 }
 
 function useAiExportDialogActions({
@@ -63,9 +65,11 @@ export function AiExportDialog({
   onSelectedPathsChange,
   includeFrontmatter,
   onIncludeFrontmatterChange,
-  visibleFiles,
+  projectRoot,
   exporting,
   lastError,
+  setLastError,
+  setCopyToastMessage,
 }: AiExportDialogProps) {
   const [canClose, setCanClose] = useState(!exporting)
 
@@ -88,10 +92,12 @@ export function AiExportDialog({
         onSelectedPathsChange={onSelectedPathsChange}
         includeFrontmatter={includeFrontmatter}
         onIncludeFrontmatterChange={onIncludeFrontmatterChange}
-        visibleFiles={visibleFiles}
+        projectRoot={projectRoot}
         exporting={exporting}
         canClose={canClose}
         lastError={lastError}
+        setLastError={setLastError}
+        setCopyToastMessage={setCopyToastMessage}
       />
     </div>,
     document.body,

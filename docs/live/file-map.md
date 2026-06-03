@@ -119,6 +119,8 @@ Mandatory doc navigation for new chats: start with `docs/START-HERE.md` — it p
 - `electron/services/ai-import-service.ts`
   - Parses AI clipboard blocks, builds preview metadata, and executes multi-file import writes.
 - `electron/services/ai-export-service.ts`
+- `electron/services/ai-export-pick-service.ts`
+  - Native open-file / open-directory dialogs for AI export staging basket (`defaultPath: projectRoot`, returns absolute paths).
   - Formats selected files into `=== ARCHIVO: ... ===` blocks, validates relative paths against project root, and supports frontmatter include/exclude mode.
 - `electron/services/zulu-import-service.ts`
   - ZuluPad import service: parses `.zulu` XML content into pages, generates frontmatter with optional tags, and writes markdown files to the target folder.
@@ -327,7 +329,15 @@ Mandatory doc navigation for new chats: start with `docs/START-HERE.md` — it p
 - `src/features/project-editor/components/ai-export-dialog.tsx`
   - Export dialog controller (portal, close behavior, keyboard handling) wired to export hook actions.
 - `src/features/project-editor/components/ai-export-dialog-body.tsx`
-  - Export dialog UI body with multi-select file list, include-frontmatter option, and export/cancel actions.
+  - Export dialog UI body: frontmatter option, staging basket mount, export/cancel actions.
+- `src/features/project-editor/components/ai-export-staging/index.ts`
+  - Deep module public API: `AiExportStagingController`, relative path hardening, native picker helpers, basket keyboard utilities.
+- `src/features/project-editor/components/ai-export-staging/private/`
+  - Staging implementation only (import via `ai-export-staging/index.ts`).
+- `src/features/project-editor/components/ai-export-staging-basket.tsx`
+  - Staging basket UI: Add Files/Folder actions, clear basket, wires `AiExportStagingController`.
+- `src/features/project-editor/components/ai-export-staging-chips.tsx`
+  - Wrapping chip list with keyboard focus and per-chip remove controls.
 - `src/features/project-editor/components/book-export-dialog.tsx`
   - Markdown book export modal controller (portal, close behavior, keyboard handling).
 - `src/features/project-editor/components/book-export-dialog-body.tsx`
@@ -590,6 +600,8 @@ Core and regression suites:
 - `tests/book-export-image-utils.test.ts`
   - Image utility coverage: PNG/JPEG dimension parsing from bytes, DOCX proportional size calculation, and markdown reference-style image extraction.
 - `tests/use-ai-export.test.ts`
+- `tests/ai-export-staging-hardening.test.ts`
+- `tests/ai-export-staging-keyboard.test.ts`
   - Renderer export hook coverage for IPC call shape, clipboard copy, and error state handling.
 - `tests/folder-rename-repository.test.ts`
   - Repository-level folder rename coverage (success + validation/collision failures).

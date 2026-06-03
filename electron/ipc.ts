@@ -51,6 +51,7 @@ import {
   handleAiImportPreview,
   handleAiImport,
   handleAiExport,
+  handleAiExportPickStaging,
   handleBookExport,
   handleGitHistoryStatus,
   handleListDocumentRevisions,
@@ -171,6 +172,10 @@ function registerAiHandlers(ipcMain: IpcMain): void {
 
   ipcMain.handle(IPC_CHANNELS.aiExport, (_event, payload: AiExportRequest) => {
     return handleAiExport(_event, payload)
+  })
+
+  ipcMain.handle(IPC_CHANNELS.aiExportPickStaging, (_event, payload) => {
+    return handleAiExportPickStaging(_event, payload)
   })
 
   ipcMain.handle(IPC_CHANNELS.bookExport, (_event, payload: BookExportRequest) => {

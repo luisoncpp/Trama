@@ -86,7 +86,9 @@ Manages dialog state (open, preview data, importMode selection), calls `window.t
 
 ### 1. File Selection (renderer)
 
-Sidebar Transfer section (`src/features/project-editor/components/sidebar/sidebar-transfer-content.tsx`) exposes export trigger. Export dialog (`ai-export-dialog.tsx`, `ai-export-dialog-body.tsx`) builds a checkbox list from `state.visibleFiles` with select-all toggle and include-frontmatter option.
+Sidebar Transfer section (`src/features/project-editor/components/sidebar/sidebar-transfer-content.tsx`) exposes export trigger. Export dialog (`ai-export-dialog.tsx`, `ai-export-dialog-body.tsx`) opens OS file/folder dialogs via IPC (`trama:ai:export:pick-staging` → `electron/services/ai-export-pick-service.ts` with `defaultPath: projectRoot`). Renderer **Staging Basket** chip list receives absolute paths, then **Relative Path Hardening** in `src/features/project-editor/components/ai-export-staging/` (deep module; import only from `index.ts`). Only `book/`, `lore/`, and `outline/` paths are accepted; skips are reported via export toast (`setCopyToastMessage`) and console. Basket supports arrow-key focus, Backspace/Delete removal, and per-chip dismiss. Include-frontmatter option remains in the dialog shell.
+
+Note: Chromium `showOpenFilePicker` / `FileSystemFileHandle` paths are empty under Electron (`webUtils.getPathForFile` cannot resolve them), so staging pickers use the main-process `dialog.showOpenDialog` bridge instead.
 
 ### 2. Export Service (`electron/services/ai-export-service.ts`)
 
@@ -131,6 +133,7 @@ All channels defined in `src/shared/ipc.ts`. Handler registration in `electron/i
 | `trama:ai:import:preview` | renderer → main | Parse clipboard and preview files |
 | `trama:ai:import` | renderer → main | Execute import with mode |
 | `trama:ai:export` | renderer → main | Format files to clipboard |
+| `trama:ai:export:pick-staging` | renderer → main | Native open-file / open-directory dialog rooted at `projectRoot`; returns absolute paths |
 
 **Request/Response types** (`src/shared/ipc.ts`):
 
@@ -178,6 +181,10 @@ All responses are envelope-wrapped (`{ ok: true, data: ... }` or `{ ok: false, e
 - `src/features/project-editor/components/ai-import-preview-section.tsx`
 - `src/features/project-editor/components/ai-export-dialog.tsx`
 - `src/features/project-editor/components/ai-export-dialog-body.tsx`
+- `src/features/project-editor/components/ai-export-staging/index.ts` — staging deep module public API (path hardening, `AiExportStagingController`, keyboard helpers)
+- `src/features/project-editor/components/ai-export-staging-basket.tsx` — basket UI wired to staging controller
+- `electron/services/ai-export-pick-service.ts` — staging basket file/folder dialogs (`defaultPath: projectRoot`)
+- `electron/preload.cts` — exposes `aiExportPickStaging`
 - `src/features/project-editor/components/sidebar/sidebar-transfer-content.tsx` — Transfer section (import + export triggers)
 - `src/features/project-editor/project-editor-view.tsx` — wires import/export hooks and dialogs
 
@@ -202,8 +209,12 @@ Import service operates on already-parsed relative paths and creates files only 
 | `tests/ai-export-service.test.ts` | Export: multi-file output, frontmatter toggle, path traversal blocking, missing file skip |
 | `tests/ai-export-ipc-handler.test.ts` | IPC: envelope validation, success/error payloads |
 | `tests/use-ai-export.test.ts` | Renderer hook: IPC call shape, clipboard copy, error state |
+| `tests/ai-export-staging-hardening.test.ts` | Relative path hardening, merge/duplicate reporting |
+| `tests/ai-export-staging-keyboard.test.ts` | Staging basket arrow keys and Backspace removal |
 
 ## Related Docs
 
 - `docs/spec/ai-import-format.md` — user-facing format guide with LLM prompts
 - `docs/plan/ai-import-export-implementation-map.md` — implementation tracking and checklist
+- `docs/adr/0003-native-file-picker-for-ai-export.md` — native picker + staging basket decision
+- `docs/plan/ai-export-native-staging-plan.md` — staging basket implementation checklist

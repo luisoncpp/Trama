@@ -77,6 +77,15 @@ export const aiImportResponseSchema = z.object({
 })
 export const aiExportRequestSchema = z.object({ filePaths: z.array(z.string().trim().min(1)), projectRoot: z.string().trim().min(1), includeFrontmatter: z.boolean().default(true) })
 export const aiExportResponseSchema = z.object({ success: z.boolean(), formattedContent: z.string(), fileCount: z.number().int().nonnegative() })
+export const aiExportPickStagingModeSchema = z.enum(['files', 'folder'])
+export const aiExportPickStagingRequestSchema = z.object({
+  projectRoot: z.string().trim().min(1),
+  mode: aiExportPickStagingModeSchema,
+})
+export const aiExportPickStagingResponseSchema = z.object({
+  canceled: z.boolean(),
+  absolutePaths: z.array(z.string()),
+})
 export const bookExportFormatSchema = z.enum(['markdown', 'html', 'docx', 'epub', 'pdf'])
 export const bookExportRequestSchema = z.object({
   projectRoot: z.string().trim().min(1),
@@ -179,6 +188,8 @@ export type AiImportPreview = z.infer<typeof aiImportPreviewSchema>
 export type AiImportResponse = z.infer<typeof aiImportResponseSchema>
 export type AiExportRequest = z.infer<typeof aiExportRequestSchema>
 export type AiExportResponse = z.infer<typeof aiExportResponseSchema>
+export type AiExportPickStagingRequest = z.infer<typeof aiExportPickStagingRequestSchema>
+export type AiExportPickStagingResponse = z.infer<typeof aiExportPickStagingResponseSchema>
 export type BookExportFormat = z.infer<typeof bookExportFormatSchema>
 export type BookExportRequest = z.infer<typeof bookExportRequestSchema>
 export type BookExportResponse = z.infer<typeof bookExportResponseSchema>

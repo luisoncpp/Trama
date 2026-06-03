@@ -27,6 +27,7 @@ Avoid: "bug description + fix". Prefer: "what I learned that applies to future w
 
 | File | Topic | Date |
 |------|-------|------|
+| `electron-fsa-picker-empty-path.md` | `showOpenFilePicker` files cannot be turned into disk paths in Electron; use main-process `dialog.showOpenDialog` when staging needs `projectRoot`-relative paths | 2026-06-03 |
 | `find-bar-toolbar-click-blocked.md` | Floating find bar over `-webkit-app-region: drag` toolbar needs `no-drag`, higher z-index, and non-shrinking controls or buttons stay inert on Windows | 2026-06-01 |
 | `book-export-inline-markdown-emphasis.md` | PDF/DOCX line-by-line export must share a marked-based inline parser with HTML/EPUB or `_multi word_` and heading `*...*` show raw markers | 2026-06-01 |
 | `flat-dark-surfaces-reduce-warm-illusion.md` | In dark themes, gradients, shadows, and permanently filled rows can make neutral greys read warm; flatten surfaces before chasing hue tweaks | 2026-05-31 |

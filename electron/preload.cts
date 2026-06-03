@@ -5,6 +5,8 @@ import {
   IPC_CHANNELS,
   type AiExportRequest,
   type AiExportResponse,
+  type AiExportPickStagingRequest,
+  type AiExportPickStagingResponse,
   type BookExportRequest,
   type BookExportResponse,
   type AiImportPreview,
@@ -197,6 +199,9 @@ const tramaApi = {
   },
   aiExport(payload: AiExportRequest): Promise<IpcEnvelope<AiExportResponse>> {
     return ipcRenderer.invoke(IPC_CHANNELS.aiExport, payload)
+  },
+  aiExportPickStaging(payload: AiExportPickStagingRequest): Promise<IpcEnvelope<AiExportPickStagingResponse>> {
+    return ipcRenderer.invoke(IPC_CHANNELS.aiExportPickStaging, payload)
   },
   bookExport(payload: BookExportRequest): Promise<IpcEnvelope<BookExportResponse>> {
     return ipcRenderer.invoke(IPC_CHANNELS.bookExport, payload)

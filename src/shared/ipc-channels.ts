@@ -28,6 +28,7 @@ export const IPC_CHANNELS = {
   aiImport: 'trama:ai:import',
   aiImportPreview: 'trama:ai:import:preview',
   aiExport: 'trama:ai:export',
+  aiExportPickStaging: 'trama:ai:export:pick-staging',
   bookExport: 'trama:book:export',
   tagGetIndex: 'trama:tag:getIndex',
   tagResolve: 'trama:tag:resolve',

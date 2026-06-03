@@ -24,6 +24,7 @@ export {
   handleAiImportPreview,
   handleAiImport,
   handleAiExport,
+  handleAiExportPickStaging,
 } from './ai-handlers.js'
 export { handleBookExport } from './book-export-handler.js'
 export { handleReadImageFile } from './image-handlers.js'

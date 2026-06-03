@@ -34,9 +34,7 @@ export interface ProjectEditorDialogsProps {
   zuluImport: ReturnType<typeof useZuluImport>
 }
 
-function ProjectEditorDialogPortals({ rootPath, visibleFiles, aiImport, bookExport, aiExport, zuluImport }: ProjectEditorDialogsProps) {
-  const exportableFiles = visibleFiles.filter((path) => !path.endsWith('/'))
-
+function ProjectEditorDialogPortals({ rootPath, aiImport, bookExport, aiExport, zuluImport }: ProjectEditorDialogsProps) {
   return (
     <>
       <AiImportDialog
@@ -62,9 +60,11 @@ function ProjectEditorDialogPortals({ rootPath, visibleFiles, aiImport, bookExpo
         onSelectedPathsChange={aiExport.setSelectedPaths}
         includeFrontmatter={aiExport.includeFrontmatter}
         onIncludeFrontmatterChange={aiExport.setIncludeFrontmatter}
-        visibleFiles={exportableFiles}
+        projectRoot={rootPath}
         exporting={aiExport.exporting}
         lastError={aiExport.lastError}
+        setLastError={aiExport.setLastError}
+        setCopyToastMessage={aiExport.setCopyToastMessage}
       />
       <BookExportDialog
         open={bookExport.open}

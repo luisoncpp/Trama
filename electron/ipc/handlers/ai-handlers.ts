@@ -6,10 +6,12 @@ import type {
   AiImportResponse,
   AiExportRequest,
   AiExportResponse,
+  AiExportPickStagingResponse,
 } from '../../../src/shared/ipc.js'
 import {
   aiImportRequestSchema,
   aiExportRequestSchema,
+  aiExportPickStagingRequestSchema,
 } from '../../../src/shared/ipc.js'
 import { errorEnvelope } from '../../ipc-errors.js'
 import {
@@ -18,6 +20,10 @@ import {
   executeImport as executeImportService,
 } from '../../services/ai-import-service.js'
 import { formatExportContent } from '../../services/ai-export-service.js'
+import {
+  pickAiExportStagingFiles,
+  pickAiExportStagingFolder,
+} from '../../services/ai-export-pick-service.js'
 
 export async function handleAiImportPreview(
   _event: IpcMainInvokeEvent,
@@ -54,6 +60,28 @@ export async function handleAiImport(
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unable to execute AI import'
     return errorEnvelope('AI_IMPORT_FAILED', message)
+  }
+}
+
+export async function handleAiExportPickStaging(
+  _event: IpcMainInvokeEvent,
+  rawPayload: unknown,
+): Promise<IpcEnvelope<AiExportPickStagingResponse>> {
+  const payload = aiExportPickStagingRequestSchema.safeParse(rawPayload)
+  if (!payload.success) {
+    return errorEnvelope('VALIDATION_ERROR', 'Invalid payload for AI export staging picker', payload.error.flatten())
+  }
+
+  try {
+    const pickResult =
+      payload.data.mode === 'files'
+        ? await pickAiExportStagingFiles(payload.data.projectRoot)
+        : await pickAiExportStagingFolder(payload.data.projectRoot)
+
+    return { ok: true, data: pickResult }
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unable to open export staging picker'
+    return errorEnvelope('AI_EXPORT_PICK_STAGING_FAILED', message)
   }
 }
 
