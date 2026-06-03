@@ -22,8 +22,7 @@
       "lore/characters/aldren.md"
     ],
     "lore": [
-      "lore/map.md",
-      "lore/image-prompts.md"
+      "lore/map.md"
     ],
     "lore/places": [
       "lore/places/monastery-of-the-bound-hand.md",
@@ -79,7 +78,6 @@
     "lore/characters/corvin.md": {},
     "lore/characters/maren.md": {},
     "lore/characters/oswin.md": {},
-    "lore/image-prompts.md": {},
     "lore/map.md": {
       "type": "map",
       "name": "Map of the Kingdom",

@@ -1,4 +1,8 @@
+<!-- trama:center:start -->
+
 # Chapter 10 — The Dungeon
+
+<!-- trama:center:end -->
 
 The cell was a masterclass in deprivation. It was cold, a deep, unyielding dampness that seemed to seep outward from the rough-hewn stone itself rather than inward from the air. High above, near the vaulted ceiling, a single grated window let in a thin, precise rectangle of light. For the first few hours of their captivity, they had done nothing but watch that pale geometry crawl across the uneven floorboards, charting the slow, indifferent progression of the afternoon. It was the only movement in the room. There was no furniture, no straw, no bucket. There was nothing but the heavy iron door, its hinges thick with ancient grease, and the silence of a fortress that did not care if they existed.
 
@@ -18,7 +22,7 @@ They began the inventory. It was not a fast process. Oswin’s influence shaped 
 
 For hours, they systematically dismantled their journey. The afternoon dragged on, the rectangle of light stretching and warping against the far wall.
 
-Maren was ruthlessly honest about what she had assumed versus what she had actually observed. She admitted, her voice flat and factual, that she had initially viewed the trials as straightforward physical obstacles. Things to be survived, endured, or outsmarted. She had assumed the magic they sought resided within the objects themselves—because that was how the stories always worked. A glowing sword, a heavy shield, a ring of power. 
+Maren was ruthlessly honest about what she had assumed versus what she had actually observed. She admitted, her voice flat and factual, that she had initially viewed the trials as straightforward physical obstacles. Things to be survived, endured, or outsmarted. She had assumed the magic they sought resided within the objects themselves—because that was how the stories always worked. A glowing sword, a heavy shield, a ring of power.
 
 "I expected a transaction," she said, tearing off a small piece of bread. "We bleed a little, we get a weapon. I didn't question it because I didn't want to think about what happens if the stories are wrong."
 
@@ -30,9 +34,9 @@ The inventory was the group functioning at its absolute fullest. Stripped of the
 
 By the time the rectangle of light on the floor faded into a bruised, twilight purple, casting long, wavering shadows across their faces, four distinct anomalies sat unresolved between them.
 
-The first was a memory of Cael’s, unearthed from the very beginning of the ordeal. During their private audience in the palace, before any formal oaths were sworn, the king had asked Cael specifically about an old ballad called *The Weight of Three*. The king had never explained why. He had simply asked if Cael knew it. At the time, Cael, overwhelmed by the royal presence and the weight of the summons, had forgotten the question entirely within the hour. He had not forgotten it now. It burned in his mind like a stray spark.
+The first was a memory of Cael’s, unearthed from the very beginning of the ordeal. During their private audience in the palace, before any formal oaths were sworn, the king had asked Cael specifically about an old ballad called _The Weight of Three_. The king had never explained why. He had simply asked if Cael knew it. At the time, Cael, overwhelmed by the royal presence and the weight of the summons, had forgotten the question entirely within the hour. He had not forgotten it now. It burned in his mind like a stray spark.
 
-The second anomaly was the ballad itself. Throughout the journey, in quiet moments around the dying embers of a campfire or while walking through the silent, oppressive woods, Cael had been humming fragments of a tune. Oswin had noted it in his journal—two separate entries marked with asterisks tracking the occurrence, rigorous in his documentation of the bard's habits. Cael had done it unconsciously, unable to explain why that specific melody kept surfacing when he was stressed or afraid. The structure of *The Weight of Three* was unlike anything else in the entire bardic tradition. Its verses described three people carrying unnamed burdens, and three objects that did not grant any power, but merely illuminated what the holder was already carrying. It was a deeply unsatisfying song to perform. It lacked a climax. It lacked a victory.
+The second anomaly was the ballad itself. Throughout the journey, in quiet moments around the dying embers of a campfire or while walking through the silent, oppressive woods, Cael had been humming fragments of a tune. Oswin had noted it in his journal—two separate entries marked with asterisks tracking the occurrence, rigorous in his documentation of the bard's habits. Cael had done it unconsciously, unable to explain why that specific melody kept surfacing when he was stressed or afraid. The structure of _The Weight of Three_ was unlike anything else in the entire bardic tradition. Its verses described three people carrying unnamed burdens, and three objects that did not grant any power, but merely illuminated what the holder was already carrying. It was a deeply unsatisfying song to perform. It lacked a climax. It lacked a victory.
 
 The third was the marginal annotation. It had haunted Oswin’s records, a ghost in the ink. They had seen it three times now: first in the manuscript Oswin had painstakingly copied at his own scriptorium; then in the commercial archive in the bustling city of Solen; and finally, undeniably, on the original, crumbling text at the monastery. The monastery visit had revealed the crucial, indisputable detail: the annotation had been added later. The ink was a different chemical composition; the hand was entirely different from the original scribe's flowing script. Someone had placed it there deliberately, an intentional intrusion upon a sacred text.
 
@@ -44,7 +48,7 @@ It had been warm since Oswin first picked it up in the Abbot's pristine study du
 
 "Sing the ballad," Oswin said, looking up from his notes, the pages covered in his dense, cramped handwriting. "Not the pieces. The whole thing. From beginning to end."
 
-Cael stopped his restless pacing. He stood in the center of the cell, closing his eyes, letting the darkness behind his eyelids center him. He had never performed *The Weight of Three* for an audience. He had kept it in his repertoire only because its structural wrongness bothered his professional sensibilities, a musical puzzle he could not solve.
+Cael stopped his restless pacing. He stood in the center of the cell, closing his eyes, letting the darkness behind his eyelids center him. He had never performed _The Weight of Three_ for an audience. He had kept it in his repertoire only because its structural wrongness bothered his professional sensibilities, a musical puzzle he could not solve.
 
 He began to sing.
 
@@ -54,7 +58,7 @@ He sang the first verse. It described a person carrying a grief so old, so calci
 
 He sang the second verse. A person carrying a story they no longer believed, a lie they told daily to keep the world predictable and safe. They found a silver mirror. The mirror did not show them the objective truth of the universe. It merely reflected the sheer exhaustion of their own deception. It showed them the cost of the lie.
 
-He sang the third verse. A person carrying a vow made for someone else’s reasons, a duty that had hollowed them out until they were nothing but an echo of someone else's will. They were handed an iron key, described in the song as an *iron crown upon the hollow shore*. The key opened no literal doors. It only showed them that the cage they stood in had never been locked.
+He sang the third verse. A person carrying a vow made for someone else’s reasons, a duty that had hollowed them out until they were nothing but an echo of someone else's will. They were handed an iron key, described in the song as an _iron crown upon the hollow shore_. The key opened no literal doors. It only showed them that the cage they stood in had never been locked.
 
 Cael paused. In each verse, the object changed nothing about the world. The verse ended. But the person holding the object was different.
 
@@ -76,7 +80,7 @@ The annotation was the fourth verse.
 
 It was compressed, aged, stripped of melody and set in a dialect that predated the song’s current form by centuries. But the intellectual content was identical. The instruction was exactly the same. The underlying structure held perfectly.
 
-Someone who had understood what the legend actually meant—someone who knew that the relics were not weapons but lenses—had added the fourth verse of *The Weight of Three* to the margins of the holy manuscript. And then, someone—perhaps the same scholar, perhaps a dedicated disciple—had placed a copy of that exact note in a commercial archive in Solen three hundred years ago.
+Someone who had understood what the legend actually meant—someone who knew that the relics were not weapons but lenses—had added the fourth verse of _The Weight of Three_ to the margins of the holy manuscript. And then, someone—perhaps the same scholar, perhaps a dedicated disciple—had placed a copy of that exact note in a commercial archive in Solen three hundred years ago.
 
 "Two preservation paths," Oswin whispered, his eyes wide as he stared at his own handwriting, seeing it truly for the first time. "Someone built two separate, distinct paths for the very same piece of information. Different forms, different locations. One hidden in a song for the common folk, one hidden in the margins of a text for the scholars. So that it would eventually reach whoever finally understood the rest of it."
 

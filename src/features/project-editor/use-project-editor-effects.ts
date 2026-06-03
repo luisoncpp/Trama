@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef } from 'preact/hooks'
 import { useProjectEditorActions } from './project-editor-private/actions'
+import type { ProjectEditorActionSetters } from './project-editor-private/action-group-types'
 import { buildShortcutsEffectParams } from './project-editor-private/use-project-editor-model'
 import { useProjectEditorState } from './project-editor-private/state'
 import { usePaneWorkspace, useProjectEditorAutosaveEffect, useProjectEditorCloseEffect } from './pane'
@@ -11,6 +12,11 @@ import { useProjectEditorContextMenuEffect } from './use-project-editor-context-
 import { useProjectEditorExternalEventsEffect, useReloadProjectShortcutEffect } from './use-project-editor-external-events-effect'
 import { useProjectEditorFullscreenEffect } from './use-project-editor-fullscreen-effect'
 import { useProjectEditorShortcutsEffect } from './use-project-editor-shortcuts-effect'
+
+type ProjectEditorEffectSetters = ProjectEditorActionSetters & {
+  setLastProjectRootPath: (value: string) => void
+  clearLastProjectRootPath: () => void
+}
 
 function useAutoPickProjectFolderEffect(
   openProject: (projectRoot: string) => Promise<void>,
@@ -51,7 +57,7 @@ function useProjectEditorStartupEffects(
   documentState: ReturnType<typeof useProjectEditorState>['documentState'],
   layoutState: ReturnType<typeof useProjectEditorState>['layoutState'],
   paneBindings: PaneBindings,
-  setters: ReturnType<typeof useProjectEditorState>['setters'],
+  setters: ProjectEditorEffectSetters,
   actions: ReturnType<typeof useProjectEditorActions>['actions'],
   core: ReturnType<typeof useProjectEditorActions>['core'],
   autoPickProjectFolderOnStart: boolean,
@@ -89,7 +95,7 @@ function useProjectEditorWindowEffects(
   projectState: ReturnType<typeof useProjectEditorState>['projectState'],
   documentState: ReturnType<typeof useProjectEditorState>['documentState'],
   layoutState: ReturnType<typeof useProjectEditorState>['layoutState'],
-  setters: ReturnType<typeof useProjectEditorState>['setters'],
+  setters: ProjectEditorEffectSetters,
   actions: ReturnType<typeof useProjectEditorActions>['actions'],
   core: ReturnType<typeof useProjectEditorActions>['core'],
   paneWorkspace: ReturnType<typeof usePaneWorkspace>,
@@ -135,7 +141,7 @@ export function useProjectEditorEffects(
   documentState: ReturnType<typeof useProjectEditorState>['documentState'],
   layoutState: ReturnType<typeof useProjectEditorState>['layoutState'],
   paneBindings: PaneBindings,
-  setters: ReturnType<typeof useProjectEditorState>['setters'],
+  setters: ProjectEditorEffectSetters,
   actions: ReturnType<typeof useProjectEditorActions>['actions'],
   core: ReturnType<typeof useProjectEditorActions>['core'],
   autoPickProjectFolderOnStart: boolean,
@@ -189,7 +195,7 @@ export function useProjectEditorActionSetters(
   setters: ReturnType<typeof useProjectEditorState>['setters'],
   setLastProjectRootPath: (value: string) => void,
   clearLastProjectRootPath: () => void,
-) {
+): ProjectEditorEffectSetters {
   return useMemo(
     /* buildActionSetters */ () => ({ ...setters, setLastProjectRootPath, clearLastProjectRootPath }),
     [setters, setLastProjectRootPath, clearLastProjectRootPath] /*Inputs for buildActionSetters*/,

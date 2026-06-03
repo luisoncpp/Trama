@@ -1,4 +1,8 @@
+<!-- trama:center:start -->
+
 # Chapter 8 — The Key
+
+<!-- trama:center:end -->
 
 The air inside the Monastery of the Bound Hand did not move. It was trapped in the high stone corridors, entirely still and biting cold, carrying the faint, ubiquitous scent of old parchment, cold ash, and the damp exhalation of the mountain. It was the hour before dawn. Outside, the sky would be a bruised, fathomless purple, but here in the windowless lower passages, the darkness was absolute save for the pale, shivering light of the sparse iron sconces.
 
@@ -22,7 +26,7 @@ He had not been invited to sit. The wood of the chair was hard, unforgiving.
 
 Rector Vael looked up from his ledger. He placed his quill precisely in its bronze rest. He did not speak. His eyes, pale and watery in the candlelight, settled on Oswin with a mild, unblinking patience. It was not scrutiny. It was simply the act of registering a presence.
 
-Oswin placed his hands flat on his knees. They were trembling slightly. He forced them to be still. He did not reach for the satchel of texts he usually carried. He did not mentally prepare a citation from the *Chronicles of the First Age* or a supportive argument from the *Commentaries on the Relics*. There was no text that could do this for him.
+Oswin placed his hands flat on his knees. They were trembling slightly. He forced them to be still. He did not reach for the satchel of texts he usually carried. He did not mentally prepare a citation from the _Chronicles of the First Age_ or a supportive argument from the _Commentaries on the Relics_. There was no text that could do this for him.
 
 He looked at the old man, and he spoke. His voice was quieter than he expected, stripped of the oratorical cadence he had learned in the scriptorium. It was just a voice in a cold room.
 
@@ -42,7 +46,7 @@ For a long time, nothing happened. The monastery around them remained tomb-silen
 
 Then, Rector Vael moved.
 
-He turned slowly in his chair and reached for the small, iron-bound cabinet set into the stone wall behind his desk. He produced a small brass key from a chain around his neck, unlocked the cabinet with a sharp *clack*, and reached inside.
+He turned slowly in his chair and reached for the small, iron-bound cabinet set into the stone wall behind his desk. He produced a small brass key from a chain around his neck, unlocked the cabinet with a sharp _clack_, and reached inside.
 
 When he turned back, he held something in his closed fist. He reached across the wide expanse of the desk and placed the object on the polished wood between them.
 
@@ -65,8 +69,6 @@ Oswin looked at the Iron Key. He reached out and picked it up.
 The moment his fingers closed around the metal, a jolt of shock went up his arm. It was not hot enough to burn, but it was profoundly, impossibly warm. It felt like a stone that had been sitting in the midsummer sun all afternoon, absorbing the heat of the sky. In the freezing air of the mountain monastery, it was a physical impossibility. It was a pocket of preserved life, a stubborn, unyielding warmth that refused to acclimate to the cold around it.
 
 Oswin closed his fist around it. He stood up, pushed the heavy chair back, and walked out of the study. The Rector did not look up as he left.
-
-***
 
 When Oswin returned to the guest cell, the thin gray light of morning had finally begun to seep through the high, barred window. Cael was sitting on the edge of his pallet, rubbing his face with both hands, his hair a sleep-tousled mess. Maren was already up and fully dressed, methodically repacking her travel satchel with an efficiency that suggested she was eager to leave this place.
 
@@ -106,8 +108,6 @@ She handed it back to Oswin without a word, her expression unreadable but intens
 
 Oswin looked at the key, feeling its heat seep back into his palm. "I don't know," he said softly. "Nothing here, I imagine."
 
-***
-
 Before the group departed the monastery, there was one remaining task. It was not required for the quest, but for Oswin, it had become suddenly, overwhelmingly necessary.
 
 He returned to the Rector’s study. The old man was still at his ledger.
@@ -132,7 +132,7 @@ There it was. The marginal annotation.
 
 He had copied these eleven words four times in his life. He knew them perfectly. He had always assumed they were a minor interpolation, a scholar’s stray thought that had accidentally been incorporated into the master copy and dutifully replicated ever since.
 
-*Speak the true name past the shadow, wake the buried son.*
+_Speak the true name past the shadow, wake the buried son._
 
 Standing here, in the quiet vault, looking at the physical source of the words, Oswin’s breath caught in his throat.
 
@@ -156,16 +156,13 @@ Oswin did not know who had written it. He did not know when. But he knew, with c
 
 He pulled his small leather-bound journal from his robes. He opened it, his hands moving with meticulous, deliberate care. He found a fresh page.
 
-He copied the eleven words exactly as they appeared, mimicking the jagged, aggressive slant of the original author. He did not write them in his own flawless script. He wanted the visual truth of the intrusion preserved on the page. 
+He copied the eleven words exactly as they appeared, mimicking the jagged, aggressive slant of the original author. He did not write them in his own flawless script. He wanted the visual truth of the intrusion preserved on the page.
 
 He picked up his pen and, with a steady hand, drew a thick, dark box around the copied annotation.
 
 It was the third box in his journal.
 
-Beneath the box, he added a note in his own script:
-*The annotation on the master manuscript was added later. Different hand. Different ink. Deliberate insertion. Designed for mass replication via unquestioning copyists.*
-
-***
+Beneath the box, he added a note in his own script: _The annotation on the master manuscript was added later. Different hand. Different ink. Deliberate insertion. Designed for mass replication via unquestioning copyists._
 
 He left the manuscript room. The monk relocked the heavy wooden case with a resonant click and returned the keys to his belt.
 

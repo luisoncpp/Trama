@@ -1,4 +1,8 @@
+<!-- trama:center:start -->
+
 # Chapter 1 — The Summons
+
+<!-- trama:center:end -->
 
 The Gilded Post was the sort of establishment that charged double for performers who drew a crowd and triple for those who did not. Cael, currently midway through a ballad about a merchant who accidentally married a river spirit, was firmly on the triple rate.
 

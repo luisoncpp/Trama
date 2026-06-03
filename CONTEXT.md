@@ -4,6 +4,14 @@ Trama is a file-first desktop writing tool where a project is an opened folder c
 
 ## Language
 
+**Staging Basket**:
+The transient UI collection tracking project-relative file paths actively selected by a user for data collection or processing during an export or batch session.
+_Avoid_: Selection queue, download cart
+
+**Relative Path Hardening**:
+The validation pipeline that intercepts absolute operating system file paths returned by native picker dialogs, enforces that they reside within the current project root workspace directory, strips the absolute prefix, and filters out non-project or irrelevant system files.
+_Avoid_: Path cleaning, absolute resolution
+
 **Project**:
 An opened folder that Trama treats as a writing workspace. A **Project** contains documents and project metadata, and may be either the root of a local Git repository or a subfolder inside one.
 

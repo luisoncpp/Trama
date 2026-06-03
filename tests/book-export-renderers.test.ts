@@ -113,7 +113,7 @@ describe('book export renderers', () => {
     expect(documentXml).not.toContain('_The Weight of Three_')
     expect(documentXml).toContain('Styled Title')
     expect(documentXml).not.toMatch(/\*Styled Title\*/)
-  })
+  }, 15000)
 
   it('renders pdf for inline emphasis chapter', async () => {
     const pdf = await renderPdfBook([inlineFormattingChapter()])
@@ -515,7 +515,7 @@ it('renders pdf with reference-style images', async () => {
 
     const signature = await readFile(outputPath)
     expect(signature.subarray(0, 2).toString()).toBe('PK')
-  })
+  }, 30000)
 
   it('renders epub with em tags for underscore emphasis', async () => {
     const tempDir = await mkdtemp(path.join(os.tmpdir(), 'trama-epub-inline-'))

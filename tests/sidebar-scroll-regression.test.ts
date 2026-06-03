@@ -3,8 +3,8 @@ import { readFileSync } from 'fs'
 import { resolve } from 'path'
 
 describe('sidebar scroll regression', () => {
-  it('index.css contains layout rules to allow internal sidebar scrolling', () => {
-    const cssPath = resolve(__dirname, '..', 'src', 'index.css')
+  it('sidebar layout CSS contains rules to allow internal sidebar scrolling', () => {
+    const cssPath = resolve(__dirname, '..', 'src', 'styles', '08-component-cosmetics.css')
     const css = readFileSync(cssPath, 'utf-8')
 
     // Ensure the workspace sidebar panel is a column flex container with min-height:0

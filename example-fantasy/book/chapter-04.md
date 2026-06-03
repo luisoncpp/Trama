@@ -1,4 +1,8 @@
+<!-- trama:center:start -->
+
 # Chapter 4 — The Forest
+
+<!-- trama:center:end -->
 
 The morning after the elder delivered his account, Cael laid a rough map on the scarred wooden table of the Low Hearth’s common room. It was drawn in charcoal on a scrap of butcher’s paper, the lines faint and hesitant, mapping the shape of the Hollow of Drest not as a physical landscape, but as a topography of fear.
 

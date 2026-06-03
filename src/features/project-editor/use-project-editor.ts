@@ -83,7 +83,7 @@ export function useProjectEditor(): ProjectEditorModel {
     documentState,
     layoutState,
     paneBindings,
-    setters,
+    actionSetters,
     actions,
     core,
     autoPickProjectFolderOnStart,

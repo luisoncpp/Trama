@@ -1,4 +1,8 @@
+<!-- trama:center:start -->
+
 # Chapter 2 — The Road
+
+<!-- trama:center:end -->
 
 The north road out of Valdenmere was never designed for grand departures or heroic beginnings. It was a trade artery, carved into the hard earth by generations of iron-rimmed wheels, heavy hooves, and the exhausted boots of merchants. Built for utility rather than spectacle, it offered no scenic overlooks, no dramatic vistas to inspire a traveler. Two hours past the city gates, the soaring stone architecture of the capital had long since dissolved into flat, unremarkable plains of yellowing grass. The sky above was a sheet of indifferent, bruised grey.
 

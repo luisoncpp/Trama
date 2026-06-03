@@ -477,13 +477,11 @@ describe('project editor conflict flow', () => {
     })
 
     await act(async () => {
-      model?.actions.setWorkspaceActivePane('secondary')
-      await Promise.resolve()
+      await model?.actions.setWorkspaceActivePane('secondary')
     })
 
     await act(async () => {
-      model?.actions.setWorkspaceActivePane('primary')
-      await Promise.resolve()
+      await model?.actions.setWorkspaceActivePane('primary')
     })
 
     expect(model?.state.workspaceLayout.activePane).toBe('primary')

@@ -66,7 +66,17 @@ export function useSidebarProjectEditorActions(params: ActionMemoParams) {
 }
 
 export function useWorkspaceProjectEditorActions(params: ActionMemoParams) {
-  const { layoutState, projectState, uiState, sidebarState, setters, paneWorkspace, loadDocument, openProject } = params
+  const {
+    layoutState,
+    projectState,
+    uiState,
+    sidebarState,
+    setters,
+    paneWorkspace,
+    loadDocument,
+    openProject,
+    clearEditor,
+  } = params
   return useMemo(
     /* buildWorkspaceProjectEditorActions */ () => buildWorkspaceActions({
       layoutState,
@@ -77,6 +87,7 @@ export function useWorkspaceProjectEditorActions(params: ActionMemoParams) {
       paneWorkspace,
       loadDocument,
       openProject,
+      clearEditor,
     }),
     [
       layoutState,
@@ -85,12 +96,24 @@ export function useWorkspaceProjectEditorActions(params: ActionMemoParams) {
       setters,
       paneWorkspace,
       loadDocument,
+      openProject,
+      clearEditor,
     ] /*Inputs for buildWorkspaceProjectEditorActions*/,
   )
 }
 
 export function useConflictProjectEditorActions(params: ActionMemoParams) {
-  const { layoutState, projectState, uiState, sidebarState, setters, paneWorkspace, loadDocument, openProject } = params
+  const {
+    layoutState,
+    projectState,
+    uiState,
+    sidebarState,
+    setters,
+    paneWorkspace,
+    loadDocument,
+    openProject,
+    clearEditor,
+  } = params
   return useMemo(
     /* buildConflictProjectEditorActions */ () => buildConflictActionGroup({
       layoutState,
@@ -101,6 +124,7 @@ export function useConflictProjectEditorActions(params: ActionMemoParams) {
       paneWorkspace,
       loadDocument,
       openProject,
+      clearEditor,
     }),
     [
       projectState,
@@ -109,6 +133,7 @@ export function useConflictProjectEditorActions(params: ActionMemoParams) {
       paneWorkspace,
       loadDocument,
       openProject,
+      clearEditor,
     ] /*Inputs for buildConflictProjectEditorActions*/,
   )
 }
