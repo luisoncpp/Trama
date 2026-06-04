@@ -112,7 +112,10 @@ html.has-overlay-titlebar .rich-editor .ql-toolbar.ql-snow {
 html.has-overlay-titlebar .workspace-panel__header *,
 html.has-overlay-titlebar .workspace-split-pane__header *,
 html.has-overlay-titlebar .rich-editor .ql-toolbar.ql-snow button,
-html.has-overlay-titlebar .rich-editor .ql-toolbar.ql-snow select {
+html.has-overlay-titlebar .rich-editor .ql-toolbar.ql-snow select,
+html.has-overlay-titlebar .rich-editor .ql-toolbar.ql-snow .ql-picker-label,
+html.has-overlay-titlebar .rich-editor .ql-toolbar.ql-snow .ql-picker-options,
+html.has-overlay-titlebar .rich-editor .ql-toolbar.ql-snow .ql-picker-item {
   -webkit-app-region: no-drag;
 }
 

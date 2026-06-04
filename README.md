@@ -2,52 +2,62 @@
 
 A file-first desktop application for writers and worldbuilders, built with Electron, Preact, and Tailwind CSS.
 
-Trama is designed for managing long-form manuscripts and complex lore through a local-first philosophy, using standard Markdown files with YAML frontmatter.
+Trama opens a folder on your machine and works directly with standard Markdown files and YAML frontmatter. Your manuscript, outline, and lore stay on disk in formats you can edit anywhere.
 
 ## 🚀 Features
 
 ### ✅ Currently Implemented
--   **File-First Architecture**: Your data stays in your folders. Trama works directly with the local file system.
--   **Semantic Project Tree**: A specialized sidebar designed for writers with distinct sections for Manuscripts, Lore, Characters, Locations, and more.
--   **Rich Markdown Editor**: A Quill-based editing experience with full Markdown persistence, YAML frontmatter integration, and inline find.
--   **Split Pane Workspace**: Multi-pane support to keep notes, lore, and manuscript side-by-side.
--   **Focus Mode & Fullscreen**: Zero-distraction writing environment with native fullscreen and configurable line, sentence, or paragraph focus scope.
--   **Document Zoom**: Zoom in/out via Ctrl++/Ctrl+- shared across twin panes.
--   **Appearance**: Support for **Light, Dark, and System** themes.
--   **AI Import / Export**: Structured clipboard import and multi-file export flows for working with LLMs without leaving the file-first model.
--   **Paste Markdown**: Convert Markdown from the clipboard directly into the rich editor.
--   **Wiki Tag Navigation**: Tag index refreshes after saves so Ctrl/Cmd+Click tag navigation remains reliable.
--   **Smart Conflict Resolution**: Built-in watcher detects external changes and helps resolve edit conflicts.
--   **Folder Operations**: Safe rename, delete, and move workflows with subtree tracking and index reconciliation.
--   **Drag-and-Drop Reorder**: Reorder files and move them between folders with visual drop indicators and corkboard order persistence.
--   **Book Export**: Multi-format export (Markdown, HTML, DOCX, EPUB, PDF) with layout directives and image support.
--   **ZuluPad Import**: Import ZuluPad `.zulu` documents into your project structure.
--   **Spellcheck**: Configurable spellcheck with language selection and optimistic UI sync.
 
-### ⏳ Planned / In Progress
--   **Project Templates**: Pre-defined schemas for characters, locations, and world-building notes.
+**Project & files**
+- **File-first workflow** — Data lives in your folders; Trama reads and writes real `.md` files and keeps `.trama.index.json` in sync.
+- **Section sidebar** — Trees scoped to `book/`, `outline/`, and `lore/` with filter, create/rename/delete, and drag-and-drop reorder.
+- **Smart conflict handling** — Detects external file changes and helps you resolve edits safely.
+- **Git version history** — Save snapshots, browse revisions per document, preview past versions in the editor, and restore when you need to roll back. Local Git on your machine; no remote or account required.
 
-### ❌ Cancelled
--   **Corkboard View**: Drag-and-drop cards for planning and reorganizing scenes or ideas.
+**Editing**
+- **Rich Markdown editor** — Quill-based visual editing with Markdown persistence and YAML frontmatter.
+- **Split workspace** — Two panes side by side, draggable divider, per-pane back/forward history, and shared zoom.
+- **Focus mode & fullscreen** — Distraction-free writing with line, sentence, or paragraph emphasis around the caret.
+- **Paste from Markdown** — Clipboard Markdown becomes rich editor content.
+- **Smart typography** — Common shortcuts (e.g. `--` → em dash) with undo support.
+- **Wiki tag links** — Tag index stays fresh after saves; Ctrl/Cmd+click jumps to linked documents.
+- **Images** — Embedded images are stored under project-local `res/` when you save.
+
+**Special document types**
+- **Map documents** — Image-based maps with pan/zoom and interactive markers tied to your lore.
+
+**Themes & chrome**
+- **Appearance** — Light, dark, and system themes.
+- **Context menu** — Workspace actions (split, focus, export, and more) from the native right-click menu.
+
+**Import, export & integrations**
+- **AI import / export** — Structured clipboard import (`=== FILE: … ===`) with preview and replace/append modes; export selected project files for LLM workflows, with optional frontmatter stripping.
+- **Book export** — Multi-format export (Markdown, HTML, DOCX, EPUB, PDF) with layout directives and images.
+- **ZuluPad import** — Bring `.zulu` notes into your project structure.
+
+### ⏳ Planned
+
+- **Project templates** — Pre-defined schemas for characters, locations, and world-building notes.
+
 
 ## 🛠️ Tech Stack
 
--   **Backend**: [Electron](https://www.electronjs.org/) 41.x (Node.js for native FS access)
--   **Frontend**: [Preact](https://preactjs.com/) 10.x + [Vite](https://vitejs.dev/) 8.x
--   **Styling**: [Tailwind CSS](https://tailwindcss.com/) 4.x
--   **Editor**: [Quill](https://quilljs.com/) 2.x (Custom Markdown integration)
--   **Validation**: [Zod](https://zod.dev/) 3.x for IPC contracts
--   **PDF Generation**: [pdf-lib](https://pdf-lib.js.org/) 1.x
--   **DOCX Generation**: [docx](https://docx.js.org/) 9.x
--   **EPUB Generation**: [epub-gen](https://github.com/zipweb/epub-gen) 0.1.x
--   **YAML Parsing**: [yaml](https://eemeli.github.io/yaml/) 2.x
+- **Backend**: [Electron](https://www.electronjs.org/) 41.x (Node.js for native FS access)
+- **Frontend**: [Preact](https://preactjs.com/) 10.x + [Vite](https://vitejs.dev/) 8.x
+- **Styling**: [Tailwind CSS](https://tailwindcss.com/) 4.x
+- **Editor**: [Quill](https://quilljs.com/) 2.x (Custom Markdown integration)
+- **Validation**: [Zod](https://zod.dev/) 3.x for IPC contracts
+- **PDF Generation**: [pdf-lib](https://pdf-lib.js.org/) 1.x
+- **DOCX Generation**: [docx](https://docx.js.org/) 9.x
+- **EPUB Generation**: [epub-gen](https://github.com/zipweb/epub-gen) 0.1.x
+- **YAML Parsing**: [yaml](https://eemeli.github.io/yaml/) 2.x
 
 ## 📦 Getting Started
 
 ### Prerequisites
 
--   [Node.js](https://nodejs.org/) (Project uses `package.json` with ESM)
--   npm
+- [Node.js](https://nodejs.org/) (Project uses `package.json` with ESM)
+- npm
 
 ### Installation
 
@@ -100,11 +110,11 @@ npm run pack:win
 ## 📂 Project Structure
 
 -   `electron/`: Main process, IPC handlers, and services (TypeScript).
-    -   `ipc/handlers/`: Typed IPC handler modules (project, AI, book export, Zulu).
-    -   `services/`: Document repository, index service, watcher, book export pipeline.
+    -   `ipc/handlers/`: Typed IPC handler modules (project, AI, book export, Zulu, Git history).
+    -   `services/`: Document repository, index service, watcher, export pipelines.
 -   `src/`: Preact renderer source code.
-    -   `features/project-editor/`: Domain-driven feature modules (Editor, Sidebar, Pane workspace).
-    -   `shared/`: Shared IPC types and constants between Main and Renderer.
+    -   `features/project-editor/`: Domain-driven feature modules (editor, sidebar, pane workspace).
+    -   `shared/`: Shared IPC types and constants between main and renderer.
 -   `docs/`: Design specifications, architecture docs, implementation plans, and lessons learned.
 -   `tests/`: Comprehensive test suite (unit, integration, and smoke tests).
 

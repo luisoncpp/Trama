@@ -29,6 +29,7 @@ Avoid: "bug description + fix". Prefer: "what I learned that applies to future w
 |------|-------|------|
 | `electron-fsa-picker-empty-path.md` | `showOpenFilePicker` files cannot be turned into disk paths in Electron; use main-process `dialog.showOpenDialog` when staging needs `projectRoot`-relative paths | 2026-06-03 |
 | `find-bar-toolbar-click-blocked.md` | Floating find bar over `-webkit-app-region: drag` toolbar needs `no-drag`, higher z-index, and non-shrinking controls or buttons stay inert on Windows | 2026-06-01 |
+| `quill-picker-label-is-a-span.md` | Quill `ql-picker` is built from `<span>`s, not `button`/`select`; on Win32 overlay titlebar the OS eats the mousedown for window drag and the dropdown never opens. Works in fullscreen because the overlay disappears. | 2026-06-03 |
 | `book-export-inline-markdown-emphasis.md` | PDF/DOCX line-by-line export must share a marked-based inline parser with HTML/EPUB or `_multi word_` and heading `*...*` show raw markers | 2026-06-01 |
 | `flat-dark-surfaces-reduce-warm-illusion.md` | In dark themes, gradients, shadows, and permanently filled rows can make neutral greys read warm; flatten surfaces before chasing hue tweaks | 2026-05-31 |
 | `theme-interaction-tokens-should-follow-the-accent-model.md` | Editor interaction tokens must stay aligned with the theme's transient accent model, or normal chrome picks up warning-colored brown casts | 2026-05-31 |

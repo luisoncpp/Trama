@@ -188,6 +188,7 @@ export type AiImportPreview = z.infer<typeof aiImportPreviewSchema>
 export type AiImportResponse = z.infer<typeof aiImportResponseSchema>
 export type AiExportRequest = z.infer<typeof aiExportRequestSchema>
 export type AiExportResponse = z.infer<typeof aiExportResponseSchema>
+export type AiExportPickStagingMode = z.infer<typeof aiExportPickStagingModeSchema>
 export type AiExportPickStagingRequest = z.infer<typeof aiExportPickStagingRequestSchema>
 export type AiExportPickStagingResponse = z.infer<typeof aiExportPickStagingResponseSchema>
 export type BookExportFormat = z.infer<typeof bookExportFormatSchema>
