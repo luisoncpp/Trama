@@ -1,0 +1,101 @@
+/* A4 + ~50pt margins. Electron may also pass matching printToPDF margins. */
+@page {
+  size: A4;
+  margin: 1.764cm;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: "Times New Roman", Times, serif;
+  font-size: 12pt;
+  line-height: 1.5;
+  color: #000;
+}
+
+.trama-pagebreak {
+  display: none;
+  height: 0;
+  margin: 0;
+  padding: 0;
+  break-after: avoid;
+  page-break-after: avoid;
+}
+
+.trama-header {
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid #999;
+  padding-bottom: 0.75rem;
+}
+
+.trama-header h1 {
+  margin: 0;
+  font-size: 1.75rem;
+}
+
+.trama-byline {
+  margin: 0.25rem 0 0;
+  color: #444;
+}
+
+.trama-chapter {
+  margin: 0;
+  padding: 0;
+  break-inside: auto;
+  page-break-inside: auto;
+}
+
+.trama-chapter + .trama-chapter {
+  margin-top: 1.5rem;
+}
+
+.trama-center {
+  margin: 0;
+  padding: 0;
+  text-align: center;
+  break-inside: auto;
+  page-break-inside: auto;
+}
+
+/* display:block on img ignores text-align; match editor .trama-centered-content img */
+.trama-center img {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.trama-chapter p {
+  margin: 0;
+  padding: 0;
+  break-inside: auto;
+  page-break-inside: auto;
+}
+
+p:empty {
+  display: none;
+  margin: 0;
+  padding: 0;
+}
+
+.trama-spacer {
+  display: block;
+}
+
+/*
+ * Tall cover art (e.g. 665×997) at width:100% can exceed printable height by a few mm.
+ * Browsers then move the whole image to page 2 (break-inside:avoid), leaving a blank page 1.
+ * Cap height to the printable area so single-page covers stay on one sheet.
+ */
+img {
+  display: block;
+  max-width: 100%;
+  max-height: 26.17cm;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  break-inside: auto;
+  page-break-inside: auto;
+}

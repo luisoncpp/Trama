@@ -1,12 +1,22 @@
 /** @vitest-environment node */
 
-import { describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { mkdir, mkdtemp, readFile, stat, writeFile } from 'node:fs/promises'
 import os from 'node:os'
 import path from 'node:path'
 import { handleBookExport } from '../electron/ipc/handlers/book-export-handler'
+import { setBookExportPrintSurfaceForTests } from '../electron/services/book-export-pdf-print.js'
+import { createOnePagePdfMockPrintSurface } from './helpers/book-export-mock-print-surface.js'
 
 describe('book export ipc handler', () => {
+  beforeEach(() => {
+    setBookExportPrintSurfaceForTests(createOnePagePdfMockPrintSurface())
+  })
+
+  afterEach(() => {
+    setBookExportPrintSurfaceForTests(null)
+  })
+
   it('returns VALIDATION_ERROR for invalid payload', async () => {
     const response = await handleBookExport(
       {} as never,

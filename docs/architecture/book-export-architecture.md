@@ -2,7 +2,9 @@
 
 ## Propósito
 
-Este documento describe la arquitectura real de la exportación de libros en el codebase. Es la referencia canonical para entender cómo un capítulo Markdown se convierte en un archivo PDF (u otro formato).
+Este documento describe la arquitectura de exportación de libros en el codebase. Es la referencia canonical para entender cómo el markdown del libro se convierte en PDF (u otro formato).
+
+Términos de dominio compartidos: `CONTEXT.md` (sección Book export). Decisión de forma PDF: [ADR 0004](../adr/0004-book-pdf-via-html-print-segments.md).
 
 ---
 
@@ -12,60 +14,147 @@ Este documento describe la arquitectura real de la exportación de libros en el 
 book-export-service.ts          — Orquestador: compila capítulos, sanitiza, dispatch por formato
 ├── book-export-order.ts        — Ordena archivos por índice corkboardOrder
 ├── book-export-sanitize.ts     — Elimina frontmatter, normaliza saltos
-├── book-export-directives.ts   — Parsea directivas layout (center/spacer/pagebreak)
+├── book-export-directives.ts   — Parsea directivas layout; `replaceDirectivesForPdfPrint`, `stripLeadingPagebreakAndBlankLines`
 ├── book-export-image-utils.ts  — Resolve paths, carga bytes, parsea data URLs, lee dimensiones PNG/JPEG, escala para DOCX, extrae referencias markdown
 │
-├── book-export-inline-markdown.ts — Inline bold/italic runs via marked.lexer (shared by PDF/DOCX)
-├── book-export-renderers.ts    — Modelo común BookExportChapter + renderer HTML/Markdown
+├── book-export-inline-markdown.ts — Inline bold/italic runs via marked.lexer (DOCX)
+├── book-export-renderers.ts    — Modelo común BookExportChapter + renderer HTML/Markdown/PDF (`renderChapterHtmlFragmentForPdf`, `normalizePdfPrintChapterBody`)
 │
-├── book-export-pdf-fonts.ts           — Carga fuentes del sistema (Times New Roman, etc.) vía @pdf-lib/fontkit; fallback a StandardFonts
-├── book-export-pdf-font-utils.ts      — Normalización Unicode: normalizeForFont, safeTextForFont, normalizeRunsForFonts
-├── book-export-pdf-inline.ts          — Convierte runs inline a tokens por palabra + word-wrap para layout PDF
-├── book-export-pdf-utils.ts            — createPdfWriter, PdfWriter, PdfLayoutState, drawRuns, drawHeading, drawPdfImage, drawWrappedParagraph
-├── book-export-pdf-chapters.ts         — renderPdfChapter: parsea contenido (directivas, imágenes, headings, párrafos), emite al writer
-├── book-export-pdf-renderer.ts         — BARRIL (2 líneas): re-exporta desde pdf-utils.ts
+├── book-export-pdf-renderer.ts         — Orquestador PDF: segmentos → HTML → print → merge
+├── book-export-pdf-segments.ts         — Manuscrito ordenado, gaps, split en PDF export segments
+├── book-export-pdf-html.ts             — HTML de impresión por segmento (shell vs body-only)
+├── book-export-pdf-print.ts            — Singleton BrowserWindow + printToPDF (inyectable en tests)
+├── book-export-pdf-print.css           — Estilos impresión (@page A4 + márgenes, Times New Roman, límites de imagen)
+├── book-export-pdf-merge.ts            — mergePdfSegments: copyPages lineal en memoria
 │
 ├── book-export-docx-renderer.ts — DOCX via `docx` package
 ├── book-export-epub-renderer.ts — EPUB via `epub-gen`
 ```
 
-### Archivo barrel (`book-export-pdf-renderer.ts`)
+### Punto de entrada PDF (`book-export-pdf-renderer.ts`)
 
-Este archivo tiene 2 líneas. Existe para que los importers (`book-export-service.ts`) puedan importar desde `book-export-pdf-renderer.ts` sin conocer la split internamente. Si necesitas editar la implementación del PDF, edita `book-export-pdf-utils.ts`.
+Mantiene el import path estable para `book-export-service.ts`. Implementa `renderPdfBook(chapters, metadata, projectRoot)` sobre segmentos + HTML + print surface + merge.
 
 ---
 
-## Pipeline de Render PDF
+## Export PDF
+
+> **Estado:** Implementado según [ADR 0004](../adr/0004-book-pdf-via-html-print-segments.md) (2026-06-04). Tests en CI usan mock del print surface; export real requiere proceso Electron.
+
+### Por qué segmentos
+
+El motor lento era el layout PDF manual (`pdf-lib`, tokens por palabra). El camino rápido es **markdown → HTML → `printToPDF`**. Los segmentos **no** buscan paralelismo: un libro sin **Author page break** es un solo segmento.
+
+Los segmentos existen porque un único HTML grande no garantiza saltos de página fiables en PDF. Cada **PDF export segment** es el markdown **entre** directivas `<!-- trama:pagebreak -->` (y variantes HTML). Esas líneas son **límites de corte**, no contenido del segmento. Al concatenar los PDF impresos, la unión entre segmentos **es** el salto de página del autor.
+
+### Manuscrito ordenado e inter-document gap
+
+1. Tomar `BookExportChapter[]` en orden corkboard.
+2. Entre dos documentos consecutivos: si el anterior **no** terminó en author page break, insertar **inter-document gap** (equivalente a dos líneas en blanco en cuerpo). Este es el estándar de exportación para **todos** los formatos; si HTML hoy no lo hace, es un bug.
+3. Recorrer el flujo unificado línea a línea; cada línea que sea solo author page break cierra el segmento actual y abre el siguiente.
+
+Un segmento puede abarcar varios archivos fuente. No hay noción canonical de “capítulo” en export (carpeta vs archivo es organización del autor).
+
+### Pipeline
 
 ```
-Input: BookExportChapter[]  (path, title, content sanitizado)
+Input: BookExportChapter[] + metadata + projectRoot
          │
          ▼
-renderPdfBook()   [book-export-pdf-utils.ts]
+buildPdfExportSegments()     — manuscrito + gaps + split (sin líneas pagebreak en el body)
          │
-         ├── Crea PDFDocument + PdfLayoutState (cursorY, centered)
+         ▼
+Por cada segmento i (solo segmentos con contenido imprimible):
          │
-         ├── Itera capítulos:
-         │      │
-         │      ▼
-          │   renderPdfChapter()  [book-export-pdf-chapters.ts]
-          │      │
-          │      ├── Limpia content (directivas ya parseadas en sanitize)
-          │      ├── Por cada línea del contenido:
-          │      │    ├── Detecta directivas: center/spacer/pagebreak
-          │      │    ├── Si center-start → set state.centered = true
-          │      │    ├── Si spacer → writer.addSpacer(n)
-          │      │    ├── Si pagebreak → addPage() forzado
-          │      │    ├── Si línea de imagen (![alt](path)) → writer.drawImage(resolvedPath)
-          │      │    ├── Si heading → writer.drawHeading(text, centered)
-          │      │    │         └── parseInlineMarkdownRuns → headingTokens → drawRuns (tamaño heading)
-          │      │    └── Si párrafo → writer.drawParagraphLine(text, centered)
-          │      │         └── drawParagraphLine usa inlineTokens (marked) → wrapTokens → drawRuns
-          │      │
-          │      └── Retorna si último elemento fue pagebreak
+         ├── renderSegmentPrintHtml → documento HTML único (mismo shell para todos los índices)
+         │   segmento 0: header opcional solo si metadata.title/author; sin fallback "Trama Book Export"
          │
-         └── pdf.save() → Uint8Array
+         ├── renderChapterHtmlFragmentForPdf por capítulo del segmento:
+         │   stripLeadingPagebreakAndBlankLines → replaceDirectivesForPdfPrint (sin pagebreak HTML)
+         │   → marked.parse → normalizePdfPrintChapterBody (desenvuelve <p><img>)
+         │   → <section class="trama-chapter">
+         │
+         ├── Escribir segment print document (temp file: segment-NNN.html bajo tmpdir del job)
+         │
+         ├── Book export print surface → await loadFile → fonts/layout → printToPDF
+         │   (preferCSSPageSize: true; márgenes en book-export-pdf-print.css @page)
+         │
+         └── Uint8Array del segmento
+         │
+         ▼
+mergePdfSegments(buffers)    — un PDFDocument, load cada buffer una vez, copyPages, save
+         │
+         └── Uint8Array final
 ```
+
+### Book export print surface
+
+- Un `BrowserWindow` oculto por proceso, reutilizado entre exportaciones (`dynamic import('electron')` para que Vitest importe el módulo sin Electron).
+- Cola/mutex (`runBookExportPrintExclusive`): no intercalar `loadFile`/`printToPDF` si hay dos export concurrentes.
+- Carga: `await webContents.loadFile(absolutePath)` + `document.fonts.ready` + dos `requestAnimationFrame` (no `once('did-finish-load')` suelto — evita carreras en la ventana reutilizada).
+- `printToPDF({ printBackground: true, preferCSSPageSize: true })` — tamaño y márgenes desde `@page` en `book-export-pdf-print.css` (no duplicar márgenes en opciones Electron).
+- `setBookExportPrintSurfaceForTests(mock)` para tests (mock de `printToPDF` sin ventana real).
+- **Cleanup al cerrar la ventana principal**: `disposeBookExportPrintSurface()` se invoca en `win.on('closed')` dentro de `electron/main.ts` para destruir (`BrowserWindow.destroy()`) la ventana oculta cacheada tan pronto la ventana principal muere. `before-quit` queda como red de seguridad, pero no sirve como único hook porque la ventana oculta impide que el proceso entre a la fase de quit. Sin este cleanup temprano, la ventana oculta mantiene el proceso Electron vivo después de cerrar la principal en Windows/Linux, y el usuario tiene que forzar la terminación con Ctrl+C.
+- Temp dir por job: `withBookExportTempDirectory` (`%TEMP%/trama-book-export-*` en Windows); se borra al terminar el export.
+- Errores y warnings a **consola**; sin progreso por segmento en UI (v1).
+
+### Tipografía y criterio de aceptación
+
+- **Functional parity**: orden de contenido, directivas center/spacer, imágenes visibles, Unicode, saltos en uniones de segmento, inter-document gap.
+- **Book export PDF typography**: `"Times New Roman", Times, serif` en CSS de impresión (con fallbacks). No se exige coincidencia pixel a pixel con pdf-lib legacy.
+
+### Directivas layout en PDF
+
+| Directiva | En segmento HTML |
+|-----------|------------------|
+| `<!-- trama:center:start/end -->` | `replaceDirectivesForPdfPrint` → `.trama-center` |
+| `<!-- trama:spacer lines=N -->` | `.trama-spacer` |
+| `<!-- trama:pagebreak -->` | **No** va dentro del segmento; solo delimita segmentos en `buildPdfExportSegments`. Líneas pagebreak al inicio del manuscrito se eliminan. |
+
+### Imágenes en PDF
+
+- Mismo preprocesado que otros formatos: `buildBookChapters()` embebe locales como `data:image/` antes del render.
+- HTML: `marked.parse` + `normalizePdfPrintChapterBody` (quita `<p>` vacíos y desenvuelve `<p><img>`).
+- Print CSS: `max-width: 100%`, `max-height: 26.17cm` (área imprimible A4 con márgenes ~50pt), `object-fit: contain` — evita portadas altas (p. ej. 665×997) que Chromium mueve a la página 2 dejando la 1 en blanco.
+- `printToPDF` con `printBackground: true` para data URLs y fondos.
+
+### PDF segment merge
+
+- Un solo `PDFDocument` destino.
+- Por cada buffer de segmento: `PDFDocument.load` → `copyPages` → `addPage`.
+- **Prohibido** guardar/recargar el PDF acumulado entre segmentos (merge cuadrático).
+- `pdf-lib` permanece solo para merge; desaparece el layout manual.
+
+### Tests
+
+| Archivo | Qué verifica |
+|---------|----------------|
+| `tests/book-export-pdf-segments.test.ts` | Split, gaps, pagebreak, strip inicial |
+| `tests/book-export-pdf-html.test.ts` | CSS impresión, header solo segmento 0, sin pagebreak crudo |
+| `tests/book-export-pdf-directives.test.ts` | `replaceDirectivesForPdfPrint`, `normalizePdfPrintChapterBody` |
+| `tests/book-export-pdf-print.test.ts` | Mock injection, mutex, temp dir cleanup |
+| `tests/book-export-pdf-merge.test.ts` | Orden y conteo de páginas al fusionar |
+| `tests/book-export-renderers.test.ts` | Regresión funcional PDF (mock print surface, una página por segmento) |
+| `tests/book-export-ipc-handler.test.ts` | Export PDF vía IPC con mock |
+
+CI no lanza Electron real: `setBookExportPrintSurfaceForTests(createOnePagePdfMockPrintSurface())` en tests que llaman `renderPdfBook`.
+
+### Playbook debug PDF lento o roto
+
+1. Leer en consola `[book-export] PDF export segment count: N` al exportar.
+2. Interceptar **segment print document** antes de que se borre el temp dir:
+   - Windows: `%TEMP%\trama-book-export-<random>\segment-000.html`
+   - Ejemplo: `C:\Users\<user>\AppData\Local\Temp\trama-book-export-fEpb7h\segment-000.html`
+   - El directorio se elimina al finalizar el job (`withBookExportTempDirectory`).
+3. Abrir `segment-000.html` en Chrome → Vista previa de impresión (debe coincidir con el PDF del segmento 0).
+4. Si hay **página en blanco al inicio** en un segmento de portada:
+   - ¿`<p><img>` sin normalizar? Debe quedar `<img>` suelto.
+   - ¿Imagen más alta que el área imprimible? Revisar `max-height: 26.17cm` en CSS embebido.
+   - Ver `docs/lessons-learned/book-export-pdf-print-surface.md`.
+5. Si `printToPDF` falla con márgenes: no pasar márgenes en pulgadas **y** `@page` a la vez; el motor actual usa solo `@page` + `preferCSSPageSize: true`.
+6. Tests focalizados: `npm run test -- tests/book-export`
+7. Tras cambiar CSS: `npm run build:electron` (copia `book-export-pdf-print.css` a `dist-electron`).
+8. Síntomas comunes (márgenes, página en blanco): `docs/live/troubleshooting.md` §14.
 
 ---
 
@@ -75,115 +164,11 @@ renderPdfBook()   [book-export-pdf-utils.ts]
 
 ```typescript
 interface BookExportChapter {
-  path: string        // ruta relativa al capítulo
+  path: string        // ruta relativa al documento en el libro
   title: string       // título extraído del nombre de archivo
   content: string     // markdown sanitizado (sin frontmatter)
 }
 ```
-
-### `PdfWriter`
-
-```typescript
-interface PdfWriter {
-  addPage: () => void
-  drawHeading: (text: string, centered: boolean) => void
-  drawParagraphLine: (text: string, centered: boolean) => void
-  addSpacer: (lines: number) => void
-  drawImage: (absolutePath: string) => Promise<void>
-}
-```
-
-### `PdfLayoutState`
-
-```typescript
-interface PdfLayoutState {
-  cursorY: number     // posición Y actual del cursor
-  centered: boolean   // si el contenido siguiente debe estar centrado
-}
-```
-
----
-
-## Directivas Layout en PDF
-
-El parser de directivas (`book-export-directives.ts`) extrae del markdown los directivas `trama:*` y las convierte en llamadas al `PdfWriter`:
-
-| Directiva | Implementación PDF |
-|-----------|-------------------|
-| `<!-- trama:center:start -->` | `state.centered = true` antes del siguiente contenido |
-| `<!-- trama:center:end -->` | `state.centered = false` después del bloque centrado |
-| `<!-- trama:spacer lines=N -->` | `writer.addSpacer(N)` — mueve cursor N líneas |
-| `<!-- trama:pagebreak -->` | `writer.addPage()` + `addPage()` forzado |
-| `<!-- pagebreak -->` (HTML variant) | Mismo comportamiento que `trama:pagebreak` |
-
-El renderer PDF NO usa HTML comentarios como output intermediario — las directivas se consumen durante el parseo y se traducen directamente a operaciones de layout (`addPage`, `addSpacer`, `cursorY` adjustments).
-
----
-
-## Fuentes PDF
-
-Hay **dos archivos** relacionados con fuentes; no confundir:
-
-### `book-export-pdf-fonts.ts` — Carga de fuentes del sistema
-```
-Sistema: Busca fuentes serif Unicode del sistema (Times New Roman / Nimbus Roman No 9 L)
-         Si encuentra → Embed con @pdf-lib/fontkit (soporta Unicode completo)
-         
-Fallback: StandardFonts.TimesRoman (WinAnsi, no soporta Unicode extendido)
-
-Pasos:
-  1. Itera candidatos de sistema por plataforma (Windows, macOS, Linux)
-  2. Intenta cargar vía fontkit; si falla → usa StandardFonts
-  3. Retorna objeto { regular: PDFFont, bold: PDFFont }
-```
-
-### `book-export-pdf-font-utils.ts` — Normalización de texto para encoding
-- `normalizeForFont()`: elimina diacríticos (NFKD), reemplaza comillas tipográficas, etc.
-- `safeTextForFont()`: prueba `font.encodeText()`; si falla, aplica normalización progresiva hasta `[^\x20-\x7E]` → `?`
-- `normalizeRunsForFonts()`: aplica `safeTextForFont()` a cada token de un run (regular/bold)
-
-El fallback a `StandardFonts` puede fallar con caracteres no-WinAnsi (ej. acentos, eñe, caracteres cirílicos). Si el documento los usa y no hay fuente de sistema, `safeTextForFont()` hace encoding fallbacks progresivos.
-
----
-
-## Imágenes en PDF
-
-**Reference-style e inline**:
-- Se detectan tanto `![alt](url)` como `![][ref]` / `![alt][ref]` / `![ref]`
-- Las referencias se extraen una sola vez por capítulo (`extractImageReferences`)
-- Las líneas de definición `[ref]: url` se omiten del output
-
-**Imágenes inline dentro de párrafos**:
-- Líneas con formato `texto ![](img.png) más texto` se procesan como `paragraph-with-images`
-- `extractInlineImages()` divide la línea en segmentos: texto | imagen | texto | imagen | texto
-- Cada segmento se renderiza alternadamente: `drawParagraphLine` para texto, `drawImage` para imágenes
-- Esta segmentación aplica también a múltiples imágenes en la misma línea
-
-**Data URLs (base64)**:
-- Detectadas por prefijo `data:image/`
-- NO pasan por `path.resolve()` — se parsean directamente
-- Se decodifican a bytes y se embed via `pdf.embedPng()` o `pdf.embedJpg()`
-
-**Preprocesado común antes del renderer**:
-- `buildBookChapters()` convierte referencias markdown a archivos locales en data URLs para `html`, `docx`, `epub` y `pdf`
-- Esto unifica la representación de imágenes entre formatos y evita depender de resolución de rutas distinta por renderer
-- `markdown` export conserva las rutas originales y no embebe base64
-
-**Archivos locales**:
-- `path.resolve(projectRoot, chapterDir, imagePath)` → ruta absoluta
-- `loadImageBytes()` → { type, bytes }
-- `embedPng` o `embedJpg` según el tipo
-- `res/*.png` se resuelve relativo a `projectRoot`, no al `chapterDir`, porque esa ruta viene de la capa de persistencia
-
-**Escalado**:
-```
-scale = min(
-  (PAGE_WIDTH - MARGIN*2) / image.width,
-  300 / image.height,
-  1
-)
-```
-Restricciones: no más ancho que el área printable, no más alto que 300px, sin escalar si ya es menor.
 
 ---
 
@@ -209,21 +194,6 @@ Restricciones: no más ancho que el área printable, no más alto que 300px, sin
 
 ---
 
-## Métricas de Página
-
-```
-PAGE_WIDTH  = 595   // puntos (A4 ≈ 595 × 842)
-PAGE_HEIGHT = 842
-MARGIN      = 50    // puntos
-BODY_FONT_SIZE = 12
-HEADING_FONT_SIZE = 17
-LINE_HEIGHT = 18
-
-Línea nueva cuando cursorY < MARGIN → addPage() automático (ensureLineCapacity)
-```
-
----
-
 ## Metadata (title / author) por formato
 
 | Formato | ¿Recibe metadata? | Uso |
@@ -231,7 +201,7 @@ Línea nueva cuando cursorY < MARGIN → addPage() automático (ensureLineCapaci
 | `html` | Sí | `<title>`, `<meta name="author">`, header con byline |
 | `docx` | Sí | `Document.title`, `Document.creator` |
 | `epub` | Sí | `EpubOptions.title`, `EpubOptions.author` |
-| `pdf` | **No** | `renderPdfBook(chapters, projectRoot)` no recibe `BookExportMetadata`. La firma del orquestador (`book-export-service.ts`) pasa `projectRoot` pero no `metadata`. Generación de portada / metadatos XMP pendiente. |
+| `pdf` | Sí (opcional) | Header en segmento 0 solo si `title` y/o `author`; sin título por defecto. Segmentos siguientes sin repetir header. Metadatos XMP PDF pendiente. |
 | `markdown` | No | Concatenación simple, sin metadatos de libro |
 
 ---
@@ -267,7 +237,7 @@ Línea nueva cuando cursorY < MARGIN → addPage() automático (ensureLineCapaci
 | `html` | marked + template | Directivas convertidas a CSS classes |
 | `docx` | `docx` package | Heading styles, pagebreak como 2 líneas en blanco, imágenes reference-style + inline via `ImageRun` con dimensiones reales (píxeles, no EMU) |
 | `epub` | `epub-gen` | Data URLs materializadas a archivos temporales con path `file://`; imágenes reference-style + inline |
-| `pdf` | `pdf-lib` | Renderer dedicado, fuente Unicode embebida, layout state-driven; imágenes reference-style + inline; **no recibe metadata aún** (ver sección Metadata) |
+| `pdf` | Chromium `printToPDF` + `pdf-lib` merge | Segmentos HTML, Times New Roman, ver ADR 0004 |
 
 ---
 
@@ -275,23 +245,22 @@ Línea nueva cuando cursorY < MARGIN → addPage() automático (ensureLineCapaci
 
 | Formato | Motor inline |
 |---------|----------------|
-| `html`, `epub` | `marked.parse()` en capítulo completo |
-| `pdf`, `docx` | `book-export-inline-markdown.ts` → `marked.lexer()` por línea |
+| `html`, `epub`, `pdf` | `marked.parse()` en el contenido del capítulo/segmento |
+| `docx` | `book-export-inline-markdown.ts` → `marked.lexer()` por línea |
 
 Soporta `**bold**`, `__bold__`, `*italic*`, `_italic_` (incl. frases con espacios), enlaces (texto visible), y HTML legacy `<strong>` / `<em>` convertido antes del lexer.
-
-PDF carga fuentes italic/bold-italic del sistema cuando existen (`timesi.ttf`, etc.); si no, hace fallback a regular/bold.
 
 DOCX aplica `TextRun` con `bold` / `italics` por run. Headings sin marcadores inline se renderizan en negrita por defecto; si el título trae `*...*` o `_..._`, se respeta el estilo inline.
 
 ## Errores Comunes Documentados
 
-- **`WinAnsi cannot encode`**: Fuente del sistema no disponible → fallback a StandardFonts → falla en Unicode. Fix: asegurar que `@pdf-lib/fontkit` encuentra fuente serif del sistema.
+- **`WinAnsi cannot encode`** (pdf-lib layout retirado): el PDF actual usa Chromium; si falla la codificación, revisar fuentes del SO / CSS de impresión.
 - **Data URL corrompida**: `path.resolve()` aplicado a `data:image/...` → ruta absoluta inválida. Fix: check `startsWith('data:image/')` antes de path resolution.
 - **Center regression**: `drawHeading()` no recibía `centered` flag → headings ignoraban directivas de centrado. Fix: pasó `centered` a `drawHeading()` y calculó `x` igual que párrafos.
 - **Imágenes reference-style ignoradas en DOCX**: el renderer solo parseaba `![alt](url)`, por lo que `![][ref]` + `[ref]: url` se renderizaba como texto plano. Fix: `extractImageReferences` + `extractImageInfo` soportan inline, explicit-ref e implicit-ref; las líneas de definición se skippean.
 - **DOCX ImageRun con EMU en lugar de píxeles**: pasar EMU directamente a `transformation` produce imágenes gigantescas (página entera en Calibre) o invisibles (LibreOffice). Fix: `calculateDocxImageSize` retorna píxeles; la librería `docx` hace la conversión interna a EMU.
-- **Énfasis inline con guiones bajos visibles en PDF/DOCX**: regex `_([^_]+)_` no cubre `_texto con espacios_`; headings PDF no parseaban `*...*`. Fix: parser compartido `book-export-inline-markdown.ts` basado en `marked.lexer`.
+- **Énfasis inline con guiones bajos visibles en DOCX**: regex `_([^_]+)_` no cubre `_texto con espacios_`. Fix: parser compartido `book-export-inline-markdown.ts` basado en `marked.lexer`. PDF usa `marked.parse()` en el segmento.
+- **Página en blanco al inicio del PDF (portada)**: ver lección `book-export-pdf-print-surface.md` — causas típicas: `<p>` alrededor de `<img>`, imagen más alta que el área imprimible, o pagebreak HTML residual dentro del segmento.
 
 ---
 
@@ -303,3 +272,5 @@ DOCX aplica `TextRun` con `bold` / `italics` por run. Headings sin marcadores in
 4. Agregar tests de regresión en `tests/book-export-renderers.test.ts`
 5. Agregar entrada en `docs/live/file-map.md`
 6. Si el renderer excede 200 líneas → splitear como se hizo con el PDF renderer
+7. Aplicar **inter-document gap** entre documentos corkboard salvo author page break al final del documento anterior
+

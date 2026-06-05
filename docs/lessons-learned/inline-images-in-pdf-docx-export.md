@@ -1,7 +1,7 @@
 # Inline Images in PDF and DOCX Exports
 
 **Date**: 2026-05-10
-**Component**: `book-export-line-processor.ts`, `book-export-pdf-chapters.ts`, `book-export-docx-renderer.ts`
+**Component**: `book-export-line-processor.ts`, `book-export-docx-renderer.ts` (DOCX inline images). PDF now renders chapter HTML via `marked.parse()` in `book-export-renderers.ts` (ADR 0004); legacy `book-export-pdf-chapters.ts` removed.
 **Status**: Fixed
 
 ## Problem

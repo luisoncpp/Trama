@@ -1,7 +1,7 @@
 # Book Export Inline Emphasis (Bold / Italic)
 
 **Date**: 2026-06-01
-**Component**: `book-export-inline-markdown.ts`, `book-export-pdf-inline.ts`, `book-export-docx-renderer.ts`, `book-export-pdf-utils.ts`
+**Component**: `book-export-inline-markdown.ts`, `book-export-docx-renderer.ts` (DOCX); PDF uses `marked.parse()` via `book-export-renderers.ts` / segment HTML (see ADR 0004)
 **Status**: Fixed
 
 ## Problem

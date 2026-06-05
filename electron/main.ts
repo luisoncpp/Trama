@@ -2,6 +2,7 @@ import { app, BrowserWindow, ipcMain } from 'electron'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
 import { registerIpcHandlers, shutdownIpcServices } from './ipc.js'
+import { disposeBookExportPrintSurface } from './services/book-export-pdf-print.js'
 import { setupContextMenu } from './main-process/context-menu.js'
 import { setupSmokeTestHooks } from './main-process/smoke-hooks.js'
 import { configureWindowCloseBehavior } from './main-process/window-close.js'
@@ -187,6 +188,7 @@ async function createMainWindow(): Promise<void> {
   configureAutoHideMenuBar(win)
 
   win.on('closed', () => {
+    disposeBookExportPrintSurface()
     mainWindow = null
   })
 }

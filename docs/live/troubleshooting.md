@@ -252,3 +252,79 @@ See `docs/lessons-learned/find-bar-toolbar-click-blocked.md`.
 ### Guardrail
 
 - For split-editor callbacks, prefer pane-targeted actions over globally inferred pane state.
+
+## 14) Book export PDF — blank page, wrong margins, or layout surprises
+
+### Symptom
+
+- PDF starts with a blank page (often on cover/portada segments).
+- `printToPDF` throws “margins must be less than or equal to pageSize”.
+- PDF layout differs from Chrome print preview of a saved segment HTML file.
+
+### Root causes seen
+
+- `marked` wraps images in `<p>`; paragraph margins push the cover block to page 2.
+- Tall cover images at `max-width: 100%` exceed printable height without `max-height` + `object-fit: contain`.
+- Passing Electron `margins` in pixels (~67) instead of inches, or duplicating `@page` margins in `printToPDF` options.
+- Stale `dist-electron` print CSS after editing `book-export-pdf-print.css` without `npm run build:electron`.
+
+### Current fix
+
+- Pipeline: HTML **PDF export segments** → `printToPDF` → linear `pdf-lib` merge ([ADR 0004](../adr/0004-book-pdf-via-html-print-segments.md)).
+- `normalizePdfPrintChapterBody` unwraps `<p><img>`; print CSS caps image height and zeroes `p` margins in chapters.
+- `printToPDF({ printBackground: true, preferCSSPageSize: true })` with margins only in `@page` inside `book-export-pdf-print.css`.
+
+### Quick checks
+
+1. Read `docs/architecture/book-export-architecture.md` (Export PDF + playbook) and `docs/lessons-learned/book-export-pdf-print-surface.md`.
+2. Run `npm run test -- tests/book-export`.
+3. After CSS changes: `npm run build:electron`, then re-export.
+4. To inspect segment HTML before cleanup: pause during export or copy from `%TEMP%\trama-book-export-<random>\segment-000.html` (Windows); open in Chrome → Print preview should match segment 0 PDF.
+
+## 15) App window closes but the Electron process keeps running (need Ctrl+C to exit)
+
+### Symptom
+
+- After exporting to PDF at least once, closing the main app window leaves a dangling Electron process. The terminal shows the process is still alive and the user has to press Ctrl+C to terminate it.
+- Most common on Windows and Linux; macOS may mask it because the app stays running by design.
+
+### Root cause
+
+- The PDF print surface (`electron/services/book-export-pdf-print.ts`) lazily creates a hidden `BrowserWindow` to reuse across `printToPDF` calls. The window is cached on the singleton `defaultPrintSurface` and is never destroyed.
+- When the user closes the main window, `window-all-closed` triggers `app.quit()`, but the hidden window keeps the Electron process alive because no one destroys it.
+
+### Current fix
+
+- `disposeBookExportPrintSurface()` in `electron/services/book-export-pdf-print.ts` calls `BrowserWindow.destroy()` on the cached hidden window and nulls the singleton.
+- Wired into the main-window `closed` handler in `electron/main.ts`, with `before-quit` kept only as fallback. Idempotent and safe to call when no surface has been created.
+- Covered by `tests/book-export-pdf-print.test.ts` (dispose is safe with no surface; does not clear an installed test mock).
+
+### Quick checks
+
+1. Reproduce by exporting to PDF, then closing the main window; the process should exit cleanly.
+2. Verify the wiring: `electron/main.ts` imports `disposeBookExportPrintSurface` and calls it from `win.on('closed', ...)` for the main window.
+3. Run `npm run test -- tests/book-export-pdf-print.test.ts`.
+
+## 16) PDF export finishes but the success toast never appears
+
+### Symptom
+
+- PDF export completes on disk, but the renderer never shows the `Book exported to ...` toast.
+- During `npm run dev`, Vite logs a page reload in the middle of export, often mentioning `segment-0.html`.
+
+### Root cause
+
+- A debug write in `electron/services/book-export-pdf-renderer.ts` emitted `./segment-0.html` into the workspace root for the first printable segment.
+- Vite watches the workspace root in dev, sees that HTML file change, and reloads the renderer. The export promise in the main process still completes, but the renderer state holding `exporting`/`toastMessage` is torn down and recreated.
+
+### Current fix
+
+- PDF segment HTML stays inside `withBookExportTempDirectory(...)` only.
+- No repo-root `segment-0.html` artifact is written anymore.
+- Covered by `tests/book-export-renderers.test.ts`, which asserts that `renderPdfBook(...)` does not create `segment-0.html` in `process.cwd()`.
+
+### Quick checks
+
+1. Export a PDF in dev and confirm Vite no longer logs `page reload segment-0.html`.
+2. Confirm the toast appears after export completes.
+3. Run `npm run test -- tests/book-export-renderers.test.ts`.

@@ -47,6 +47,7 @@ For WS1 execution details, see `docs/spec/wiki-tag-links-spec.md` and `docs/plan
   - `npm run test -- tests/rich-markdown-editor.test.ts`
   - `npm run test -- tests/project-editor-conflict-flow.test.ts`
   - `npm run test -- tests/typescript-compile.test.ts`
+  - `npm run test -- tests/book-export` (PDF segment pipeline; mock print surface)
 
 ## Typical development loop
 

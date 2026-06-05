@@ -1,6 +1,10 @@
 import path from 'node:path'
 import { marked } from 'marked'
-import { replaceDirectivesForHtml } from './book-export-directives.js'
+import {
+  replaceDirectivesForHtml,
+  replaceDirectivesForPdfPrint,
+  stripLeadingPagebreakAndBlankLines,
+} from './book-export-directives.js'
 import { resolveImagePath, loadImageBytes, bytesToDataUrl } from './book-export-image-utils.js'
 
 export interface BookExportChapter {
@@ -31,26 +35,19 @@ export function renderMarkdownBook(chapters: BookExportChapter[]): string {
   return manuscript.join('\n\n---\n\n')
 }
 
-export async function renderChapterHtmlFragment(chapter: BookExportChapter): Promise<string> {
-  const source = replaceDirectivesForHtml(chapter.content)
-  const parsed = await Promise.resolve(marked.parse(source))
-  const body = typeof parsed === 'string' ? parsed : String(parsed)
-  return `<section class="trama-chapter" data-path="${escapeHtml(chapter.path)}">${body}</section>`
-}
-
-export async function renderChapterHtmlFragmentWithProjectRoot(
-  chapter: BookExportChapter,
+async function embedChapterImages(
+  content: string,
   projectRoot: string,
+  chapterPath: string,
 ): Promise<string> {
   if (!projectRoot.trim()) {
-    return renderChapterHtmlFragment(chapter)
+    return content
   }
 
-  let content = chapter.content
-  const chapterDir = path.dirname(chapter.path)
+  const chapterDir = path.dirname(chapterPath)
   const IMAGE_PATTERN = /!\[([^\]]*)\]\(([^)]+)\)/g
-
-  const matches = Array.from(content.matchAll(IMAGE_PATTERN))
+  let output = content
+  const matches = Array.from(output.matchAll(IMAGE_PATTERN))
 
   for (const match of matches) {
     const altText = match[1]
@@ -69,7 +66,7 @@ export async function renderChapterHtmlFragmentWithProjectRoot(
           const escaped = match[0].replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
           const regex = new RegExp(escaped, 'g')
           const replacement = `![${altText}](${dataUrl})`
-          content = content.replace(regex, () => replacement)
+          output = output.replace(regex, () => replacement)
         }
       }
     } catch (err) {
@@ -80,6 +77,43 @@ export async function renderChapterHtmlFragmentWithProjectRoot(
     }
   }
 
+  return output
+}
+
+/** marked wraps standalone images in <p>; margins + break-inside:avoid can push the block to page 2. */
+export function normalizePdfPrintChapterBody(html: string): string {
+  return html
+    .replace(/<p>\s*<\/p>/gi, '')
+    .replace(/<p>\s*(<img\b[^>]*>)\s*<\/p>/gi, '$1')
+    .replace(/>\s+</g, '><')
+}
+
+export async function renderChapterHtmlFragmentForPdf(
+  chapter: BookExportChapter,
+  projectRoot = '',
+): Promise<string> {
+  let content = stripLeadingPagebreakAndBlankLines(chapter.content)
+  content = await embedChapterImages(content, projectRoot, chapter.path)
+  const source = replaceDirectivesForPdfPrint(content)
+  const parsed = await Promise.resolve(marked.parse(source))
+  const rawBody = typeof parsed === 'string' ? parsed : String(parsed)
+  const body = normalizePdfPrintChapterBody(rawBody)
+  return `<section class="trama-chapter" data-path="${escapeHtml(chapter.path)}">${body}</section>`
+}
+
+export async function renderChapterHtmlFragment(chapter: BookExportChapter): Promise<string> {
+  const source = replaceDirectivesForHtml(chapter.content)
+  const parsed = await Promise.resolve(marked.parse(source))
+  const body = typeof parsed === 'string' ? parsed : String(parsed)
+  return `<section class="trama-chapter" data-path="${escapeHtml(chapter.path)}">${body}</section>`
+}
+
+export async function renderChapterHtmlFragmentWithProjectRoot(
+  chapter: BookExportChapter,
+  projectRoot: string,
+): Promise<string> {
+  let content = chapter.content
+  content = await embedChapterImages(content, projectRoot, chapter.path)
   const source = replaceDirectivesForHtml(content)
   const parsed = await Promise.resolve(marked.parse(source))
   const body = typeof parsed === 'string' ? parsed : String(parsed)

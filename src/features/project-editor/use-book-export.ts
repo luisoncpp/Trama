@@ -108,7 +108,6 @@ function useBookExportHandlers(
 
     setExporting(true)
     setLastError(null)
-
     try {
       const response = await window.tramaApi.bookExport({
         projectRoot,

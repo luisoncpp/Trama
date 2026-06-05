@@ -1,7 +1,7 @@
 /** @vitest-environment node */
 
-import { describe, expect, it } from 'vitest'
-import { mkdir, mkdtemp, readFile, stat, writeFile } from 'node:fs/promises'
+import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { access, mkdir, mkdtemp, readFile, rm, stat, writeFile } from 'node:fs/promises'
 import os from 'node:os'
 import path from 'node:path'
 import { PDFDocument } from 'pdf-lib'
@@ -14,6 +14,8 @@ import {
 import { renderDocxBook } from '../electron/services/book-export-docx-renderer'
 import { renderEpubBook } from '../electron/services/book-export-epub-renderer'
 import { renderPdfBook } from '../electron/services/book-export-pdf-renderer'
+import { setBookExportPrintSurfaceForTests } from '../electron/services/book-export-pdf-print.js'
+import { createOnePagePdfMockPrintSurface } from './helpers/book-export-mock-print-surface.js'
 
 const TINY_PNG_BASE64 = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=='
 const TINY_PNG_DATA_URL = `data:image/png;base64,${TINY_PNG_BASE64}`
@@ -71,6 +73,14 @@ function sampleChapters(): BookExportChapter[] {
 }
 
 describe('book export renderers', () => {
+  beforeEach(() => {
+    setBookExportPrintSurfaceForTests(createOnePagePdfMockPrintSurface())
+  })
+
+  afterEach(() => {
+    setBookExportPrintSurfaceForTests(null)
+  })
+
   it('renders markdown manuscript with chapter separators', () => {
     const markdown = renderMarkdownBook(sampleChapters())
 
@@ -121,6 +131,18 @@ describe('book export renderers', () => {
 
     expect(doc.getPageCount()).toBeGreaterThanOrEqual(1)
     expect(pdf.byteLength).toBeGreaterThan(500)
+  })
+
+  it('does not write debug segment html into the workspace root during pdf export', async () => {
+    const debugHtmlPath = path.join(process.cwd(), 'segment-0.html')
+    await rm(debugHtmlPath, { force: true })
+
+    try {
+      await renderPdfBook([inlineFormattingChapter()])
+      await expect(access(debugHtmlPath)).rejects.toThrow()
+    } finally {
+      await rm(debugHtmlPath, { force: true })
+    }
   })
 
   it('renders html with directive conversion and metadata', async () => {
@@ -221,7 +243,7 @@ describe('book export renderers', () => {
           'Next page',
         ].join('\n'),
       },
-    ], fixture.projectRoot)
+    ], {}, fixture.projectRoot)
 
     const doc = await PDFDocument.load(pdfWithImages)
     expect(doc.getPageCount()).toBeGreaterThanOrEqual(1)
@@ -242,7 +264,7 @@ it('renders pdf with reference-style images', async () => {
           `[pixel]: ${fixture.imageRelativeFromChapter}`,
         ].join('\n'),
       },
-    ], fixture.projectRoot)
+    ], {}, fixture.projectRoot)
 
     const doc = await PDFDocument.load(pdfWithRefImages)
     expect(doc.getPageCount()).toBeGreaterThanOrEqual(1)
@@ -259,7 +281,7 @@ it('renders pdf with reference-style images', async () => {
           `Start text ![inline](${fixture.imageRelativeFromChapter}) end text`,
         ].join('\n'),
       },
-    ], fixture.projectRoot)
+    ], {}, fixture.projectRoot)
 
     const doc = await PDFDocument.load(pdfWithInlineImages)
     expect(doc.getPageCount()).toBeGreaterThanOrEqual(1)
@@ -276,7 +298,7 @@ it('renders pdf with reference-style images', async () => {
           `Before ![first](${fixture.imageRelativeFromChapter}) middle ![second](${fixture.imageRelativeFromChapter}) after`,
         ].join('\n'),
       },
-    ], fixture.projectRoot)
+    ], {}, fixture.projectRoot)
 
     const doc = await PDFDocument.load(pdfWithMultipleInline)
     expect(doc.getPageCount()).toBeGreaterThanOrEqual(1)
@@ -296,7 +318,7 @@ it('renders pdf with reference-style images', async () => {
         title: 'Images',
         content: ['Texto', '![persisted](res/pixel.png)', 'Fin'].join('\n'),
       },
-    ], projectRoot)
+    ], {}, projectRoot)
 
     const doc = await PDFDocument.load(pdfWithResImage)
     expect(doc.getPageCount()).toBeGreaterThanOrEqual(1)

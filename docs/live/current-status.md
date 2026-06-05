@@ -36,7 +36,7 @@ In sandboxed agent environments use the PowerShell script — see `docs/dev-work
 - `sandbox: false` for preload stability.
 - Index refresh now uses incremental updates for create/rename/delete/move/reorder; only save uses `updateCache`; full reconciliation still runs on initial open and cache miss.
 - External change handling favors safety over convenience (prevents overwrite when dirty).
-- PDF export prefers Unicode system serif fonts, falls back to `pdf-lib` standard fonts.
+- PDF export uses HTML **PDF export segments** + Electron `printToPDF` + linear `pdf-lib` merge ([ADR 0004](../adr/0004-book-pdf-via-html-print-segments.md)); Times New Roman via `book-export-pdf-print.css` (`@page` A4, ~50pt margins). Legacy pdf-lib layout removed. CI tests mock the print surface; real export needs Electron. Cover/portada: unwrap `<p><img>` and cap image height to avoid blank leading pages — see `docs/lessons-learned/book-export-pdf-print-surface.md`.
 
 ## Phase 4
 

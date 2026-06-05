@@ -100,7 +100,7 @@ async function renderBookArtifact(
     case 'pdf':
       return {
         type: 'binary',
-        value: await renderPdfBook(chapters, request.projectRoot),
+        value: await renderPdfBook(chapters, metadata, request.projectRoot),
       }
   }
 }

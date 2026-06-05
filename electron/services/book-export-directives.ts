@@ -89,3 +89,48 @@ export function replaceDirectivesForHtml(content: string): string {
     })
     .join('\n')
 }
+
+/** PDF segments are split on page breaks; do not emit page-break HTML inside segment bodies. */
+export function stripLeadingPagebreakAndBlankLines(content: string): string {
+  const lines = content.split('\n')
+  let startIndex = 0
+
+  while (startIndex < lines.length) {
+    const line = lines[startIndex]
+    if (line.trim() === '') {
+      startIndex += 1
+      continue
+    }
+
+    if (parseDirectiveLine(line)?.kind === 'pagebreak') {
+      startIndex += 1
+      continue
+    }
+
+    break
+  }
+
+  if (startIndex === 0) {
+    return content
+  }
+
+  return lines.slice(startIndex).join('\n')
+}
+
+export function replaceDirectivesForPdfPrint(content: string): string {
+  return content
+    .split('\n')
+    .map((line) => {
+      const directive = parseDirectiveLine(line)
+      if (!directive) {
+        return line
+      }
+
+      if (directive.kind === 'pagebreak') {
+        return ''
+      }
+
+      return renderHtmlDirective(directive)
+    })
+    .join('\n')
+}

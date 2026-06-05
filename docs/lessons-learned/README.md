@@ -31,6 +31,7 @@ Avoid: "bug description + fix". Prefer: "what I learned that applies to future w
 | `find-bar-toolbar-click-blocked.md` | Floating find bar over `-webkit-app-region: drag` toolbar needs `no-drag`, higher z-index, and non-shrinking controls or buttons stay inert on Windows | 2026-06-01 |
 | `quill-picker-label-is-a-span.md` | Quill `ql-picker` is built from `<span>`s, not `button`/`select`; on Win32 overlay titlebar the OS eats the mousedown for window drag and the dropdown never opens. Works in fullscreen because the overlay disappears. | 2026-06-03 |
 | `book-export-inline-markdown-emphasis.md` | PDF/DOCX line-by-line export must share a marked-based inline parser with HTML/EPUB or `_multi word_` and heading `*...*` show raw markers | 2026-06-01 |
+| `book-export-pdf-print-surface.md` | PDF print: `@page` + `preferCSSPageSize`, unwrap `<p><img>`, image max-height for covers, temp HTML path, mock surface in tests | 2026-06-05 |
 | `flat-dark-surfaces-reduce-warm-illusion.md` | In dark themes, gradients, shadows, and permanently filled rows can make neutral greys read warm; flatten surfaces before chasing hue tweaks | 2026-05-31 |
 | `theme-interaction-tokens-should-follow-the-accent-model.md` | Editor interaction tokens must stay aligned with the theme's transient accent model, or normal chrome picks up warning-colored brown casts | 2026-05-31 |
 | `layout-ownership-single-writer.md` | Layout bugs stay debuggable when sidebar width has one writer, the editor fill chain has one named contract, and JS/CSS share one breakpoint | 2026-05-31 |

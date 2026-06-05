@@ -1,5 +1,7 @@
 # PDF renderer refactor: split barrel file
 
+> **Superseded (2026-06-04):** Legacy pdf-lib layout (`book-export-pdf-utils.ts`, `book-export-pdf-chapters.ts`, font helpers) was removed. PDF export now uses HTML segments + `printToPDF` — see `docs/lessons-learned/book-export-pdf-print-surface.md` and ADR 0004. This entry is kept for the file-splitting pattern only.
+
 **Date**: 2026-04-17
 
 **Problem**: `book-export-pdf-renderer.ts` exceeded `max-lines: 200` (had 202 lines) causing lint errors.

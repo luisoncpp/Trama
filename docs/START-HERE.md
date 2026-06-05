@@ -1,6 +1,6 @@
 # START HERE - Documentation Entry Point
 
-> **Last updated:** 2026-05-08. If this file drifts from reality, update it before doing anything else.
+> **Last updated:** 2026-06-04. If this file drifts from reality, update it before doing anything else.
 
 This file is the required first stop for new conversations.
 
@@ -64,6 +64,7 @@ Trama is a file-first desktop writing tool (Electron + Preact + TypeScript). The
 | Implement Wiki Tag Links (WS1) | `docs/spec/wiki-tag-links-spec.md` → `docs/architecture/wiki-tag-links-architecture.md` → `docs/plan/done/wiki-tag-links-implementation-plan.md` → `docs/plan/phase-4-detailed-plan.md` |
 | Debug Wiki Tag Links (stale index, underline offsets, Ctrl/Cmd click) | `docs/architecture/wiki-tag-links-architecture.md` → `docs/plan/done/wiki-tag-links-system-guide.md` → `docs/lessons-learned/README.md` (tag/quill lessons) → `tests/tag-index-ipc-regression.test.ts` + `tests/rich-markdown-editor-tag-overlay.test.ts` |
 | Debug AI import/export | `docs/architecture/ai-import-export-architecture.md` → `src/shared/ai-import-parser.ts` → `electron/services/ai-import-service.ts` / `electron/services/ai-export-service.ts` → `electron/ipc/handlers/ai-handlers.ts` |
+| Debug book export / PDF blank pages or layout | `docs/architecture/book-export-architecture.md` (Export PDF + playbook) → `docs/lessons-learned/book-export-pdf-print-surface.md` → `electron/services/book-export-pdf-renderer.ts` → `book-export-pdf-print.css` → `npm run test -- tests/book-export` |
 | Implement project history with Git | `docs/spec/project-history-git-spec.md` → `docs/architecture/project-history-git-architecture.md` → `docs/plan/project-history-git-implementation-plan.md` → `docs/adr/0001-restore-revision-images-for-fidelity.md` → `docs/lessons-learned/revision-preview-should-use-explicit-read-only-mode.md` |
 | Implement folder rename (WS2 slice) | `docs/plan/done/folder-rename-implementation-plan.md` → `src/features/project-editor/components/sidebar/sidebar-tree.tsx` → `src/features/project-editor/components/sidebar/sidebar-panel-body.tsx` → `electron/services/document-repository.ts` |
 | Implement folder drag-drop or corkboardOrder integration (WS2 slice) | `docs/plan/sidebar-drag-drop-reorder-folder-move-plan.md` |

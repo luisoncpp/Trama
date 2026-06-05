@@ -23,6 +23,7 @@ Mandatory doc navigation for new chats: start with `docs/START-HERE.md` — it p
   - Wires smoke hooks and editor context-menu helpers.
   - Emits native fullscreen state changes to renderer.
   - Registers IPC handlers.
+  - Destroys the cached hidden PDF print window from the main-window `closed` path so PDF export does not leave the Electron process alive after the user closes the app window.
 - `electron/window-config.ts`
   - BrowserWindow security-related defaults.
 - `electron/main-process/context-menu.ts`
@@ -126,6 +127,8 @@ Mandatory doc navigation for new chats: start with `docs/START-HERE.md` — it p
   - ZuluPad import service: parses `.zulu` XML content into pages, generates frontmatter with optional tags, and writes markdown files to the target folder.
 - `electron/services/book-export-service.ts`
   - Book export orchestrator: scans `book/`, builds ordered chapter models, sanitizes per format, dispatches renderer (`md/html/docx/epub/pdf`), and writes output artifact.
+- `electron/services/book-export-renderers.ts`
+  - Shared `BookExportChapter` model; HTML/Markdown renderers; PDF chapter HTML via `renderChapterHtmlFragmentForPdf` and `normalizePdfPrintChapterBody` (unwrap image `<p>` tags).
 - `electron/services/book-export-image-source-transform.ts`
   - Shared markdown image-source rewriting helpers: converts local image references to embedded data URLs during chapter build and rewrites sources to EPUB-compatible `file://` URLs when packaging.
 - `electron/services/book-export-order.ts`
@@ -133,20 +136,35 @@ Mandatory doc navigation for new chats: start with `docs/START-HERE.md` — it p
 - `electron/services/book-export-sanitize.ts`
   - Book export sanitize pipeline: strips frontmatter for all formats, strips HTML comments only for markdown output, and normalizes line endings/trailing whitespace.
 - `electron/services/book-export-directives.ts`
-  - Shared directive parsing helpers for `trama:center`, `trama:spacer`, and `trama:pagebreak`, including canonical comment tokens and HTML artifact variants.
+  - Shared directive parsing helpers for `trama:center`, `trama:spacer`, and `trama:pagebreak`; `replaceDirectivesForPdfPrint` (omits pagebreak HTML in segment bodies); `stripLeadingPagebreakAndBlankLines`.
 - `electron/services/book-export-inline-markdown.ts`
-  - Shared inline emphasis parser for PDF/DOCX: `marked.lexer()` → `{ text, bold, italic }` runs (`**`, `__`, `*`, `_`, links, legacy `<strong>`/`<em>`).
-- `electron/services/book-export-pdf-fonts.ts`
-  - PDF font loading strategy: registers `@pdf-lib/fontkit`, resolves Unicode-capable system serif fonts (regular/bold/italic/bold-italic), and falls back to standard fonts.
-- `electron/services/book-export-pdf-inline.ts`
-  - PDF inline text helpers: word tokens from shared inline parser, line wrapping, font resolution, and width measurement for mixed-style runs.
-- `electron/services/book-export-pdf-font-utils.ts`
-  - Font normalization utilities: `normalizeForFont`, `safeTextForFont`, `normalizeRunsForFonts`. Shared between PDF rendering functions.
-- `electron/services/book-export-pdf-utils.ts`
-  - Core PDF writer implementation: `createPdfWriter`, `PdfWriter` interface, `PdfLayoutState`, and all drawing functions (drawRuns, drawHeading, drawPdfImage, etc.)
+  - Shared inline emphasis parser for DOCX: `marked.lexer()` → `{ text, bold, italic }` runs (`**`, `__`, `*`, `_`, links, legacy `<strong>`/`<em>`). PDF uses `marked.parse()` in segment HTML.
+- `electron/services/book-export-pdf-segments.ts`
+  - Pure segment builder for PDF export: corkboard-ordered `BookExportChapter[]` → `PdfExportSegment[]` with inter-document gaps and author page break boundaries (`buildPdfExportSegments`).
+- `electron/services/book-export-pdf-print.css`
+  - Print stylesheet for PDF segment HTML (`@page` A4 + ~50pt margins, Times New Roman, image max-height for covers, zero `p` margins). Copied to `dist-electron` by `scripts/copy-electron-assets.mjs` on `build:electron`.
+- `electron/services/book-export-pdf-html.ts`
+  - Renders a `PdfExportSegment` to a print HTML document (`renderSegmentPrintHtml`): unified shell; optional book header on segment 0 when metadata set; loads embedded `book-export-pdf-print.css`.
+- `electron/services/book-export-pdf-print.ts`
+  - Book export print surface: hidden `BrowserWindow` + `printToPDF` (lazy dynamic `electron` import), `getBookExportPrintSurface` / `setBookExportPrintSurfaceForTests` / `disposeBookExportPrintSurface`, `runBookExportPrintExclusive` mutex, `withBookExportTempDirectory` for per-job segment HTML files. The dispose helper destroys the cached hidden window and is wired into the main-window `closed` path in `electron/main.ts` so the Electron process exits cleanly after the user closes the main window.
+- `tests/book-export-pdf-print.test.ts`
+  - Mock injection, mutex serialization, temp directory cleanup, and `disposeBookExportPrintSurface` safety (idempotent, preserves test mock) for the print surface.
+- `scripts/copy-electron-assets.mjs`
+  - Copies non-TS Electron assets (e.g. book export print CSS) into `dist-electron` after `tsc`.
+- `tests/book-export-pdf-html.test.ts`
+  - Unit tests for `renderSegmentPrintHtml` (Times New Roman CSS, header only on segment 0, no raw pagebreak tokens).
+- `tests/book-export-pdf-directives.test.ts`
+  - `replaceDirectivesForPdfPrint`, `stripLeadingPagebreakAndBlankLines`, `normalizePdfPrintChapterBody` (unwrap image paragraphs).
+- `electron/services/book-export-pdf-merge.ts`
+  - Linear in-memory PDF segment merge via `pdf-lib` `copyPages` (`mergePdfSegments`).
 - `electron/services/book-export-pdf-renderer.ts`
-  - Re-export barrel for PDF book rendering. Exports `PdfWriter`, `PdfLayoutState` types and `renderPdfBook`, `createPdfWriter` from `book-export-pdf-utils.ts`. Uses `pdf-lib` with pagination, directive-aware spacing/page breaks, wrapped inline formatting, and chapter boundary page management.
-  - Uses Unicode-capable system serif fonts when available (fallback to standard fonts).
+  - PDF book orchestrator: `buildPdfExportSegments` → segment HTML → print surface → `mergePdfSegments` (`renderPdfBook`). Segment HTML must stay in temp files only; writing debug HTML into the repo root triggers Vite reloads and wipes renderer export/toast state during dev.
+- `tests/book-export-pdf-merge.test.ts`
+  - Merge order and page-count tests for `mergePdfSegments`.
+- `tests/book-export-pdf-segments.test.ts`
+  - Unit tests for `buildPdfExportSegments` (split boundaries, inter-document gap, empty segment skip).
+- `tests/helpers/book-export-mock-print-surface.ts`
+  - Vitest helper: one-page `pdf-lib` mock for `setBookExportPrintSurfaceForTests` in renderer/IPC tests.
 - `docs/architecture/book-export-architecture.md`
   - Canonical reference for the book export pipeline. Explains the file layout, PDF render pipeline, data models, directive mapping, image handling, page metrics, and test coverage.
 - `docs/architecture/ai-import-export-architecture.md`
