@@ -15,16 +15,11 @@ function createEmptyPane(): PaneDocumentState {
   }
 }
 
-function usePaneStates() {
-  const [primaryPane, setPrimaryPane] = useState<PaneDocumentState>(createEmptyPane)
-  const [secondaryPane, setSecondaryPane] = useState<PaneDocumentState>(createEmptyPane)
-  return { primaryPane, setPrimaryPane, secondaryPane, setSecondaryPane }
-}
-
 function useProjectEditorCoreState() {
   const [rootPath, setRootPath] = useState('')
   const [snapshot, setSnapshot] = useState<ProjectSnapshot | null>(null)
-  const { primaryPane, setPrimaryPane, secondaryPane, setSecondaryPane } = usePaneStates()
+  const [primaryPane, setPrimaryPane] = useState<PaneDocumentState>(createEmptyPane)
+  const [secondaryPane, setSecondaryPane] = useState<PaneDocumentState>(createEmptyPane)
   const [loadingProject, setLoadingProject] = useState(false)
   const [loadingDocument, setLoadingDocument] = useState(false)
   const [saving, setSaving] = useState(false)

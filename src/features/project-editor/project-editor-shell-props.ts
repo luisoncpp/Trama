@@ -1,6 +1,7 @@
 import type { BookExportFormat } from '../../shared/ipc'
 import type { ResolvedTheme, ThemePreference } from '../../theme/theme-types'
 import type { ProjectEditorModel } from './project-editor-types'
+import type { ProjectEditorDialogsProps } from './project-editor-dialogs'
 
 export interface ProjectEditorShellState {
   apiAvailable: boolean
@@ -57,10 +58,7 @@ export interface ProjectEditorSidebarShellProps extends ProjectEditorShellSettin
   shellState: ProjectEditorShellState
   shellActions: ProjectEditorShellActions
   effectiveCollapsed: boolean
-  onImportClick: () => void
-  onImportZuluClick: () => void
-  onBookExportClick: (format: BookExportFormat) => void
-  onExportClick: () => void
+  dialogsProps: ProjectEditorDialogsProps
 }
 
 function buildSidebarFileActionProps(shellActions: ProjectEditorShellActions) {
@@ -125,10 +123,14 @@ function buildSidebarProjectContextProps(
     onRevealInFileManager: () => {
       void shellActions.revealProjectInFileManager()
     },
-    onImport: props.onImportClick,
-    onImportZulu: props.onImportZuluClick,
-    onExportBook: props.onBookExportClick,
-    onExport: props.onExportClick,
+    onImport: () => props.dialogsProps.aiImport.setOpen(true),
+    onImportZulu: () => props.dialogsProps.zuluImport.setOpen(true),
+    onExportBook: (format: BookExportFormat) => {
+      props.dialogsProps.bookExport.setFormat(format)
+      props.dialogsProps.bookExport.setOutputPath('')
+      props.dialogsProps.bookExport.setOpen(true)
+    },
+    onExport: () => props.dialogsProps.aiExport.setOpen(true),
     onSaveSnapshot: () => {
       void shellActions.saveSnapshot()
     },

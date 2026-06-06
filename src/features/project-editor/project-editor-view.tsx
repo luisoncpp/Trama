@@ -5,9 +5,7 @@ import { ProjectEditorDialogs } from './project-editor-dialogs'
 import { useProjectEditorShellActions, useProjectEditorShellState } from './project-editor-shell'
 import { useProjectEditorViewDialogs } from './project-editor-view-dialogs'
 import { ProjectEditorLayout } from './project-editor-view-layout'
-import type { BookExportFormat } from '../../shared/ipc'
-import type { ResolvedTheme, ThemePreference } from '../../theme/theme-types'
-import type { ProjectEditorShellActions, ProjectEditorShellSettingsProps, ProjectEditorShellState } from './project-editor-shell-props'
+import type { ProjectEditorShellSettingsProps } from './project-editor-shell-props'
 import { useSidebarLayout } from './layout/use-sidebar-layout'
 import { WindowTitlebar } from './window-titlebar'
 
@@ -58,48 +56,6 @@ function ProjectEditorConflictOverlays({ model }: { model: ProjectEditorModel })
   )
 }
 
-function buildProjectEditorLayoutProps(
-  model: ProjectEditorModel,
-  shellState: ProjectEditorShellState,
-  shellActions: ProjectEditorShellActions,
-  effectiveCollapsed: boolean,
-  sidebarStyle: ReturnType<typeof buildSidebarStyle>,
-  themePreference: ThemePreference,
-  resolvedTheme: ResolvedTheme,
-  onThemePreferenceChange: (preference: ThemePreference) => void,
-  spellcheckEnabled: boolean,
-  spellcheckLanguage: string | null,
-  spellcheckLanguageOptions: string[],
-  spellcheckLanguageSelectionSupported: boolean,
-  onSpellcheckEnabledChange: (enabled: boolean) => void,
-  onSpellcheckLanguageChange: (language: string) => void,
-  openAiImport: () => void,
-  openZuluImport: () => void,
-  openBookExport: (format: BookExportFormat) => void,
-  openAiExport: () => void,
-) {
-  return {
-    model,
-    shellState,
-    shellActions,
-    effectiveCollapsed,
-    sidebarStyle,
-    themePreference,
-    resolvedTheme,
-    onThemePreferenceChange,
-    spellcheckEnabled,
-    spellcheckLanguage,
-    spellcheckLanguageOptions,
-    spellcheckLanguageSelectionSupported,
-    onSpellcheckEnabledChange,
-    onSpellcheckLanguageChange,
-    onImportClick: openAiImport,
-    onImportZuluClick: openZuluImport,
-    onBookExportClick: openBookExport,
-    onExportClick: openAiExport,
-  }
-}
-
 function useProjectEditorViewState(model: ProjectEditorModel, props: Omit<ProjectEditorViewProps, 'model'>) {
   const shellState = useProjectEditorShellState(model)
   const shellActions = useProjectEditorShellActions(model)
@@ -107,19 +63,28 @@ function useProjectEditorViewState(model: ProjectEditorModel, props: Omit<Projec
     sidebarPanelCollapsed: shellState.sidebarPanelCollapsed,
     sidebarPanelWidth: shellState.sidebarPanelWidth,
   })
-  const { dialogsProps, openAiImport, openZuluImport, openAiExport, openBookExport } = useProjectEditorViewDialogs(
+  const { dialogsProps } = useProjectEditorViewDialogs(
     shellState.rootPath,
     shellState.visibleFiles,
   )
   const sidebarStyle = buildSidebarStyle(sidebarWidthPx)
-  const layoutProps = buildProjectEditorLayoutProps(
-    model, shellState, shellActions, effectiveCollapsed, sidebarStyle,
-    props.themePreference, props.resolvedTheme, props.onThemePreferenceChange,
-    props.spellcheckEnabled, props.spellcheckLanguage, props.spellcheckLanguageOptions,
-    props.spellcheckLanguageSelectionSupported, props.onSpellcheckEnabledChange,
-    props.onSpellcheckLanguageChange,
-    openAiImport, openZuluImport, openBookExport, openAiExport,
-  )
+  const layoutProps = {
+    model,
+    shellState,
+    shellActions,
+    effectiveCollapsed,
+    sidebarStyle,
+    dialogsProps,
+    themePreference: props.themePreference,
+    resolvedTheme: props.resolvedTheme,
+    onThemePreferenceChange: props.onThemePreferenceChange,
+    spellcheckEnabled: props.spellcheckEnabled,
+    spellcheckLanguage: props.spellcheckLanguage,
+    spellcheckLanguageOptions: props.spellcheckLanguageOptions,
+    spellcheckLanguageSelectionSupported: props.spellcheckLanguageSelectionSupported,
+    onSpellcheckEnabledChange: props.onSpellcheckEnabledChange,
+    onSpellcheckLanguageChange: props.onSpellcheckLanguageChange,
+  }
   return { layoutProps, dialogsProps }
 }
 

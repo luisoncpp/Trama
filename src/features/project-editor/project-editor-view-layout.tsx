@@ -1,7 +1,7 @@
 import { useRef } from 'preact/hooks'
-import type { BookExportFormat } from '../../shared/ipc'
 import type { ProjectEditorModel } from './project-editor-types'
 import { ProjectEditorSidebarShell } from './project-editor-shell'
+import type { ProjectEditorDialogsProps } from './project-editor-dialogs'
 import type { ProjectEditorShellActions, ProjectEditorShellSettingsProps, ProjectEditorShellState } from './project-editor-shell-props'
 import { SidebarResizeHandle } from './layout/sidebar-resize-handle'
 import { WorkspaceLayoutPanel } from './pane'
@@ -17,10 +17,7 @@ interface ProjectEditorLayoutProps extends ProjectEditorShellSettingsProps {
   shellActions: ProjectEditorShellActions
   effectiveCollapsed: boolean
   sidebarStyle: { '--sidebar-width': string }
-  onImportClick: () => void
-  onImportZuluClick: () => void
-  onBookExportClick: (format: BookExportFormat) => void
-  onExportClick: () => void
+  dialogsProps: ProjectEditorDialogsProps
 }
 
 function ProjectEditorMainPane({ model, spellcheckEnabled }: ProjectEditorMainPaneProps) {
@@ -33,27 +30,33 @@ function ProjectEditorMainPane({ model, spellcheckEnabled }: ProjectEditorMainPa
 
 type ProjectEditorSidebarColumnProps = Omit<ProjectEditorLayoutProps, 'model' | 'sidebarStyle'>
 
-function ProjectEditorSidebarColumn({
-  shellState,
-  shellActions,
-  effectiveCollapsed,
-  themePreference,
-  resolvedTheme,
-  onThemePreferenceChange,
-  spellcheckEnabled,
-  spellcheckLanguage,
-  spellcheckLanguageOptions,
-  spellcheckLanguageSelectionSupported,
-  onSpellcheckEnabledChange,
-  onSpellcheckLanguageChange,
-  onImportClick,
-  onImportZuluClick,
-  onBookExportClick,
-  onExportClick,
-}: ProjectEditorSidebarColumnProps) {
+function ProjectEditorSidebarColumn(
+  props: ProjectEditorSidebarColumnProps,
+) {
   return (
     <div class="sidebar-column">
       <ProjectEditorSidebarShell
+        {...props}
+      />
+    </div>
+  )
+}
+
+function ProjectEditorWorkspace(props: ProjectEditorLayoutProps & {
+  workspaceRef: { current: HTMLElement | null }
+  showSidebarResizeHandle: boolean
+}) {
+  const {
+    model, shellState, shellActions, effectiveCollapsed, sidebarStyle,
+    spellcheckEnabled, showSidebarResizeHandle, workspaceRef,
+    themePreference, resolvedTheme, onThemePreferenceChange,
+    spellcheckLanguage, spellcheckLanguageOptions, spellcheckLanguageSelectionSupported,
+    onSpellcheckEnabledChange, onSpellcheckLanguageChange, dialogsProps,
+  } = props
+
+  return (
+    <section class="editor-workspace" style={sidebarStyle} ref={workspaceRef}>
+      <ProjectEditorSidebarColumn
         shellState={shellState}
         shellActions={shellActions}
         effectiveCollapsed={effectiveCollapsed}
@@ -66,40 +69,7 @@ function ProjectEditorSidebarColumn({
         spellcheckLanguageSelectionSupported={spellcheckLanguageSelectionSupported}
         onSpellcheckEnabledChange={onSpellcheckEnabledChange}
         onSpellcheckLanguageChange={onSpellcheckLanguageChange}
-        onImportClick={onImportClick}
-        onImportZuluClick={onImportZuluClick}
-        onBookExportClick={onBookExportClick}
-        onExportClick={onExportClick}
-      />
-    </div>
-  )
-}
-
-function ProjectEditorWorkspace(props: ProjectEditorLayoutProps & {
-  workspaceRef: { current: HTMLElement | null }
-  showSidebarResizeHandle: boolean
-}) {
-  const { model, shellState, shellActions, effectiveCollapsed, sidebarStyle, spellcheckEnabled, showSidebarResizeHandle, workspaceRef } = props
-
-  return (
-    <section class="editor-workspace" style={sidebarStyle} ref={workspaceRef}>
-      <ProjectEditorSidebarColumn
-        shellState={shellState}
-        shellActions={shellActions}
-        effectiveCollapsed={effectiveCollapsed}
-        themePreference={props.themePreference}
-        resolvedTheme={props.resolvedTheme}
-        onThemePreferenceChange={props.onThemePreferenceChange}
-        spellcheckEnabled={spellcheckEnabled}
-        spellcheckLanguage={props.spellcheckLanguage}
-        spellcheckLanguageOptions={props.spellcheckLanguageOptions}
-        spellcheckLanguageSelectionSupported={props.spellcheckLanguageSelectionSupported}
-        onSpellcheckEnabledChange={props.onSpellcheckEnabledChange}
-        onSpellcheckLanguageChange={props.onSpellcheckLanguageChange}
-        onImportClick={props.onImportClick}
-        onImportZuluClick={props.onImportZuluClick}
-        onBookExportClick={props.onBookExportClick}
-        onExportClick={props.onExportClick}
+        dialogsProps={dialogsProps}
       />
       {showSidebarResizeHandle && (
         <SidebarResizeHandle

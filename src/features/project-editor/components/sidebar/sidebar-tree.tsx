@@ -48,12 +48,6 @@ export interface SidebarTreeRowsProps {
   }
 }
 
-function useSidebarTreeDragState() {
-  const [draggingPath, setDraggingPath] = useState<string | null>(null)
-  const [dropPosition, setDropPosition] = useState<DropIndicatorPosition | null>(null)
-  return { draggingPath, dropPosition, setDraggingPath, setDropPosition }
-}
-
 function renderSidebarTreeEmptyState(
   visibleFiles: string[],
   hasFilterQuery: boolean,
@@ -174,7 +168,8 @@ export function SidebarTree({
   const { rows, filterResult } = useSidebarTreeRows(visibleFiles, expandedFolders, filterQuery, corkboardOrder)
   const containerRef = useRef<HTMLDivElement | null>(null)
   const hasFilterQuery = filterResult.query.length > 0
-  const { draggingPath, dropPosition, setDraggingPath, setDropPosition } = useSidebarTreeDragState()
+  const [draggingPath, setDraggingPath] = useState<string | null>(null)
+  const [dropPosition, setDropPosition] = useState<DropIndicatorPosition | null>(null)
   const emptyState = renderSidebarTreeEmptyState(visibleFiles, hasFilterQuery && rows.length === 0, filterResult.query)
 
   if (emptyState) {

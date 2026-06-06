@@ -1,5 +1,4 @@
-import { useCallback, useMemo } from 'preact/hooks'
-import type { BookExportFormat } from '../../shared/ipc'
+import { useMemo } from 'preact/hooks'
 import type { ProjectEditorDialogsProps } from './project-editor-dialogs'
 import { useAiExport } from './use-ai-export'
 import { useAiImport } from './use-ai-import'
@@ -126,24 +125,6 @@ export function useProjectEditorViewDialogs(rootPath: string, visibleFiles: stri
   const bookExport = useStableBookExportDialogState(rootPath)
   const zuluImport = useStableZuluImportDialogState(rootPath)
 
-  const openAiImport = useCallback(/* openAiImport */ () => {
-    aiImport.setOpen(true)
-  }, [aiImport.setOpen] /*Inputs for openAiImport*/)
-
-  const openZuluImport = useCallback(/* openZuluImport */ () => {
-    zuluImport.setOpen(true)
-  }, [zuluImport.setOpen] /*Inputs for openZuluImport*/)
-
-  const openAiExport = useCallback(/* openAiExport */ () => {
-    aiExport.setOpen(true)
-  }, [aiExport.setOpen] /*Inputs for openAiExport*/)
-
-  const openBookExport = useCallback(/* openBookExport */ (format: BookExportFormat) => {
-    bookExport.setFormat(format)
-    bookExport.setOutputPath('')
-    bookExport.setOpen(true)
-  }, [bookExport.setFormat, bookExport.setOpen, bookExport.setOutputPath] /*Inputs for openBookExport*/)
-
   const dialogsProps = useMemo(
     /* buildProjectEditorDialogsProps */ (): ProjectEditorDialogsProps => ({
       rootPath,
@@ -156,11 +137,5 @@ export function useProjectEditorViewDialogs(rootPath: string, visibleFiles: stri
     [rootPath, visibleFiles, aiImport, bookExport, aiExport, zuluImport] /*Inputs for buildProjectEditorDialogsProps*/,
   )
 
-  return {
-    dialogsProps,
-    openAiImport,
-    openZuluImport,
-    openAiExport,
-    openBookExport,
-  }
+  return { dialogsProps }
 }
