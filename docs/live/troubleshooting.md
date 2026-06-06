@@ -202,6 +202,31 @@ See `docs/lessons-learned/find-bar-toolbar-click-blocked.md`.
 3. Press Enter/Shift+Enter and confirm highlight moves with counter updates.
 4. Click Prev/Next/Close and confirm they respond (especially on Windows with overlay titlebar).
 
+### Sidebar rail buttons and revisions-rail back button only click in their lower half (Windows overlay titlebar)
+
+#### Symptom
+
+- The topmost icons in the sidebar rail (Manuscript explorer, Outline, Lore, Import/Export, Settings) only respond to clicks in their lower half. The upper ~18px of each 40px-tall button is consumed as a window-drag gesture.
+- The `←` back button in the revisions rail (right side, opens via right-click → `See Revisions`) only responds in its lower part.
+
+#### Root cause
+
+- `.window-drag-region` paints a 32px `position: fixed; -webkit-app-region: drag` strip across the top of the viewport. The sidebar rail padding (10px) puts the first button at ~y=14 and the revisions-rail padding (12px) puts the back button at ~y=16, so the upper portion of each control sits inside the drag strip.
+- The original opt-out list in `src/styles/03-app-shell-layout.css` covered `.workspace-panel__header *`, `.workspace-split-pane__header *`, and `.ql-toolbar.ql-snow button`, but did not cover the sidebar rail or the revisions-rail header.
+
+#### Current fix
+
+- Added `html.has-overlay-titlebar .sidebar-rail *` and `html.has-overlay-titlebar .revisions-rail__header *` to the existing `no-drag` block in `src/styles/03-app-shell-layout.css:106-128`. Using `*` future-proofs any control later added inside those headers.
+- Added `tests/overlay-titlebar-drag-region.test.ts` to assert the opt-outs and the drag strip itself remain wired up.
+
+See `docs/lessons-learned/sidebar-rail-and-revisions-back-blocked-by-drag-strip.md`.
+
+### Quick checks
+
+1. Run `npm run test -- tests/overlay-titlebar-drag-region.test.ts` and confirm the new CSS rules are detected.
+2. In app (Windows, overlay titlebar): click the **upper** half of the topmost sidebar rail icon — the section should switch.
+3. Open **See Revisions** for any document, then click the **upper** half of the `←` back button — the rail should close.
+
 ## 12) Native menu bar does not appear on Alt (Windows overlay titlebar)
 
 ### Symptom

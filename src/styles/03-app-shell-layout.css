@@ -115,7 +115,13 @@ html.has-overlay-titlebar .rich-editor .ql-toolbar.ql-snow button,
 html.has-overlay-titlebar .rich-editor .ql-toolbar.ql-snow select,
 html.has-overlay-titlebar .rich-editor .ql-toolbar.ql-snow .ql-picker-label,
 html.has-overlay-titlebar .rich-editor .ql-toolbar.ql-snow .ql-picker-options,
-html.has-overlay-titlebar .rich-editor .ql-toolbar.ql-snow .ql-picker-item {
+html.has-overlay-titlebar .rich-editor .ql-toolbar.ql-snow .ql-picker-item,
+/* Sidebar rail and revisions-rail back button live inside the top 32px drag
+ * strip defined by .window-drag-region. Without no-drag, the upper half of
+ * each control is consumed by the OS as a window-drag gesture. See
+ * docs/lessons-learned/sidebar-rail-and-revisions-back-blocked-by-drag-strip.md. */
+html.has-overlay-titlebar .sidebar-rail *,
+html.has-overlay-titlebar .revisions-rail__header * {
   -webkit-app-region: no-drag;
 }
 

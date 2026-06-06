@@ -29,6 +29,7 @@ Avoid: "bug description + fix". Prefer: "what I learned that applies to future w
 |------|-------|------|
 | `electron-fsa-picker-empty-path.md` | `showOpenFilePicker` files cannot be turned into disk paths in Electron; use main-process `dialog.showOpenDialog` when staging needs `projectRoot`-relative paths | 2026-06-03 |
 | `find-bar-toolbar-click-blocked.md` | Floating find bar over `-webkit-app-region: drag` toolbar needs `no-drag`, higher z-index, and non-shrinking controls or buttons stay inert on Windows | 2026-06-01 |
+| `sidebar-rail-and-revisions-back-blocked-by-drag-strip.md` | Any control whose bounding box intersects the 32px `.window-drag-region` strip needs `-webkit-app-region: no-drag`; sidebar rail items and `.revisions-rail__back` are easy to miss because the rail is not itself a drag region | 2026-06-06 |
 | `quill-picker-label-is-a-span.md` | Quill `ql-picker` is built from `<span>`s, not `button`/`select`; on Win32 overlay titlebar the OS eats the mousedown for window drag and the dropdown never opens. Works in fullscreen because the overlay disappears. | 2026-06-03 |
 | `book-export-inline-markdown-emphasis.md` | PDF/DOCX line-by-line export must share a marked-based inline parser with HTML/EPUB or `_multi word_` and heading `*...*` show raw markers | 2026-06-01 |
 | `book-export-pdf-print-surface.md` | PDF print: `@page` + `preferCSSPageSize`, unwrap `<p><img>`, image max-height for covers, temp HTML path, mock surface in tests | 2026-06-05 |
