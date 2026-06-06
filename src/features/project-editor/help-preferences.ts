@@ -1,4 +1,6 @@
-export const GETTING_STARTED_DISMISSED_STORAGE_KEY = 'trama.help.getting-started.dismissed.v1'
+import { GETTING_STARTED_DISMISSED_STORAGE_KEY } from '../../shared/help-storage-key.js'
+
+export { GETTING_STARTED_DISMISSED_STORAGE_KEY }
 
 export function readGettingStartedDismissed(raw: string | null): boolean {
   return raw === 'true'

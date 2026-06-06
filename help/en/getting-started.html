@@ -133,13 +133,27 @@
   </div>
 
   <script>
-    document.getElementById('dismiss-checkbox').addEventListener('change', (e) => {
-      if (e.target.checked) {
-        if (window.tramaHelpApi && typeof window.tramaHelpApi.dismissGettingStarted === 'function') {
-          window.tramaHelpApi.dismissGettingStarted();
-        }
+    (function() {
+      const checkbox = document.getElementById('dismiss-checkbox');
+      if (!checkbox) return;
+      const api = window.tramaHelpApi;
+      if (!api) return;
+
+      if (typeof api.getGettingStartedDismissed === 'function') {
+        api.getGettingStartedDismissed().then((dismissed) => {
+          checkbox.checked = Boolean(dismissed);
+        }).catch(() => {
+          // Leave checkbox at its default state if the read fails.
+        });
       }
-    });
+
+      checkbox.addEventListener('change', (e) => {
+        const dismissed = e.target.checked;
+        if (typeof api.setGettingStartedDismissed === 'function') {
+          api.setGettingStartedDismissed(dismissed);
+        }
+      });
+    })();
   </script>
 </body>
 </html>

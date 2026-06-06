@@ -283,6 +283,8 @@ Mandatory doc navigation for new chats: start with `docs/START-HERE.md` — it p
   - Persist sidebar UI (`trama.sidebar.ui.v1`).
 - `src/features/project-editor/help-preferences.ts`
   - Retrieves/saves help page auto-open preferences in renderer local storage.
+- `src/shared/help-storage-key.ts`
+  - Single source of truth for the `trama.help.getting-started.dismissed.v1` localStorage key, imported by the renderer helper, the help preload, and the main-process handler.
 - `src/features/project-editor/use-auto-open-getting-started-effect.ts`
   - Renderer hook that triggers auto-opening the Getting Started page after a project is opened.
 - `src/help/help-screenshot-harness-types.ts`

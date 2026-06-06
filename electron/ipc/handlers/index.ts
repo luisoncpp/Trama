@@ -37,5 +37,9 @@ export {
 } from './git-history-handlers.js'
 export { handleTagGetIndex, handleTagResolve } from './tag-handlers.js'
 export { handleZuluSelectFile, handleZuluImportPreview, handleZuluImport } from './zulu-handlers.js'
-export { handleOpenHelp, handleDismissGettingStarted } from './help-handlers.js'
+export {
+  handleOpenHelp,
+  handleGetGettingStartedDismissed,
+  handleSetGettingStartedDismissed,
+} from './help-handlers.js'
 export { configureMainWindowResolver, shutdownIpcServices } from '../../ipc-runtime.js'

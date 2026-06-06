@@ -1,4 +1,8 @@
+<!-- trama:center:start -->
+
 # Chapter 3
+
+<!-- trama:center:end -->
 
 Three days north of Valdenmere, the road gave up its struggle against the incline and descended into a shallow, forested bowl. The trees pressed in close on either side of the track, their ancient, heavy canopies filtering the late afternoon sun into a bruised, underwater twilight. When the village of Drest finally appeared through the gloom, it looked entirely peaceful. It took perhaps five minutes of walking down its central track to identify exactly why it did not feel that way.
 
@@ -14,7 +18,7 @@ Keswick did not stop wiping the bar, but the motion became slightly stiffer. "We
 
 "Is it an offering?" Oswin pressed, oblivious to the sudden, heavy silence that had fallen over the three nearest tables. The detached enthusiasm of the scriptorium blinded him to the temperature of the room. "And if so, to what? A local spirit? A guardian?"
 
-A farmer sitting at the bar stared into his cup, abruptly slid off his stool, and walked out the back door without a single word. 
+A farmer sitting at the bar stared into his cup, abruptly slid off his stool, and walked out the back door without a single word.
 
 Before Oswin could ask another question, a man at a corner table pushed his chair back. The scrape of wood against the floorboards was loud in the sudden quiet. The man was older, his hair iron-grey, his clothes of a finer weave than the farmers'. He walked over to their table and sat down uninvited, placing his hands flat on the scarred wood.
 
@@ -44,7 +48,7 @@ Cael said nothing. He simply leaned back, his face a pleasant, empty mask.
 
 While Dreskin spoke, Maren’s attention had drifted. She was not interested in monsters. She was interested in the girl moving behind the bar.
 
-Her name was Betta. She was perhaps fourteen, thin and sharp-elbowed, and she moved through the common room with the practiced invisibility of someone who had been working in adult spaces since she was small enough to hide under the tables. She gathered empty cups, wiped down spills, and fed logs into the hearth without ever quite meeting anyone’s eye. 
+Her name was Betta. She was perhaps fourteen, thin and sharp-elbowed, and she moved through the common room with the practiced invisibility of someone who had been working in adult spaces since she was small enough to hide under the tables. She gathered empty cups, wiped down spills, and fed logs into the hearth without ever quite meeting anyone’s eye.
 
 But Maren, who had spent a decade watching thousands of people cross the threshold of her bread stall, knew how to read the set of a jaw and the slant of a shoulder. Betta did not look frightened. As Dreskin reached the grim conclusion of his tale, a couple of the farmers shuddered. Betta merely rolled her eyes, a microscopic twitch of irritation, before turning back to the washbasin.
 
@@ -66,9 +70,9 @@ Betta frowned, scrubbing a stubborn patch of grease. "He's asleep. The fire's ba
 
 "I know how to stoke a fire," Maren said. She pulled out a small, cloth-wrapped bundle of starter dough she kept alive on the road. "I've made my living by it."
 
-Betta didn't object, which was permission enough. Maren went to work. She moved with an economy of motion that made the labor look effortless, waking the coals, feeding them kindling, and measuring out the flour she had bought two towns back. The rhythmic, repetitive work of kneading filled the silence in the kitchen. 
+Betta didn't object, which was permission enough. Maren went to work. She moved with an economy of motion that made the labor look effortless, waking the coals, feeding them kindling, and measuring out the flour she had bought two towns back. The rhythmic, repetitive work of kneading filled the silence in the kitchen.
 
-For a long time, the only sounds were the scrape of bristles on iron and the soft, heavy thud of dough against wood. 
+For a long time, the only sounds were the scrape of bristles on iron and the soft, heavy thud of dough against wood.
 
 Betta watched her covertly. Maren let her watch. People always talked eventually if you gave them space and a task to anchor them, but you couldn't rush them. You had to let them weigh you.
 

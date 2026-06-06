@@ -48,5 +48,6 @@ export const IPC_CHANNELS = {
   readDocumentRevision: 'trama:git:revisions:read',
   loadDocumentRevision: 'trama:git:revisions:load',
   openHelp: 'trama:help:open',
-  dismissGettingStarted: 'trama:help:dismiss-getting-started',
+  getGettingStartedDismissed: 'trama:help:get-getting-started-dismissed',
+  setGettingStartedDismissed: 'trama:help:set-getting-started-dismissed',
 } as const

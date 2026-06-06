@@ -128,6 +128,9 @@ const readImageFileResponseSchema = z.object({ path: z.string(), dataUrl: z.stri
 const helpPageIdSchema = z.enum(['getting-started', 'about', 'maps', 'wiki-tags', 'ai-import-export', 'book-export', 'git-snapshots'])
 export const openHelpRequestSchema = z.object({ page: helpPageIdSchema })
 const openHelpResponseSchema = z.object({ success: z.boolean() })
+export const setGettingStartedDismissedRequestSchema = z.object({ dismissed: z.boolean() })
+const setGettingStartedDismissedResponseSchema = z.object({ success: z.boolean() })
+const getGettingStartedDismissedResponseSchema = z.object({ dismissed: z.boolean() })
 
 export {
   gitHistoryStatusResponseSchema,
@@ -200,6 +203,9 @@ export type ReadImageFileResponse = z.infer<typeof readImageFileResponseSchema>
 export type HelpPageId = z.infer<typeof helpPageIdSchema>
 export type OpenHelpRequest = z.infer<typeof openHelpRequestSchema>
 export type OpenHelpResponse = z.infer<typeof openHelpResponseSchema>
+export type SetGettingStartedDismissedRequest = z.infer<typeof setGettingStartedDismissedRequestSchema>
+export type SetGettingStartedDismissedResponse = z.infer<typeof setGettingStartedDismissedResponseSchema>
+export type GetGettingStartedDismissedResponse = z.infer<typeof getGettingStartedDismissedResponseSchema>
 export type NotifyCloseState = { hasUnsavedChanges: boolean }
 export type {
   GitHistoryStatusResponse,

@@ -151,6 +151,18 @@ Before writing any code that interacts with Quill's API (coordinates, bounds, se
 - Keep `electron/ipc.ts` thin; move logic into handlers/services.
 - lint limits are meant to encourage to break down long files and long functions, and avoid code repetition, NOT to compact white spaces/indentation.
 
+# Deep Modules
+
+* To avoid unexpected side effects, this project uses deep modules: each one consists of possibly multiple implementation files with a thin public interface. The pieces of the deep module shouldn't be imported dirctly by the rest of the project, only the public interface.
+
+* The folder structure gives clues about which ones are the deep modules:
+
+   * if one folder's name ends with "private" it means is deep module implementation and only one file is allowed to reference its content.
+   
+   * if one folder has an `index.ts` inside, that means that it's a deep module and `index.ts` is its public interface.
+
+* It's possible to have deep modules inside deep modules (if a deep module B is inside a deep module A, then anything inside A can import only the public interface of B, and nothing outside A can import anything from B(not even the public interface))
+
 ## Avoid Artificial Grouping (Prefer Inline Logic over Useless Indirection)
 
 Do not create helper functions or custom hooks solely to group unrelated variable assignments or to "clean up" the body of a component. Moving independent assignments into a single function adds useless indirection without providing a real abstraction.

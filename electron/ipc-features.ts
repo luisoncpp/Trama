@@ -44,7 +44,8 @@ import {
   handleZuluImportPreview,
   handleZuluImport,
   handleOpenHelp,
-  handleDismissGettingStarted,
+  handleGetGettingStartedDismissed,
+  handleSetGettingStartedDismissed,
 } from './ipc/handlers/index.js'
 
 export function registerProjectHandlers(ipcMain: IpcMain): void {
@@ -119,5 +120,6 @@ export function registerZuluHandlers(ipcMain: IpcMain): void {
 
 export function registerHelpHandlers(ipcMain: IpcMain, getMainWindow: () => BrowserWindow | null): void {
   ipcMain.handle(IPC_CHANNELS.openHelp, (_event, payload) => handleOpenHelp(getMainWindow, payload))
-  ipcMain.handle(IPC_CHANNELS.dismissGettingStarted, () => handleDismissGettingStarted(getMainWindow))
+  ipcMain.handle(IPC_CHANNELS.getGettingStartedDismissed, () => handleGetGettingStartedDismissed(getMainWindow))
+  ipcMain.handle(IPC_CHANNELS.setGettingStartedDismissed, (_event, payload) => handleSetGettingStartedDismissed(getMainWindow, payload))
 }
