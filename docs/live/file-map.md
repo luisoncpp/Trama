@@ -331,6 +331,7 @@ Mandatory doc navigation for new chats: start with `docs/START-HERE.md` — it p
   - `pane/pane-workspace-types.ts` — extracted `PaneWorkspace` public info/binding types.
   - `pane/pane-workspace-document-info.ts` — pure builders for active-pane and pane document projections.
   - `pane/pane-workspace-revision-state.ts` — pure pane revision-rail state transitions (`Current` label, preview exit, preview apply, load sync).
+  - `pane/pane-workspace-autosave.ts` — `PaneAutosave` class extracted from `PaneWorkspace`: isolated timer management for autosave scheduling with `schedule(delay, shouldFire, onFire)` and `cancel()`.
   - `pane/pane-navigation.ts` — `PaneNavigation` class extracted from `PaneWorkspace`: owns per-pane session history stack helpers (`recordPaneNavigation`, `getPreviousPathInPaneHistory`, `getNextPathInPaneHistory`, `stepPaneNavigationHistory`, `clearNavigationHistory`).
   - `pane/pane-navigation-state.ts` — pure helpers for navigation history state: `getEmptyNavigationHistory`, `getHistoryForPane`, `createNavigationHistoryStore`.
   - `pane/pane-editor.tsx` — `PaneEditor` component extracted from `workspace-editor-panels.tsx`.

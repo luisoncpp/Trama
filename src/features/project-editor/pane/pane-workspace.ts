@@ -27,6 +27,7 @@ import {
 } from './pane-workspace-revision-state'
 import { logSnapshotComparison } from './snapshot-compare-logger'
 import { PaneNavigation } from './pane-navigation'
+import { PaneAutosave } from './pane-workspace-autosave'
 import type { ActivePaneDocumentInfo, PaneBindings, PaneDocumentInfo } from './pane-workspace-types'
 
 export type { WorkspacePane }
@@ -34,7 +35,7 @@ export type { ActivePaneDocumentInfo, PaneBindings, PaneDocumentInfo } from './p
 export type { PaneExitReason, PreparePaneExitResult, PreparePaneRevertResult, SavePaneNowResult } from './pane-workspace-exit'
 
 export class PaneWorkspace {
-  private autosaveTimer: number | null = null
+  private autosave = new PaneAutosave()
   private lastSavedContentMap: Map<string, string>
   private ownsSavedContentMap: boolean
   private navigation: PaneNavigation
@@ -75,25 +76,20 @@ export class PaneWorkspace {
     this.saveDocumentFn = saveDocumentFn
   }
   scheduleAutosave(pane: WorkspacePane, delay: number): void {
-    this.cancelAutosave()
     const capturedPane = pane
-    this.autosaveTimer = window.setTimeout(() => {
-      this.autosaveTimer = null
-      if (this.layoutState.activePane === capturedPane) {
-        void this.savePaneIfDirty(capturedPane)
-      }
-    }, delay)
+    this.autosave.schedule(
+      delay,
+      () => this.layoutState.activePane === capturedPane,
+      () => { void this.savePaneIfDirty(capturedPane) },
+    )
   }
 
   cancelAutosave(): void {
-    if (this.autosaveTimer !== null) {
-      window.clearTimeout(this.autosaveTimer)
-      this.autosaveTimer = null
-    }
+    this.autosave.cancel()
   }
 
   destroy(): void {
-    this.cancelAutosave()
+    this.autosave.destroy()
     if (this.ownsSavedContentMap) this.lastSavedContentMap.clear()
   }
   getLastSavedContent(path: string): string | null { return this.lastSavedContentMap.get(path) ?? null }
