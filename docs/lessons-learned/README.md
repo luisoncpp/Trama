@@ -129,3 +129,4 @@ Avoid: "bug description + fix". Prefer: "what I learned that applies to future w
 | `flex-shrink-zero-for-fixed-width-flex-items.md` | Fixed-width flex items (like sidebar rails) must explicitly define `flex-shrink: 0` or they will collapse when sibling items contain content that resists wrapping or shrinking | 2026-05-23 |
 | `memo-boundaries-need-stable-props-at-the-call-site.md` | `memo(...)` only blocks typing churn when the parent also stabilizes object/callback props passed into the shell boundary | 2026-05-27 |
 | `vitest-include-pattern-can-skip-test-tsx-files.md` | The current Vitest include glob only matches `tests/**/*.test.ts`, so `.test.tsx` files are silently excluded | 2026-05-27 |
+| `help-screenshot-overlay-timing.md` | Region-based help captures of transient overlays must call `capturePage(region)` immediately; a post-scenario settle delay lets menus close before the shot | 2026-06-06 |

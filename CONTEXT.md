@@ -87,6 +87,44 @@ _Avoid_: Main editor window, per-segment window
 The temporary HTML file written for one **PDF export segment** before `printToPDF`. Removed after the segment PDF is produced (or when the export job’s temp directory is cleaned up).
 _Avoid_: Final export file, preview HTML
 
+## Help
+
+**Help menu**:
+The native application menu section that exposes user-assistance actions. It is not part of the workspace UI and does not use in-app highlights or coach marks.
+_Avoid_: Onboarding overlay, context menu
+
+**Getting Started**:
+The bundled static HTML guide that introduces Trama's workspace to end users. It is shipped inside the application package and shown offline.
+_Avoid_: README setup instructions, developer docs
+
+**Help window**:
+A child `BrowserWindow` that loads bundled help HTML via `loadFile()`. It is separate from the main workspace window and is not an embedded `<webview>` in the editor shell.
+_Avoid_: Modal dialog, in-app panel, docs website tab
+
+**Getting Started dismissal**:
+The user's choice to stop auto-opening the **Getting Started** page after their first successful **Project** open. Stored in app preferences; does not block manual access from the **Help menu**.
+_Avoid_: Permanent help block, onboarding completion trophy
+
+**Help theme sync**:
+The **Help window** adopts the same resolved light or dark theme as the main workspace when it opens, not a fixed palette or OS-only preference.
+_Avoid_: Independent help theme, always-light docs
+
+**Getting Started dismissal persistence**:
+The **Getting Started dismissal** flag is stored in the main workspace renderer's app preferences, not in the **Help window**'s isolated storage. The Help page signals dismissal through a minimal preload bridge and IPC.
+_Avoid_: Help-window localStorage, main-process preference file (for this flag)
+
+**Getting Started guide tiers**:
+The primary **Getting Started** page covers project basics and workspace power features for first-time readers. Advanced product capabilities live on separate help pages linked from a Learn more section, still within the same **Help window** site.
+_Avoid_: Single scroll-all guide, in-app coach marks
+
+**Advanced help page**:
+A bundled HTML page documenting one advanced product capability (maps, wiki tag links, AI import/export, book export, or Git snapshots). Each **Advanced help page** is its own file, not a grouped chapter.
+_Avoid_: Combined advanced guide, external docs link (for v1)
+
+**Help screenshot asset**:
+A PNG captured from the live Electron workspace by `npm run help:screenshots` and referenced from bundled help HTML under `help/en/assets/`.
+_Avoid_: Manual crop outside the app, runtime screenshot API for end users
+
 ## Flagged ambiguities
 
 **Chapter (in export conversations)**:

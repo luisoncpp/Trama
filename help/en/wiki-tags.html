@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Wiki Tag Links - Trama Help</title>
+  <link rel="stylesheet" href="../shared/help.css">
+  <script src="../shared/help-theme.js"></script>
+  <script src="../shared/help-nav.js"></script>
+</head>
+<body>
+  <h1>Wiki Tag Links</h1>
+  <p>Trama dynamically indexes and highlights references to your characters, locations, notes, and other lore articles as you type. This helps build a fully cross-referenced wiki out of your narrative documents.</p>
+
+  <h2>How to Assign Tags</h2>
+  <p>While reference link matching in the editor is fully automatic, you must first manually assign tags to your Lore documents.</p>
+
+  <div class="help-step help-step--natural-media">
+    <div class="help-step__body">
+      <h3>Via Sidebar Context Menu</h3>
+      <p>Right-click any Lore article in the sidebar file explorer and select <strong>Edit tags</strong>. This opens the tag editor for that file.</p>
+    </div>
+    <figure class="help-step__media screenshot-container">
+      <img src="assets/edit-tags-context-menu-dark.png" class="theme-dark-only" alt="Edit Tags context menu on a Lore file in the sidebar (dark theme)">
+    </figure>
+  </div>
+
+  <div class="help-step help-step--reverse help-step--natural-media">
+    <div class="help-step__body">
+      <h3>In the Edit Tags Dialog</h3>
+      <p>Enter your tags separated by commas or newlines, then click <strong>Save Tags</strong>. Tags are stored in the document frontmatter and indexed for wiki linking.</p>
+    </div>
+    <figure class="help-step__media screenshot-container">
+      <img src="assets/edit-tags-modal-dark.png" class="theme-dark-only" alt="Edit Tags dialog for a Lore file (dark theme)">
+    </figure>
+  </div>
+
+  <p>You can also assign tags directly in frontmatter: open the Lore document in a text editor and add them under the <code>tags</code> list in the YAML frontmatter (for example, <code>tags: [aragon, ranger]</code>).</p>
+
+  <h2>How to Use Tag Links</h2>
+  <p>Once you have assigned tags to a Lore document, Trama will automatically recognize them in any text document you are editing (such as scenes under <code>book/</code>):</p>
+  <ol>
+    <li>Create a Lore article and assign it the tag <code>Aragon</code>.</li>
+    <li>Open a scene file under <code>book/</code> and type: <em>"Aragon drew his sword."</em></li>
+    <li>Trama instantly recognizes the word "Aragon" as a tagged term.</li>
+    <li>Hold <kbd>Ctrl</kbd> (or <kbd>Cmd</kbd>) in the editor: all recognized tag terms will display with a styled underline.</li>
+    <li>While holding <kbd>Ctrl</kbd> (or <kbd>Cmd</kbd>), click the underlined term to instantly open the corresponding Lore article in the secondary pane (or primary pane if split mode is not active).</li>
+  </ol>
+
+  <p><a href="getting-started.html">&larr; Back to Getting Started</a></p>
+</body>
+</html>

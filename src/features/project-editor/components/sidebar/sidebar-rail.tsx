@@ -1,6 +1,6 @@
 import type { JSX } from 'preact'
 import type { SidebarSection } from '../../project-editor-types'
-import { LoreIcon, ManuscriptIcon, OutlineIcon, SettingsIcon, TransferIcon, CollapseLeftIcon, ExpandRightIcon } from './sidebar-rail-icons.tsx'
+import { LoreIcon, ManuscriptIcon, OutlineIcon, SettingsIcon, TransferIcon, HelpIcon, CollapseLeftIcon, ExpandRightIcon } from './sidebar-rail-icons.tsx'
 
 interface SidebarRailProps {
   activeSection: SidebarSection
@@ -8,6 +8,7 @@ interface SidebarRailProps {
   focusModeEnabled: boolean
   onSelectSection: (section: SidebarSection) => void
   onToggleCollapsed: () => void
+  onOpenHelp: () => void
 }
 
 interface SidebarRailItem {
@@ -29,7 +30,7 @@ function RailItemLabel({ item }: { item: SidebarRailItem }): JSX.Element {
   return <Icon />
 }
 
-export function SidebarRail({ activeSection, collapsed, focusModeEnabled, onSelectSection, onToggleCollapsed }: SidebarRailProps) {
+export function SidebarRail({ activeSection, collapsed, focusModeEnabled, onSelectSection, onToggleCollapsed, onOpenHelp }: SidebarRailProps) {
   return (
     <nav class="sidebar-rail" aria-label="Workspace sections">
       <div class="sidebar-rail__items">
@@ -47,16 +48,28 @@ export function SidebarRail({ activeSection, collapsed, focusModeEnabled, onSele
         ))}
       </div>
 
-      <button
-        type="button"
-        class="sidebar-rail__toggle"
-        onClick={onToggleCollapsed}
-        disabled={focusModeEnabled}
-        aria-label={collapsed ? 'Expand sidebar panel' : 'Collapse sidebar panel'}
-        title={focusModeEnabled ? 'Sidebar is locked while focus mode is active' : collapsed ? 'Expand panel' : 'Collapse panel'}
-      >
-        {collapsed ? <ExpandRightIcon /> : <CollapseLeftIcon />}
-      </button>
+      <div class="sidebar-rail__bottom">
+        <button
+          type="button"
+          class="sidebar-rail__item"
+          title="Help"
+          aria-label="Help"
+          onClick={onOpenHelp}
+        >
+          <HelpIcon />
+        </button>
+
+        <button
+          type="button"
+          class="sidebar-rail__toggle"
+          onClick={onToggleCollapsed}
+          disabled={focusModeEnabled}
+          aria-label={collapsed ? 'Expand sidebar panel' : 'Collapse sidebar panel'}
+          title={focusModeEnabled ? 'Sidebar is locked while focus mode is active' : collapsed ? 'Expand panel' : 'Collapse panel'}
+        >
+          {collapsed ? <ExpandRightIcon /> : <CollapseLeftIcon />}
+        </button>
+      </div>
     </nav>
   )
 }

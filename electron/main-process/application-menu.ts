@@ -1,5 +1,23 @@
 import { BrowserWindow, Menu } from 'electron'
 import { WORKSPACE_CONTEXT_MENU_EVENT } from '../../src/shared/workspace-context-menu.js'
+import { openHelpPage } from './help-window.js'
+
+async function openHelpFromMenu(win: BrowserWindow, page: string): Promise<void> {
+  let resolvedTheme: 'light' | 'dark' = 'dark'
+  if (win && !win.isDestroyed()) {
+    try {
+      const theme = await win.webContents.executeJavaScript(
+        "document.documentElement.dataset.theme === 'light' ? 'light' : 'dark'",
+      )
+      if (theme === 'light' || theme === 'dark') {
+        resolvedTheme = theme
+      }
+    } catch (err) {
+      console.error('Failed to resolve theme for help window from menu action:', err)
+    }
+  }
+  openHelpPage(win, { page, resolvedTheme })
+}
 
 function dispatchWorkspaceCommand(
   win: BrowserWindow,
@@ -17,8 +35,8 @@ function dispatchWorkspaceCommand(
   )
 }
 
-export function setupApplicationMenu(win: BrowserWindow): void {
-  const template: Electron.MenuItemConstructorOptions[] = [
+function buildMenuTemplate(win: BrowserWindow): Electron.MenuItemConstructorOptions[] {
+  return [
     {
       label: 'File',
       submenu: [{ role: 'close' }],
@@ -58,9 +76,18 @@ export function setupApplicationMenu(win: BrowserWindow): void {
         },
       ],
     },
-    { role: 'help' },
+    {
+      label: 'Help',
+      submenu: [
+        { label: 'Getting Started', click: () => { void openHelpFromMenu(win, 'getting-started') } },
+        { label: 'About Trama', click: () => { void openHelpFromMenu(win, 'about') } },
+      ],
+    },
   ]
+}
 
+export function setupApplicationMenu(win: BrowserWindow): void {
+  const template = buildMenuTemplate(win)
   const menu = Menu.buildFromTemplate(template)
   Menu.setApplicationMenu(menu)
   if (process.platform === 'win32') {

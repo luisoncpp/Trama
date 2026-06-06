@@ -6,6 +6,8 @@
 
 The Gilded Post was the sort of establishment that charged double for performers who drew a crowd and triple for those who did not. Cael, currently midway through a ballad about a merchant who accidentally married a river spirit, was firmly on the triple rate.
 
+<!-- trama:spacer lines=2 -->
+
 The common room was only half-full. The air smelled of spilled cider, woodsmoke, and the damp wool of patrons who had spent the afternoon working in the river-chill. They were a moderate audience, neither entirely hostile nor entirely captivated, offering the kind of distracted amusement that meant they would remember the melody but forget the singer before they woke up the next morning.
 
 Cael did not mind. He was not there to be remembered; he was there to delay his eviction. He plucked the strings of his lute, letting the familiar cadence carry him through the fifth verse. He watched the room as he sang, his face composed, his voice projecting the tragic longing of the merchant without feeling a trace of it himself. Cael had learned a long time ago that you did not need to believe a story to give it its proper shape. You only needed to know where the pauses went.

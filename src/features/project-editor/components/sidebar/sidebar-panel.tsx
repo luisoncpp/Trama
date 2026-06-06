@@ -107,6 +107,12 @@ function buildSidebarBodyProps(props: SidebarPanelProps, effectiveCollapsed: boo
   })
 }
 
+function openHelpGettingStarted() {
+  if (window.tramaApi && typeof window.tramaApi.openHelp === 'function') {
+    void window.tramaApi.openHelp({ page: 'getting-started' })
+  }
+}
+
 export function SidebarPanel(props: SidebarPanelProps) {
   const { effectiveCollapsed, sectionState } = useSidebarPanelRenderState(props)
   const bodyProps = buildSidebarBodyProps(props, effectiveCollapsed, sectionState)
@@ -119,6 +125,7 @@ export function SidebarPanel(props: SidebarPanelProps) {
         focusModeEnabled={props.focusModeEnabled}
         onSelectSection={props.onSelectSidebarSection}
         onToggleCollapsed={props.onToggleSidebarPanelCollapsed}
+        onOpenHelp={openHelpGettingStarted}
       />
       <SidebarPanelBody {...bodyProps} />
     </aside>

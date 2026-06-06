@@ -19,6 +19,7 @@ Active implementation plans — work that is in progress or planned but not yet 
 | `book-export-implementation-plan.md` | Book export Phase C multi-format backend |
 | `done/book-export-pdf-print-segments-implementation-plan.md` | PDF export: HTML segments + Electron printToPDF + linear merge (ADR 0004) — complete |
 | `project-history-git-implementation-plan.md` | Local Git-backed snapshots, document revisions, preview rail, and restore implementation |
+| `help-menu-implementation-plan.md` | Help menu, bundled-HTML Help window, Getting Started auto-open, and advanced help pages (ADR 0005) |
 | `rich-editor-refactor-plan.md` | Low-risk refactor plan for Quill lifecycle, canonical value sync, and split-pane persistence wiring |
 <!-- use-project-editor-keystroke-churn-plan.md moved to done/ -->
 

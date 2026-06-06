@@ -1,3 +1,5 @@
+import { createPortal } from 'preact/compat'
+
 export type SidebarFileActionMode = 'rename' | 'delete' | 'edit-tags'
 
 interface SidebarFileActionsDialogProps {
@@ -151,7 +153,7 @@ export function SidebarFileActionsDialog({
 
   const copy = getCopy(mode)
 
-  return (
+  return createPortal(
     <div class="sidebar-create-modal" onClick={onCancel}>
       <div class="sidebar-create-dialog" role="dialog" aria-modal="true" aria-label={copy.title} onClick={(event) => event.stopPropagation()}>
         <p class="sidebar-create-dialog__title">{copy.title}</p>
@@ -177,6 +179,7 @@ export function SidebarFileActionsDialog({
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   )
 }

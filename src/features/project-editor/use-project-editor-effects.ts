@@ -12,6 +12,7 @@ import { useProjectEditorContextMenuEffect } from './use-project-editor-context-
 import { useProjectEditorExternalEventsEffect, useReloadProjectShortcutEffect } from './use-project-editor-external-events-effect'
 import { useProjectEditorFullscreenEffect } from './use-project-editor-fullscreen-effect'
 import { useProjectEditorShortcutsEffect } from './use-project-editor-shortcuts-effect'
+import { useAutoOpenGettingStartedEffect } from './use-auto-open-getting-started-effect'
 
 type ProjectEditorEffectSetters = ProjectEditorActionSetters & {
   setLastProjectRootPath: (value: string) => void
@@ -88,6 +89,7 @@ function useProjectEditorStartupEffects(
   useEffect(/* syncGitHistoryOnProjectRoot */ () => {
     void syncGitHistoryState({ projectState, setters })
   }, [projectState, setters] /*Inputs for syncGitHistoryOnProjectRoot*/)
+  useAutoOpenGettingStartedEffect(projectState.rootPath)
 }
 
 function useProjectEditorWindowEffects(

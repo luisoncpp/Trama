@@ -12,3 +12,9 @@ for (const asset of assets) {
   mkdirSync(dirname(destination), { recursive: true })
   cpSync(source, destination)
 }
+
+// Copy the help/ folder recursively
+const helpSource = join(root, 'help')
+const helpDestination = join(root, 'dist-electron', 'help')
+mkdirSync(helpDestination, { recursive: true })
+cpSync(helpSource, helpDestination, { recursive: true })

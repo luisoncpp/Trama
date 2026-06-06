@@ -75,6 +75,8 @@ import {
   type ZuluImportRequest,
   type ZuluImportResponse,
   type ZuluSelectFileResponse,
+  type OpenHelpRequest,
+  type OpenHelpResponse,
 } from '../src/shared/ipc'
 import { type TagGetIndexResponse, type TagResolveRequest, type TagResolveResponse, tagGetIndexResponseSchema, tagResolveRequestSchema } from '../src/shared/ipc-tag'
 
@@ -259,7 +261,13 @@ const tramaApi = {
   zuluImport(payload: ZuluImportRequest): Promise<IpcEnvelope<ZuluImportResponse>> {
     return ipcRenderer.invoke(IPC_CHANNELS.zuluImport, payload)
   },
+  openHelp(payload: OpenHelpRequest): Promise<IpcEnvelope<OpenHelpResponse>> {
+    return ipcRenderer.invoke(IPC_CHANNELS.openHelp, payload)
+  },
 }
 
 contextBridge.exposeInMainWorld('tramaApi', tramaApi)
+contextBridge.exposeInMainWorld('tramaCaptureMode', {
+  helpScreenshots: process.env.TRAMA_CAPTURE_HELP_SCREENSHOTS === '1',
+})
 

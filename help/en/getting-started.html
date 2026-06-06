@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Getting Started - Trama Help</title>
+  <link rel="stylesheet" href="../shared/help.css">
+  <script src="../shared/help-theme.js"></script>
+  <script src="../shared/help-nav.js"></script>
+</head>
+<body>
+  <h1>Getting Started with Trama</h1>
+  <p>Trama is a desktop environment optimized for writing and structuring long-form narrative projects. Everything in Trama is file-first, offline-ready, and simple to configure.</p>
+
+  <div class="screenshot-container">
+    <img src="assets/workspace-overview-dark.png" class="theme-dark-only" alt="Workspace Overview (Dark)">
+    <img src="assets/workspace-overview-light.png" class="theme-light-only" alt="Workspace Overview (Light)">
+  </div>
+
+  <h2>1. Project Structure</h2>
+  <p>Every Trama project is simply a folder on your computer containing:</p>
+  <ul>
+    <li><code>book/</code>: Contains your manuscript files, ordered sequentially.</li>
+    <li><code>outline/</code>: Structural notes, summaries, or timeline files.</li>
+    <li><code>lore/</code>: Lore sheets, character sheets, location documents, and notes.</li>
+    <li><code>.trama.index.json</code>: A metadata index tracking file orders, tags, and workspace details. Do not edit this manually.</li>
+  </ul>
+
+  <h2>2. Sidebar Navigation</h2>
+  <p>The sidebar groups your project into distinct directories. Use the filter input to quickly find documents by name. Right-click on any row in the file tree to rename or delete categories and files. Click the buttons at the bottom to add new articles or categories.</p>
+
+  <div class="screenshot-crop sidebar">
+    <img src="assets/workspace-overview-dark.png" class="theme-dark-only" alt="Sidebar Map (Dark)">
+    <img src="assets/workspace-overview-light.png" class="theme-light-only" alt="Sidebar Map (Light)">
+  </div>
+
+  <h2>3. Editing & Saving</h2>
+  <p>The editor provides a rich visual markdown workspace. Trama automatically manages and debounces document changes, saving files directly to your disk. If an external editor changes a file while it is open, Trama detects the conflict and lets you compare differences before accepting or discarding them.</p>
+
+  <h2>4. Where Controls Live</h2>
+  <p>Trama uses a minimal distraction-free interface. Most commands are accessible by:
+    <ul>
+      <li>Right-clicking in the editor workspace to open the context menu.</li>
+      <li>Pressing the <kbd>Alt</kbd> key to reveal the native system menu bar at the top of the window.</li>
+    </ul>
+  </p>
+
+  <h2>5. Workspace Power</h2>
+  <p>Split panes, focus mode, and per-pane history help you work across documents without losing context.</p>
+
+  <article class="help-feature">
+    <div class="help-feature__body">
+      <h3>Split Panes</h3>
+      <p>Open two documents side-by-side. Click in either pane to move the active caret, or press <kbd>Ctrl/Cmd + .</kbd> to toggle split layout. Each pane keeps its own open-document history.</p>
+    </div>
+    <figure class="help-feature__media screenshot-container">
+      <img src="assets/split-panes-dark.png" class="theme-dark-only" alt="Two documents open in split panes (dark theme)">
+    </figure>
+  </article>
+
+  <article class="help-feature help-feature--reverse">
+    <div class="help-feature__body">
+      <h3>Focus Mode</h3>
+      <p>Dim everything except the current line, sentence, or paragraph so you can concentrate on the passage you are drafting. Toggle with <kbd>Ctrl/Cmd + Shift + M</kbd>. The sidebar hides while focus mode is active.</p>
+    </div>
+    <figure class="help-feature__media screenshot-container">
+      <img src="assets/focus-mode-dark.png" class="theme-dark-only" alt="Focus mode highlighting the active paragraph while dimming surrounding text (dark theme)">
+    </figure>
+  </article>
+
+  <div class="help-callout">
+    <h3>Pane History</h3>
+    <p>Each pane remembers the documents you opened there. Use <kbd>Alt + Left</kbd> and <kbd>Alt + Right</kbd> to step backward and forward through that pane's stack, or use the menu bar's Back and Forward entries.</p>
+  </div>
+
+  <h2>6. Keyboard Shortcuts</h2>
+  <table class="shortcut-table">
+    <thead>
+      <tr>
+        <th>Command</th>
+        <th>Shortcut</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Toggle Split Layout</td>
+        <td><kbd>Ctrl/Cmd + .</kbd></td>
+      </tr>
+      <tr>
+        <td>Toggle Fullscreen Mode</td>
+        <td><kbd>Ctrl/Cmd + Shift + F</kbd></td>
+      </tr>
+      <tr>
+        <td>Toggle Focus Mode</td>
+        <td><kbd>Ctrl/Cmd + Shift + M</kbd></td>
+      </tr>
+      <tr>
+        <td>Navigate Pane History Back</td>
+        <td><kbd>Alt + Left</kbd></td>
+      </tr>
+      <tr>
+        <td>Navigate Pane History Forward</td>
+        <td><kbd>Alt + Right</kbd></td>
+      </tr>
+      <tr>
+        <td>Find inside Document</td>
+        <td><kbd>Ctrl/Cmd + F</kbd></td>
+      </tr>
+      <tr>
+        <td>Find & Replace</td>
+        <td><kbd>Ctrl/Cmd + H</kbd></td>
+      </tr>
+      <tr>
+        <td>Reload Project</td>
+        <td><kbd>Ctrl/Cmd + R</kbd></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>7. Learn More</h2>
+  <p>Explore Trama's advanced capabilities in detail:</p>
+  <ul>
+    <li><a href="maps.html">Visual Maps & Markers</a></li>
+    <li><a href="wiki-tags.html">Wiki Tag Links</a></li>
+    <li><a href="ai-import-export.html">AI Import/Export</a></li>
+    <li><a href="book-export.html">Book Exporting Options</a></li>
+    <li><a href="git-snapshots.html">Git Project History Snapshots</a></li>
+  </ul>
+
+  <div class="dismiss-container" style="margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--border-strong);">
+    <label>
+      <input type="checkbox" id="dismiss-checkbox"> Don't show Getting Started automatically on project open
+    </label>
+  </div>
+
+  <script>
+    document.getElementById('dismiss-checkbox').addEventListener('change', (e) => {
+      if (e.target.checked) {
+        if (window.tramaHelpApi && typeof window.tramaHelpApi.dismissGettingStarted === 'function') {
+          window.tramaHelpApi.dismissGettingStarted();
+        }
+      }
+    });
+  </script>
+</body>
+</html>

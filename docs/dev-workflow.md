@@ -31,6 +31,8 @@ For WS1 execution details, see `docs/spec/wiki-tag-links-spec.md` and `docs/plan
   - Focused test runs work normally: `npm run test -- tests/sidebar-panels.test.ts`
 - `npm run test:smoke`
   - Builds app and runs Electron startup smoke test.
+- `npm run help:screenshots`
+  - Builds app and captures help-menu PNG assets into `help/en/assets/` using `example-fantasy/`.
 
 ## Useful partial commands
 
@@ -149,6 +151,23 @@ Before writing any code that interacts with Quill's API (coordinates, bounds, se
 - Keep `electron/ipc.ts` thin; move logic into handlers/services.
 - lint limits are meant to encourage to break down long files and long functions, and avoid code repetition, NOT to compact white spaces/indentation.
 
+## Avoid Artificial Grouping (Prefer Inline Logic over Useless Indirection)
+
+Do not create helper functions or custom hooks solely to group unrelated variable assignments or to "clean up" the body of a component. Moving independent assignments into a single function adds useless indirection without providing a real abstraction.
+
+* **Keep it inline:** If a derived variable is straightforward (e.g., simple boolean flags or direct mappings), compute it directly inside the component.
+* **Extract with purpose:** Only extract logic into external helper functions if it is complex, conditional, or reusable. These helpers should be small and focused on a single responsibility (e.g., `getSaveLabel`).
+
+### Anti-pattern
+```tsx
+// ❌ Avoid grouping unrelated UI variables into a single wrapper
+function usePanelLabels(path, saving, isDirty) {
+  const saveDisabled = !path || saving;
+  const syncState = saving ? 'saving' : 'idle';
+  const label = isDirty ? 'Save' : 'No changes';
+  return { saveDisabled, syncState, label };
+}
+```
 
 ## Hook naming convention (mandatory)
 

@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>AI Import & Export - Trama Help</title>
+  <link rel="stylesheet" href="../shared/help.css">
+  <script src="../shared/help-theme.js"></script>
+  <script src="../shared/help-nav.js"></script>
+</head>
+<body>
+  <h1>AI Import & Export</h1>
+  <p>Trama offers clipboard-based project interchange for working with large language models. Export selected project files in a structured multi-file format, or import structured AI output back into your workspace with a preview step.</p>
+
+  <h2>How to Access</h2>
+  <p>Open the <strong>Import and export</strong> panel from the sidebar rail (the transfer icon). Under <strong>Project interchange</strong> you will find:</p>
+  <ul>
+    <li><strong>Import AI Content</strong> — paste structured clipboard text from an LLM and preview changes before writing files.</li>
+    <li><strong>Export Files</strong> — stage files or folders, then copy them to the clipboard in Trama's structured format.</li>
+  </ul>
+
+  <h2>Export Workflow</h2>
+  <ol>
+    <li>Click <strong>Export Files</strong>.</li>
+    <li>Use <strong>Add Files</strong> or <strong>Add Folder</strong> to build a staging basket of project paths.</li>
+    <li>Optionally enable <strong>Include frontmatter</strong>.</li>
+    <li>Click <strong>Export &amp; Copy</strong>. Trama writes a structured block to your clipboard, for example:
+      <pre>=== FILE: lore/characters/aragon.md ===
+# Aragon ...
+=== FILE: lore/characters/eldric.md ===
+# Eldric ...</pre>
+    </li>
+    <li>Paste the block into your AI chat for expansion, revision, or analysis.</li>
+  </ol>
+
+  <h2>Import Workflow</h2>
+  <ol>
+    <li>Copy the prompt below and send it to your LLM together with the exported files or your instructions.</li>
+    <li>Copy the model's full response to your clipboard. The response must use Trama's file header format and must not be wrapped in markdown code fences.</li>
+    <li>Click <strong>Import AI Content</strong> in Trama.</li>
+    <li>Paste the response into the dialog.</li>
+    <li>Choose <strong>replace</strong> or <strong>append</strong> mode, then click <strong>Preview Import</strong>.</li>
+    <li>Review the file list and counts, then confirm to write the changes to disk.</li>
+  </ol>
+
+  <h3>Prompt to send to your LLM</h3>
+  <p>Copy this prompt, paste your exported Trama files after it, and send the combined message to the model:</p>
+  <pre class="help-prompt">You are helping me edit files for Trama, a file-first writing app.
+
+Reply ONLY in Trama's multi-file interchange format. Do not add commentary before or after the files, and do not wrap the answer in markdown code fences.
+
+Format:
+=== FILE: relative/path/from/project/root.md ===
+(optional YAML frontmatter)
+file body here
+
+Rules:
+- Use one === FILE: ... === header per file.
+- Paths must be relative to the project root, such as lore/characters/aragon.md or book/chapter-02.md.
+- Keep paths stable when revising existing files.
+- Preserve useful YAML frontmatter when present.
+- Separate multiple files with a blank line only when needed for readability.
+
+Here are the files to work with:</pre>
+
+  <p><a href="getting-started.html">&larr; Back to Getting Started</a></p>
+</body>
+</html>

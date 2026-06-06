@@ -39,6 +39,10 @@ Mandatory doc navigation for new chats: start with `docs/START-HERE.md` — it p
   - View menu dispatches pane-history Back/Forward commands via the workspace command bridge.
 - `electron/main-process/menu-bar-auto-hide.ts`
   - Alt menu behavior: Win32 overlay titlebars use `Menu.popup()`; other platforms use auto-hidden native menu bar. Wired from renderer via IPC.
+- `electron/main-process/help-window.ts`
+  - Manages singleton Help child BrowserWindow, loading target HTML resources, and syncing theme/application version attributes.
+- `electron/help-preload.cts`
+  - Context isolated preload script for the Help window exposing dismissal IPC methods.
 - `electron/ipc/menu-bar-handlers.ts`
   - IPC handlers for `revealMenuBar` / `hideMenuBar`.
 - `src/shared/menu-bar-alt-key.ts`
@@ -84,6 +88,10 @@ Mandatory doc navigation for new chats: start with `docs/START-HERE.md` — it p
   - Git history IPC handlers: project Git status, save snapshot, list revisions, read revision preview, load revision.
 - `electron/ipc/handlers/zulu-handlers.ts`
   - ZuluPad import handlers: opens native file picker for `.zulu` files, previews parsed pages, and executes multi-file import with configurable tag generation.
+- `electron/ipc/handlers/help-handlers.ts`
+  - Help IPC handlers: handles help page window open triggers and synchronization of workspace localStorage dismissal.
+- `electron/ipc-features.ts`
+  - Registry module that registers specialized feature-level IPC handlers.
 
 ### Services
 
@@ -273,6 +281,25 @@ Mandatory doc navigation for new chats: start with `docs/START-HERE.md` — it p
   - Plain helpers for the `use-project-editor.ts` composition root: `createEditorSerializationRefs`, `createNavigationHistoryStore`, `createSaveDocumentProxy`, `buildShortcutsEffectParams`.
 - `src/features/project-editor/use-sidebar-ui-state.ts`
   - Persist sidebar UI (`trama.sidebar.ui.v1`).
+- `src/features/project-editor/help-preferences.ts`
+  - Retrieves/saves help page auto-open preferences in renderer local storage.
+- `src/features/project-editor/use-auto-open-getting-started-effect.ts`
+  - Renderer hook that triggers auto-opening the Getting Started page after a project is opened.
+- `src/help/help-screenshot-harness-types.ts`
+  - Shared types for the help screenshot harness: `CaptureRegion`, `HelpScreenshotHarnessDeps`, `HelpScreenshotHarness`.
+- `src/help/help-screenshot-scenarios.ts`
+  - Scenario ID constants, type union, and scenario definition rows (fileName, requiresGitRepository).
+- `src/help/help-screenshot-harness-logic.ts`
+  - Orchestrates individual screenshot scenario functions, exports shared helpers (`sleep`, `waitForSelector`, `prepareBase`, `SCENARIO_SETTLE_MS`) for scenario files.
+- `src/help/help-screenshot-scenario-wiki-tags.ts`
+  - Wiki-tag screenshot scenarios: context menu and edit-tags modal. Returns `CaptureRegion` for region-based capture.
+- `src/help/use-help-screenshot-harness.ts`
+  - Preact hook that wires the screenshot harness onto `window.__tramaHelpScreenshotHarness` in capture mode.
+- `src/help/is-help-screenshot-capture-mode.ts`
+  - Guard predicate for screenshot capture mode detection.
+- `electron/main-process/help-screenshot-capture.ts`
+  - Electron-side screenshot capture driver: runs scenarios, captures pages (full or region-cropped), writes PNGs.
+
 - `src/features/project-editor/use-ai-import.ts`
   - Renderer hook for AI import dialog state and calls to preview/execute import IPC actions.
 - `src/features/project-editor/use-ai-export.ts`

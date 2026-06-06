@@ -1,74 +1,34 @@
 import type { BrowserWindow, IpcMain } from 'electron'
+import {
+  debugLogRequestSchema,
+  IPC_CHANNELS,
+  type DebugLogRequest,
+  setFullscreenRequestSchema,
+} from '../src/shared/ipc.js'
+import {
+  buildPingResponse,
+  configureMainWindowResolver,
+  shutdownIpcServices,
+} from './ipc/handlers/index.js'
+import { registerSpellcheckHandler } from './ipc/spellcheck.js'
+import { registerMenuBarHandlers } from './ipc/menu-bar-handlers.js'
+import { registerWindowAppearanceHandler } from './ipc/window-appearance.js'
+import {
+  registerProjectHandlers,
+  registerDocumentHandlers,
+  registerFolderHandlers,
+  registerAiHandlers,
+  registerGitHistoryHandlers,
+  registerTagHandlers,
+  registerZuluHandlers,
+  registerHelpHandlers,
+} from './ipc-features.js'
 
 let mainWindowHasUnsavedChanges = false
 
 export function getMainWindowHasUnsavedChanges(): boolean {
   return mainWindowHasUnsavedChanges
 }
-import {
-  type CreateDocumentRequest,
-  type CreateFolderRequest,
-  type DeleteFolderRequest,
-  type DeleteDocumentRequest,
-  debugLogRequestSchema,
-  IPC_CHANNELS,
-  type DebugLogRequest,
-  type OpenProjectRequest,
-  type PingRequest,
-  type ReadDocumentRequest,
-  type RenameDocumentRequest,
-  type RenameFolderRequest,
-  type SaveDocumentRequest,
-  setFullscreenRequestSchema,
-  type AiImportRequest,
-  type AiExportRequest,
-  type BookExportRequest,
-  type ZuluImportPreviewRequest,
-  type ZuluImportRequest,
-} from '../src/shared/ipc.js'
-import {
-  buildPingResponse,
-  configureMainWindowResolver,
-  handleCreateDocument,
-  handleCreateMapDocument,
-  handleCreateFolder,
-  handleDeleteFolder,
-  handleDeleteDocument,
-  handleMoveFolder,
-  handleGetIndex,
-  handleOpenProject,
-  handleCloseProject,
-  handleRevealProjectInFileManager,
-  handleReadDocument,
-  handleReadImageFile,
-  handleRenameDocument,
-  handleRenameFolder,
-  handleSaveDocument,
-  handleSelectMapImage,
-  handleSelectProjectFolder,
-  handleValidateProjectFolder,
-  shutdownIpcServices,
-  handleAiImportPreview,
-  handleAiImport,
-  handleAiExport,
-  handleAiExportPickStaging,
-  handleBookExport,
-  handleGitHistoryStatus,
-  handleListDocumentRevisions,
-  handleLoadDocumentRevision,
-  handleReadDocumentRevision,
-  handleSaveGitSnapshot,
-  handleTagGetIndex,
-  handleTagResolve,
-  handleReorderFiles,
-  handleMoveFile,
-  handleZuluSelectFile,
-  handleZuluImportPreview,
-  handleZuluImport,
-} from './ipc/handlers/index.js'
-import { registerSpellcheckHandler } from './ipc/spellcheck.js'
-import { registerMenuBarHandlers } from './ipc/menu-bar-handlers.js'
-import { registerWindowAppearanceHandler } from './ipc/window-appearance.js'
 
 export { buildPingResponse, shutdownIpcServices }
 
@@ -124,90 +84,12 @@ function registerPingHandler(ipcMain: IpcMain): void {
   ipcMain.handle(IPC_CHANNELS.ping, (_event, payload) => buildPingResponse(payload))
 }
 
-function registerProjectHandlers(ipcMain: IpcMain): void {
-  ipcMain.handle(IPC_CHANNELS.openProject, (_event, payload) => handleOpenProject(payload))
-  ipcMain.handle(IPC_CHANNELS.closeProject, () => handleCloseProject())
-  ipcMain.handle(IPC_CHANNELS.revealProjectInFileManager, (_event, payload) => handleRevealProjectInFileManager(payload))
-  ipcMain.handle(IPC_CHANNELS.selectProjectFolder, () => handleSelectProjectFolder())
-  ipcMain.handle(IPC_CHANNELS.validateProjectFolder, (_event, payload) => handleValidateProjectFolder(payload))
-  ipcMain.handle(IPC_CHANNELS.getIndex, () => handleGetIndex())
-  ipcMain.handle(IPC_CHANNELS.reorderFiles, (_event, payload) => handleReorderFiles(payload))
-  ipcMain.handle(IPC_CHANNELS.moveFile, (_event, payload) => handleMoveFile(payload))
-}
-
-function registerDocumentHandlers(ipcMain: IpcMain): void {
-  ipcMain.handle(IPC_CHANNELS.readDocument, (_event, payload) => handleReadDocument(payload))
-  ipcMain.handle(IPC_CHANNELS.readImageFile, (_event, payload) => handleReadImageFile(payload))
-  ipcMain.handle(IPC_CHANNELS.saveDocument, (_event, payload) => handleSaveDocument(payload))
-  ipcMain.handle(IPC_CHANNELS.createDocument, (_event, payload) => handleCreateDocument(payload))
-  ipcMain.handle(IPC_CHANNELS.createMapDocument, (_event, payload) => handleCreateMapDocument(payload))
-  ipcMain.handle(IPC_CHANNELS.selectMapImage, () => handleSelectMapImage())
-  ipcMain.handle(IPC_CHANNELS.renameDocument, (_event, payload) => handleRenameDocument(payload))
-  ipcMain.handle(IPC_CHANNELS.deleteDocument, (_event, payload) => handleDeleteDocument(payload))
-}
-
-function registerFolderHandlers(ipcMain: IpcMain): void {
-  ipcMain.handle(IPC_CHANNELS.createFolder, (_event, payload) => handleCreateFolder(payload))
-  ipcMain.handle(IPC_CHANNELS.renameFolder, (_event, payload) => handleRenameFolder(payload))
-  ipcMain.handle(IPC_CHANNELS.deleteFolder, (_event, payload) => handleDeleteFolder(payload))
-  ipcMain.handle(IPC_CHANNELS.moveFolder, (_event, payload) => handleMoveFolder(payload))
-}
-
 function registerCoreHandlers(ipcMain: IpcMain): void {
   registerDebugHandler(ipcMain)
   registerPingHandler(ipcMain)
   registerProjectHandlers(ipcMain)
   registerDocumentHandlers(ipcMain)
   registerFolderHandlers(ipcMain)
-}
-
-function registerAiHandlers(ipcMain: IpcMain): void {
-  ipcMain.handle(IPC_CHANNELS.aiImport, (_event, payload: AiImportRequest) => {
-    return handleAiImport(_event, payload)
-  })
-
-  ipcMain.handle(IPC_CHANNELS.aiImportPreview, (_event, payload: AiImportRequest) => {
-    return handleAiImportPreview(_event, payload)
-  })
-
-  ipcMain.handle(IPC_CHANNELS.aiExport, (_event, payload: AiExportRequest) => {
-    return handleAiExport(_event, payload)
-  })
-
-  ipcMain.handle(IPC_CHANNELS.aiExportPickStaging, (_event, payload) => {
-    return handleAiExportPickStaging(_event, payload)
-  })
-
-  ipcMain.handle(IPC_CHANNELS.bookExport, (_event, payload: BookExportRequest) => {
-    return handleBookExport(_event, payload)
-  })
-}
-
-function registerGitHistoryHandlers(ipcMain: IpcMain): void {
-  ipcMain.handle(IPC_CHANNELS.gitHistoryStatus, () => handleGitHistoryStatus())
-  ipcMain.handle(IPC_CHANNELS.saveGitSnapshot, (_event, payload) => handleSaveGitSnapshot(payload))
-  ipcMain.handle(IPC_CHANNELS.listDocumentRevisions, (_event, payload) => handleListDocumentRevisions(payload))
-  ipcMain.handle(IPC_CHANNELS.readDocumentRevision, (_event, payload) => handleReadDocumentRevision(payload))
-  ipcMain.handle(IPC_CHANNELS.loadDocumentRevision, (_event, payload) => handleLoadDocumentRevision(payload))
-}
-
-function registerTagHandlers(ipcMain: IpcMain): void {
-  ipcMain.handle(IPC_CHANNELS.tagGetIndex, () => handleTagGetIndex())
-  ipcMain.handle(IPC_CHANNELS.tagResolve, (_event, payload) => handleTagResolve(payload))
-}
-
-function registerZuluHandlers(ipcMain: IpcMain): void {
-  ipcMain.handle(IPC_CHANNELS.zuluSelectFile, () => {
-    return handleZuluSelectFile()
-  })
-
-  ipcMain.handle(IPC_CHANNELS.zuluImportPreview, (_event, payload: ZuluImportPreviewRequest) => {
-    return handleZuluImportPreview(_event, payload)
-  })
-
-  ipcMain.handle(IPC_CHANNELS.zuluImport, (_event, payload: ZuluImportRequest) => {
-    return handleZuluImport(_event, payload)
-  })
 }
 
 export function registerIpcHandlers(ipcMain: IpcMain, getMainWindow: () => BrowserWindow | null): void {
@@ -221,6 +103,7 @@ export function registerIpcHandlers(ipcMain: IpcMain, getMainWindow: () => Brows
   registerGitHistoryHandlers(ipcMain)
   registerTagHandlers(ipcMain)
   registerZuluHandlers(ipcMain)
+  registerHelpHandlers(ipcMain, getMainWindow)
 
   ipcMain.handle(IPC_CHANNELS.notifyCloseState, (_event, payload: unknown) => {
     if (typeof payload === 'object' && payload !== null && 'hasUnsavedChanges' in payload) {

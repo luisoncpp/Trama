@@ -4,7 +4,9 @@ import path from 'node:path'
 import { registerIpcHandlers, shutdownIpcServices } from './ipc.js'
 import { disposeBookExportPrintSurface } from './services/book-export-pdf-print.js'
 import { setupContextMenu } from './main-process/context-menu.js'
-import { setupSmokeTestHooks } from './main-process/smoke-hooks.js'
+import { closeHelpWindow } from './main-process/help-window.js'
+import { setupSmokeTestHooks, runSmokeTest } from './main-process/smoke-hooks.js'
+import { runHelpScreenshotCapture, setupHelpScreenshotCaptureHooks } from './main-process/help-screenshot-capture.js'
 import { configureWindowCloseBehavior } from './main-process/window-close.js'
 import { createMainWindowOptions } from './window-config.js'
 import { applyWindowChrome } from './window-chrome.js'
@@ -16,6 +18,7 @@ const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 let mainWindow: BrowserWindow | null = null
 const isSmokeTest = process.env.TRAMA_SMOKE_TEST === '1'
+const isHelpScreenshotCapture = process.env.TRAMA_CAPTURE_HELP_SCREENSHOTS === '1'
 const DEV_LOAD_RETRIES = 12
 const DEV_LOAD_RETRY_DELAY_MS = 400
 
@@ -60,45 +63,6 @@ async function loadRendererEntry(win: BrowserWindow, renderer: { isDev: boolean;
   await win.loadFile(renderer.entry)
 }
 
-async function runSmokeTest(win: BrowserWindow): Promise<void> {
-  try {
-    const result = await win.webContents.executeJavaScript(
-      `(async () => {
-        if (!window.tramaApi?.ping) {
-          return { ok: false, reason: 'PRELOAD_API_UNAVAILABLE' }
-        }
-
-        const response = await window.tramaApi.ping({ message: 'smoke-test' })
-        return { ok: true, response }
-      })();`,
-      true,
-    )
-
-    const pass =
-      result?.ok === true &&
-      result?.response?.ok === true &&
-      result?.response?.data?.echo === 'smoke-test'
-
-    if (pass) {
-      console.log('SMOKE_TEST_PASS')
-      if (!win.isDestroyed()) {
-        win.destroy()
-      }
-      app.exit(0)
-      setTimeout(() => {
-        process.exit(0)
-      }, 0)
-      return
-    }
-
-    console.error('SMOKE_TEST_FAIL', JSON.stringify(result))
-    app.exit(1)
-  } catch (error) {
-    const message = error instanceof Error ? error.message : String(error)
-    console.error('SMOKE_TEST_FAIL', message)
-    app.exit(1)
-  }
-}
 
 function getRendererEntry(): { isDev: boolean; entry: string } {
   const devServerUrl = process.env.VITE_DEV_SERVER_URL
@@ -159,6 +123,8 @@ async function createMainWindow(): Promise<void> {
 
   if (isSmokeTest) {
     setupSmokeTestHooks(win)
+  } else if (isHelpScreenshotCapture) {
+    setupHelpScreenshotCaptureHooks(win)
   } else {
     configureWindowShowBehavior(win)
   }
@@ -180,6 +146,14 @@ async function createMainWindow(): Promise<void> {
 
   if (isSmokeTest) {
     void runSmokeTest(win)
+  } else if (isHelpScreenshotCapture) {
+    const outputDir =
+      process.env.TRAMA_HELP_SCREENSHOTS_OUT ??
+      path.resolve(__dirname, '../../help/en/assets')
+    const projectRoot =
+      process.env.TRAMA_HELP_SCREENSHOTS_PROJECT ??
+      path.resolve(__dirname, '../../example-fantasy')
+    void runHelpScreenshotCapture(win, { outputDir, projectRoot })
   } else {
     showWindow(win)
   }
@@ -189,6 +163,7 @@ async function createMainWindow(): Promise<void> {
 
   win.on('closed', () => {
     disposeBookExportPrintSurface()
+    closeHelpWindow()
     mainWindow = null
   })
 }

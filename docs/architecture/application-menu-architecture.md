@@ -65,7 +65,13 @@ On Windows with `titleBarStyle: 'hidden'`, Electron does not paint a native menu
     { role: 'togglefullscreen' },
   ]
 },
-{ role: 'help' }
+{
+  label: 'Help',
+  submenu: [
+    { label: 'Getting Started', click: ... },
+    { label: 'About Trama', click: ... },
+  ],
+}
 ```
 
 ## Zoom Separation

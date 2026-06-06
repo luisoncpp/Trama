@@ -71,11 +71,19 @@ import type {
   ZuluImportRequest,
   ZuluImportResponse,
   ZuluSelectFileResponse,
+  OpenHelpRequest,
+  OpenHelpResponse,
 } from '../shared/ipc'
 import type { TagGetIndexResponse, TagResolveRequest, TagResolveResponse } from '../shared/ipc-tag'
+import type { HelpScreenshotHarness } from '../help/help-screenshot-harness-types'
 
 declare global {
   interface Window {
+    tramaCaptureMode?: {
+      helpScreenshots: boolean
+    }
+    __tramaHelpScreenshotHarness?: HelpScreenshotHarness
+    __TRAMA_HELP_SCREENSHOTS_PROJECT_ROOT__?: string
     tramaApi: {
       ping(payload: PingRequest): Promise<IpcEnvelope<PingResponse>>
       debugLog(payload: DebugLogRequest): Promise<void>
@@ -126,6 +134,7 @@ declare global {
       zuluSelectFile(): Promise<IpcEnvelope<ZuluSelectFileResponse>>
       zuluImportPreview(payload: ZuluImportPreviewRequest): Promise<IpcEnvelope<ZuluImportPreviewResponse>>
       zuluImport(payload: ZuluImportRequest): Promise<IpcEnvelope<ZuluImportResponse>>
+      openHelp(payload: OpenHelpRequest): Promise<IpcEnvelope<OpenHelpResponse>>
     }
   }
 }

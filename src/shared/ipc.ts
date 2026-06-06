@@ -124,6 +124,11 @@ export const moveFolderRequestSchema = z.object({
 export const moveFolderResponseSchema = z.object({ sourcePath: z.string(), renamedTo: z.string(), updatedAt: z.string() })
 export const readImageFileRequestSchema = z.object({ path: z.string().trim().min(1) })
 export const readImageFileResponseSchema = z.object({ path: z.string(), dataUrl: z.string(), mimeType: z.string() })
+
+export const helpPageIdSchema = z.enum(['getting-started', 'about', 'maps', 'wiki-tags', 'ai-import-export', 'book-export', 'git-snapshots'])
+export const openHelpRequestSchema = z.object({ page: helpPageIdSchema })
+export const openHelpResponseSchema = z.object({ success: z.boolean() })
+
 export {
   gitHistoryStatusResponseSchema,
   saveGitSnapshotRequestSchema,
@@ -202,6 +207,9 @@ export type MoveFolderRequest = z.infer<typeof moveFolderRequestSchema>
 export type MoveFolderResponse = z.infer<typeof moveFolderResponseSchema>
 export type ReadImageFileRequest = z.infer<typeof readImageFileRequestSchema>
 export type ReadImageFileResponse = z.infer<typeof readImageFileResponseSchema>
+export type HelpPageId = z.infer<typeof helpPageIdSchema>
+export type OpenHelpRequest = z.infer<typeof openHelpRequestSchema>
+export type OpenHelpResponse = z.infer<typeof openHelpResponseSchema>
 export type NotifyCloseState = { hasUnsavedChanges: boolean }
 export type {
   GitHistoryStatusResponse,

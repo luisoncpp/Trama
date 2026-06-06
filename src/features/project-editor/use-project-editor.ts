@@ -20,6 +20,8 @@ import {
   createNavigationHistoryStore,
   createSaveDocumentProxy,
 } from './project-editor-private/use-project-editor-model'
+import { isHelpScreenshotCaptureMode } from '../../help/is-help-screenshot-capture-mode'
+import { useHelpScreenshotHarness } from '../../help/use-help-screenshot-harness'
 
 function useProjectEditorWorkspace(
   layoutState: ReturnType<typeof useProjectEditorState>['layoutState'],
@@ -53,7 +55,7 @@ function useProjectEditorWorkspace(
 }
 
 export function useProjectEditor(): ProjectEditorModel {
-  const autoPickProjectFolderOnStart = import.meta.env.MODE !== 'test'
+  const autoPickProjectFolderOnStart = import.meta.env.MODE !== 'test' && !isHelpScreenshotCaptureMode()
   const state = useProjectEditorState()
   const lastProjectState = useLastProjectState()
   const { values, setters, documentState, layoutState, sidebarState, projectState, uiState, paneBindings } = state
@@ -91,6 +93,7 @@ export function useProjectEditor(): ProjectEditorModel {
     lastProjectState.lastProjectRootPath,
     lastProjectState.clearLastProjectRootPath,
   )
+  useHelpScreenshotHarness(core.openProject, actions)
 
   return {
     state: (({ snapshot, editorMeta, ...stateValue }) => stateValue)(values),

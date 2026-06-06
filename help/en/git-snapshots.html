@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Git Snapshots - Trama Help</title>
+  <link rel="stylesheet" href="../shared/help.css">
+  <script src="../shared/help-theme.js"></script>
+  <script src="../shared/help-nav.js"></script>
+</head>
+<body>
+  <h1>Git Snapshots & Revision Rail</h1>
+  <p>Trama integrates with Git to provide local revision tracking. You can take snapshot saves of your project, browse past revisions of any file, and view side-by-side visual diffs before restoring older text states.</p>
+
+  <h2>How to Access</h2>
+  <ul>
+    <li><strong>See Revisions:</strong> Right-click in the editor and choose <strong>See Revisions</strong> from the context menu. The revision rail opens on the right for the active document.</li>
+    <li><strong>Save Snapshot:</strong> Open the <strong>Import and export</strong> sidebar panel and click <strong>Save Snapshot</strong> under <strong>Project history</strong> to commit Trama-managed project content with a message.</li>
+  </ul>
+
+  <div class="screenshot-container">
+    <img src="assets/git-snapshots-dark.png" class="theme-dark-only" alt="Revision rail listing saved snapshots for the open chapter (dark theme)">
+  </div>
+
+  <h2>Example Workflow</h2>
+  <p>To restore text you deleted yesterday:</p>
+  <ol>
+    <li>Right-click in the editor of the chapter and select <strong>See Revisions</strong>. The revision list displays on the right side.</li>
+    <li>Click a revision from the list. Trama displays a read-only side-by-side comparison showing additions and deletions.</li>
+    <li>Click <strong>Restore revision</strong> in the editor toolbar to write that past version back to your active document.</li>
+  </ol>
+
+  <p><a href="getting-started.html">&larr; Back to Getting Started</a></p>
+</body>
+</html>

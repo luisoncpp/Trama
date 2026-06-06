@@ -78,6 +78,13 @@
   width: 100%;
 }
 
+.sidebar-rail__bottom {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
 .sidebar-rail__item,
 .sidebar-rail__toggle {
   width: 100%;
