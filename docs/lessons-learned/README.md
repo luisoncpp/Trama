@@ -130,3 +130,4 @@ Avoid: "bug description + fix". Prefer: "what I learned that applies to future w
 | `memo-boundaries-need-stable-props-at-the-call-site.md` | `memo(...)` only blocks typing churn when the parent also stabilizes object/callback props passed into the shell boundary | 2026-05-27 |
 | `vitest-include-pattern-can-skip-test-tsx-files.md` | The current Vitest include glob only matches `tests/**/*.test.ts`, so `.test.tsx` files are silently excluded | 2026-05-27 |
 | `help-screenshot-overlay-timing.md` | Region-based help captures of transient overlays must call `capturePage(region)` immediately; a post-scenario settle delay lets menus close before the shot | 2026-06-06 |
+| `sidebar-dialog-portal-vs-test-container.md` | `SidebarFileActionsDialog` uses `createPortal(..., document.body)`; sidebar unit tests must query portaled elements via `document`, not the Preact test `container` | 2026-06-06 |

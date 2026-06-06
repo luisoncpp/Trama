@@ -4,7 +4,7 @@ import { waitForSelector, waitForCondition, sleep, SCENARIO_SETTLE_MS } from './
 const WIKI_TAG_ROW_SELECTOR = '[data-path="characters/aldren.md"]'
 const CHARACTERS_FOLDER_SELECTOR = '[data-path="characters"]'
 
-function computeBoundingRegion(elements: Element[], padding = 16): CaptureRegion {
+export function computeBoundingRegion(elements: Element[], padding = 16): CaptureRegion {
   let minX = Infinity
   let minY = Infinity
   let maxX = -Infinity

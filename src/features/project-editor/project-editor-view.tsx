@@ -5,23 +5,14 @@ import { ProjectEditorDialogs } from './project-editor-dialogs'
 import { useProjectEditorShellActions, useProjectEditorShellState } from './project-editor-shell'
 import { useProjectEditorViewDialogs } from './project-editor-view-dialogs'
 import { ProjectEditorLayout } from './project-editor-view-layout'
-import type { ResolvedTheme, ThemePreference } from '../../theme/theme-types'
 import type { BookExportFormat } from '../../shared/ipc'
-import type { ProjectEditorShellActions, ProjectEditorShellState } from './project-editor-shell-props'
+import type { ResolvedTheme, ThemePreference } from '../../theme/theme-types'
+import type { ProjectEditorShellActions, ProjectEditorShellSettingsProps, ProjectEditorShellState } from './project-editor-shell-props'
 import { useSidebarLayout } from './layout/use-sidebar-layout'
 import { WindowTitlebar } from './window-titlebar'
 
-interface ProjectEditorViewProps {
+interface ProjectEditorViewProps extends ProjectEditorShellSettingsProps {
   model: ProjectEditorModel
-  themePreference: ThemePreference
-  resolvedTheme: ResolvedTheme
-  onThemePreferenceChange: (preference: ThemePreference) => void
-  spellcheckEnabled: boolean
-  spellcheckLanguage: string | null
-  spellcheckLanguageOptions: string[]
-  spellcheckLanguageSelectionSupported: boolean
-  onSpellcheckEnabledChange: (enabled: boolean) => void
-  onSpellcheckLanguageChange: (language: string) => void
 }
 
 function buildShellClassName(model: ProjectEditorModel): string {

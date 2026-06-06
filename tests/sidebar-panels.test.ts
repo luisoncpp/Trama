@@ -560,10 +560,10 @@ describe('sidebar panels', () => {
 
     expect(readDocumentMock).toHaveBeenCalledWith({ path: 'book/Act-01/Chapter-01/Scene-001.md' })
 
-    const tagsInput = container.querySelector(
+    const tagsInput = document.querySelector(
       '.sidebar-create-dialog textarea',
     ) as HTMLTextAreaElement
-    const saveTagsConfirm = Array.from(container.querySelectorAll('.sidebar-create-dialog .editor-button')).find((node) =>
+    const saveTagsConfirm = Array.from(document.querySelectorAll('.sidebar-create-dialog .editor-button')).find((node) =>
       node.textContent?.includes('Save Tags'),
     ) as HTMLButtonElement
 
@@ -596,10 +596,10 @@ describe('sidebar panels', () => {
       renameMenuItem.click()
     })
 
-    const renameInput = container.querySelector(
+    const renameInput = document.querySelector(
       '.sidebar-create-dialog input[placeholder="Scene-002.md"]',
     ) as HTMLInputElement
-    const renameConfirm = Array.from(container.querySelectorAll('.sidebar-create-dialog .editor-button')).find((node) =>
+    const renameConfirm = Array.from(document.querySelectorAll('.sidebar-create-dialog .editor-button')).find((node) =>
       node.textContent?.includes('Rename'),
     ) as HTMLButtonElement
 
@@ -632,10 +632,10 @@ describe('sidebar panels', () => {
       await Promise.resolve()
     })
 
-    const deleteConfirm = Array.from(container.querySelectorAll('.sidebar-create-dialog .editor-button')).find((node) =>
+    const deleteConfirm = Array.from(document.querySelectorAll('.sidebar-create-dialog .editor-button')).find((node) =>
       node.textContent?.includes('Delete'),
     ) as HTMLButtonElement
-    const deleteImagesCheckbox = container.querySelector('.sidebar-create-dialog input[type="checkbox"]') as HTMLInputElement
+    const deleteImagesCheckbox = document.querySelector('.sidebar-create-dialog input[type="checkbox"]') as HTMLInputElement
 
     expect(deleteConfirm).toBeTruthy()
 

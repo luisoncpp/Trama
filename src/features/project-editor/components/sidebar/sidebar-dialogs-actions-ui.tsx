@@ -57,18 +57,18 @@ export function FooterAndCreateDialog({
   )
 }
 
-interface FileActionsDialogProps {
+export interface FileActionsDialogProps {
   fileActionMode: SidebarFileActionMode | null
   fileActionTargetPath: string | null
   renameValue: string
   tagsValue: string
   loadingTags: boolean
-  loadingDeleteInfo: boolean
-  linkedImagePaths: string[]
-  deleteAssociatedImages: boolean
+  loadingDeleteInfo?: boolean
+  linkedImagePaths?: string[]
+  deleteAssociatedImages?: boolean
   onRenameValueChange: (value: string) => void
   onTagsValueChange: (value: string) => void
-  onDeleteAssociatedImagesChange: (value: boolean) => void
+  onDeleteAssociatedImagesChange?: (value: boolean) => void
   confirmFileActionDialog: () => void
   closeFileActionDialog: () => void
 }

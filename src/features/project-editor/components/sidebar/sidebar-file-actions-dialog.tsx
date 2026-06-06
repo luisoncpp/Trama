@@ -2,8 +2,7 @@ import { createPortal } from 'preact/compat'
 
 export type SidebarFileActionMode = 'rename' | 'delete' | 'edit-tags'
 
-interface SidebarFileActionsDialogProps {
-  mode: SidebarFileActionMode | null
+export interface FileActionsDialogData {
   targetPath: string | null
   renameValue: string
   tagsValue: string
@@ -14,6 +13,10 @@ interface SidebarFileActionsDialogProps {
   onRenameValueChange: (value: string) => void
   onTagsValueChange: (value: string) => void
   onDeleteAssociatedImagesChange?: (value: boolean) => void
+}
+
+interface SidebarFileActionsDialogProps extends FileActionsDialogData {
+  mode: SidebarFileActionMode | null
   onConfirm: () => void
   onCancel: () => void
 }

@@ -41,10 +41,7 @@ export interface ProjectEditorShellActions {
   saveSnapshot: ProjectEditorModel['actions']['saveSnapshot']
 }
 
-export interface ProjectEditorSidebarShellProps {
-  shellState: ProjectEditorShellState
-  shellActions: ProjectEditorShellActions
-  effectiveCollapsed: boolean
+export interface ProjectEditorShellSettingsProps {
   themePreference: ThemePreference
   resolvedTheme: ResolvedTheme
   onThemePreferenceChange: (preference: ThemePreference) => void
@@ -54,6 +51,12 @@ export interface ProjectEditorSidebarShellProps {
   spellcheckLanguageSelectionSupported: boolean
   onSpellcheckEnabledChange: (enabled: boolean) => void
   onSpellcheckLanguageChange: (language: string) => void
+}
+
+export interface ProjectEditorSidebarShellProps extends ProjectEditorShellSettingsProps {
+  shellState: ProjectEditorShellState
+  shellActions: ProjectEditorShellActions
+  effectiveCollapsed: boolean
   onImportClick: () => void
   onImportZuluClick: () => void
   onBookExportClick: (format: BookExportFormat) => void

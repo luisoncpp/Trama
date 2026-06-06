@@ -9,7 +9,7 @@ import {
   HELP_SCREENSHOT_SCENARIOS,
 } from '../src/help/help-screenshot-scenarios'
 
-function mockRect(element: HTMLElement, rect: DOMRectInit): void {
+function mockRect(element: HTMLElement, rect: Partial<DOMRect>): void {
   element.getBoundingClientRect = () => ({
     x: rect.x ?? 0,
     y: rect.y ?? 0,

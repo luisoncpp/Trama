@@ -1,15 +1,14 @@
 import type { SidebarCreateInput } from '../../project-editor-types'
 import type { SidebarCreateMode } from './sidebar-create-dialog.tsx'
-import type { SidebarFileActionMode } from './sidebar-file-actions-dialog.tsx'
 import type { SidebarFolderActionMode } from './sidebar-folder-actions-dialog.tsx'
 import { ContextMenus } from './sidebar-dialogs-context-menus-ui'
-import { FooterAndCreateDialog, FileActionsDialog, FolderActionsDialog } from './sidebar-dialogs-actions-ui'
+import { FooterAndCreateDialog, FileActionsDialog, FolderActionsDialog, type FileActionsDialogProps } from './sidebar-dialogs-actions-ui'
 import { useSidebarFileContextMenu, useSidebarFolderContextMenu } from './sidebar-dialogs-context-menus'
 
 type FileContextMenuResult = ReturnType<typeof useSidebarFileContextMenu>
 type FolderContextMenuResult = ReturnType<typeof useSidebarFolderContextMenu>
 
-interface SidebarExplorerDialogsProps {
+type SidebarExplorerDialogsProps = {
   loadingProject: boolean
   apiAvailable: boolean
   openCreateDialog: (mode: SidebarCreateMode) => void
@@ -22,19 +21,6 @@ interface SidebarExplorerDialogsProps {
   submitCreateDialog: () => void
   closeCreateDialog: () => void
   title: string
-  fileActionMode: SidebarFileActionMode | null
-  fileActionTargetPath: string | null
-  renameValue: string
-  tagsValue: string
-  loadingTags: boolean
-  loadingDeleteInfo?: boolean
-  linkedImagePaths?: string[]
-  deleteAssociatedImages?: boolean
-  onRenameValueChange: (value: string) => void
-  onTagsValueChange: (value: string) => void
-  onDeleteAssociatedImagesChange?: (value: boolean) => void
-  confirmFileActionDialog: () => void
-  closeFileActionDialog: () => void
   fileContextMenu: FileContextMenuResult
   folderContextMenu: FolderContextMenuResult
   folderActionMode: SidebarFolderActionMode | null
@@ -43,7 +29,7 @@ interface SidebarExplorerDialogsProps {
   onFolderRenameValueChange: (value: string) => void
   confirmFolderActionDialog: () => void
   closeFolderActionDialog: () => void
-}
+} & FileActionsDialogProps
 
 function ActionDialogs(props: SidebarExplorerDialogsProps) {
   return (

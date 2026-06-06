@@ -1,9 +1,8 @@
 import { useRef } from 'preact/hooks'
 import type { BookExportFormat } from '../../shared/ipc'
-import type { ResolvedTheme, ThemePreference } from '../../theme/theme-types'
 import type { ProjectEditorModel } from './project-editor-types'
 import { ProjectEditorSidebarShell } from './project-editor-shell'
-import type { ProjectEditorShellActions, ProjectEditorShellState } from './project-editor-shell-props'
+import type { ProjectEditorShellActions, ProjectEditorShellSettingsProps, ProjectEditorShellState } from './project-editor-shell-props'
 import { SidebarResizeHandle } from './layout/sidebar-resize-handle'
 import { WorkspaceLayoutPanel } from './pane'
 
@@ -12,21 +11,12 @@ interface ProjectEditorMainPaneProps {
   spellcheckEnabled: boolean
 }
 
-interface ProjectEditorLayoutProps {
+interface ProjectEditorLayoutProps extends ProjectEditorShellSettingsProps {
   model: ProjectEditorModel
   shellState: ProjectEditorShellState
   shellActions: ProjectEditorShellActions
   effectiveCollapsed: boolean
   sidebarStyle: { '--sidebar-width': string }
-  themePreference: ThemePreference
-  resolvedTheme: ResolvedTheme
-  onThemePreferenceChange: (preference: ThemePreference) => void
-  spellcheckEnabled: boolean
-  spellcheckLanguage: string | null
-  spellcheckLanguageOptions: string[]
-  spellcheckLanguageSelectionSupported: boolean
-  onSpellcheckEnabledChange: (enabled: boolean) => void
-  onSpellcheckLanguageChange: (language: string) => void
   onImportClick: () => void
   onImportZuluClick: () => void
   onBookExportClick: (format: BookExportFormat) => void
