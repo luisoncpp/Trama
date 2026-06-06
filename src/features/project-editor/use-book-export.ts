@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'preact/hooks'
+import { useCallback, useEffect, useMemo, useState } from 'preact/hooks'
 import type { BookExportFormat } from '../../shared/ipc'
 
 const EXPORT_TOAST_DURATION_MS = 3000
@@ -150,21 +150,40 @@ export function useBookExport(projectRoot: string | null) {
     state.setOpen,
   )
 
-  return {
-    open: state.open,
-    setOpen: state.setOpen,
-    format: state.format,
-    setFormat: state.setFormat,
-    title: state.title,
-    setTitle: state.setTitle,
-    author: state.author,
-    setAuthor: state.setAuthor,
-    outputPath: state.outputPath,
-    setOutputPath: state.setOutputPath,
-    exporting: state.exporting,
-    lastError: state.lastError,
-    toastMessage: state.toastMessage,
-    handleExport,
-    dismissToast,
-  }
+  return useMemo(
+    /* buildBookExportState */ () => ({
+      open: state.open,
+      setOpen: state.setOpen,
+      format: state.format,
+      setFormat: state.setFormat,
+      title: state.title,
+      setTitle: state.setTitle,
+      author: state.author,
+      setAuthor: state.setAuthor,
+      outputPath: state.outputPath,
+      setOutputPath: state.setOutputPath,
+      exporting: state.exporting,
+      lastError: state.lastError,
+      toastMessage: state.toastMessage,
+      handleExport,
+      dismissToast,
+    }),
+    [
+      state.open,
+      state.setOpen,
+      state.format,
+      state.setFormat,
+      state.title,
+      state.setTitle,
+      state.author,
+      state.setAuthor,
+      state.outputPath,
+      state.setOutputPath,
+      state.exporting,
+      state.lastError,
+      state.toastMessage,
+      handleExport,
+      dismissToast,
+    ] /*Inputs for buildBookExportState*/,
+  )
 }

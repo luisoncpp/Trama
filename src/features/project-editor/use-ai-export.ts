@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'preact/hooks'
+import { useState, useCallback, useEffect, useMemo } from 'preact/hooks'
 
 const COPY_TOAST_DURATION_MS = 3000
 
@@ -101,19 +101,36 @@ export function useAiExport(projectRoot: string | null) {
   const { handleExport } = useAiExportHandlers(state, projectRoot)
   const { copyToastMessage, dismissCopyToast } = useAiExportCopyToast(state)
 
-  return {
-    open: state.open,
-    setOpen: state.setOpen,
-    selectedPaths: state.selectedPaths,
-    setSelectedPaths: state.setSelectedPaths,
-    includeFrontmatter: state.includeFrontmatter,
-    setIncludeFrontmatter: state.setIncludeFrontmatter,
-    exporting: state.exporting,
-    lastError: state.lastError,
-    setLastError: state.setLastError,
-    setCopyToastMessage: state.setCopyToastMessage,
-    handleExport,
-    copyToastMessage,
-    dismissCopyToast,
-  }
+  return useMemo(
+    /* buildAiExportState */ () => ({
+      open: state.open,
+      setOpen: state.setOpen,
+      selectedPaths: state.selectedPaths,
+      setSelectedPaths: state.setSelectedPaths,
+      includeFrontmatter: state.includeFrontmatter,
+      setIncludeFrontmatter: state.setIncludeFrontmatter,
+      exporting: state.exporting,
+      lastError: state.lastError,
+      setLastError: state.setLastError,
+      setCopyToastMessage: state.setCopyToastMessage,
+      handleExport,
+      copyToastMessage,
+      dismissCopyToast,
+    }),
+    [
+      state.open,
+      state.setOpen,
+      state.selectedPaths,
+      state.setSelectedPaths,
+      state.includeFrontmatter,
+      state.setIncludeFrontmatter,
+      state.exporting,
+      state.lastError,
+      state.setLastError,
+      state.setCopyToastMessage,
+      handleExport,
+      copyToastMessage,
+      dismissCopyToast,
+    ] /*Inputs for buildAiExportState*/,
+  )
 }

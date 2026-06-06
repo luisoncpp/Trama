@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'preact/hooks'
+import { useState, useCallback, useMemo } from 'preact/hooks'
 import type { AiImportMode, AiImportPreview } from '../../shared/ipc'
 
 export function useAiImport(projectRoot: string | null) {
@@ -45,10 +45,13 @@ export function useAiImport(projectRoot: string | null) {
     return true
   }, [projectRoot] /*Inputs for handleExecute*/)
 
-  return {
-    open,
-    setOpen,
-    handlePreview,
-    handleExecute,
-  }
+  return useMemo(
+    /* buildAiImportState */ () => ({
+      open,
+      setOpen,
+      handlePreview,
+      handleExecute,
+    }),
+    [open, setOpen, handlePreview, handleExecute] /*Inputs for buildAiImportState*/,
+  )
 }

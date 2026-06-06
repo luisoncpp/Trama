@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'preact/hooks'
+import { useState, useCallback, useMemo } from 'preact/hooks'
 import type { ZuluTagMode, ZuluImportPreviewResponse } from '../../shared/ipc'
 
 export function useZuluImport(projectRoot: string | null) {
@@ -55,11 +55,14 @@ export function useZuluImport(projectRoot: string | null) {
     return true
   }, [projectRoot] /*Inputs for handleExecute*/)
 
-  return {
-    open,
-    setOpen,
-    handleSelectFile,
-    handlePreview,
-    handleExecute,
-  }
+  return useMemo(
+    /* buildZuluImportState */ () => ({
+      open,
+      setOpen,
+      handleSelectFile,
+      handlePreview,
+      handleExecute,
+    }),
+    [open, setOpen, handleSelectFile, handlePreview, handleExecute] /*Inputs for buildZuluImportState*/,
+  )
 }
