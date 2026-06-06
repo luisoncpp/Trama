@@ -2,7 +2,7 @@ import path from 'node:path'
 import { access, stat } from 'node:fs/promises'
 import { execFile } from 'node:child_process'
 import { promisify } from 'node:util'
-import { TRAMA_INDEX_FILE_NAME, isManagedPath } from '../../src/shared/project-sections.js'
+import { TRAMA_INDEX_FILE_NAME, isManagedPath } from '../../src/shared/project-sections/index.js'
 
 const execFileAsync = promisify(execFile)
 

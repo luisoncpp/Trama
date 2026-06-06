@@ -7,7 +7,7 @@ import {
   type ValidateProjectFolderResponse,
 } from '../../../../src/shared/ipc.js'
 import { validateProjectFolderRequestSchema } from '../../../../src/shared/ipc-project.js'
-import { RELEVANT_SECTION_NAMES } from '../../../../src/shared/project-sections.js'
+import { RELEVANT_SECTION_NAMES } from '../../../../src/shared/project-sections/index.js'
 import { errorEnvelope } from '../../../ipc-errors.js'
 
 async function getMissingProjectFolders(rootPath: string): Promise<string[]> {

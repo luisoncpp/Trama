@@ -231,8 +231,13 @@ Mandatory doc navigation for new chats: start with `docs/START-HERE.md` — it p
   - Shared renderer helpers for Git status sync, pane resolution, and revision-rail refresh.
 - `src/features/project-editor/project-editor-folder-logic.ts`
   - Pure helpers for folder-prefix path remap (`isPathInsideFolder`, `remapFolderPrefix`, layout remap).
-- `src/features/project-editor/project-editor-logic.ts`
-  - Pure workspace helpers: `deriveActivePaneDocument` (active pane projection), `canSelectFile`, `reconcileWorkspaceLayout`, `buildConflictCopyPath`, and layout persistence.
+- `src/features/project-editor/project-editor-logic/`
+  - Deep module for pure workspace helpers: layout persistence, pane projection, conflict copy paths, external-event tree refresh.
+  - `index.ts` — public facade re-exporting all helpers.
+  - `private/workspace-layout.ts` — `WORKSPACE_LAYOUT_STORAGE_KEY`, create/normalize/restore/reconcile layout state.
+  - `private/active-pane.ts` — `deriveActivePaneDocument`, `canSelectFile`, `resolvePreferredFile`.
+  - `private/conflict-copy.ts` — `buildConflictCopyPath`.
+  - `private/external-events.ts` — `shouldRefreshTreeOnExternalEvent`. Do not import from `private/` directly.
 - `src/features/project-editor/workspace-actions.ts`
   - Deep module for workspace layout, pane activation, focus, fullscreen, editor view, save/revert actions.
   - Revert path flushes pending editor DOM through `PaneWorkspace` before reloading from disk.
@@ -325,6 +330,9 @@ Mandatory doc navigation for new chats: start with `docs/START-HERE.md` — it p
   - Private module for pane coordination. All pane state, flush, save, and autosave access goes through this module.
   - `pane/index.ts` — barrel exporting `PaneWorkspace`, `usePaneWorkspace`, and public types
   - `pane/pane-workspace.ts` — coordinator class with read methods (`getPaneDocument`, `isPaneDirty`) and write methods (`savePaneNow`, `preparePaneExit`, `preparePaneRevert`, `saveAllDirtyPanes`, `scheduleAutosave`, `updatePaneContent`, etc.); `savePaneIfDirty` and `markPaneSaved` are internal.
+  - `pane/pane-workspace-private/pane-workspace-bindings.ts` — pane/serialization ref accessors and `updatePaneState` helper; consumed only by `PaneWorkspace` and sibling private modules.
+  - `pane/pane-workspace-private/pane-workspace-init.ts` — constructor arg resolution for navigation history vs saved-content map; consumed only by `PaneWorkspace`.
+  - `pane/pane-workspace-private/pane-workspace-mutations.ts` — document state mutations (load, clear, meta, revision rail, dirty/saved markers); consumed only by `PaneWorkspace`.
   - `pane/pane-workspace-private/pane-workspace-exit.ts` — Pane exit intent types and pure helpers (`savePaneNowIntent`, `preparePaneExitIntent`, `preparePaneRevertIntent`); consumed by `PaneWorkspace`.
   - `loadPaneDocument()` increments pane `reloadVersion` so disk reloads/removals of dirty DOM advance the editor force-apply signal.
   - `pane/pane-workspace-types.ts` — extracted `PaneWorkspace` public info/binding types.
@@ -569,9 +577,10 @@ Mandatory doc navigation for new chats: start with `docs/START-HERE.md` — it p
   - Shared Git history IPC schemas/types for status, snapshot, revisions, preview, and load-revision calls.
 - `src/shared/ipc-zulu.ts`
   - ZuluPad import schemas (`zuluTagModeSchema`, `zuluSelectFileResponseSchema`, etc.) and their inferred types, extracted from `ipc.ts`.
-- `src/shared/project-sections.ts`
-  - Single source of truth for relevant sections plus Git-managed roots (`book`, `outline`, `lore`, `res`, `.trama.index.json`).
-  - Exports `RELEVANT_SECTION_NAMES`, `RELEVANT_SECTION_ROOTS`, managed-root helpers, `isRelevantPath()`, and `isManagedPath()`.
+- `src/shared/project-sections/index.ts`
+  - Deep module public interface for relevant sections plus Git-managed roots (`book`, `outline`, `lore`, `res`, `.trama.index.json`).
+  - Exports `RELEVANT_SECTION_NAMES`, `RELEVANT_SECTION_ROOTS`, `TRAMA_INDEX_FILE_NAME`, `isRelevantPath()`, and `isManagedPath()`.
+  - Implementation: `private/constants.ts` (section names, managed directory names, derived root arrays), `private/path-matching.ts` (`isRelevantPath`, `isManagedPath`).
 - `src/shared/workspace-context-menu.ts`
   - Event bridge contract between Electron context menu and the renderer: `WORKSPACE_CONTEXT_MENU_EVENT` constant and `WorkspaceContextCommand` union type.
   - The `WorkspaceContextCommand` includes the `{ type: 'paste-markdown' }` case used by the native menu and editor listeners.

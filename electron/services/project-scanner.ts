@@ -1,7 +1,7 @@
 import { readdir } from 'node:fs/promises'
 import path from 'node:path'
 import type { TreeItem } from '../../src/shared/ipc.js'
-import { isRelevantPath } from '../../src/shared/project-sections.js'
+import { isRelevantPath } from '../../src/shared/project-sections/index.js'
 
 const IGNORED_DIRECTORIES = new Set([
   '.git',

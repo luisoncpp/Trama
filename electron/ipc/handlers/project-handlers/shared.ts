@@ -4,7 +4,7 @@ import { DocumentRepository } from '../../../services/document-repository.js'
 import { getActiveIndexService, getActiveTagIndexService } from '../../../ipc-runtime.js'
 import { scanProject } from '../../../services/project-scanner.js'
 import { getProjectCache, setProjectCache } from '../../../services/project-state-cache.js'
-import { isRelevantPath } from '../../../../src/shared/project-sections.js'
+import { isRelevantPath } from '../../../../src/shared/project-sections/index.js'
 
 const documentRepository = new DocumentRepository()
 
