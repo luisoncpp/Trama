@@ -1,5 +1,5 @@
-import type { PaneDocumentState, WorkspaceLayoutState, WorkspacePane } from '../project-editor-types'
-import type { ActivePaneDocumentInfo, PaneDocumentInfo } from './pane-workspace-types'
+import type { PaneDocumentState, WorkspaceLayoutState, WorkspacePane } from '../../project-editor-types'
+import type { ActivePaneDocumentInfo, PaneDocumentInfo } from '../pane-workspace-types'
 
 export function buildPaneDocumentInfo(doc: PaneDocumentState): PaneDocumentInfo {
   return {

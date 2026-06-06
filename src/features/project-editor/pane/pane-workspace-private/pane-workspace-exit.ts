@@ -1,5 +1,5 @@
-import type { DocumentMeta } from '../../../shared/ipc'
-import type { PaneDocumentState } from '../project-editor-types'
+import type { DocumentMeta } from '../../../../shared/ipc'
+import type { PaneDocumentState } from '../../project-editor-types'
 
 export type PaneExitReason = 'empty' | 'clean' | 'saved'
 

@@ -8,7 +8,7 @@ import type {
   WorkspaceLayoutState,
   WorkspacePane,
 } from '../project-editor-types'
-import { buildActivePaneDocumentInfo, buildPaneDocumentInfo } from './pane-workspace-document-info'
+import { buildActivePaneDocumentInfo, buildPaneDocumentInfo } from './pane-workspace-private/pane-workspace-document-info'
 import {
   preparePaneExitIntent,
   preparePaneRevertIntent,
@@ -17,26 +17,25 @@ import {
   type PreparePaneExitResult,
   type PreparePaneRevertResult,
   type SavePaneNowResult,
-} from './pane-workspace-exit'
+} from './pane-workspace-private/pane-workspace-exit'
 import {
   buildExitedRevisionRailState,
   buildLoadedPaneDocumentState,
   buildUpdatedPaneContentState,
   createEmptyPaneRevisionRail,
 } from './pane-workspace-revision-state'
-import { logSnapshotComparison } from './snapshot-compare-logger'
 import { PaneNavigation } from './pane-navigation'
-import { PaneAutosave } from './pane-workspace-autosave'
+import { PaneAutosave } from './pane-workspace-private/pane-workspace-autosave'
+import { PaneSnapshotTracker } from './pane-workspace-private/pane-workspace-snapshot'
 import type { ActivePaneDocumentInfo, PaneBindings, PaneDocumentInfo } from './pane-workspace-types'
 
 export type { WorkspacePane }
 export type { ActivePaneDocumentInfo, PaneBindings, PaneDocumentInfo } from './pane-workspace-types'
-export type { PaneExitReason, PreparePaneExitResult, PreparePaneRevertResult, SavePaneNowResult } from './pane-workspace-exit'
+export type { PaneExitReason, PreparePaneExitResult, PreparePaneRevertResult, SavePaneNowResult } from './pane-workspace-private/pane-workspace-exit'
 
 export class PaneWorkspace {
   private autosave = new PaneAutosave()
-  private lastSavedContentMap: Map<string, string>
-  private ownsSavedContentMap: boolean
+  private snapshotTracker: PaneSnapshotTracker
   private navigation: PaneNavigation
   constructor(
     private layoutState: WorkspaceLayoutState,
@@ -57,8 +56,7 @@ export class PaneWorkspace {
       : savedContentMap
 
     this.navigation = new PaneNavigation(navHistory ?? { primary: { entries: [], index: -1 }, secondary: { entries: [], index: -1 } })
-    this.lastSavedContentMap = resolvedMap ?? new Map()
-    this.ownsSavedContentMap = !resolvedMap
+    this.snapshotTracker = new PaneSnapshotTracker(resolvedMap)
   }
   updateDependencies(
     layoutState: WorkspaceLayoutState,
@@ -89,9 +87,9 @@ export class PaneWorkspace {
 
   destroy(): void {
     this.autosave.destroy()
-    if (this.ownsSavedContentMap) this.lastSavedContentMap.clear()
+    this.snapshotTracker.destroy()
   }
-  getLastSavedContent(path: string): string | null { return this.lastSavedContentMap.get(path) ?? null }
+  getLastSavedContent(path: string): string | null { return this.snapshotTracker.get(path) }
   getPaneNavigationHistory(pane: WorkspacePane): PaneNavigationHistoryState { return this.navigation.getPaneNavigationHistory(pane) }
   recordPaneNavigation(pane: WorkspacePane, path: string): void { return this.navigation.recordPaneNavigation(pane, path) }
   getPreviousPathInPaneHistory(pane: WorkspacePane): string | null { return this.navigation.getPreviousPathInPaneHistory(pane) }
@@ -193,14 +191,11 @@ export class PaneWorkspace {
   }
 
   private markPaneSaved(pane: WorkspacePane, path: string, content: string): void {
-    this.lastSavedContentMap.set(path, content)
+    this.snapshotTracker.set(path, content)
     this.updatePaneState(pane, (prev) => prev.path === path ? { ...prev, isDirty: false } : prev)
   }
   async checkExternalChangeMatchesSavedSnapshot(path: string, externalContent: string): Promise<boolean> {
-    const savedContent = this.getLastSavedContent(path)
-    const matches = savedContent !== null && savedContent === externalContent
-    logSnapshotComparison(path, savedContent, externalContent, matches)
-    return matches
+    return this.snapshotTracker.checkExternalChangeMatchesSavedSnapshot(path, externalContent)
   }
 
   get layout(): Readonly<WorkspaceLayoutState> { return Object.freeze({ ...this.layoutState }) }

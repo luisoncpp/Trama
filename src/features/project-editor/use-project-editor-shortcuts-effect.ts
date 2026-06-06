@@ -164,6 +164,9 @@ function makeKeydownHandler(params: UseProjectEditorShortcutsEffectParams) {
   }
 }
 
+// Exported for testing
+export { isFormFieldTarget, hasOpenModal, handleCommandShortcut, handleNavigationAndZoomShortcut }
+
 export function useProjectEditorShortcutsEffect(params: UseProjectEditorShortcutsEffectParams): void {
   useEffect(/* registerWorkspaceShortcuts */ () => {
     const onWindowKeyDown = makeKeydownHandler(params)

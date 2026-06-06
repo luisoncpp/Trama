@@ -1,7 +1,11 @@
-import { useCallback, useEffect, useState } from 'preact/hooks'
+import { useCallback } from 'preact/hooks'
 import { createPortal } from 'preact/compat'
 import type { ZuluTagMode, ZuluImportPreviewResponse, ZuluSelectFileResponse } from '../../../shared/ipc'
-import { ZuluImportDialogBody } from './zulu-import-dialog-body'
+import { useZuluImportDialogState } from './zulu-import-dialog-private/zulu-import-dialog-state'
+import { useZuluImportDialogActions, useZuluImportDialogLifecycle } from './zulu-import-dialog-private/zulu-import-dialog-logic'
+import { ZuluImportDialogBody } from './zulu-import-dialog-private/zulu-import-dialog-body'
+
+export { useZuluImportDialogState } from './zulu-import-dialog-private/zulu-import-dialog-state'
 
 interface ZuluImportDialogProps {
   open: boolean
@@ -10,59 +14,6 @@ interface ZuluImportDialogProps {
   onPreview: (content: string, targetFolder: string) => Promise<ZuluImportPreviewResponse | null>
   onExecute: (content: string, targetFolder: string, tagMode: ZuluTagMode) => Promise<boolean>
   projectRoot: string | null
-}
-
-export function useZuluImportDialogState() {
-  const [fileData, setFileData] = useState<ZuluSelectFileResponse | null>(null)
-  const [targetFolder, setTargetFolder] = useState('lore/')
-  const [tagMode, setTagMode] = useState<ZuluTagMode>('none')
-  const [preview, setPreview] = useState<ZuluImportPreviewResponse | null>(null)
-  const [loading, setLoading] = useState(false)
-  const [importing, setImporting] = useState(false)
-  const [selectingFile, setSelectingFile] = useState(false)
-  return { fileData, setFileData, targetFolder, setTargetFolder, tagMode, setTagMode, preview, setPreview, loading, setLoading, importing, setImporting, selectingFile, setSelectingFile }
-}
-
-function useZuluImportDialogActions(
-  state: ReturnType<typeof useZuluImportDialogState>,
-  projectRoot: string | null,
-  onSelectFile: () => Promise<ZuluSelectFileResponse | null>,
-  onPreview: (content: string, targetFolder: string) => Promise<ZuluImportPreviewResponse | null>,
-  onExecute: (content: string, targetFolder: string, tagMode: ZuluTagMode) => Promise<boolean>,
-  onClose: () => void,
-) {
-  const { fileData, targetFolder, tagMode, setFileData, setLoading, setPreview, setImporting, setSelectingFile } = state
-
-  const handleSelectFile = useCallback(/* handleSelectFile */ async () => {
-    setSelectingFile(true)
-    try {
-      const result = await onSelectFile()
-      if (result && result.content) { setFileData(result); setPreview(null) }
-    } catch (error) { console.error('File select failed:', error) } finally { setSelectingFile(false) }
-  }, [onSelectFile, setFileData, setPreview, setSelectingFile] /*Inputs for handleSelectFile*/)
-
-  const handlePreview = useCallback(/* handlePreview */ async () => {
-    if (!fileData?.content || !projectRoot) return
-    setLoading(true)
-    try { const result = await onPreview(fileData.content, targetFolder); setPreview(result) } catch (error) { console.error('Preview failed:', error) } finally { setLoading(false) }
-  }, [fileData, targetFolder, onPreview, projectRoot, setLoading, setPreview] /*Inputs for handlePreview*/)
-
-  const handleExecute = useCallback(/* handleExecute */ async () => {
-    if (!fileData?.content || !projectRoot) return
-    setImporting(true)
-    try { const success = await onExecute(fileData.content, targetFolder, tagMode); if (success) onClose() } catch (error) { console.error('Import failed:', error) } finally { setImporting(false) }
-  }, [fileData, targetFolder, tagMode, onClose, onExecute, projectRoot, setImporting] /*Inputs for handleExecute*/)
-
-  return { handleSelectFile, handlePreview, handleExecute }
-}
-
-function useZuluImportDialogLifecycle(open: boolean, closeDialog: () => void) {
-  useEffect(/* closeOnEscape */ () => {
-    if (!open) return
-    const handleKeyDown = (event: KeyboardEvent) => { if (event.key === 'Escape') { event.preventDefault(); closeDialog() } }
-    window.addEventListener('keydown', handleKeyDown)
-    return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [closeDialog, open] /*Inputs for closeOnEscape*/)
 }
 
 export function ZuluImportDialog({ open, onClose, onSelectFile, onPreview, onExecute, projectRoot }: ZuluImportDialogProps) {

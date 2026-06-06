@@ -323,12 +323,15 @@ Mandatory doc navigation for new chats: start with `docs/START-HERE.md` — it p
   - Private module for pane coordination. All pane state, flush, save, and autosave access goes through this module.
   - `pane/index.ts` — barrel exporting `PaneWorkspace`, `usePaneWorkspace`, and public types
   - `pane/pane-workspace.ts` — coordinator class with read methods (`getPaneDocument`, `isPaneDirty`) and write methods (`savePaneNow`, `preparePaneExit`, `preparePaneRevert`, `saveAllDirtyPanes`, `scheduleAutosave`, `updatePaneContent`, etc.); `savePaneIfDirty` and `markPaneSaved` are internal.
-  - `pane/pane-workspace-exit.ts` — Pane exit intent types and pure helpers (`savePaneNowIntent`, `preparePaneExitIntent`, `preparePaneRevertIntent`); consumed by `PaneWorkspace`.
+  - `pane/pane-workspace-private/pane-workspace-exit.ts` — Pane exit intent types and pure helpers (`savePaneNowIntent`, `preparePaneExitIntent`, `preparePaneRevertIntent`); consumed by `PaneWorkspace`.
   - `loadPaneDocument()` increments pane `reloadVersion` so disk reloads/removals of dirty DOM advance the editor force-apply signal.
   - `pane/pane-workspace-types.ts` — extracted `PaneWorkspace` public info/binding types.
-  - `pane/pane-workspace-document-info.ts` — pure builders for active-pane and pane document projections.
+  - `pane/pane-workspace-private/pane-workspace-document-info.ts` — pure builders for active-pane and pane document projections.
   - `pane/pane-workspace-revision-state.ts` — pure pane revision-rail state transitions (`Current` label, preview exit, preview apply, load sync).
-  - `pane/pane-workspace-autosave.ts` — `PaneAutosave` class extracted from `PaneWorkspace`: isolated timer management for autosave scheduling with `schedule(delay, shouldFire, onFire)` and `cancel()`.
+  - `pane/pane-workspace-private/pane-workspace-autosave.ts` — `PaneAutosave` class extracted from `PaneWorkspace`: isolated timer management for autosave scheduling with `schedule(delay, shouldFire, onFire)` and `cancel()`.
+  - `pane/pane-workspace-snapshot.ts` — `PaneSnapshotTracker` class extracted from `PaneWorkspace`: owns the last-saved-content map, provides `get`/`set`, exact-match snapshot comparison against external content, and a `destroy` lifecycle for externally-owned maps.
+  - `pane/map-editor/map-editor-types.ts` — Shared types extracted from `map-editor-helpers.ts`: `MapMarker`, `MapConfig`, `MapAssetResult`.
+  - `pane/map-editor/map-config-serialization.ts` — Config serialization extracted from `map-editor-helpers.ts`: `getMapConfig`, `withMapConfig`, plus private `normalizeMarker` and `isRecord`.
   - `pane/pane-navigation.ts` — `PaneNavigation` class extracted from `PaneWorkspace`: owns per-pane session history stack helpers (`recordPaneNavigation`, `getPreviousPathInPaneHistory`, `getNextPathInPaneHistory`, `stepPaneNavigationHistory`, `clearNavigationHistory`).
   - `pane/pane-navigation-state.ts` — pure helpers for navigation history state: `getEmptyNavigationHistory`, `getHistoryForPane`, `createNavigationHistoryStore`.
   - `pane/pane-editor.tsx` — `PaneEditor` component extracted from `workspace-editor-panels.tsx`.
@@ -345,6 +348,7 @@ Mandatory doc navigation for new chats: start with `docs/START-HERE.md` — it p
   - Listens for native fullscreen changes and mirrors them into UI state.
 - `src/features/project-editor/use-project-editor-shortcuts-effect.ts`
   - Global keyboard shortcuts handling for editor workspace actions.
+  - Exports `isFormFieldTarget`, `hasOpenModal`, `handleCommandShortcut`, `handleNavigationAndZoomShortcut` for unit testing.
 - `src/features/project-editor/workspace-actions.ts`
   - Deep module for workspace/layout, pane, focus, fullscreen, editor view, save, and revert actions.
   - Plain functions. Callers pass setters/state and apply results.
@@ -387,8 +391,12 @@ Mandatory doc navigation for new chats: start with `docs/START-HERE.md` — it p
   - Book export dialog body with project root display, optional metadata inputs, output path input, and export/cancel actions.
 - `src/features/project-editor/components/zulu-import-dialog.tsx`
   - Modal dialog for ZuluPad file import: file selection trigger, target folder input, tag mode selector, preview state, and import execution portal.
-- `src/features/project-editor/components/zulu-import-dialog-body.tsx`
-  - ZuluPad import dialog body: file info display, folder/tag configuration form, actions row, and preview/execute sub-components.
+- `src/features/project-editor/components/zulu-import-dialog-private/zulu-import-dialog-body.tsx`
+  - ZuluPad import dialog body: file info display, folder/tag configuration form, actions row, and preview/execute sub-components (extracted from `zulu-import-dialog.tsx`).
+- `src/features/project-editor/components/zulu-import-dialog-private/zulu-import-dialog-state.ts`
+  - ZuluPad import dialog state hook: `useZuluImportDialogState` — file data, target folder, tag mode, preview, loading/importing/selecting file states (extracted from `zulu-import-dialog.tsx`).
+- `src/features/project-editor/components/zulu-import-dialog-private/zulu-import-dialog-logic.ts`
+  - ZuluPad import dialog logic hooks: `useZuluImportDialogActions` (select file, preview, execute) and `useZuluImportDialogLifecycle` (Escape key listener) (extracted from `zulu-import-dialog.tsx`).
 - `src/features/project-editor/components/rich-markdown-editor.tsx`
   - Quill-based rich Markdown editor component (lifecycle, toolbar integration, focus-mode hookup).
 - `src/features/project-editor/components/rich-markdown-editor-core.ts`

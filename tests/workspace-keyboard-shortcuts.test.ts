@@ -1,110 +1,280 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import {
+  isFormFieldTarget,
+  hasOpenModal,
+  handleCommandShortcut,
+  handleNavigationAndZoomShortcut,
+} from '../src/features/project-editor/use-project-editor-shortcuts-effect'
 import { MIN_ZOOM_LEVEL, MAX_ZOOM_LEVEL, ZOOM_STEP, clampZoomLevel } from '../src/features/project-editor/editor-zoom'
 
-describe('Workspace Keyboard Shortcuts', () => {
+function makeParams(overrides: Partial<Record<string, ReturnType<typeof vi.fn>>> = {}) {
+  return {
+    onToggleSplitLayout: vi.fn(),
+    onToggleFullscreen: vi.fn(),
+    onToggleFocusMode: vi.fn(),
+    onSwitchActivePane: vi.fn(),
+    onSaveNow: vi.fn(),
+    onOpenPreviousHistory: vi.fn(),
+    onOpenNextHistory: vi.fn(),
+    onEscapePressed: vi.fn(),
+    onZoomIn: vi.fn(),
+    onZoomOut: vi.fn(),
+    onZoomReset: vi.fn(),
+    ...overrides,
+  }
+}
 
-  it('recognizes Ctrl+Shift+P to toggle split mode', () => {
-    const key = 'P'
-    const ctrlKey = true
-    const shiftKey = true
-    expect(key).toBe('P')
-    expect(ctrlKey && shiftKey).toBe(true)
+function makeKeyEvent(overrides: Partial<KeyboardEventInit> = {}): KeyboardEvent {
+  return new KeyboardEvent('keydown', { bubbles: true, ...overrides })
+}
+
+describe('isFormFieldTarget', () => {
+  it('returns true for input elements', () => {
+    const input = document.createElement('input')
+    expect(isFormFieldTarget(input)).toBe(true)
   })
 
-  it('recognizes Cmd+Shift+P (Mac) to toggle split mode', () => {
-    const key = 'P'
-    const metaKey = true
-    const shiftKey = true
-    expect(key).toBe('P')
-    expect(metaKey && shiftKey).toBe(true)
+  it('returns true for textarea elements', () => {
+    const textarea = document.createElement('textarea')
+    expect(isFormFieldTarget(textarea)).toBe(true)
   })
 
-  it('recognizes Ctrl+. to toggle split mode (alternative)', () => {
-    const key = '.'
-    const ctrlKey = true
-    expect(key).toBe('.')
-    expect(ctrlKey).toBe(true)
+  it('returns true for select elements', () => {
+    const select = document.createElement('select')
+    expect(isFormFieldTarget(select)).toBe(true)
   })
 
-  it('recognizes Ctrl+Shift+Tab to switch active pane in split mode', () => {
-    const key = 'Tab'
-    const ctrlKey = true
-    const shiftKey = true
-    expect(key).toBe('Tab')
-    expect(ctrlKey && shiftKey).toBe(true)
+  it('returns false for div elements', () => {
+    const div = document.createElement('div')
+    expect(isFormFieldTarget(div)).toBe(false)
   })
 
-  it('switches from secondary to primary when active pane is secondary', () => {
-    // Pane switch logic: alternate between 'primary' and 'secondary'
-    type Pane = 'primary' | 'secondary'
-    const togglePane = (pane: Pane): Pane => pane === 'primary' ? 'secondary' : 'primary'
-    expect(togglePane('secondary')).toBe('primary')
+  it('returns false for null', () => {
+    expect(isFormFieldTarget(null)).toBe(false)
+  })
+})
+
+describe('hasOpenModal', () => {
+  afterEach(() => {
+    document.querySelectorAll('[aria-modal]').forEach(el => el.remove())
   })
 
-  it('ignores split mode toggle shortcuts in single mode for pane switch', () => {
-    // Pane switching is only meaningful in split layout
-    type LayoutMode = 'single' | 'split'
-    const isSplitMode = (mode: LayoutMode): boolean => mode === 'split'
-    expect(isSplitMode('single')).toBe(false)
-    expect(isSplitMode('split')).toBe(true)
+  it('returns false when no aria-modal element exists', () => {
+    expect(hasOpenModal()).toBe(false)
   })
 
-  describe('zoom shortcuts', () => {
-    it('recognizes Ctrl+Equal for zoom in (Windows Ctrl+=)', () => {
-      const code = 'Equal'
-      const ctrlKey = true
-      expect(ctrlKey).toBe(true)
-      expect(code === 'Equal').toBe(true)
-    })
-
-    it('recognizes Ctrl+Minus for zoom out', () => {
-      const code = 'Minus'
-      const ctrlKey = true
-      expect(code).toBe('Minus')
-      expect(ctrlKey).toBe(true)
-    })
+  it('returns true when an aria-modal="true" element exists', () => {
+    const div = document.createElement('div')
+    div.setAttribute('aria-modal', 'true')
+    document.body.appendChild(div)
+    expect(hasOpenModal()).toBe(true)
   })
 
-  describe('zoom level clamping', () => {
-    it('clamps zoom level to minimum', () => {
-      expect(clampZoomLevel(0.1)).toBe(MIN_ZOOM_LEVEL)
-      expect(clampZoomLevel(-1)).toBe(MIN_ZOOM_LEVEL)
-    })
+  it('returns false for aria-modal="false"', () => {
+    const div = document.createElement('div')
+    div.setAttribute('aria-modal', 'false')
+    document.body.appendChild(div)
+    expect(hasOpenModal()).toBe(false)
+  })
+})
 
-    it('clamps zoom level to maximum', () => {
-      expect(clampZoomLevel(5)).toBe(MAX_ZOOM_LEVEL)
-      expect(clampZoomLevel(100)).toBe(MAX_ZOOM_LEVEL)
-    })
+describe('handleCommandShortcut', () => {
+  it('Ctrl+Period calls onToggleSplitLayout and returns true', () => {
+    const params = makeParams()
+    const result = handleCommandShortcut(params, makeKeyEvent({ ctrlKey: true, code: 'Period' }), true)
+    expect(result).toBe(true)
+    expect(params.onToggleSplitLayout).toHaveBeenCalledOnce()
+  })
 
-    it('keeps valid zoom level unchanged', () => {
-      expect(clampZoomLevel(1.0)).toBe(1.0)
-      expect(clampZoomLevel(1.5)).toBe(1.5)
-      expect(clampZoomLevel(MIN_ZOOM_LEVEL)).toBe(MIN_ZOOM_LEVEL)
-      expect(clampZoomLevel(MAX_ZOOM_LEVEL)).toBe(MAX_ZOOM_LEVEL)
-    })
+  it('Cmd+Period (Mac) calls onToggleSplitLayout', () => {
+    const params = makeParams()
+    const result = handleCommandShortcut(params, makeKeyEvent({ metaKey: true, code: 'Period' }), true)
+    expect(result).toBe(true)
+    expect(params.onToggleSplitLayout).toHaveBeenCalledOnce()
+  })
 
-    it('applies zoom step for zoom in', () => {
-      const currentZoom = 1.0
-      const newZoom = clampZoomLevel(currentZoom + ZOOM_STEP)
-      expect(newZoom).toBe(1.1)
-    })
+  it('Ctrl+Shift+F calls onToggleFullscreen and returns true', () => {
+    const params = makeParams()
+    const result = handleCommandShortcut(params, makeKeyEvent({ ctrlKey: true, shiftKey: true, code: 'KeyF' }), true)
+    expect(result).toBe(true)
+    expect(params.onToggleFullscreen).toHaveBeenCalledOnce()
+  })
 
-    it('applies zoom step for zoom out', () => {
-      const currentZoom = 1.0
-      const newZoom = clampZoomLevel(currentZoom - ZOOM_STEP)
-      expect(newZoom).toBe(0.9)
-    })
+  it('Ctrl+Shift+M calls onToggleFocusMode and returns true', () => {
+    const params = makeParams()
+    const result = handleCommandShortcut(params, makeKeyEvent({ ctrlKey: true, shiftKey: true, code: 'KeyM' }), true)
+    expect(result).toBe(true)
+    expect(params.onToggleFocusMode).toHaveBeenCalledOnce()
+  })
 
-    it('does not exceed MAX_ZOOM_LEVEL on zoom in', () => {
-      const currentZoom = MAX_ZOOM_LEVEL
-      const newZoom = clampZoomLevel(currentZoom + ZOOM_STEP)
-      expect(newZoom).toBe(MAX_ZOOM_LEVEL)
-    })
+  it('Ctrl+Shift+Tab calls onSwitchActivePane and returns true', () => {
+    const params = makeParams()
+    const result = handleCommandShortcut(params, makeKeyEvent({ ctrlKey: true, shiftKey: true, code: 'Tab' }), true)
+    expect(result).toBe(true)
+    expect(params.onSwitchActivePane).toHaveBeenCalledOnce()
+  })
 
-    it('does not go below MIN_ZOOM_LEVEL on zoom out', () => {
-      const currentZoom = MIN_ZOOM_LEVEL
-      const newZoom = clampZoomLevel(currentZoom - ZOOM_STEP)
-      expect(newZoom).toBe(MIN_ZOOM_LEVEL)
-    })
+  it('Ctrl+S calls onSaveNow and returns true', () => {
+    const params = makeParams()
+    const result = handleCommandShortcut(params, makeKeyEvent({ ctrlKey: true, code: 'KeyS' }), true)
+    expect(result).toBe(true)
+    expect(params.onSaveNow).toHaveBeenCalledOnce()
+  })
+
+  it('Ctrl+Alt+S returns false (altKey blocks save)', () => {
+    const params = makeParams()
+    const result = handleCommandShortcut(params, makeKeyEvent({ ctrlKey: true, altKey: true, code: 'KeyS' }), true)
+    expect(result).toBe(false)
+    expect(params.onSaveNow).not.toHaveBeenCalled()
+  })
+
+  it('Ctrl+Alt+Period returns false (altKey blocks split toggle)', () => {
+    const params = makeParams()
+    const result = handleCommandShortcut(params, makeKeyEvent({ ctrlKey: true, altKey: true, code: 'Period' }), true)
+    expect(result).toBe(false)
+    expect(params.onToggleSplitLayout).not.toHaveBeenCalled()
+  })
+
+  it('returns false for unrecognized key combo (Ctrl+X)', () => {
+    const params = makeParams()
+    const result = handleCommandShortcut(params, makeKeyEvent({ ctrlKey: true, code: 'KeyX' }), true)
+    expect(result).toBe(false)
+    Object.values(params).forEach(fn => expect(fn).not.toHaveBeenCalled())
+  })
+
+  it('returns false when isCommandKey is false', () => {
+    const params = makeParams()
+    const result = handleCommandShortcut(params, makeKeyEvent({ code: 'Period' }), false)
+    expect(result).toBe(false)
+    expect(params.onToggleSplitLayout).not.toHaveBeenCalled()
+  })
+})
+
+describe('handleNavigationAndZoomShortcut', () => {
+  it('Alt+ArrowLeft calls onOpenPreviousHistory and returns true', () => {
+    const params = makeParams()
+    const result = handleNavigationAndZoomShortcut(params, makeKeyEvent({ altKey: true, code: 'ArrowLeft' }), false)
+    expect(result).toBe(true)
+    expect(params.onOpenPreviousHistory).toHaveBeenCalledOnce()
+  })
+
+  it('Alt+ArrowRight calls onOpenNextHistory and returns true', () => {
+    const params = makeParams()
+    const result = handleNavigationAndZoomShortcut(params, makeKeyEvent({ altKey: true, code: 'ArrowRight' }), false)
+    expect(result).toBe(true)
+    expect(params.onOpenNextHistory).toHaveBeenCalledOnce()
+  })
+
+  it('returns false when isCommandKey blocks Alt+ArrowLeft', () => {
+    const params = makeParams()
+    const result = handleNavigationAndZoomShortcut(params, makeKeyEvent({ altKey: true, ctrlKey: true, code: 'ArrowLeft' }), true)
+    expect(result).toBe(false)
+    expect(params.onOpenPreviousHistory).not.toHaveBeenCalled()
+  })
+
+  it('returns false when shiftKey blocks Alt+ArrowLeft', () => {
+    const params = makeParams()
+    const result = handleNavigationAndZoomShortcut(params, makeKeyEvent({ altKey: true, shiftKey: true, code: 'ArrowLeft' }), false)
+    expect(result).toBe(false)
+    expect(params.onOpenPreviousHistory).not.toHaveBeenCalled()
+  })
+
+  it('Ctrl+Equal (code) calls onZoomIn and returns true', () => {
+    const params = makeParams()
+    const result = handleNavigationAndZoomShortcut(params, makeKeyEvent({ ctrlKey: true, code: 'Equal' }), true)
+    expect(result).toBe(true)
+    expect(params.onZoomIn).toHaveBeenCalledOnce()
+  })
+
+  it('Ctrl+key "+" (alternate keyboard) calls onZoomIn', () => {
+    const params = makeParams()
+    const result = handleNavigationAndZoomShortcut(params, makeKeyEvent({ ctrlKey: true, code: 'Equal', key: '+' }), true)
+    expect(result).toBe(true)
+    expect(params.onZoomIn).toHaveBeenCalledOnce()
+  })
+
+  it('Ctrl+Minus (code) calls onZoomOut and returns true', () => {
+    const params = makeParams()
+    const result = handleNavigationAndZoomShortcut(params, makeKeyEvent({ ctrlKey: true, code: 'Minus' }), true)
+    expect(result).toBe(true)
+    expect(params.onZoomOut).toHaveBeenCalledOnce()
+  })
+
+  it('Ctrl+key "-" (alternate keyboard) calls onZoomOut', () => {
+    const params = makeParams()
+    const result = handleNavigationAndZoomShortcut(params, makeKeyEvent({ ctrlKey: true, code: 'Minus', key: '-' }), true)
+    expect(result).toBe(true)
+    expect(params.onZoomOut).toHaveBeenCalledOnce()
+  })
+
+  it('Ctrl+key "0" calls onZoomReset and returns true', () => {
+    const params = makeParams()
+    const result = handleNavigationAndZoomShortcut(params, makeKeyEvent({ ctrlKey: true, key: '0' }), true)
+    expect(result).toBe(true)
+    expect(params.onZoomReset).toHaveBeenCalledOnce()
+  })
+
+  it('returns false when shiftKey blocks zoom (Ctrl+Shift+Equal)', () => {
+    const params = makeParams()
+    const result = handleNavigationAndZoomShortcut(params, makeKeyEvent({ ctrlKey: true, shiftKey: true, code: 'Equal' }), true)
+    expect(result).toBe(false)
+    expect(params.onZoomIn).not.toHaveBeenCalled()
+  })
+
+  it('returns false when altKey blocks zoom (Ctrl+Alt+Equal)', () => {
+    const params = makeParams()
+    const result = handleNavigationAndZoomShortcut(params, makeKeyEvent({ ctrlKey: true, altKey: true, code: 'Equal' }), true)
+    expect(result).toBe(false)
+    expect(params.onZoomIn).not.toHaveBeenCalled()
+  })
+
+  it('returns false for unrecognized combo', () => {
+    const params = makeParams()
+    const result = handleNavigationAndZoomShortcut(params, makeKeyEvent({ altKey: true, code: 'KeyX' }), false)
+    expect(result).toBe(false)
+    Object.values(params).forEach(fn => expect(fn).not.toHaveBeenCalled())
+  })
+})
+
+describe('zoom level clamping', () => {
+  it('clamps zoom level to minimum', () => {
+    expect(clampZoomLevel(0.1)).toBe(MIN_ZOOM_LEVEL)
+    expect(clampZoomLevel(-1)).toBe(MIN_ZOOM_LEVEL)
+  })
+
+  it('clamps zoom level to maximum', () => {
+    expect(clampZoomLevel(5)).toBe(MAX_ZOOM_LEVEL)
+    expect(clampZoomLevel(100)).toBe(MAX_ZOOM_LEVEL)
+  })
+
+  it('keeps valid zoom level unchanged', () => {
+    expect(clampZoomLevel(1.0)).toBe(1.0)
+    expect(clampZoomLevel(1.5)).toBe(1.5)
+    expect(clampZoomLevel(MIN_ZOOM_LEVEL)).toBe(MIN_ZOOM_LEVEL)
+    expect(clampZoomLevel(MAX_ZOOM_LEVEL)).toBe(MAX_ZOOM_LEVEL)
+  })
+
+  it('applies zoom step for zoom in', () => {
+    const currentZoom = 1.0
+    const newZoom = clampZoomLevel(currentZoom + ZOOM_STEP)
+    expect(newZoom).toBe(1.1)
+  })
+
+  it('applies zoom step for zoom out', () => {
+    const currentZoom = 1.0
+    const newZoom = clampZoomLevel(currentZoom - ZOOM_STEP)
+    expect(newZoom).toBe(0.9)
+  })
+
+  it('does not exceed MAX_ZOOM_LEVEL on zoom in', () => {
+    const currentZoom = MAX_ZOOM_LEVEL
+    const newZoom = clampZoomLevel(currentZoom + ZOOM_STEP)
+    expect(newZoom).toBe(MAX_ZOOM_LEVEL)
+  })
+
+  it('does not go below MIN_ZOOM_LEVEL on zoom out', () => {
+    const currentZoom = MIN_ZOOM_LEVEL
+    const newZoom = clampZoomLevel(currentZoom - ZOOM_STEP)
+    expect(newZoom).toBe(MIN_ZOOM_LEVEL)
   })
 })

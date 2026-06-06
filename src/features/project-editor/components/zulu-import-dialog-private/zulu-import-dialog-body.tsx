@@ -1,4 +1,4 @@
-import type { ZuluTagMode, ZuluImportPreviewResponse } from '../../../shared/ipc'
+import type { ZuluTagMode, ZuluImportPreviewResponse } from '../../../../shared/ipc'
 
 const TAG_MODE_OPTIONS: Array<{ value: ZuluTagMode; label: string }> = [
   { value: 'none', label: 'No tags' },
@@ -7,7 +7,7 @@ const TAG_MODE_OPTIONS: Array<{ value: ZuluTagMode; label: string }> = [
 ]
 
 interface ZuluImportDialogBodyProps {
-  state: ReturnType<typeof import('./zulu-import-dialog').useZuluImportDialogState>
+  state: ReturnType<typeof import('../zulu-import-dialog').useZuluImportDialogState>
   projectRoot: string | null
   onSelectFile: () => void
   onPreview: () => void
