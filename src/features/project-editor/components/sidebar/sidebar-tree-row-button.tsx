@@ -24,7 +24,7 @@ function focusRowInContainer(containerRef: { current: HTMLDivElement | null }, r
   containerRef.current?.querySelector<HTMLButtonElement>(selector)?.focus()
 }
 
-export function handleTreeRowKeyDown(
+function handleTreeRowKeyDown(
   event: KeyboardEvent,
   index: number,
   rows: SidebarTreeRow[],

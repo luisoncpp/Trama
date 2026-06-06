@@ -23,12 +23,12 @@ function getHighlightRegistry(): HighlightRegistry | null {
 	return highlights as HighlightRegistry
 }
 
-export function clearFocusTextHighlight(editorRoot: HTMLElement): void {
+function clearFocusTextHighlight(editorRoot: HTMLElement): void {
 	editorRoot.classList.remove('is-focus-text-highlight')
 	getHighlightRegistry()?.delete(FOCUS_TEXT_HIGHLIGHT_NAME)
 }
 
-export function applyFocusTextHighlight(
+function applyFocusTextHighlight(
 	editorRoot: HTMLElement,
 	lineNode: HTMLElement,
 	startOffset: number,
@@ -64,7 +64,7 @@ export function updateFocusScopeClasses(editorRoot: HTMLElement, scope: FocusSco
 	editorRoot.classList.add(`is-focus-scope-${scope}`)
 }
 
-export function clearBlockFocusScope(editorRoot: HTMLElement): void {
+function clearBlockFocusScope(editorRoot: HTMLElement): void {
 	const blocks = Array.from(editorRoot.children)
 	for (const block of blocks) {
 		if (block instanceof HTMLElement) {
@@ -80,7 +80,7 @@ export function clearBlockFocusScope(editorRoot: HTMLElement): void {
 	}
 }
 
-export function applyInlineFocusScope(quill: Quill, editorRoot: HTMLElement, scope: FocusScope): void {
+function applyInlineFocusScope(quill: Quill, editorRoot: HTMLElement, scope: FocusScope): void {
 	const selection = quill.getSelection()
 	const selectionIndex = selection?.index ?? 0
 

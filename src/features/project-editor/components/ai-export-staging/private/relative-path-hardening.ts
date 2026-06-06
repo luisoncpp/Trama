@@ -8,11 +8,11 @@ export type StagingHardenReport = {
   skippedDuplicates: number
 }
 
-export function normalizeSlashes(path: string): string {
+function normalizeSlashes(path: string): string {
   return path.replace(/\\/g, '/')
 }
 
-export function normalizeProjectRoot(projectRoot: string): string {
+function normalizeProjectRoot(projectRoot: string): string {
   return normalizeSlashes(projectRoot).replace(/\/+$/, '')
 }
 

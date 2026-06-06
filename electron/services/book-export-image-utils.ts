@@ -61,7 +61,7 @@ export async function loadImageBytes(imagePath: string): Promise<{ type: 'png' |
   }
 }
 
-export function getImageMimeType(type: 'png' | 'jpeg' | null): string | null {
+function getImageMimeType(type: 'png' | 'jpeg' | null): string | null {
   if (type === 'png') return 'image/png'
   if (type === 'jpeg') return 'image/jpeg'
   return null
@@ -197,6 +197,6 @@ export function calculateDocxImageSize(
   }
 }
 
-export function escapeRegex(value: string): string {
+function escapeRegex(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 }

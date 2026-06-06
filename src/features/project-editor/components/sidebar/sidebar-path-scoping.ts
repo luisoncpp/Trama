@@ -31,7 +31,7 @@ export function defineSidebarSectionRoot(path: string): SidebarSectionRoot {
   return rootPath as SidebarSectionRoot
 }
 
-export function getProjectRootPath(sectionRoot: SidebarSectionRoot): ProjectRelativePath {
+function getProjectRootPath(sectionRoot: SidebarSectionRoot): ProjectRelativePath {
   return asProjectRelativePath(stripTrailingSlash(sectionRoot))
 }
 

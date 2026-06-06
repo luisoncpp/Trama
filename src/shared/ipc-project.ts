@@ -1,6 +1,6 @@
 import { z } from 'zod'
 
-export const incrementalUpdateSchema = z.object({
+const incrementalUpdateSchema = z.object({
   createdFiles: z.array(z.string()).optional(),
   deletedFiles: z.array(z.string()).optional(),
   renamedFiles: z.array(z.object({ from: z.string(), to: z.string() })).optional(),
@@ -13,12 +13,12 @@ export const openProjectRequestSchema = z.object({
   rootPath: z.string().trim().min(1),
   incrementalUpdate: incrementalUpdateSchema,
 })
-export const selectProjectFolderResponseSchema = z.object({ rootPath: z.string().nullable() })
+const selectProjectFolderResponseSchema = z.object({ rootPath: z.string().nullable() })
 export const validateProjectFolderRequestSchema = z.object({ rootPath: z.string().trim().min(1) })
-export const validateProjectFolderResponseSchema = z.object({ valid: z.boolean() })
-export const closeProjectResponseSchema = z.object({ closed: z.literal(true) })
+const validateProjectFolderResponseSchema = z.object({ valid: z.boolean() })
+const closeProjectResponseSchema = z.object({ closed: z.literal(true) })
 export const revealProjectInFileManagerRequestSchema = z.object({ rootPath: z.string().trim().min(1) })
-export const revealProjectInFileManagerResponseSchema = z.object({ rootPath: z.string() })
+const revealProjectInFileManagerResponseSchema = z.object({ rootPath: z.string() })
 
 export type IncrementalUpdate = z.infer<typeof incrementalUpdateSchema>
 export type OpenProjectRequest = z.infer<typeof openProjectRequestSchema>

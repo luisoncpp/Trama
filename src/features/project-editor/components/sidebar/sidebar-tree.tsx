@@ -104,7 +104,7 @@ function getDropIndicatorClass(
   return ''
 }
 
-export function SidebarTreeRows({
+function SidebarTreeRows({
   rows,
   selectedPath,
   loadingDocument,

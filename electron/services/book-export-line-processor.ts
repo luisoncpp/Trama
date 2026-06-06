@@ -70,7 +70,7 @@ function extractInlineImages(line: string, references: Map<string, string>): Par
   return segments
 }
 
-export function parseLine(line: string, references: Map<string, string>): ParsedLine {
+function parseLine(line: string, references: Map<string, string>): ParsedLine {
   const directive = parseDirectiveLine(line)
   if (directive) {
     return { kind: 'directive', directive }

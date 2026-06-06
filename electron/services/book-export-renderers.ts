@@ -108,7 +108,7 @@ export async function renderChapterHtmlFragment(chapter: BookExportChapter): Pro
   return `<section class="trama-chapter" data-path="${escapeHtml(chapter.path)}">${body}</section>`
 }
 
-export async function renderChapterHtmlFragmentWithProjectRoot(
+async function renderChapterHtmlFragmentWithProjectRoot(
   chapter: BookExportChapter,
   projectRoot: string,
 ): Promise<string> {

@@ -34,7 +34,7 @@ async function replaceMatches(
   return result
 }
 
-export async function replaceMarkdownImageSources(content: string, replaceSource: ReplaceSource): Promise<string> {
+async function replaceMarkdownImageSources(content: string, replaceSource: ReplaceSource): Promise<string> {
   const withInlineImages = await replaceMatches(content, INLINE_IMAGE_PATTERN, async (match) => {
     const replacement = await replaceSource(match[2])
     return replacement ? `![${match[1]}](${replacement})` : match[0]

@@ -21,7 +21,7 @@ function getRootFolderPaths(tree: ReturnType<typeof buildSidebarTree>): string[]
     .map((node) => node.path)
 }
 
-export function keepValidExpanded(previousExpanded: string[], folderPaths: Set<string>): string[] {
+function keepValidExpanded(previousExpanded: string[], folderPaths: Set<string>): string[] {
   return previousExpanded.filter((path) => folderPaths.has(path))
 }
 

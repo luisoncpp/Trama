@@ -10,7 +10,7 @@ import { validateProjectFolderRequestSchema } from '../../../../src/shared/ipc-p
 import { RELEVANT_SECTION_NAMES } from '../../../../src/shared/project-sections.js'
 import { errorEnvelope } from '../../../ipc-errors.js'
 
-export async function getMissingProjectFolders(rootPath: string): Promise<string[]> {
+async function getMissingProjectFolders(rootPath: string): Promise<string[]> {
   const checks = await Promise.all(
     RELEVANT_SECTION_NAMES.map(async (folder) => {
       try {
@@ -27,7 +27,7 @@ export async function getMissingProjectFolders(rootPath: string): Promise<string
   )
 }
 
-export async function isProjectFolderStructureValid(rootPath: string): Promise<boolean> {
+async function isProjectFolderStructureValid(rootPath: string): Promise<boolean> {
   return (await getMissingProjectFolders(rootPath)).length === 0
 }
 

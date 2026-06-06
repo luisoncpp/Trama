@@ -82,7 +82,7 @@ function parseRevisionLog(output: string, currentRepositoryPath: string, project
   return revisions
 }
 
-export class GitHistoryService {
+class GitHistoryService {
   async getStatus(projectRoot: string): Promise<GitHistoryStatusResponse> {
     const repository = await discoverGitRepository(projectRoot)
     return {

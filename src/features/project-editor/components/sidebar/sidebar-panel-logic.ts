@@ -3,7 +3,7 @@ import type { SidebarSection } from '../../project-editor-types'
 import { SIDEBAR_SECTION_CONFIG, type ContentSidebarSection } from './sidebar-section-roots'
 import { getScopedFiles, getScopedSelectedPath } from './sidebar-path-scoping'
 
-export function joinProjectPath(rootPath: string, sectionRoot: string): string {
+function joinProjectPath(rootPath: string, sectionRoot: string): string {
   if (!rootPath) {
     return ''
   }

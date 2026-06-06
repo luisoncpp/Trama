@@ -78,7 +78,7 @@ import {
   type OpenHelpRequest,
   type OpenHelpResponse,
 } from '../src/shared/ipc'
-import { type TagGetIndexResponse, type TagResolveRequest, type TagResolveResponse, tagGetIndexResponseSchema, tagResolveRequestSchema } from '../src/shared/ipc-tag'
+import { type TagGetIndexResponse, type TagResolveRequest, type TagResolveResponse, tagResolveRequestSchema } from '../src/shared/ipc-tag'
 
 const tramaApi = {
   ping(payload: PingRequest): Promise<IpcEnvelope<PingResponse>> {

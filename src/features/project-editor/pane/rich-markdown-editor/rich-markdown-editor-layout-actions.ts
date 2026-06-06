@@ -153,7 +153,7 @@ export function insertPagebreakDirective(editor: Quill): void {
   editor.setSelection(currentIndex + 1, 0, 'silent')
 }
 
-export function insertSpacerDirective(editor: Quill, lines = 1): void {
+function insertSpacerDirective(editor: Quill, lines = 1): void {
   const safeLines = Number.isInteger(lines) ? Math.min(12, Math.max(1, lines)) : 1
   const selection = editor.getSelection()
   const currentIndex = selection?.index ?? editor.getLength() - 1

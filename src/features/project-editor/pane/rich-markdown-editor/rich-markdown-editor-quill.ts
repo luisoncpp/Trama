@@ -54,7 +54,7 @@ export function syncEditorSpellcheck(editor: Quill, spellcheckEnabled: boolean):
   editor.root.setAttribute('spellcheck', spellcheckEnabled ? 'true' : 'false')
 }
 
-export function restoreImagesAfterMarkedparsing(html: string, _imageMap: Map<string, string>): string {
+function restoreImagesAfterMarkedparsing(html: string, _imageMap: Map<string, string>): string {
   const regex = /<!--\s*IMAGE_PLACEHOLDER:([^:]+):(data:image\/[^>]+)\s*-->/gi
   return html.replace(regex, (_match, _uuid, dataUrl) => {
     return `<img src="${dataUrl}">`
@@ -83,7 +83,7 @@ export function applyMarkdownToEditor(
   }
 }
 
-export function serializeEditorMarkdown(
+function serializeEditorMarkdown(
   _turndownService: unknown,
   html: string,
   documentId: string,

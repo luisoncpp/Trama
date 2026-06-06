@@ -178,7 +178,7 @@ export function getCenterSegments(editor: Quill): CenterSegment[] {
   return deriveCenterSegments(boundaries)
 }
 
-export function isIndexInCenterSegment(index: number, segment: CenterSegment): boolean {
+function isIndexInCenterSegment(index: number, segment: CenterSegment): boolean {
   return index >= segment.contentStartIndex && index < segment.contentEndIndexExclusive
 }
 

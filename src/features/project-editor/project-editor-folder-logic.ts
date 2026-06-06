@@ -65,7 +65,7 @@ export function pruneWorkspaceLayoutPathsForFolderDelete(
   }
 }
 
-export function hasDirtyPathInsideFolder(paneState: ProjectEditorPaneState, folderPath: string): boolean {
+function hasDirtyPathInsideFolder(paneState: ProjectEditorPaneState, folderPath: string): boolean {
   const primaryDirtyInFolder = paneState.primaryPane.isDirty && isPathInsideFolder(paneState.primaryPane.path, folderPath)
   const secondaryDirtyInFolder = paneState.secondaryPane.isDirty && isPathInsideFolder(paneState.secondaryPane.path, folderPath)
   return primaryDirtyInFolder || secondaryDirtyInFolder

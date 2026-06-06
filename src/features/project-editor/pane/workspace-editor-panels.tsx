@@ -115,7 +115,7 @@ function WorkspaceSplitEditorPanels({ model, spellcheckEnabled, tagIndex, onTagC
   )
 }
 
-export function WorkspaceEditorPanels({ model, spellcheckEnabled }: LayoutControlsProps) {
+function WorkspaceEditorPanels({ model, spellcheckEnabled }: LayoutControlsProps) {
   const { tagIndex } = useTagIndex(model.state.rootPath)
   const handleTagClick = (filePath: string) => { model.actions.openFileInPane(filePath, 'secondary') }
   const zoomRef = model.zoomRef

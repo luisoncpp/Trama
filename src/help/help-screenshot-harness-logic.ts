@@ -31,7 +31,7 @@ function dispatchWorkspaceCommand(
   )
 }
 
-export function applyResolvedThemeForScreenshot(theme: ResolvedTheme): void {
+function applyResolvedThemeForScreenshot(theme: ResolvedTheme): void {
   document.documentElement.dataset.theme = theme
   document.documentElement.style.colorScheme = theme
 }
@@ -158,7 +158,7 @@ async function ensureFocusModeEnabled(deps: HelpScreenshotHarnessDeps): Promise<
   await waitForFocusEmphasis()
 }
 
-export async function prepareBase(deps: HelpScreenshotHarnessDeps, theme: ResolvedTheme): Promise<void> {
+async function prepareBase(deps: HelpScreenshotHarnessDeps, theme: ResolvedTheme): Promise<void> {
   applyResolvedThemeForScreenshot(theme)
   await ensureProjectOpen(deps)
   await ensureFocusModeDisabled(deps)

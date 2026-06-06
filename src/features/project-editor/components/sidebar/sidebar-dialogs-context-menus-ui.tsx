@@ -9,7 +9,7 @@ interface FileContextMenuProps {
   contextMenu: FileContextMenuResult
 }
 
-export function FileContextMenu({ contextMenu }: FileContextMenuProps) {
+function FileContextMenu({ contextMenu }: FileContextMenuProps) {
   const position = contextMenu.contextMenuState
     ? { x: contextMenu.contextMenuState.x, y: contextMenu.contextMenuState.y }
     : null
@@ -29,7 +29,7 @@ interface FolderContextMenuProps {
   contextMenu: FolderContextMenuResult
 }
 
-export function FolderContextMenu({ contextMenu }: FolderContextMenuProps) {
+function FolderContextMenu({ contextMenu }: FolderContextMenuProps) {
   const position = contextMenu.contextMenuState
     ? { x: contextMenu.contextMenuState.x, y: contextMenu.contextMenuState.y }
     : null

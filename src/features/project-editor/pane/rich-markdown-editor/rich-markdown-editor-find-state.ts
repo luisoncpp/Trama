@@ -8,12 +8,12 @@ export interface SearchState {
   activeMatch: number
 }
 
-export function getDocumentText(editor: Quill): string {
+function getDocumentText(editor: Quill): string {
   const length = Math.max(0, editor.getLength() - 1)
   return editor.getText(0, length)
 }
 
-export function findAllMatches(text: string, query: string): number[] {
+function findAllMatches(text: string, query: string): number[] {
   const normalizedQuery = query.trim().toLocaleLowerCase()
   if (!normalizedQuery) {
     return []
@@ -52,7 +52,7 @@ export function formatMatchLabel(state: SearchState): string {
   return `${state.activeMatch + 1}/${state.matches.length}`
 }
 
-export function quillReplaceRange(editor: Quill, plainStart: number, queryLength: number, replacement: string): void {
+function quillReplaceRange(editor: Quill, plainStart: number, queryLength: number, replacement: string): void {
   const quillStart = mapPlainTextIndexToQuillIndex(editor, plainStart)
   const quillEnd = mapPlainTextIndexToQuillIndex(editor, plainStart + queryLength)
   const rangeLength = Math.max(1, quillEnd - quillStart)

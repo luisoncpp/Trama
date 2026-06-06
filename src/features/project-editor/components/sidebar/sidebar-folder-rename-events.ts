@@ -36,7 +36,7 @@ export function noteSidebarFolderRenamed(oldPath: string, newPath: string): void
   }
 }
 
-export function noteSidebarFolderMoved(oldPath: string, newPath: string): void {
+function noteSidebarFolderMoved(oldPath: string, newPath: string): void {
   pendingPathRemapEvent = {
     oldPath: normalizePath(oldPath),
     newPath: normalizePath(newPath),
@@ -72,7 +72,7 @@ export function remapExpandedFoldersForPathRemap(
     .filter((path) => folderPaths.has(path))
 }
 
-export function remapExpandedFoldersForRename(
+function remapExpandedFoldersForRename(
   expandedFolders: string[],
   folderPaths: Set<string>,
   oldPath: string,

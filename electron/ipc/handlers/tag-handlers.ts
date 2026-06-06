@@ -1,5 +1,5 @@
 import { IPC_CHANNELS, type IpcEnvelope } from '../../../src/shared/ipc.js'
-import { type TagGetIndexResponse, type TagResolveRequest, type TagResolveResponse, tagGetIndexResponseSchema, tagResolveRequestSchema, tagResolveResponseSchema } from '../../../src/shared/ipc-tag.js'
+import { type TagGetIndexResponse, type TagResolveRequest, type TagResolveResponse, tagResolveRequestSchema } from '../../../src/shared/ipc-tag.js'
 import { errorEnvelope } from '../../ipc-errors.js'
 import { getActiveTagIndexService } from '../../ipc-runtime.js'
 

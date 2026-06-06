@@ -27,7 +27,7 @@ export function resolveTextOffsetToDomPosition(root: Node, offset: number): { no
   return { node: lastTextNode, offset: lastTextNode.data.length }
 }
 
-export function measureInlineBounds(
+function measureInlineBounds(
   lineNode: HTMLElement,
   editorRoot: HTMLElement,
   startOffset: number,

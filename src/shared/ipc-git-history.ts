@@ -11,7 +11,7 @@ export const saveGitSnapshotRequestSchema = z.object({
   initializeRepository: z.boolean().default(false),
 })
 
-export const saveGitSnapshotResponseSchema = z.object({
+const saveGitSnapshotResponseSchema = z.object({
   kind: z.enum(['saved', 'noop', 'init-required']),
   repositoryRoot: z.string().nullable(),
   createdRepository: z.boolean().default(false),
@@ -25,14 +25,14 @@ export const listDocumentRevisionsRequestSchema = z.object({
   cursor: z.string().trim().min(1).nullable().optional(),
 })
 
-export const gitDocumentRevisionSchema = z.object({
+const gitDocumentRevisionSchema = z.object({
   sha: z.string().trim().min(1),
   committedAt: z.string().trim().min(1),
   commitMessage: z.string().trim().min(1),
   pathAtRevision: z.string().trim().min(1),
 })
 
-export const listDocumentRevisionsResponseSchema = z.object({
+const listDocumentRevisionsResponseSchema = z.object({
   gitAvailable: z.boolean(),
   repositoryRoot: z.string().nullable(),
   current: z.object({
@@ -51,7 +51,7 @@ export const readDocumentRevisionRequestSchema = z.object({
   pathAtRevision: z.string().trim().min(1),
 })
 
-export const readDocumentRevisionResponseSchema = z.object({
+const readDocumentRevisionResponseSchema = z.object({
   path: z.string().trim().min(1),
   commitSha: z.string().trim().min(1),
   content: z.string(),
@@ -60,7 +60,7 @@ export const readDocumentRevisionResponseSchema = z.object({
 
 export const loadDocumentRevisionRequestSchema = readDocumentRevisionRequestSchema
 
-export const loadDocumentRevisionResponseSchema = z.object({
+const loadDocumentRevisionResponseSchema = z.object({
   path: z.string().trim().min(1),
   commitSha: z.string().trim().min(1),
   restoredImagePaths: z.array(z.string()),

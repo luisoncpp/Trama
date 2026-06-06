@@ -1,6 +1,5 @@
 import {
   moveFileRequestSchema,
-  moveFileResponseSchema,
   reorderFilesRequestSchema,
   type IpcEnvelope,
   type MoveFileResponse,

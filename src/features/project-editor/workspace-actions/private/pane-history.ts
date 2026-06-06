@@ -9,7 +9,7 @@ function updatePathForPane(layout: WorkspaceLayoutState, pane: WorkspacePane, pa
     : { ...layout, secondaryPath: path }
 }
 
-export function assignFileToPane(
+function assignFileToPane(
   filePath: string,
   pane: WorkspacePane,
   setWorkspaceLayout: (updater: (prev: WorkspaceLayoutState) => WorkspaceLayoutState) => void,

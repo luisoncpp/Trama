@@ -2,7 +2,7 @@ import type Quill from 'quill'
 
 export type RichEditorSyncState = 'clean' | 'dirty' | 'saving' | 'disabled' | 'preview'
 
-export function createToolbarIconButton(className: string, title: string, iconMarkup: string): HTMLButtonElement {
+function createToolbarIconButton(className: string, title: string, iconMarkup: string): HTMLButtonElement {
   const button = document.createElement('button')
   button.type = 'button'
   button.className = className
@@ -12,7 +12,7 @@ export function createToolbarIconButton(className: string, title: string, iconMa
   return button
 }
 
-export function createToolbarTextButton(className: string, title: string, text: string): HTMLButtonElement {
+function createToolbarTextButton(className: string, title: string, text: string): HTMLButtonElement {
   const button = document.createElement('button')
   button.type = 'button'
   button.className = className
@@ -135,7 +135,7 @@ export function isEditorInteractive(editor: Quill | null): boolean {
   return true
 }
 
-export const ZOOM_PAIRS: Array<[number, string]> = [
+const ZOOM_PAIRS: Array<[number, string]> = [
   [0.5, '0.5'],
   [0.75, '0.75'],
   [1.0, '1.0'],

@@ -20,7 +20,7 @@ function escapeHtml(value: string): string {
     .replaceAll("'", '&#39;')
 }
 
-export async function loadBookExportPrintCss(): Promise<string> {
+async function loadBookExportPrintCss(): Promise<string> {
   if (!cachedPrintCss) {
     cachedPrintCss = await readFile(PRINT_CSS_PATH, 'utf8')
   }

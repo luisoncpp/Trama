@@ -7,22 +7,22 @@ export function deepCloneTree(tree: TreeItem[]): TreeItem[] {
   }))
 }
 
-export function pathSegments(relativePath: string): string[] {
+function pathSegments(relativePath: string): string[] {
   return relativePath.split('/').filter(Boolean)
 }
 
-export function getParentPath(relativePath: string): string {
+function getParentPath(relativePath: string): string {
   const segments = pathSegments(relativePath)
   segments.pop()
   return segments.join('/')
 }
 
-export function getFileName(relativePath: string): string {
+function getFileName(relativePath: string): string {
   const segments = pathSegments(relativePath)
   return segments[segments.length - 1] ?? ''
 }
 
-export function findFolderNode(tree: TreeItem[], folderPath: string): TreeItem | null {
+function findFolderNode(tree: TreeItem[], folderPath: string): TreeItem | null {
   const segments = pathSegments(folderPath)
   let current = tree
   let node: TreeItem | null = null
