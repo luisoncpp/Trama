@@ -1,10 +1,10 @@
 import type { CaptureRegion, HelpScreenshotHarnessDeps } from './help-screenshot-harness-types'
-import { waitForSelector, waitForCondition, sleep, SCENARIO_SETTLE_MS } from './help-screenshot-harness-logic'
+import { waitForSelector, waitForCondition, sleep, SCENARIO_SETTLE_MS } from './help-screenshot-utils'
 
 const WIKI_TAG_ROW_SELECTOR = '[data-path="characters/aldren.md"]'
 const CHARACTERS_FOLDER_SELECTOR = '[data-path="characters"]'
 
-export function computeBoundingRegion(elements: Element[], padding = 16): CaptureRegion {
+function computeBoundingRegion(elements: Element[], padding = 16): CaptureRegion {
   let minX = Infinity
   let minY = Infinity
   let maxX = -Infinity

@@ -289,10 +289,7 @@ Mandatory doc navigation for new chats: start with `docs/START-HERE.md` — it p
   - Shared types for the help screenshot harness: `CaptureRegion`, `HelpScreenshotHarnessDeps`, `HelpScreenshotHarness`.
 - `src/help/help-screenshot-scenarios.ts`
   - Scenario ID constants, type union, and scenario definition rows (fileName, requiresGitRepository).
-- `src/help/help-screenshot-harness-logic.ts`
-  - Orchestrates individual screenshot scenario functions, exports shared helpers (`sleep`, `waitForSelector`, `prepareBase`, `SCENARIO_SETTLE_MS`) for scenario files.
-- `src/help/help-screenshot-scenario-wiki-tags.ts`
-  - Wiki-tag screenshot scenarios: context menu and edit-tags modal. Returns `CaptureRegion` for region-based capture.
+- `src/help/help-screenshot-utils.ts`\r\n  - Shared utilities for help screenshot scenarios: `sleep`, `waitForCondition`, `waitForSelector`, `SCENARIO_SETTLE_MS`. Broken out from `help-screenshot-harness-logic.ts` to break a circular dependency.\r\n- `src/help/help-screenshot-harness-logic.ts`\r\n  - Orchestrates individual screenshot scenario functions. Consumes shared utilities from `help-screenshot-utils.ts`.\r\n- `src/help/help-screenshot-scenario-wiki-tags.ts`\r\n  - Wiki-tag screenshot scenarios: context menu and edit-tags modal. Returns `CaptureRegion` for region-based capture. Imports shared utilities from `help-screenshot-utils.ts`.
 - `src/help/use-help-screenshot-harness.ts`
   - Preact hook that wires the screenshot harness onto `window.__tramaHelpScreenshotHarness` in capture mode.
 - `src/help/is-help-screenshot-capture-mode.ts`

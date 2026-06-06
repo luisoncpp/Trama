@@ -60,15 +60,6 @@ export function buildLoadedPaneDocumentState(
   }
 }
 
-export function buildPreviewLoadedPaneState(prev: PaneDocumentState, content: string): PaneDocumentState {
-  return {
-    ...prev,
-    content,
-    isDirty: prev.isDirty,
-    reloadVersion: prev.reloadVersion + 1,
-  }
-}
-
 export function buildExitedRevisionRailState(prev: RevisionRailState): RevisionRailState {
   return {
     ...prev,

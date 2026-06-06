@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest'
 import {
-  computeBoundingRegion,
   computeEditTagsModalRegion,
   computeSidebarContextMenuRegion,
 } from '../src/help/help-screenshot-scenario-wiki-tags'

@@ -21,7 +21,6 @@ import {
 import {
   buildExitedRevisionRailState,
   buildLoadedPaneDocumentState,
-  buildPreviewLoadedPaneState,
   buildUpdatedPaneContentState,
   createEmptyPaneRevisionRail,
 } from './pane-workspace-revision-state'
@@ -189,10 +188,6 @@ export class PaneWorkspace {
       revisionRail: typeof updater === 'function' ? updater(prev.revisionRail) : updater,
     }))
   }
-  setPanePreviewContent(pane: WorkspacePane, content: string): void {
-    this.updatePaneState(pane, (prev) => buildPreviewLoadedPaneState(prev, content))
-  }
-
   exitRevisionPreview(pane: WorkspacePane): void {
     this.updateRevisionRail(pane, buildExitedRevisionRailState)
   }

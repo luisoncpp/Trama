@@ -23,7 +23,6 @@
     "help:screenshots": "npm run build && node scripts/capture-help-screenshots.mjs"
   },
   "dependencies": {
-    "zod": "^3.24.2",
     "@types/turndown": "^5.0.6",
     "chokidar": "^5.0.0",
     "docx": "^9.6.1",
@@ -32,8 +31,10 @@
     "pdf-lib": "^1.17.1",
     "preact": "^10.29.0",
     "quill": "^2.0.3",
+    "quill-delta": "^5.1.0",
     "turndown": "^7.2.4",
-    "yaml": "^2.8.3"
+    "yaml": "^2.8.3",
+    "zod": "^3.24.2"
   },
   "devDependencies": {
     "@preact/preset-vite": "^2.10.4",
@@ -49,11 +50,13 @@
     "eslint": "^9.38.0",
     "fallow": "^2.88.0",
     "jsdom": "^29.0.2",
+    "jszip": "^3.10.1",
     "postcss": "^8.5.8",
     "tailwindcss": "^4.2.2",
     "typescript": "~5.9.3",
     "vite": "^8.0.1",
-    "vitest": "^4.1.2"
+    "vitest": "^4.1.2",
+    "wait-on": "^9.0.10"
   },
   "build": {
     "appId": "com.trama.desktop",

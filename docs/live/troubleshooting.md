@@ -328,3 +328,91 @@ See `docs/lessons-learned/find-bar-toolbar-click-blocked.md`.
 1. Export a PDF in dev and confirm Vite no longer logs `page reload segment-0.html`.
 2. Confirm the toast appears after export completes.
 3. Run `npm run test -- tests/book-export-renderers.test.ts`.
+
+## 17) Fallow false positives — how to triage dead-code reports fast
+
+`npx fallow dead-code` flags symbols unreachable from its entry-point graph. Many are real dead code. But fallow cannot see runtime wiring (Electron preloads, HTML script/link tags, `ref.current?.method()` dispatch, CSS loaded from disk at runtime), so it regularly raises false positives.
+
+The goal is to triage a full report in under a minute. The cheat-sheet below catches the 4 most common patterns without reading every flagged file.
+
+### Pattern A — "Unused file" where the consumer is not source code
+
+**Symptom:** File is marked unused, but the file *is* needed at runtime.
+
+**Check this fast:**
+
+```bash
+# 1. Is it an Electron preload?
+git grep -n "$(basename THE_FILE .cts)" -- electron/main.ts electron/main-process/help-window.ts
+# Preloads are loaded via path.join(__dirname, '...'), not import.
+
+# 2. Is it a CSS loaded at build time (assets script)?
+git grep -n "$(basename THE_FILE)" scripts/copy-electron-assets.mjs
+# Assets copied to dist-electron are consumed at runtime after build.
+
+# 3. Is it help/ shared JS/CSS loaded via HTML?
+git grep -rn "$(basename THE_FILE)" help/ -- "*.html"
+# <script src="../shared/help-nav.js"></script> is invisible to static analysis.
+```
+
+**Verdict:** If any of those hits, the file is live. These 6 are **permanent false positives** in this repo:
+`electron/help-preload.cts`, `electron/preload.cts`, `electron/services/book-export-pdf-print.css`, `help/shared/help-nav.js`, `help/shared/help-theme.js`, `help/shared/help.css`.
+
+### Pattern B — "Unused class member" with ref-dispatch callers
+
+**Symptom:** A method flagged as unused on a class, but the class is instantiated and methods are called via `ref.current.methodName()` or a dependency-injected interface.
+
+**Check this fast:**
+
+```bash
+# Search for the method name everywhere (not just imports).
+git grep -n "METHOD_NAME" -- src/
+
+# Method is called via ref?
+git grep -n "\. METHOD_NAME(" -- src/
+```
+
+**Verdict:** If `git grep` finds the method name called outside the class definition, fallow can't trace the call because it goes through a mutable reference (`ref.current`) or a plain-object dispatch, not a static import. These are **false positives**.
+
+### Pattern C — "Unlisted dependency" that is actually transitive
+
+**Symptom:** Package imported in code but missing from `package.json` dependencies. You'd think it's a bug — but `node_modules` resolves it anyway via a parent dependency.
+
+**Check this fast:**
+
+```bash
+# Where does it actually come from?
+npm ls THE_PACKAGE --depth=0
+
+# Is it imported in production or test-only?
+git grep -n "from 'THE_PACKAGE'" -- src/          # production?
+git grep -n "from 'THE_PACKAGE'" -- tests/        # test-only?
+```
+
+**Verdict:**
+- If production code imports it → add to `dependencies`.
+- If only tests import it → add to `devDependencies`.
+- If it's already satisfied transitively → add it anyway (declares the direct dependency).
+
+### Pattern D — "Unused export" consumed only in the same file or only in tests
+
+**Symptom:** An exported function/type is flagged because no other *source file* imports it. But the function is called inside its own module, or only tested.
+
+**Check this fast:**
+
+```bash
+# Exported but never imported externally?
+git grep -n "SYMBOL_NAME" -- src/
+# If the only hit is the definition file → remove `export`.
+# If also hit in tests/ → test-only; remove `export` and update the test import.
+```
+
+**Verdict:** Remove `export` if truly internal. If the test needs it, the test already imports from the same module — it can still access it unexported (tests import from source, not a public barrel).
+
+### Pre-flight one-liner before digging deeper
+
+```bash
+npx fallow dead-code 2>&1 | grep -E "✗|●|Unlisted"
+```
+
+If the count at the bottom (`✗ N files · M exports · ...`) includes the 6 known-OK files and 4 known ref-dispatch methods, the report is already clean of actionable items. Otherwise triage one category at a time with the patterns above.
