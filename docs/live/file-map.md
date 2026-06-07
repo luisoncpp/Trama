@@ -546,7 +546,23 @@ Mandatory doc navigation for new chats: start with `docs/START-HERE.md` — it p
 - `src/features/project-editor/components/sidebar/sidebar-dialog-hooks.ts`
   - Consolidated dialog hooks: create dialog state (article/map/category, including native map-image picker), folder actions dialog state.
 - `src/features/project-editor/components/sidebar/sidebar-create-dialog.tsx`
-  - Shared create modal dialog for article/map/category; map mode adds a browse-backed image field.
+  - Shared create modal dialog for article/map/category; map mode adds a browse-backed image field. Article mode supports optional template picker.
+- `src/features/project-editor/components/template-picker-combobox.tsx`
+  - Searchable combobox for selecting a template from `templates/` when creating an article.
+- `src/features/project-editor/templates/index.ts`
+  - Deep module public facade for templates logic (TemplatesCatalog, SidebarCreateController, React bridge).
+- `src/features/project-editor/templates/templates-catalog.ts`
+  - `TemplatesCatalog` class: owns template path filtering, search query, selection state, and subscribe/notify pattern.
+- `src/features/project-editor/templates/templates-catalog-private/filter-template-paths.ts`
+  - Pure functions for extracting and filtering `templates/**/*.md` paths by search query.
+- `src/features/project-editor/templates/sidebar-create-controller.ts`
+  - `SidebarCreateController` class: owns create dialog mode, input state, template selection, and submit payload building.
+- `src/features/project-editor/templates/use-sidebar-create-controller-bridge.ts`
+  - Thin React bridge: `useRef` singleton + `useEffect` subscribe into `SidebarCreateController`.
+- `electron/services/template-service.ts`
+  - `TemplateService`: `ensureTemplatesDirectory()` (silent creation on project open) and `createFromTemplate()` (raw file copy preserving frontmatter).
+- `electron/ipc/handlers/project-handlers/template-handlers.ts`
+  - IPC handler for `createFromTemplate` channel.
 - `src/features/project-editor/components/sidebar/sidebar-file-context-menu.tsx`
   - Right-click file action menu.
 - `src/features/project-editor/components/sidebar/sidebar-folder-context-menu.tsx`

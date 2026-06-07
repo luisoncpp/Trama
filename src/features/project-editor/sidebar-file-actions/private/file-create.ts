@@ -92,7 +92,17 @@ export async function createArticle(
     setStatusMessage: (value: string) => void
     openProject: (projectRoot: string, options?: OpenProjectOptions) => Promise<void>
   },
+  templatePath?: string | null,
 ): Promise<void> {
+  if (templatePath) {
+    await createFileWithRetries(input, deps, {
+      label: 'article',
+      createPath: (sectionRoot, directory, name, attempt) => buildProjectCandidatePath({ sectionRoot, directory, name, attempt, asMarkdown: true }),
+      submit: (path) => window.tramaApi.createFromTemplate({ templatePath, destinationPath: path }),
+    })
+    return
+  }
+
   await createFileWithRetries(input, deps, {
     label: 'article',
     createPath: (sectionRoot, directory, name, attempt) => buildProjectCandidatePath({ sectionRoot, directory, name, attempt, asMarkdown: true }),

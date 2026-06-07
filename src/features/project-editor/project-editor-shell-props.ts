@@ -63,8 +63,8 @@ export interface ProjectEditorSidebarShellProps extends ProjectEditorShellSettin
 
 function buildSidebarFileActionProps(shellActions: ProjectEditorShellActions) {
   return {
-    onCreateArticle: (input: Parameters<typeof shellActions.createArticle>[0]) => {
-      void shellActions.createArticle(input)
+    onCreateArticle: (input: Parameters<typeof shellActions.createArticle>[0], templatePath?: string | null) => {
+      void shellActions.createArticle(input, templatePath)
     },
     onCreateMap: (input: Parameters<typeof shellActions.createMap>[0]) => {
       void shellActions.createMap(input)

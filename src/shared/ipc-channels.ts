@@ -9,6 +9,8 @@ export const IPC_CHANNELS = {
   readDocument: 'trama:document:read',
   saveDocument: 'trama:document:save',
   createDocument: 'trama:document:create',
+  createFromTemplate: 'trama:template:create-from',
+  getTemplates: 'trama:template:list',
   createMapDocument: 'trama:document:create-map',
   selectMapImage: 'trama:document:select-map-image',
   createFolder: 'trama:folder:create',

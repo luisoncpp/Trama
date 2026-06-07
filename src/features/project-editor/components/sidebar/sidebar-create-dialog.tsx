@@ -1,5 +1,7 @@
 /* eslint-disable max-lines-per-function */
 import type { SidebarCreateInput } from '../../project-editor-types'
+import type { FilteredTemplate } from '../../templates/templates-catalog-private/filter-template-paths'
+import { TemplatePickerCombobox } from '../template-picker-combobox.tsx'
 
 export type SidebarCreateMode = 'article' | 'category' | 'map'
 
@@ -13,6 +15,12 @@ interface SidebarCreateDialogProps {
   onBrowseSourceImage: () => Promise<void>
   onSubmit: () => void
   onCancel: () => void
+  showTemplatePicker?: boolean
+  templateSearchQuery?: string
+  templateSelectedPath?: string | null
+  filteredTemplates?: FilteredTemplate[]
+  onTemplateSearchChange?: (value: string) => void
+  onTemplateSelect?: (path: string | null) => void
 }
 
 function getDialogCopy(mode: SidebarCreateMode) {
@@ -48,6 +56,12 @@ export function SidebarCreateDialog({
   onBrowseSourceImage,
   onSubmit,
   onCancel,
+  showTemplatePicker = false,
+  templateSearchQuery = '',
+  templateSelectedPath = null,
+  filteredTemplates = [],
+  onTemplateSearchChange,
+  onTemplateSelect,
 }: SidebarCreateDialogProps) {
   if (!mode) {
     return null
@@ -69,6 +83,15 @@ export function SidebarCreateDialog({
             onInput={(event) => onDirectoryChange(event.currentTarget.value)}
           />
         </label>
+        {showTemplatePicker && mode === 'article' && onTemplateSearchChange && onTemplateSelect && (
+          <TemplatePickerCombobox
+            filteredTemplates={filteredTemplates}
+            searchQuery={templateSearchQuery}
+            selectedPath={templateSelectedPath}
+            onSearchChange={onTemplateSearchChange}
+            onSelect={onTemplateSelect}
+          />
+        )}
         <label class="sidebar-create-dialog__field">
           <span>{copy.nameLabel}</span>
           <input

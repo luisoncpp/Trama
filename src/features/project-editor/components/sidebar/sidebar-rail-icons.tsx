@@ -47,6 +47,23 @@ export function LoreIcon(): JSX.Element {
   )
 }
 
+export function TemplatesIcon(): JSX.Element {
+  return (
+    <IconWrapper>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        {/* Top-Left Piece (Tabs pointing Right and Down) */}
+        <path d="M 2 2 L 10 2 L 10 4.5 A 1.5 1.5 0 0 0 10 7.5 L 10 10 L 7.5 10 A 1.5 1.5 0 0 0 4.5 10 L 2 10 Z" />
+        {/* Top-Right Piece (Blanks pointing Right and Up) */}
+        <path d="M 14 2 L 22 2 L 22 10 L 19.5 10 A 1.5 1.5 0 0 1 16.5 10 L 14 10 L 14 7.5 A 1.5 1.5 0 0 1 14 4.5 Z" />
+        {/* Bottom-Left Piece (Blanks pointing Down and Left) */}
+        <path d="M 2 14 L 4.5 14 A 1.5 1.5 0 0 1 7.5 14 L 10 14 L 10 16.5 A 1.5 1.5 0 0 1 10 19.5 L 10 22 L 2 22 Z" />
+        {/* Bottom-Right Piece (Tabs pointing Up and Left) */}
+        <path d="M 14 14 L 16.5 14 A 1.5 1.5 0 0 0 19.5 14 L 22 14 L 22 22 L 14 22 L 14 19.5 A 1.5 1.5 0 0 0 14 16.5 Z" />
+      </svg>
+    </IconWrapper>
+  )
+}
+
 export function TransferIcon(): JSX.Element {
   return (
     <IconWrapper>

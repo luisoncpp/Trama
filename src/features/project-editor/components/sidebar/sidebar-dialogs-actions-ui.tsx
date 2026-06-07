@@ -1,4 +1,5 @@
 import type { SidebarCreateInput } from '../../project-editor-types'
+import type { FilteredTemplate } from '../../templates/templates-catalog-private/filter-template-paths'
 import type { SidebarCreateMode } from './sidebar-create-dialog.tsx'
 import { SidebarCreateDialog } from './sidebar-create-dialog.tsx'
 import { SidebarFileActionsDialog, type SidebarFileActionMode } from './sidebar-file-actions-dialog.tsx'
@@ -18,6 +19,13 @@ interface FooterAndCreateDialogProps {
   onBrowseSourceImage: () => Promise<void>
   submitCreateDialog: () => void
   closeCreateDialog: () => void
+  showTemplatePicker?: boolean
+  templateSearchQuery?: string
+  templateSelectedPath?: string | null
+  filteredTemplates?: FilteredTemplate[]
+  onTemplateSearchChange?: (value: string) => void
+  onTemplateSelect?: (path: string | null) => void
+  hideMapOption?: boolean
 }
 
 export function FooterAndCreateDialog({
@@ -33,13 +41,20 @@ export function FooterAndCreateDialog({
   onBrowseSourceImage,
   submitCreateDialog,
   closeCreateDialog,
+  showTemplatePicker = false,
+  templateSearchQuery = '',
+  templateSelectedPath = null,
+  filteredTemplates = [],
+  onTemplateSearchChange,
+  onTemplateSelect,
+  hideMapOption = false,
 }: FooterAndCreateDialogProps) {
   return (
     <>
       <SidebarFooterActions
         disabled={loadingProject || !apiAvailable}
         onCreateArticle={() => openCreateDialog('article')}
-        onCreateMap={() => openCreateDialog('map')}
+        onCreateMap={hideMapOption ? undefined : (() => openCreateDialog('map'))}
         onCreateCategory={() => openCreateDialog('category')}
       />
       <SidebarCreateDialog
@@ -52,6 +67,12 @@ export function FooterAndCreateDialog({
         onBrowseSourceImage={onBrowseSourceImage}
         onSubmit={submitCreateDialog}
         onCancel={closeCreateDialog}
+        showTemplatePicker={showTemplatePicker}
+        templateSearchQuery={templateSearchQuery}
+        templateSelectedPath={templateSelectedPath}
+        filteredTemplates={filteredTemplates}
+        onTemplateSearchChange={onTemplateSearchChange}
+        onTemplateSelect={onTemplateSelect}
       />
     </>
   )

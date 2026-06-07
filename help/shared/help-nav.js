@@ -9,7 +9,8 @@
       { id: 'wiki-tags', label: 'Wiki Tags', file: 'wiki-tags.html' },
       { id: 'ai-import-export', label: 'AI Import/Export', file: 'ai-import-export.html' },
       { id: 'book-export', label: 'Book Export', file: 'book-export.html' },
-      { id: 'git-snapshots', label: 'Git Snapshots', file: 'git-snapshots.html' },
+      { id: 'git-snapshots', label: 'Revisions', file: 'git-snapshots.html' },
+      { id: 'cloud-sync', label: 'Cloud Sync', file: 'cloud-sync.html' },
       { id: 'about', label: 'About', file: 'about.html' }
     ];
 

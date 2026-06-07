@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'preact/hooks'
 interface SidebarFooterActionsProps {
   disabled: boolean
   onCreateArticle: () => void
-  onCreateMap: () => void
+  onCreateMap?: () => void
   onCreateCategory: () => void
 }
 
@@ -38,43 +38,54 @@ export function SidebarFooterActions({
 
   return (
     <div class="sidebar-footer-actions">
-      <div class="sidebar-split-button" ref={menuRef}>
+      {onCreateMap ? (
+        <div class="sidebar-split-button" ref={menuRef}>
+          <button
+            type="button"
+            class="editor-button editor-button--secondary editor-button--inline sidebar-split-button__main"
+            disabled={disabled}
+            onClick={onCreateArticle}
+          >
+            + Article
+          </button>
+          <button
+            type="button"
+            class="editor-button editor-button--secondary editor-button--inline sidebar-split-button__toggle"
+            disabled={disabled}
+            onClick={() => setMenuOpen((current) => !current)}
+            aria-label="Article creation options"
+            title="Article creation options"
+            aria-expanded={menuOpen ? 'true' : 'false'}
+            aria-haspopup="menu"
+          >
+            ▼
+          </button>
+          {menuOpen && !disabled && (
+            <div class="sidebar-split-button__menu" role="menu" aria-label="Article creation options">
+              <button
+                type="button"
+                class="sidebar-split-button__menu-item"
+                role="menuitem"
+                onClick={() => {
+                  setMenuOpen(false)
+                  onCreateMap()
+                }}
+              >
+                Create map
+              </button>
+            </div>
+          )}
+        </div>
+      ) : (
         <button
           type="button"
-          class="editor-button editor-button--secondary editor-button--inline sidebar-split-button__main"
+          class="editor-button editor-button--secondary editor-button--inline"
           disabled={disabled}
           onClick={onCreateArticle}
         >
           + Article
         </button>
-        <button
-          type="button"
-          class="editor-button editor-button--secondary editor-button--inline sidebar-split-button__toggle"
-          disabled={disabled}
-          onClick={() => setMenuOpen((current) => !current)}
-          aria-label="Article creation options"
-          title="Article creation options"
-          aria-expanded={menuOpen ? 'true' : 'false'}
-          aria-haspopup="menu"
-        >
-          ▼
-        </button>
-        {menuOpen && !disabled && (
-          <div class="sidebar-split-button__menu" role="menu" aria-label="Article creation options">
-            <button
-              type="button"
-              class="sidebar-split-button__menu-item"
-              role="menuitem"
-              onClick={() => {
-                setMenuOpen(false)
-                onCreateMap()
-              }}
-            >
-              Create map
-            </button>
-          </div>
-        )}
-      </div>
+      )}
       <button
         type="button"
         class="editor-button editor-button--secondary editor-button--inline"

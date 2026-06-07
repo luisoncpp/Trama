@@ -63,6 +63,8 @@ export interface SidebarPanelBodyProps {
     | 'selectedPath'
     | 'rootPath'
   >
+  allVisibleFiles: string[]
+  activeSectionForController: string
 }
 function loadFileTags(sectionRoot: (typeof SIDEBAR_SECTION_CONFIG)[ContentSidebarSection]['root']) {
   return async (path: string): Promise<string[]> => {
@@ -104,6 +106,8 @@ function renderExplorer(props: SidebarPanelBodyProps) {
       selectedPath={scopedSelectedPath}
       filterQuery={activeFilterQuery}
       onFilterQueryChange={onFilterQueryChange}
+      allVisibleFiles={props.allVisibleFiles}
+      activeSection={props.activeSectionForController}
       onCreateArticle={onCreateArticle}
       onCreateMap={onCreateMap}
       onCreateCategory={onCreateCategory}

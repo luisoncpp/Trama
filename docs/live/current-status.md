@@ -10,6 +10,8 @@ Phase 2, Phase 3 (WS1–WS5), and Phase 4 WS1/wiki-tag-links, WS2/folder-operati
 
 **Not implemented:** Templates (WS3).
 
+Template MVP is now implemented: `templates/` rail section for browsing/editing template markdown files, searchable template picker in create-article modal, silent `templates/` folder auto-creation on project open, `createFromTemplate` IPC for template-based document creation preserving frontmatter. Remaining WS3 items (placeholder substitution, "Save as Template" context menu, template preview form, tag-index exclusion, bundled default templates) are deferred.
+
 **Completed infrastructure:**
 - `pane-isolation-plan-v2` — Módulo `pane/` fully encapsulates all pane mutation; `PaneWorkspace` is the exclusive mutation surface; Preact setters are injected via `usePaneWorkspace` factory hook; `markPaneSaved` is private; `saveNow` is awaitable (see `docs/plan/done/pane-isolation-plan-v2.md`, `docs/lessons-learned/awaitable-save-actions.md`).
 - `useProjectEditor-keystroke-churn` — Issues #1–#4 completed end-to-end: (1) dirty signal split so already-dirty panes are no-ops, (2) stable `PaneWorkspace` identity, (3) memoized action groups, (4) narrowed shell/dialog subscriptions so typing only re-renders pane/editor surfaces. See `docs/plan/done/use-project-editor-keystroke-churn-plan.md`.
@@ -44,6 +46,6 @@ In sandboxed agent environments use the PowerShell script — see `docs/dev-work
 |---|---|
 | WS1 — Wiki Tag Links | ✅ Complete |
 | WS2 — Folder Operations | ✅ Complete (rename/delete/move + DnD + corkboardOrder) |
-| WS3 — Templates | Pending |
+| WS3 — Templates | ✅ Complete (MVP: rail section + searchable picker + auto-create + createFromTemplate IPC) |
 | WS4 — Corkboard | ❌ Cancelled |
 | WS5 — AI Import/Export | ✅ Complete |

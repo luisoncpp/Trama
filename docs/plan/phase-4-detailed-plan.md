@@ -1,7 +1,7 @@
 # Phase 4 Detailed Plan - Knowledge Graph & Authoring Tools
 
 Date: 2026-04-11
-Status: **In Progress** — WS1 ✅, WS2 ✅ (rename/delete/drag-reorder), WS5 ✅; WS3 Templates pending; WS4 Corkboard cancelled
+Status: **In Progress** — WS1 ✅, WS2 ✅ (rename/delete/drag-reorder), WS5 ✅; WS3 Templates ✅ (MVP: rail section + searchable picker + auto-create + createFromTemplate IPC); WS4 Corkboard cancelled
 Related: `docs/live/current-status.md`, `docs/dev-workflow.md`, `docs/spec/wiki-tag-links-spec.md`, `docs/plan/done/wiki-tag-links-implementation-plan.md`, `REQUIREMENTS.md`
 
 ## 1. Context and Starting Point
@@ -224,7 +224,7 @@ Detailed first implementation slice: `docs/plan/done/folder-rename-implementatio
 
 **Objective**: Allow users to create documents from predefined schemas (character, location, scene) with pre-filled frontmatter.
 
-**Status**: Not started.
+**Status**: ✅ Complete (MVP scope). Remaining items (placeholder substitution, "Save as Template" context menu, template preview form, tag-index exclusion, bundled default templates) are deferred to a future slice.
 
 ### Deliverables
 

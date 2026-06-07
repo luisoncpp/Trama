@@ -3,7 +3,7 @@ import type { GitHistoryState, RevisionRailState } from './project-editor-revisi
 
 export type { GitHistoryState, RevisionRailState } from './project-editor-revision-types.js'
 
-export type SidebarSection = 'explorer' | 'outline' | 'lore' | 'transfer' | 'settings'
+export type SidebarSection = 'explorer' | 'outline' | 'lore' | 'templates' | 'transfer' | 'settings'
 export type WorkspaceLayoutMode = 'single' | 'split'
 export type WorkspacePane = 'primary' | 'secondary'
 export type FocusScope = 'line' | 'sentence' | 'paragraph'
@@ -117,7 +117,7 @@ export interface ProjectEditorActions {
   openFileInPane: (filePath: string, pane: WorkspacePane) => void
   openPreviousInPaneHistory: (pane?: WorkspacePane) => Promise<void>
   openNextInPaneHistory: (pane?: WorkspacePane) => Promise<void>
-  createArticle: (input: SidebarCreateInput) => Promise<void>
+  createArticle: (input: SidebarCreateInput, templatePath?: string | null) => Promise<void>
   createMap: (input: SidebarCreateInput) => Promise<void>
   createCategory: (input: SidebarCreateInput) => Promise<void>
   renameFile: (input: SidebarRenameInput) => Promise<void>

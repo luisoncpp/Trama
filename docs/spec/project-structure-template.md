@@ -1,15 +1,15 @@
-# Estructura Recomendada de Proyecto (Trama)
+# Recommended Project Structure (Trama)
 
-Esta plantilla define una estructura base para un proyecto de Trama:
+This template defines a base structure for a Trama project:
 
 - Explorer Manuscript -> `book/`
 - Outline -> `outline/`
 - Lore -> `lore/`
 
-## Estructura de carpetas
+## Folder Structure
 
 ```text
-mi-proyecto/
+my-project/
   book/
     Act-01/
       Chapter-01/
@@ -22,7 +22,7 @@ mi-proyecto/
         Scene-001.md
 
   outline/
-    arc-general.md
+    general-arc.md
     Act-01/
       chapter-beats.md
       scene-beats.md
@@ -31,47 +31,53 @@ mi-proyecto/
 
   lore/
     characters/
-      protagonista.md
-      antagonista.md
+      protagonist.md
+      antagonist.md
     places/
-      ciudad-principal.md
-      region-norte.md
+      main-city.md
+      northern-region.md
     systems/
-      magia.md
-      politica.md
+      magic.md
+      politics.md
     timeline.md
 
   assets/
     references/
     images/
 
+  templates/
+    character.md
+    scene.md
+    outline-chapter.md
+
   .trama.index.json
 ```
 
-## Reglas sugeridas
+## Suggested Rules
 
-1. `book/` contiene solo material narrativo final o en redaccion (Act/Chapter/Scene).
-2. `outline/` contiene estructura, beats, plan narrativo y orden de trabajo.
-3. `lore/` contiene conocimiento del mundo (personajes, lugares, sistemas, historia).
-4. Usa nombres estables y sin caracteres especiales para facilitar enlaces y movimientos.
-5. Mantén archivos markdown (`.md`) como formato principal.
+1. `book/` contains only final or in-progress narrative material (Act/Chapter/Scene).
+2. `outline/` contains structure, beats, narrative plan, and working order.
+3. `lore/` contains world knowledge (characters, places, systems, history).
+4. `templates/` contains reusable markdown templates with frontmatter that serve as a starting point for new documents. The folder is created automatically when opening a valid project if it doesn't exist.
+5. Use stable names without special characters to facilitate linking and moving.
+6. Keep markdown (`.md`) as the primary format.
 
-## Convenciones de nombres
+## Naming Conventions
 
-- Actos: `Act-01`, `Act-02`, `Act-03`
-- Capitulos: `Chapter-01`, `Chapter-02`
-- Escenas: `Scene-001.md`, `Scene-002.md`
-- Documentos de outline: `chapter-beats.md`, `scene-beats.md`
-- Documentos de lore: nombre semantico en minusculas con guiones, por ejemplo `ciudad-principal.md`
+- Acts: `Act-01`, `Act-02`, `Act-03`
+- Chapters: `Chapter-01`, `Chapter-02`
+- Scenes: `Scene-001.md`, `Scene-002.md`
+- Outline documents: `chapter-beats.md`, `scene-beats.md`
+- Lore documents: semantic name in lowercase with hyphens, e.g. `main-city.md`
 
-## Archivo inicial minimo
+## Minimum Initial File
 
 ```text
 book/Act-01/Chapter-01/Scene-001.md
-outline/arc-general.md
-lore/personajes/protagonista.md
+outline/general-arc.md
+lore/characters/protagonist.md
 ```
 
-## Nota operativa
+## Operational Note
 
-Si una seccion no encuentra su subcarpeta (`book/`, `outline/`, `lore/`), se recomienda mostrar estado vacio con CTA para crearla automaticamente.
+If a section cannot find its subfolder (`book/`, `outline/`, `lore/`), it is recommended to show an empty state with a CTA to create it automatically.

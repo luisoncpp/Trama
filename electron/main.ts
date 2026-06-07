@@ -117,7 +117,8 @@ function configureFullscreenEvents(win: BrowserWindow): void {
 
 async function createMainWindow(): Promise<void> {
   const preloadPath = path.join(__dirname, 'preload.cjs')
-  const win = new BrowserWindow(createMainWindowOptions(preloadPath))
+  const iconPath = path.join(__dirname, '../../build/icon.png')
+  const win = new BrowserWindow(createMainWindowOptions(preloadPath, iconPath))
   win.setTitle('Trama')
   mainWindow = win
 

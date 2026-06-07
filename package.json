@@ -1,7 +1,7 @@
 {
   "name": "trama",
   "private": true,
-  "version": "0.9.9-alpha",
+  "version": "1.0.0-beta",
   "description": "Desktop app for writing and structuring long-form narrative projects.",
   "author": "luisoncpp",
   "license": "GPL-3.0-or-later",

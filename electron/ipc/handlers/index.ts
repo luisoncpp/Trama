@@ -19,6 +19,8 @@ export {
   handleReorderFiles,
   handleMoveFile,
   handleMoveFolder,
+  handleCreateFromTemplate,
+  handleGetTemplates,
 } from './project-handlers/index.js'
 export {
   handleAiImportPreview,

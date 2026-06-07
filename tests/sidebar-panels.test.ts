@@ -409,7 +409,7 @@ describe('sidebar panels', () => {
       directory: 'Act-01/Chapter-03',
       name: 'Scene-007',
       sourceImagePath: '',
-    })
+    }, null)
 
     const articleMenuButton = container.querySelector('.sidebar-split-button__toggle') as HTMLButtonElement
     expect(articleMenuButton).toBeTruthy()
@@ -511,6 +511,47 @@ describe('sidebar panels', () => {
       name: 'Cities',
       sourceImagePath: '',
     })
+  })
+
+  it('loads templates from disk when opening the article dialog', async () => {
+    ;(window as unknown as {
+      tramaApi: {
+        getTemplates: () => Promise<{ ok: true; data: { paths: string[] } }>
+      }
+    }).tramaApi = {
+      getTemplates: async () => ({
+        ok: true,
+        data: {
+          paths: [
+            'templates/character.md',
+            'templates/newly-added-template.md',
+          ],
+        },
+      }),
+    }
+
+    act(() => {
+      render(h(SidebarPanel, buildPanelProps()), container)
+    })
+
+    const createArticleButton = Array.from(container.querySelectorAll('.sidebar-footer-actions .editor-button')).find(
+      (node) => node.textContent?.includes('+ Article'),
+    ) as HTMLButtonElement
+
+    await act(async () => {
+      createArticleButton.click()
+      await Promise.resolve()
+    })
+
+    const templateInput = container.querySelector('.template-picker__input') as HTMLInputElement
+    expect(templateInput).toBeTruthy()
+
+    await act(async () => {
+      templateInput.focus()
+      await Promise.resolve()
+    })
+
+    expect(container.textContent).toContain('newly-added-template')
   })
 
   it('triggers edit tags, rename and delete callbacks from file context menu', async () => {

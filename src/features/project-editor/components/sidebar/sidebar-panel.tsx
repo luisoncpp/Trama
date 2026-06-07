@@ -48,6 +48,8 @@ function buildSidebarBodyProps(props: SidebarPanelProps, effectiveCollapsed: boo
     onMoveFile: props.onMoveFile,
     onMoveFolder: props.onMoveFolder,
     corkboardOrder: props.corkboardOrder,
+    allVisibleFiles: props.visibleFiles,
+    activeSectionForController: props.sidebarActiveSection,
     contentProps: props,
   })
 }

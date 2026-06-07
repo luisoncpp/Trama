@@ -15,6 +15,9 @@ export const saveDocumentRequestSchema = z.object({ path: z.string().trim().min(
 const saveDocumentResponseSchema = z.object({ path: z.string(), version: z.string(), affectedImagePaths: z.array(z.string()).optional() })
 export const createDocumentRequestSchema = z.object({ path: z.string().trim().min(1), initialContent: z.string().optional() })
 const createDocumentResponseSchema = z.object({ path: z.string(), createdAt: z.string() })
+export const createFromTemplateRequestSchema = z.object({ templatePath: z.string().trim().min(1), destinationPath: z.string().trim().min(1) })
+const createFromTemplateResponseSchema = z.object({ path: z.string(), createdAt: z.string() })
+const getTemplatesResponseSchema = z.object({ paths: z.array(z.string()) })
 export const createMapDocumentRequestSchema = z.object({
   path: z.string().trim().min(1),
   name: z.string().trim().min(1),
@@ -125,7 +128,7 @@ const moveFolderResponseSchema = z.object({ sourcePath: z.string(), renamedTo: z
 export const readImageFileRequestSchema = z.object({ path: z.string().trim().min(1) })
 const readImageFileResponseSchema = z.object({ path: z.string(), dataUrl: z.string(), mimeType: z.string() })
 
-const helpPageIdSchema = z.enum(['getting-started', 'about', 'maps', 'wiki-tags', 'ai-import-export', 'book-export', 'git-snapshots'])
+const helpPageIdSchema = z.enum(['getting-started', 'about', 'maps', 'wiki-tags', 'ai-import-export', 'book-export', 'git-snapshots', 'cloud-sync'])
 export const openHelpRequestSchema = z.object({ page: helpPageIdSchema })
 const openHelpResponseSchema = z.object({ success: z.boolean() })
 export const setGettingStartedDismissedRequestSchema = z.object({ dismissed: z.boolean() })
@@ -158,6 +161,9 @@ export type SaveDocumentRequest = z.infer<typeof saveDocumentRequestSchema>
 export type SaveDocumentResponse = z.infer<typeof saveDocumentResponseSchema>
 export type CreateDocumentRequest = z.infer<typeof createDocumentRequestSchema>
 export type CreateDocumentResponse = z.infer<typeof createDocumentResponseSchema>
+export type CreateFromTemplateRequest = z.infer<typeof createFromTemplateRequestSchema>
+export type CreateFromTemplateResponse = z.infer<typeof createFromTemplateResponseSchema>
+export type GetTemplatesResponse = z.infer<typeof getTemplatesResponseSchema>
 export type CreateMapDocumentRequest = z.infer<typeof createMapDocumentRequestSchema>
 export type CreateMapDocumentResponse = z.infer<typeof createMapDocumentResponseSchema>
 export type SelectMapImageResponse = z.infer<typeof selectMapImageResponseSchema>

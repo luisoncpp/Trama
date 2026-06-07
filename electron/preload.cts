@@ -14,6 +14,9 @@ import {
   type AiImportResponse,
   type CreateDocumentRequest,
   type CreateDocumentResponse,
+  type CreateFromTemplateRequest,
+  type CreateFromTemplateResponse,
+  type GetTemplatesResponse,
   type CreateMapDocumentRequest,
   type CreateMapDocumentResponse,
   type SelectMapImageResponse,
@@ -120,6 +123,12 @@ const tramaApi = {
   },
   createDocument(payload: CreateDocumentRequest): Promise<IpcEnvelope<CreateDocumentResponse>> {
     return ipcRenderer.invoke(IPC_CHANNELS.createDocument, payload)
+  },
+  createFromTemplate(payload: CreateFromTemplateRequest): Promise<IpcEnvelope<CreateFromTemplateResponse>> {
+    return ipcRenderer.invoke(IPC_CHANNELS.createFromTemplate, payload)
+  },
+  getTemplates(): Promise<IpcEnvelope<GetTemplatesResponse>> {
+    return ipcRenderer.invoke(IPC_CHANNELS.getTemplates)
   },
   createMapDocument(payload: CreateMapDocumentRequest): Promise<IpcEnvelope<CreateMapDocumentResponse>> {
     return ipcRenderer.invoke(IPC_CHANNELS.createMapDocument, payload)

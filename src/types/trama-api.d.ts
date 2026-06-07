@@ -10,6 +10,9 @@ import type {
   BookExportResponse,
   CreateDocumentRequest,
   CreateDocumentResponse,
+  CreateFromTemplateRequest,
+  CreateFromTemplateResponse,
+  GetTemplatesResponse,
   CreateMapDocumentRequest,
   CreateMapDocumentResponse,
   SelectMapImageResponse,
@@ -98,6 +101,8 @@ declare global {
       readImageFile(payload: ReadImageFileRequest): Promise<IpcEnvelope<ReadImageFileResponse>>
       saveDocument(payload: SaveDocumentRequest): Promise<IpcEnvelope<SaveDocumentResponse>>
       createDocument(payload: CreateDocumentRequest): Promise<IpcEnvelope<CreateDocumentResponse>>
+      createFromTemplate(payload: CreateFromTemplateRequest): Promise<IpcEnvelope<CreateFromTemplateResponse>>
+      getTemplates(): Promise<IpcEnvelope<GetTemplatesResponse>>
       createMapDocument(payload: CreateMapDocumentRequest): Promise<IpcEnvelope<CreateMapDocumentResponse>>
       selectMapImage(): Promise<IpcEnvelope<SelectMapImageResponse>>
       createFolder(payload: CreateFolderRequest): Promise<IpcEnvelope<CreateFolderResponse>>

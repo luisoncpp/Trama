@@ -3,6 +3,8 @@ import { SidebarExplorerBody } from './sidebar-explorer-body.tsx'
 import type { SidebarExplorerCommonProps } from './sidebar-types'
 import { useSidebarFileActionsDialog } from './use-sidebar-file-actions-dialog'
 import { useSidebarCreateDialog, useSidebarFolderActionsDialog } from './sidebar-dialog-hooks'
+import { useSidebarCreateControllerBridge } from '../../templates/use-sidebar-create-controller-bridge'
+import { SIDEBAR_SECTION_CONFIG } from './sidebar-section-roots'
 
 interface SidebarHeaderProps {
   title: string
@@ -38,6 +40,8 @@ interface SidebarExplorerContentProps {
   onReorderFiles?: (folderPath: string, orderedIds: string[]) => Promise<void>
   onMoveFile?: (sourcePath: string, targetFolder: string) => Promise<void>
   onMoveFolder?: (sourcePath: string, targetParent: string) => Promise<void>
+  allVisibleFiles?: string[]
+  activeSection?: string
 }
 
 function useSidebarExplorerDialogs(props: SidebarExplorerContentProps) {
@@ -60,7 +64,36 @@ function useSidebarExplorerDialogs(props: SidebarExplorerContentProps) {
     onDeleteFolder: props.onDeleteFolder,
   })
 
-  return { createDialog, fileDialog, folderDialog }
+  const allVisibleFiles = props.allVisibleFiles ?? []
+
+  const { controller: createCtrl, snapshot: createCtrlSnapshot } = useSidebarCreateControllerBridge({
+    getTemplatePaths: () => allVisibleFiles,
+    isActiveSectionContent: (section: string) => Object.hasOwn(SIDEBAR_SECTION_CONFIG, section),
+    getActiveSection: () => props.activeSection ?? 'explorer',
+    getSelectedPath: () => props.selectedPath,
+    getProjectRoot: () => props.projectRootPath,
+  })
+
+  const submitWithTemplate = () => {
+    const payload = createCtrl.buildSubmitPayload()
+    if (!payload) {
+      return
+    }
+
+    if (payload.mode === 'article') {
+      props.onCreateArticle(
+        payload.input,
+        payload.selectedTemplatePath,
+      )
+    } else if (payload.mode === 'map') {
+      props.onCreateMap(payload.input)
+    } else if (payload.mode === 'category') {
+      props.onCreateCategory(payload.input)
+    }
+    createCtrl.close()
+  }
+
+  return { createDialog, fileDialog, folderDialog, createCtrl, createCtrlSnapshot, submitWithTemplate }
 }
 
 function SidebarHeader({ title }: SidebarHeaderProps) {
@@ -72,9 +105,11 @@ function SidebarHeader({ title }: SidebarHeaderProps) {
 }
 
 export function SidebarExplorerContent(props: SidebarExplorerContentProps) {
-  const { createDialog, fileDialog, folderDialog } = useSidebarExplorerDialogs(props)
+  const { createDialog, fileDialog, folderDialog, createCtrl, createCtrlSnapshot, submitWithTemplate } = useSidebarExplorerDialogs(props)
   const filterInputElementRef = useRef<HTMLInputElement | null>(null)
   const setFilterInputRef = (el: HTMLInputElement | null) => { filterInputElementRef.current = el }
+
+  const catalogSnapshot = createCtrlSnapshot.catalog
 
   const bodyProps = {
     title: props.title, visibleFiles: props.visibleFiles, selectedPath: props.selectedPath,
@@ -88,9 +123,9 @@ export function SidebarExplorerContent(props: SidebarExplorerContentProps) {
     pickFolderDisabled: props.pickFolderDisabled,
     filterQuery: props.filterQuery,
     onFilterQueryChange: props.onFilterQueryChange,
-    createMode: createDialog.createMode, createInput: createDialog.createInput,
-    openCreateDialog: createDialog.openCreateDialog, closeCreateDialog: createDialog.closeCreateDialog,
-    submitCreateDialog: createDialog.submitCreateDialog,
+    createMode: createCtrlSnapshot.mode, createInput: createCtrlSnapshot.input,
+    openCreateDialog: createCtrl.open.bind(createCtrl), closeCreateDialog: createCtrl.close.bind(createCtrl),
+    submitCreateDialog: submitWithTemplate,
     fileActionMode: fileDialog.mode, fileActionTargetPath: fileDialog.targetPath,
     renameValue: fileDialog.renameValue, openRenameDialog: fileDialog.openRename,
     openDeleteDialog: fileDialog.openDelete, openEditTagsDialog: fileDialog.openEditTags,
@@ -104,9 +139,16 @@ export function SidebarExplorerContent(props: SidebarExplorerContentProps) {
     folderActionTargetPath: folderDialog.targetPath,
     onFolderRenameValueChange: folderDialog.setRenameValue,
     confirmFolderActionDialog: folderDialog.confirm, closeFolderActionDialog: folderDialog.closeDialog,
-    onDirectoryChange: createDialog.setCreateDirectory, onNameChange: createDialog.setCreateName,
-    onSourceImagePathChange: createDialog.setCreateSourceImagePath, onBrowseSourceImage: createDialog.browseCreateImage,
+    onDirectoryChange: createCtrl.setDirectory.bind(createCtrl), onNameChange: createCtrl.setName.bind(createCtrl),
+    onSourceImagePathChange: createCtrl.setSourceImagePath.bind(createCtrl), onBrowseSourceImage: createCtrl.browseSourceImage.bind(createCtrl),
     filterInputRef: setFilterInputRef, corkboardOrder: props.corkboardOrder, onReorderFiles: props.onReorderFiles, onMoveFile: props.onMoveFile, onMoveFolder: props.onMoveFolder,
+    showTemplatePicker: createCtrlSnapshot.showTemplatePicker,
+    templateSearchQuery: catalogSnapshot.query,
+    templateSelectedPath: catalogSnapshot.selectedPath,
+    filteredTemplates: catalogSnapshot.filteredPaths,
+    onTemplateSearchChange: createCtrl.setTemplateSearch.bind(createCtrl),
+    onTemplateSelect: createCtrl.selectTemplate.bind(createCtrl),
+    hideMapOption: props.activeSection === 'templates',
   }
 
   return (

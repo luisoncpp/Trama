@@ -1,4 +1,5 @@
 import type { SidebarCreateInput } from '../../project-editor-types'
+import type { FilteredTemplate } from '../../templates/templates-catalog-private/filter-template-paths'
 import type { SidebarCreateMode } from './sidebar-create-dialog.tsx'
 import type { SidebarFolderActionMode } from './sidebar-folder-actions-dialog.tsx'
 import { ContextMenus } from './sidebar-dialogs-context-menus-ui'
@@ -29,6 +30,13 @@ type SidebarExplorerDialogsProps = {
   onFolderRenameValueChange: (value: string) => void
   confirmFolderActionDialog: () => void
   closeFolderActionDialog: () => void
+  showTemplatePicker?: boolean
+  templateSearchQuery?: string
+  templateSelectedPath?: string | null
+  filteredTemplates?: FilteredTemplate[]
+  onTemplateSearchChange?: (value: string) => void
+  onTemplateSelect?: (path: string | null) => void
+  hideMapOption?: boolean
 } & FileActionsDialogProps
 
 function ActionDialogs(props: SidebarExplorerDialogsProps) {
@@ -47,6 +55,13 @@ function ActionDialogs(props: SidebarExplorerDialogsProps) {
         onBrowseSourceImage={props.onBrowseSourceImage}
         submitCreateDialog={props.submitCreateDialog}
         closeCreateDialog={props.closeCreateDialog}
+        showTemplatePicker={props.showTemplatePicker}
+        templateSearchQuery={props.templateSearchQuery}
+        templateSelectedPath={props.templateSelectedPath}
+        filteredTemplates={props.filteredTemplates}
+        onTemplateSearchChange={props.onTemplateSearchChange}
+        onTemplateSelect={props.onTemplateSelect}
+        hideMapOption={props.hideMapOption}
       />
       <FileActionsDialog
         fileActionMode={props.fileActionMode}

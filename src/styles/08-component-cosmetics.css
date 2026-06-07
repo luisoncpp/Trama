@@ -1687,3 +1687,67 @@
   white-space: pre-wrap;
   word-break: break-word;
 }
+
+/* Template picker combobox */
+
+.template-picker {
+  position: relative;
+}
+
+.template-picker__field {
+  margin: 0;
+}
+
+.template-picker__input {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.template-picker__dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  margin: 4px 0 0;
+  padding: 4px 0;
+  list-style: none;
+  border: 1px solid var(--border-strong);
+  border-radius: 9px;
+  background: var(--dialog-bg);
+  box-shadow: var(--shadow-lg);
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.template-picker__option {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding: 6px 10px;
+  cursor: default;
+  font-size: 0.76rem;
+}
+
+.template-picker__option--highlighted {
+  background: var(--surface-input-bg);
+}
+
+.template-picker__option--selected {
+  background: var(--surface-elevated);
+}
+
+.template-picker__option--empty {
+  color: var(--text-dim);
+  cursor: default;
+}
+
+.template-picker__option-name {
+  color: var(--text-main);
+  font-weight: 600;
+}
+
+.template-picker__option-sub {
+  color: var(--text-dim);
+  font-size: 0.68rem;
+}

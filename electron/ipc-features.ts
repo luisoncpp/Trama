@@ -9,6 +9,8 @@ import {
 } from '../src/shared/ipc.js'
 import {
   handleCreateDocument,
+  handleCreateFromTemplate,
+  handleGetTemplates,
   handleCreateMapDocument,
   handleCreateFolder,
   handleDeleteFolder,
@@ -64,6 +66,8 @@ export function registerDocumentHandlers(ipcMain: IpcMain): void {
   ipcMain.handle(IPC_CHANNELS.readImageFile, (_event, payload) => handleReadImageFile(payload))
   ipcMain.handle(IPC_CHANNELS.saveDocument, (_event, payload) => handleSaveDocument(payload))
   ipcMain.handle(IPC_CHANNELS.createDocument, (_event, payload) => handleCreateDocument(payload))
+  ipcMain.handle(IPC_CHANNELS.createFromTemplate, (_event, payload) => handleCreateFromTemplate(payload))
+  ipcMain.handle(IPC_CHANNELS.getTemplates, () => handleGetTemplates())
   ipcMain.handle(IPC_CHANNELS.createMapDocument, (_event, payload) => handleCreateMapDocument(payload))
   ipcMain.handle(IPC_CHANNELS.selectMapImage, () => handleSelectMapImage())
   ipcMain.handle(IPC_CHANNELS.renameDocument, (_event, payload) => handleRenameDocument(payload))

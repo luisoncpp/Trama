@@ -1,6 +1,6 @@
 import type { JSX } from 'preact'
 import type { SidebarSection } from '../../project-editor-types'
-import { LoreIcon, ManuscriptIcon, OutlineIcon, SettingsIcon, TransferIcon, HelpIcon, CollapseLeftIcon, ExpandRightIcon } from './sidebar-rail-icons.tsx'
+import { LoreIcon, ManuscriptIcon, OutlineIcon, SettingsIcon, TemplatesIcon, TransferIcon, HelpIcon, CollapseLeftIcon, ExpandRightIcon } from './sidebar-rail-icons.tsx'
 
 interface SidebarRailProps {
   activeSection: SidebarSection
@@ -21,6 +21,7 @@ const SIDEBAR_ITEMS: SidebarRailItem[] = [
   { section: 'explorer', title: 'Manuscript explorer', icon: ManuscriptIcon },
   { section: 'outline', title: 'Outline', icon: OutlineIcon },
   { section: 'lore', title: 'Lore', icon: LoreIcon },
+  { section: 'templates', title: 'Templates', icon: TemplatesIcon },
   { section: 'transfer', title: 'Import and export', icon: TransferIcon },
   { section: 'settings', title: 'Project settings', icon: SettingsIcon },
 ]

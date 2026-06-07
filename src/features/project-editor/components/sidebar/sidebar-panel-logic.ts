@@ -23,6 +23,7 @@ export function useSidebarContentSection(
     explorer: '',
     outline: '',
     lore: '',
+    templates: '',
   })
 
   const contentSection = Object.hasOwn(SIDEBAR_SECTION_CONFIG, sidebarActiveSection)

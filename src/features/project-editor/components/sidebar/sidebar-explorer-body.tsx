@@ -118,9 +118,16 @@ interface SidebarExplorerBodyProps {
   onReorderFiles?: (folderPath: string, orderedIds: string[]) => Promise<void>
   onMoveFile?: (sourcePath: string, targetFolder: string) => Promise<void>
   onMoveFolder?: (sourcePath: string, targetParent: string) => Promise<void>
+  showTemplatePicker?: boolean
+  templateSearchQuery?: string
+  templateSelectedPath?: string | null
+  filteredTemplates?: { path: string; name: string; relativePath: string }[]
+  onTemplateSearchChange?: (value: string) => void
+  onTemplateSelect?: (path: string | null) => void
+  hideMapOption?: boolean
 }
 
-function buildDialogsProps(props: SidebarExplorerBodyProps, fileContextMenu: ReturnType<typeof useSidebarDialogs>['fileContextMenu'], folderContextMenu: ReturnType<typeof useSidebarDialogs>['folderContextMenu']) {
+  function buildDialogsProps(props: SidebarExplorerBodyProps, fileContextMenu: ReturnType<typeof useSidebarDialogs>['fileContextMenu'], folderContextMenu: ReturnType<typeof useSidebarDialogs>['folderContextMenu']) {
   return {
     loadingProject: props.loadingProject,
     apiAvailable: props.apiAvailable,
@@ -151,6 +158,13 @@ function buildDialogsProps(props: SidebarExplorerBodyProps, fileContextMenu: Ret
     onFolderRenameValueChange: props.onFolderRenameValueChange,
     confirmFolderActionDialog: props.confirmFolderActionDialog,
     closeFolderActionDialog: props.closeFolderActionDialog,
+    showTemplatePicker: props.showTemplatePicker,
+    templateSearchQuery: props.templateSearchQuery,
+    templateSelectedPath: props.templateSelectedPath,
+    filteredTemplates: props.filteredTemplates,
+    onTemplateSearchChange: props.onTemplateSearchChange,
+    onTemplateSelect: props.onTemplateSelect,
+    hideMapOption: props.hideMapOption,
   }
 }
 

@@ -77,12 +77,12 @@ function buildSidebarUiActions({
 
 function buildSidebarFileCreateActions({ projectState, sidebarState, setters, openProject }: ActionGroupParams) {
   return {
-    createArticle: (input: any) => sidebarFileActions.createArticle(input, {
+    createArticle: (input: any, templatePath?: string | null) => sidebarFileActions.createArticle(input, {
       projectState,
       sidebarState,
       setStatusMessage: setters.setStatusMessage,
       openProject,
-    }),
+    }, templatePath),
     createMap: (input: any) => sidebarFileActions.createMap(input, {
       projectState,
       sidebarState,

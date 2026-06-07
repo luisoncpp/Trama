@@ -10,6 +10,7 @@ import { scanProject } from '../../../services/project-scanner.js'
 import { getProjectCache, setProjectCache } from '../../../services/project-state-cache.js'
 import { applyIncrementalUpdate } from '../../../services/incremental-project-updater.js'
 import { readMetaByPath, resolveProjectRoot } from './shared.js'
+import { templateService } from '../../../services/template-service.js'
 
 export async function handleOpenProject(rawPayload: unknown): Promise<IpcEnvelope<ProjectSnapshot>> {
   const payload = openProjectRequestSchema.safeParse(rawPayload)
@@ -19,6 +20,7 @@ export async function handleOpenProject(rawPayload: unknown): Promise<IpcEnvelop
   try {
     const projectRoot = await resolveProjectRoot(payload.data.rootPath)
     await startWatcher(projectRoot)
+    await templateService.ensureTemplatesDirectory(projectRoot)
 
     let tree: ProjectSnapshot['tree']
     let markdownFiles: string[]
