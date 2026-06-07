@@ -148,10 +148,13 @@
         });
       }
 
-      checkbox.addEventListener('change', (e) => {
+      checkbox.addEventListener('change', async (e) => {
         const dismissed = e.target.checked;
-        if (typeof api.setGettingStartedDismissed === 'function') {
-          api.setGettingStartedDismissed(dismissed);
+        if (typeof api.setGettingStartedDismissed !== 'function') return;
+        try {
+          await api.setGettingStartedDismissed(dismissed);
+        } catch {
+          e.target.checked = !dismissed;
         }
       });
     })();

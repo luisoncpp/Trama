@@ -42,7 +42,9 @@ Mandatory doc navigation for new chats: start with `docs/START-HERE.md` — it p
 - `electron/main-process/help-window.ts`
   - Manages singleton Help child BrowserWindow, loading target HTML resources, and syncing theme/application version attributes.
 - `electron/help-preload.cts`
-  - Context isolated preload script for the Help window exposing dismissal IPC methods.
+  - Context isolated preload script for the Help window exposing dismissal IPC methods. Unwraps IPC envelopes via `src/shared/help-getting-started-ipc-bridge.ts`. Runs with `sandbox: false` so the preload can import that helper module.
+- `src/shared/help-getting-started-ipc-bridge.ts`
+  - Unwraps `{ ok, data }` IPC envelopes from help dismissal handlers so the Getting Started checkbox receives plain booleans.
 - `electron/ipc/menu-bar-handlers.ts`
   - IPC handlers for `revealMenuBar` / `hideMenuBar`.
 - `src/shared/menu-bar-alt-key.ts`

@@ -61,7 +61,7 @@ The HTML checkbox state lifecycle is symmetric:
 ## Files & Roles
 
 - **`electron/main-process/help-window.ts`**: Manages the singleton `BrowserWindow` lifecycle, theme injection on load, and page changes.
-- **`electron/help-preload.cts`**: Preload script for context-isolated Help Window exposing ONLY the `getGettingStartedDismissed` / `setGettingStartedDismissed` bridge.
+- **`electron/help-preload.cts`**: Preload script for context-isolated Help Window exposing ONLY the `getGettingStartedDismissed` / `setGettingStartedDismissed` bridge. Unwraps IPC envelopes via `src/shared/help-getting-started-ipc-bridge.ts` before returning plain booleans to inline HTML scripts. Uses `sandbox: false` (same as the main window) because sandboxed preloads cannot `require` local helper modules.
 - **`electron/ipc/handlers/help-handlers.ts`**: Registers `trama:help:open`, `trama:help:get-getting-started-dismissed`, and `trama:help:set-getting-started-dismissed` handlers. All storage access runs through `mainWin.webContents.executeJavaScript` against the **main** window.
 - **`help/en/*.html`**: Tier 1 (Getting Started, About) and Tier 2 (advanced features) content pages. `getting-started.html` owns the dismissal checkbox.
 - **`help/shared/`**: CSS stylesheet (`help.css`), theme controller (`help-theme.js`), and navigation bar logic (`help-nav.js`).

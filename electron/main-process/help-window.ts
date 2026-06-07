@@ -42,7 +42,8 @@ export function openHelpPage(
     title: 'Trama Help',
     webPreferences: {
       contextIsolation: true,
-      sandbox: true,
+      // Match the main window: sandboxed preloads cannot require local helper modules.
+      sandbox: false,
       nodeIntegration: false,
       preload: preloadPath,
     },
