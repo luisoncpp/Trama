@@ -105,7 +105,7 @@ function SidebarHeader({ title }: SidebarHeaderProps) {
 }
 
 export function SidebarExplorerContent(props: SidebarExplorerContentProps) {
-  const { createDialog, fileDialog, folderDialog, createCtrl, createCtrlSnapshot, submitWithTemplate } = useSidebarExplorerDialogs(props)
+  const { fileDialog, folderDialog, createCtrl, createCtrlSnapshot, submitWithTemplate } = useSidebarExplorerDialogs(props)
   const filterInputElementRef = useRef<HTMLInputElement | null>(null)
   const setFilterInputRef = (el: HTMLInputElement | null) => { filterInputElementRef.current = el }
 

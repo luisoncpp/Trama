@@ -98,7 +98,7 @@ function encodeRawDirective(raw: string): string {
   return encodeURIComponent(raw)
 }
 
-function serializeDirectiveComment(directive: LayoutDirective): string {
+export function serializeDirectiveComment(directive: LayoutDirective): string {
   switch (directive.type) {
     case 'center-start':
       return CENTER_START

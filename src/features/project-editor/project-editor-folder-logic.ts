@@ -1,4 +1,3 @@
-import type { ProjectEditorPaneState } from './project-editor-types'
 import type { WorkspaceLayoutState } from './project-editor-types'
 import type { PaneWorkspace } from './pane'
 
@@ -63,12 +62,6 @@ export function pruneWorkspaceLayoutPathsForFolderDelete(
     primaryPath: clearPathIfInsideFolder(layout.primaryPath, folderPath),
     secondaryPath: clearPathIfInsideFolder(layout.secondaryPath, folderPath),
   }
-}
-
-function hasDirtyPathInsideFolder(paneState: ProjectEditorPaneState, folderPath: string): boolean {
-  const primaryDirtyInFolder = paneState.primaryPane.isDirty && isPathInsideFolder(paneState.primaryPane.path, folderPath)
-  const secondaryDirtyInFolder = paneState.secondaryPane.isDirty && isPathInsideFolder(paneState.secondaryPane.path, folderPath)
-  return primaryDirtyInFolder || secondaryDirtyInFolder
 }
 
 export function hasDirtyPathInsideFolderUsingWorkspace(workspace: PaneWorkspace, folderPath: string): boolean {

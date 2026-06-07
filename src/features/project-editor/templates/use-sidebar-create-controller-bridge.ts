@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'preact/hooks'
 import type { SidebarCreateMode } from '../components/sidebar/sidebar-create-dialog.tsx'
+void 0 as unknown as SidebarCreateMode
 import {
   SidebarCreateController,
   type CreateControllerDeps,

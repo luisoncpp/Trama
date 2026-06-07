@@ -10,7 +10,7 @@ interface DropIndicatorProps {
   position: DropIndicatorPosition | null
 }
 
-function DropIndicator({ position }: DropIndicatorProps) {
+export function DropIndicator({ position }: DropIndicatorProps) {
   if (!position) return null
 
   if (position.type === 'onFolder') {

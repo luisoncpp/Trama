@@ -15,7 +15,7 @@ export function getHistoryForPane(
   return pane === 'secondary' ? historyStore.secondary : historyStore.primary
 }
 
-function createNavigationHistoryStore(): PaneNavigationHistoryStore {
+export function createNavigationHistoryStore(): PaneNavigationHistoryStore {
   return {
     primary: getEmptyNavigationHistory(),
     secondary: getEmptyNavigationHistory(),

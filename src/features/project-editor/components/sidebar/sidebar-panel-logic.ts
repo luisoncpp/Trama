@@ -3,13 +3,6 @@ import type { SidebarSection } from '../../project-editor-types'
 import { SIDEBAR_SECTION_CONFIG, type ContentSidebarSection } from './sidebar-section-roots'
 import { getScopedFiles, getScopedSelectedPath } from './sidebar-path-scoping'
 
-function joinProjectPath(rootPath: string, sectionRoot: string): string {
-  if (!rootPath) {
-    return ''
-  }
-  return `${rootPath.replace(/[\\/]$/, '')}/${sectionRoot.replace(/\/$/, '')}`
-}
-
 export function formatProjectRootBreadcrumbLabel(projectRootPath: string): string {
   return projectRootPath.replace(/\\/g, '/').replace(/\/$/, '')
 }

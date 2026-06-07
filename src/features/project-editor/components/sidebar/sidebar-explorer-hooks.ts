@@ -28,7 +28,7 @@ interface UseSidebarFilterShortcutParams {
   focusFilterInput: () => void
 }
 
-function useSidebarFilterShortcut({ enabled, focusFilterInput }: UseSidebarFilterShortcutParams): void {
+export function useSidebarFilterShortcut({ enabled, focusFilterInput }: UseSidebarFilterShortcutParams): void {
   useEffect(() => {
     if (!enabled) {
       return
