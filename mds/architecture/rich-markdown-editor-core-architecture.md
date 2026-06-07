@@ -1,0 +1,514 @@
+# Rich Markdown Editor Core Architecture
+
+## Purpose
+
+This document describes how **Trama** uses **Quill** to implement its rich text editor. It does not document Quill itself (see [Quill API docs](https://quilljs.com/mds/)), but the integration decisions, custom extensions, and data flow within this project.
+
+If you need the shortest path to the editor's risky seams instead of the full subsystem guide, open `mds/architecture/rich-editor-hotspots.md` first.
+
+---
+
+## Overview
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    RichMarkdownEditor.tsx                   │
+│                      (React Component)                      │
+├─────────────────────────────────────────────────────────────┤
+│  useRichEditorRefs() ───► refs: hostRef, editorRef, etc.  │
+│  useRichEditorLifecycle() ──► Quill initialization + sync  │
+│  useSyncToolbarControls() ──► toolbar + layout buttons + save │
+│  useFocusModeScopeEffect() ──► focus mode (CSS Highlights)  │
+│  useRichEditorFind() ─────► Ctrl+F find bar               │
+│  useTagOverlay() ─────────► wiki tag overlays              │
+└─────────────────────────────────────────────────────────────┘
+                               │
+                               ▼
+┌─────────────────────────────────────────────────────────────┐
+│               rich-markdown-editor-core.ts                  │
+│                   (Lifecycle Orchestration)                 │
+├─────────────────────────────────────────────────────────────┤
+│  useInitializeEditor()    → createQuillEditor()             │
+│  useSyncExternalValue()   → (delegated to external-sync)    │
+│  useToggleDisabled()      → editor.enable()                │
+│  useSyncSpellcheckEnabled() → spellcheck attr              │
+│  registerTypographyHandler() → ──► ──► ──► ──►             │
+│  registerWorkspaceCommandListener() → CustomEvent bridge    │
+└─────────────────────────────────────────────────────────────┘
+                               │
+                               ▼
+┌─────────────────────────────────────────────────────────────┐
+│         rich-markdown-editor-external-sync.ts               │
+│              (External Value Sync Hook)                     │
+├─────────────────────────────────────────────────────────────┤
+│  useSyncExternalValue()                                     │
+│    • canonical comparison via normalizeEditorDocumentValue   │
+│    • applyMarkdownToEditor on real changes                  │
+│    • selection preservation                                │
+│    • isApplyingExternalValueRef management                  │
+└─────────────────────────────────────────────────────────────┘
+                               │
+                               ▼
+┌─────────────────────────────────────────────────────────────┐
+│          rich-markdown-editor-serialization.ts               │
+│              (Debounced serialization session)              │
+├─────────────────────────────────────────────────────────────┤
+│  registerEditorTextChangeHandler()                           │
+│    • text-change listener + immediate dirty mark             │
+│    • 1-second debounce timer lifecycle                       │
+│    • flush() → serialize + hydrate images for parent         │
+│    • serializationRef.current.flush = flush (in-place)       │
+└─────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│               rich-markdown-editor-core.ts                  │
+│                   (Lifecycle Hooks)                        │
+├─────────────────────────────────────────────────────────────┤
+│  useSyncExternalValue()   → applyMarkdownToEditor()        │
+│  useToggleDisabled()       → editor.enable()                │
+│  useSyncSpellcheckEnabled() → spellcheck attr               │
+│  registerTypographyHandler() → ──► ──► ──► ──►            │
+│  registerWorkspaceCommandListener() → CustomEvent bridge    │
+└─────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│          rich-markdown-editor-serialization.ts               │
+│              (Debounced serialization session)              │
+├─────────────────────────────────────────────────────────────┤
+│  registerEditorTextChangeHandler()                           │
+│    • text-change listener + immediate dirty mark             │
+│    • 1-second debounce timer lifecycle                       │
+│    • flush() → serialize + hydrate images for parent         │
+│    • serializationRef.current.flush = flush (in-place)       │
+└─────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│                rich-markdown-editor-quill.ts                │
+│                 (Quill init + parse/serialize)              │
+├─────────────────────────────────────────────────────────────┤
+│  createQuillEditor()                                        │
+│    • Registers custom blots (layout directives)              │
+│    • new Quill({ theme: 'snow', modules: {...} })          │
+│    • Registers clipboard matchers + keyboard bindings       │
+│                                                             │
+│  applyMarkdownToEditor()  (markdown → Quill HTML)            │
+│    1. hydrateMarkdownImages() (if documentId provided)       │
+│    2. renderDirectiveArtifactsToMarkdown()                   │
+│    3. marked.parse()                                        │
+│    4. restoreImagesAfterMarkedparsing()                      │
+│    5. editor.clipboard.dangerouslyPasteHTML()               │
+│    6. syncCenteredLayoutArtifacts()                         │
+│    (Wrapped with contentEditable='false' guard)              │
+│                                                             │
+│  serializeEditorMarkdown()  (Quill HTML → markdown)            │
+│    1. stripBase64ImagesFromHtml() → placeholders + imageMap    │
+│    2. storeImageMap(documentId, imageMap) (cache for hydration)│
+│    3. createTramaTurndownService(flags) (HasImages when needed)│
+│    4. turndownService.turndown() (with custom rules)           │
+│    5. normalizeMarkdownOutput()         // \r\n → \n, trim end │
+└─────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## Key Files
+
+| File | Responsibility |
+|------|----------------|
+| `rich-markdown-editor.tsx` | Main React component, hook orchestration |
+| `rich-markdown-editor-core.ts` | Editor lifecycle orchestration (init, sync delegation, disable, spellcheck) |
+| `rich-markdown-editor-external-sync.ts` | External-value sync: canonical comparison, Quill re-apply, selection preservation |
+| `rich-markdown-editor-serialization.ts` | Debounced serialization session: text-change listener, debounce timer, flush with image hydration for parent |
+| `rich-markdown-editor-value-sync.ts` | Canonical editor-value normalization/equality for image-bearing markdown |
+| `rich-markdown-editor-quill.ts` | Quill creation, markdown parse/serialize (see `image-handling-architecture.md`) |
+| `rich-markdown-editor-toolbar.ts` | Thin public toolbar hook; delegates to the private toolbar Modules |
+| `private/rich-markdown-editor-toolbar-controller.ts` | Toolbar controller class: syncs explicit order, layout buttons, zoom, history-back, save/revert, and sync state |
+| `private/rich-markdown-editor-toolbar-dom.ts` | Toolbar DOM owner: creates Trama controls and applies the explicit current toolbar order behind the Quill seam |
+| `../../shared/markdown-image-placeholder.ts` | Image extraction, placeholder generation, hydration, in-memory cache |
+| `rich-markdown-editor-commands.ts` | Command bridge via CustomEvent (`paste-markdown`, `copy-as-markdown`) |
+| `rich-markdown-editor-typography.ts` | Typography replacements (`--` → `—`) |
+| `rich-markdown-editor-ctrl-key.ts` | Ctrl/Meta key state for tag overlay activation |
+| `rich-markdown-editor-layout-blots.ts` | Custom blots for layout directives |
+| `rich-markdown-editor-layout-clipboard.ts` | Clipboard matchers for layout directives |
+| `rich-markdown-editor-layout-keyboard.ts` | Keyboard bindings for atomic pagebreak traversal and symmetric center-boundary seam-safe Backspace/Delete transforms |
+| `rich-markdown-editor-layout-actions.ts` | Insert pagebreak/spacer and center toggle/extension behavior |
+| `rich-markdown-editor-layout-centering.ts` | Centered content CSS sync |
+| `rich-markdown-editor-tag-overlay.ts` | Wiki tag click detection |
+| `rich-markdown-editor-tag-helpers.ts` | Tag match search and filtering utilities |
+| `rich-markdown-editor-tag-highlights.tsx` | Tag overlay visual highlights (CSS Highlights API) |
+| `rich-markdown-editor-find.tsx` | Find/replace bar with Ctrl+F |
+| `rich-markdown-editor-find-overlay.tsx` | Floating find input UI |
+| `rich-markdown-editor-find-visual.ts` | Active match overlay effect |
+| `rich-markdown-editor-focus-scope.ts` | Focus mode effect (CSS Highlights API + overlay fallback) |
+| `rich-markdown-editor-focus-scope-helpers.ts` | Focus mode class management and selection rect helpers |
+| `rich-markdown-editor-focus-scope-scroll.ts` | Focus mode centered scroll positioning |
+| `rich-markdown-editor-focus-scope-geometry.ts` | Focus mode viewport geometry calculations |
+
+---
+
+## Quill Initialization
+
+```typescript
+// rich-markdown-editor-quill.ts:17-42
+export function createQuillEditor(host: HTMLDivElement): Quill {
+  registerLayoutDirectiveBlots()        // 1. Custom blots first
+  host.innerHTML = ''                    // 2. Clear host
+  const toolbar = document.createElement('div')
+  const editorHost = document.createElement('div')
+  host.append(toolbar, editorHost)       // 3. Create DOM structure
+  
+  const editor = new Quill(editorHost, {
+    theme: 'snow',
+    modules: {
+      toolbar: [
+        [{ header: [1, 2, 3, false] }],
+        ['bold', 'italic', 'strike'],
+        ['blockquote', 'code-block'],
+        ['link', 'image'],
+        ['clean'],
+      ],
+      history: { userOnly: true },       // 4. Only user changes in undo stack
+    },
+  })
+  
+  registerLayoutDirectiveClipboardMatchers(editor)  // 5. Post-init
+  registerLayoutDirectiveKeyboardBindings(editor)
+  return editor
+}
+```
+
+### Key decisions:
+- **Manual toolbar creation**: Quill expects a toolbar container, but Trama injects it into an empty `host` and then extends it with Trama-owned controls.
+- **Explicit current order**: Quill still owns the base toolbar seam, but `private/rich-markdown-editor-toolbar-dom.ts` owns the explicit current order: header -> inline -> blocks -> media -> clean -> layout -> zoom -> controls.
+- **History `userOnly: true`**: Prevents programmatic changes (`'api'`, `'silent'`) from entering the undo stack.
+
+---
+
+## Data Flow
+
+### Markdown → Quill (Document Load)
+
+```
+hydrateMarkdownImages(markdown, documentId)  // Expand placeholders if present
+    │
+    ▼
+renderDirectiveArtifactsToMarkdown()  // Converts markdown directives to placeholders
+    │
+    ▼
+marked.parse()                        // Markdown → HTML
+    │
+    ▼
+restoreImagesAfterMarkedparsing()     // Restore <img> from legacy HTML comment placeholders
+    │
+    ▼
+editor.clipboard.dangerouslyPasteHTML()  // Insert into Quill (source='silent')
+    │
+    ▼
+syncCenteredLayoutArtifacts()          // Sync centered content CSS artifacts
+```
+
+The entire operation is wrapped in a `contentEditable = 'false'` guard to prevent user keystrokes from corrupting the DOM during `dangerouslyPasteHTML`.
+
+> **Note:** `syncCenteredLayoutArtifacts()` is also called on every `text-change` event (not just on load) to keep centered content CSS classes in sync during editing.
+
+> **Images:** If the markdown contains inline base64 images (`![uuid](data:image/...)`), `marked.parse()` produces `<img src="data:...">` tags directly. `restoreImagesAfterMarkedparsing()` also handles legacy HTML comment placeholders for backward compatibility. See `mds/architecture/image-handling-architecture.md` for the full image handling spec.
+
+### Quill → Markdown (Save)
+
+```
+editor.root.innerHTML
+    │
+    ▼
+stripBase64ImagesFromHtml()            // Replace <img src="data:..."> with placeholders
+    │
+    ▼
+turndownService.turndown()             // HTML → Markdown (with custom rule)
+    │
+    ▼
+normalizeMarkdown()                    // Normalize line endings (\r\n → \n) + trim end
+    │
+    ▼
+normalizeBlankLinesToSpacerDirectives() // Blank lines → spacer directives
+    │
+    ▼
+hydrateMarkdownImages()                // Expand placeholders to ![uuid](data:...) ONLY for onChange
+    │
+    ▼
+onChange(markdown)                     // Parent state receives hydrated markdown
+```
+
+> **Images:** `stripBase64ImagesFromHtml()` extracts base64 `data:image/...` URLs from `<img>` tags and stores them in an in-memory cache keyed by `documentId`. This keeps Turndown fast. The resulting placeholder-markdown is stored in `lastEditorValueRef` for lightweight internal comparison. Before calling `onChange` to update parent state, `hydrateMarkdownImages()` expands the placeholders so the parent always has portable, standard markdown. See `mds/architecture/image-handling-architecture.md`.
+
+### Serialization (`serializeEditorMarkdown`)
+
+`serializeEditorMarkdown` lives in `rich-markdown-editor-quill.ts` and produces lightweight placeholder-markdown for internal use. The debounced flush wrapper, which hydrates images before forwarding to the parent, lives in `rich-markdown-editor-serialization.ts`. A `serializeEditorMarkdownFromRef` variant accepts `{ current: TurndownService }` (the ref pattern used across hooks). The serialization module owns the full lifecycle: text-change listener, debounce timer, immediate dirty mark, and `serializationRef` mutation.
+
+### Turndown Custom Rules (via factory)
+
+All TurndownService instances are created via `createTramaTurndownService(flags)` from `src/shared/turndown-service-factory.ts`:
+
+- **`trama-layout-directives`** — Always active. Converts `data-trama-directive` HTML nodes back to markdown comments.
+- **`tramaImagePlaceholder`** — Active only when `flags & TurndownServiceFlags.HasImages`. Converts `<img src="trama-image-placeholder:uuid">` to `<!-- IMAGE_PLACEHOLDER:uuid -->`.
+
+```typescript
+import { createTramaTurndownService, TurndownServiceFlags } from '../../../../shared/turndown-service-factory'
+
+// Usage in serialization:
+const flags = imageMap.size > 0 ? TurndownServiceFlags.HasImages : TurndownServiceFlags.None
+const td = createTramaTurndownService(flags)
+const markdown = normalizeMarkdownOutput(td.turndown(htmlWithoutImages))
+```
+
+The `turndownRef` in `rich-markdown-editor.tsx` is initialized once with `createTramaTurndownService(TurndownServiceFlags.None)` and passed through to hooks. The actual serialization in `serializeEditorMarkdown()` creates a fresh service per call via the factory with the appropriate flags.
+
+---
+
+## Custom Blots (Layout Directives)
+
+### Structure (`rich-markdown-editor-layout-blots.ts`)
+
+```typescript
+class LayoutDirectiveBlot extends QuillBlockEmbed {
+  static blotName = 'trama-directive'
+  static tagName = 'div'
+  static className = 'trama-layout-directive'
+  
+  static create(value?: unknown): HTMLElement {
+    // Creates node with:
+    //   data-trama-directive="center|spacer|pagebreak|unknown"
+    //   data-trama-role="start|end"      (for center)
+    //   data-trama-lines="N"             (for spacer)
+    //   data-trama-raw="..."             (for unknown)
+    //   contenteditable="false"
+    //   textContent="\u2060" (workaround for turndown)
+  }
+}
+```
+
+### Directive Types
+
+| Directive | Attributes | Purpose |
+|-----------|-----------|---------|
+| `center` | `role: 'start' \| 'end'` | Delimits centered content |
+| `spacer` | `lines: 1-12` | Vertical spacing |
+| `pagebreak` | — | Page break marker |
+| `unknown` | `raw: string` | Fallback for unknown directives |
+
+### Registration
+
+```typescript
+Quill.register(`formats/${LAYOUT_DIRECTIVE_BLOT_NAME}`, LayoutDirectiveBlot, true)
+// Flag `true` = allow overriding existing formats
+```
+
+---
+
+## Smart Typography (`--` → `—`)
+
+Handler on `text-change` (`rich-markdown-editor-typography.ts`):
+
+```typescript
+// RULES: -- → —, << → «, >> → »
+editor.on('text-change', (delta, _old, source) => {
+  if (source !== 'user' || replacing) return
+  
+  const index = getInsertIndex(delta)
+  if (index === null || index < 1) return
+  
+  const two = editor.getText(index - 1, 2)
+  const rule = RULES.find(r => r.pattern === two)
+  if (!rule) return
+  
+  replacing = true
+  try {
+    editor.history.cutoff()           // Exclude from undo
+    editor.updateContents(new Delta().retain(index - 1).delete(2).insert(rule.replacement), 'user')
+    editor.history.cutoff()
+  } finally {
+    replacing = false
+  }
+})
+```
+
+**Reversible with Ctrl+Z** thanks to `history.cutoff()` cutting the undo stack before and after the replacement.
+
+---
+
+## Event Bridge Pattern (Commands)
+
+Context menu commands travel via CustomEvent (`WORKSPACE_CONTEXT_MENU_EVENT`), not via direct props. This decouples the trigger from the handler.
+
+### Definition (`workspace-context-menu.ts`)
+
+```typescript
+export const WORKSPACE_CONTEXT_MENU_EVENT = 'trama:workspace-command'
+export type WorkspaceContextCommand =
+  | { type: 'toggle-split' }
+  | { type: 'toggle-fullscreen' }
+  | { type: 'toggle-focus' }
+  | { type: 'set-focus-scope'; scope: 'line' | 'sentence' | 'paragraph' }
+  | { type: 'set-split-ratio'; ratio: number }
+  | { type: 'paste-markdown' }
+  | { type: 'copy-as-markdown' }
+```
+
+### Handler (`rich-markdown-editor-commands.ts`)
+
+```typescript
+window.addEventListener(WORKSPACE_CONTEXT_MENU_EVENT, handler)
+```
+
+The editor handler listens for this global event and executes:
+- **`paste-markdown`**: Read clipboard → markdown → insert via `dangerouslyPasteHTML`
+- **`copy-as-markdown`**: Serialize selection → clipboard as markdown
+
+### Trigger (from sidebar/workspace)
+
+```typescript
+window.dispatchEvent(new CustomEvent(WORKSPACE_CONTEXT_MENU_EVENT, { detail: command }))
+```
+
+---
+
+## Wiki Tag Overlays
+
+System for detecting `[[wiki-tags]]` and showing clickable overlays:
+
+```
+buildTagOverlayMatches(editor, tagIndex)
+    │
+    ▼
+findTagMatchesInText()          // Search in plain text
+    │
+    ▼
+filterMatchesOutsideCode()      // Exclude inline code
+    │
+    ▼
+mapPlainTextIndexToQuillIndex()  // Convert indices (Quill counts embeds)
+    │
+    ▼
+editor.getBounds()              // Get pixel position
+```
+
+Click handler (`rich-markdown-editor.tsx:56-80`):
+- Verifies `ctrlKey` or `metaKey`
+- Searches for match at mouse position
+- If hit: `preventDefault()` + calls `onTagClick(filePath)`
+
+---
+
+## Editor State Management
+
+### Main Refs (`useRichEditorRefs`)
+
+```typescript
+const shellRef       // Outer container
+const hostRef        // Where Quill mounts
+const editorRef      // Quill instance
+const onChangeRef    // onChange callback (refs for closures)
+const lastEditorValueRef    // Last serialized value (avoids loops)
+const isApplyingExternalValueRef  // Flag: ignore external text-change
+const turndownRef    // Persistent TurndownService
+```
+
+### Preventing Sync Loops
+
+```
+value prop changes
+     │
+     ▼
+useSyncExternalValue() in rich-markdown-editor-external-sync.ts
+     │
+     ▼
+normalizeEditorDocumentValue(value, documentId) + areEquivalentEditorValues()
+     │
+     ▼
+isApplyingExternalValueRef = true   // Blocks text-change handler
+     │
+     ▼
+applyMarkdownToEditor()
+     │
+     ▼
+text-change handler ignores (isApplyingExternalValueRef=true)
+     │
+     ▼
+setTimeout(0) → isApplyingExternalValueRef = false
+```
+
+### Canonical editor-value rule
+
+Image-bearing documents have three representations:
+
+- **On disk** (hydrated): `![img_0](data:image/png;base64,...)`
+- **In parent state** (hydrated): same as on disk — `onChange` delivers fully-hydrated markdown
+- **In-memory editing** (placeholders): `<!-- IMAGE_PLACEHOLDER:img_0 -->` — stored in `lastEditorValueRef` for lightweight comparison
+
+`rich-markdown-editor-value-sync.ts` and `rich-markdown-editor-serialization.ts` make that distinction explicit:
+
+- `normalizeEditorDocumentValue(value, documentId)` strips base64 markdown images into placeholder markdown for equivalence checks.
+- `areEquivalentEditorValues(a, b, documentId)` compares two values using canonical placeholder form.
+- The `flush()` function in `rich-markdown-editor-serialization.ts` stores placeholder-markdown in `lastEditorValueRef` but hydrates before calling `onChangeRef.current` so the parent always receives full embedded images.
+
+---
+
+## IPC Integration for Save
+
+```
+User clicks save button
+    │
+    ▼
+onSaveNow callback
+    │
+    ▼
+use-project-editor-pane-persistence.savePaneIfDirty()
+    │
+    ▼
+IPC: 'trama:document:save' channel
+    │
+    ▼
+document-handlers.ts → DocumentRepository.save()
+    │
+    ▼
+Updates .trama.index.json
+```
+
+The editor doesn't know about IPC directly; it only exposes `syncState` (clean/dirty/saving) and callbacks. Pane-targeted flush/save policy is now centralized in `src/features/project-editor/use-project-editor-pane-persistence.ts`.
+
+---
+
+## Quill Extensions Used
+
+| Extension | Purpose |
+|-----------|--------|
+| `blots/block/embed` | Base for `LayoutDirectiveBlot` |
+| `modules/history` | Undo/redo (configured `userOnly: true`) |
+| `modules/toolbar` | Base toolbar (snow theme) |
+| `clipboard` (matchers) | Convert pasted HTML → custom blots |
+| `keyboard` (bindings) | Arrow keys over embeds |
+
+---
+
+## Debugging Notes
+
+### Cursor jumping
+Check re-init dependencies in `useInitializeEditor`. If the editor re-creates unexpectedly, review `hostRef` stability.
+
+### Split-pane dirty badge wrong
+Verify that `updateEditorValue(value, pane)` targets the correct pane. `syncState` flows from `useProjectEditorUiActions`.
+
+### Tag overlay offsets wrong
+`mapPlainTextIndexToQuillIndex()` handles the offset between `getText()` (doesn't include embeds) and Quill ops (includes embeds as 1 document unit).
+
+---
+
+## References
+
+- Quill docs: https://quilljs.com/mds/
+- Layout directives spec: `mds/spec/markdown-layout-directives-spec.md`
+- Wiki tags system guide: `mds/plan/done/wiki-tag-links-system-guide.md`
+- Image handling architecture: `mds/architecture/image-handling-architecture.md`
+- Editor hotspots map: `mds/architecture/rich-editor-hotspots.md`
+- Turndown performance lesson: `mds/lessons-learned/turndown-base64-replacement-performance.md`

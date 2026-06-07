@@ -1,0 +1,732 @@
+# File Map and Responsibilities
+
+Note for agents: each time you are asked to update the documentation, if you found a ts or tsx file not specified here, you have to add it.
+
+Mandatory doc navigation for new chats: start with `mds/START-HERE.md` — it provides the full bootstrap sequence and routes to all other docs.
+
+## Root-level project files
+
+- `package.json`
+  - Scripts for dev/build/test/smoke.
+  - Electron entry configured via `main`.
+- `vite.config.ts`
+  - Preact plugin and Vitest config.
+- `postcss.config.js`
+  - Tailwind PostCSS plugin.
+- `tsconfig.electron.json`
+  - Compiles main/preload/shared contracts to `dist-electron`.
+
+## Electron layer
+
+- `electron/main.ts`
+  - App lifecycle and BrowserWindow creation.
+  - Wires smoke hooks and editor context-menu helpers.
+  - Emits native fullscreen state changes to renderer.
+  - Registers IPC handlers.
+  - Destroys the cached hidden PDF print window from the main-window `closed` path so PDF export does not leave the Electron process alive after the user closes the app window.
+- `electron/window-config.ts`
+  - BrowserWindow security-related defaults.
+- `electron/main-process/context-menu.ts`
+  - Native editor context menu: flat workspace commands (toggle split, toggle fullscreen, toggle focus mode) dispatched to renderer via `WORKSPACE_CONTEXT_MENU_EVENT`.
+  - Includes the `Paste Markdown` menu entry for editable contexts; the menu dispatches `{ type: 'paste-markdown' }` to the renderer when selected.
+  - Reads renderer-published preview/Git state to show `See Revisions` and hide cut/paste during read-only revision preview.
+- `electron/main-process/smoke-hooks.ts`
+  - Startup smoke hooks.
+- `electron/main-process/window-close.ts`
+  - Window close handler: intercepts `close` event, checks cached dirty state, shows native save dialog, and calls `win.destroy()` to force close.
+- `electron/main-process/application-menu.ts`
+  - Custom application menu setup: replaces Electron's default menu bar with a trimmed-down version (File, Edit, View, Help) that removes zoom controls to avoid confusion with Trama's custom zoom in the toolbar.
+  - View menu dispatches pane-history Back/Forward commands via the workspace command bridge.
+- `electron/main-process/menu-bar-auto-hide.ts`
+  - Alt menu behavior: Win32 overlay titlebars use `Menu.popup()`; other platforms use auto-hidden native menu bar. Wired from renderer via IPC.
+- `electron/main-process/help-window.ts`
+  - Manages singleton Help child BrowserWindow, loading target HTML resources, and syncing theme/application version attributes.
+- `electron/help-preload.cts`
+  - Context isolated preload script for the Help window exposing dismissal IPC methods. Unwraps IPC envelopes via `src/shared/help-getting-started-ipc-bridge.ts`. Runs with `sandbox: false` so the preload can import that helper module.
+- `src/shared/help-getting-started-ipc-bridge.ts`
+  - Unwraps `{ ok, data }` IPC envelopes from help dismissal handlers so the Getting Started checkbox receives plain booleans.
+- `electron/ipc/menu-bar-handlers.ts`
+  - IPC handlers for `revealMenuBar` / `hideMenuBar`.
+- `src/shared/menu-bar-alt-key.ts`
+  - Detects bare Left Alt (not Alt+arrow shortcuts).
+- `src/features/project-editor/use-menu-bar-reveal-on-alt.ts`
+  - Renderer hook: Left Alt → `tramaApi.revealMenuBar()`.
+- `electron/ipc.ts`
+  - Thin IPC registration/orchestration.
+- `electron/ipc/spellcheck.ts`
+  - Spellcheck IPC handlers: reads and applies Electron session spellchecker settings for renderer settings UI, including normalized responses used by optimistic renderer updates.
+- `electron/ipc-runtime.ts`
+  - Active project/index runtime state + watcher lifecycle.
+- `electron/ipc-errors.ts`
+  - Shared IPC error envelope helper.
+- `electron/preload.cts`
+  - Typed `window.tramaApi` bridge.
+  - Includes fullscreen command and fullscreen-change subscription bridge.
+
+### IPC handlers
+
+- `electron/ipc/handlers/ping-handler.ts`
+  - Ping endpoint.
+- `electron/ipc/handlers/project-handlers/project-open-handler.ts`
+  - Open project + scan + reconcile + watcher start.
+- `electron/ipc/handlers/project-handlers/project-folder-dialog-handler.ts`
+  - Native folder picker endpoint.
+  - Enforces required project folders (`book`, `lore`, `outline`) by prompting to create missing folders or reselect another directory.
+  - Also validates remembered startup project roots through the same folder-structure rules.
+- `electron/ipc/handlers/project-handlers/document-handlers.ts`
+  - Read/save/create/rename/delete document + create folder handlers.
+  - Also owns map-document creation (`createMapDocument`) and native map-image selection (`selectMapImage`).
+- `electron/ipc/handlers/project-handlers/folder-handlers.ts`
+  - Folder rename handler with subtree internal-write tagging and index/tag reconcile.
+- `electron/ipc/handlers/project-handlers/index-handler.ts`
+  - Get index handler.
+- `electron/ipc/handlers/project-handlers/order-handlers.ts`
+  - File reorder handler (`handleReorderFiles`) for drag-and-drop reorder in sidebar.
+- `electron/ipc/handlers/ai-handlers.ts`
+  - AI import/export handlers: preview import, execute import, and backend export formatting endpoint.
+- `electron/ipc/handlers/book-export-handler.ts`
+  - Book export handler: validates request payload and delegates multi-format book export to service with consistent error envelopes.
+- `electron/ipc/handlers/git-history-handlers.ts`
+  - Git history IPC handlers: project Git status, save snapshot, list revisions, read revision preview, load revision.
+- `electron/ipc/handlers/zulu-handlers.ts`
+  - ZuluPad import handlers: opens native file picker for `.zulu` files, previews parsed pages, and executes multi-file import with configurable tag generation.
+- `electron/ipc/handlers/help-handlers.ts`
+  - Help IPC handlers: handles help page window open triggers and synchronization of workspace localStorage dismissal.
+- `electron/ipc-features.ts`
+  - Registry module that registers specialized feature-level IPC handlers.
+
+### Services
+
+- `electron/services/project-scanner.ts`
+  - Recursive markdown scan + tree data (including empty folders).
+- `electron/services/document-repository.ts`
+  - Read/save/create/rename/delete markdown files + folder rename/create.
+  - Persists markdown images to project-local `res/*.png` files on save and resolves them back to embedded data URLs on read.
+  - Also copies chosen map base images into `res/` and writes initial map-document frontmatter with empty markers.
+- `electron/services/document-image-persistence.ts`
+  - Repository helper for markdown image persistence: rewrites embedded images to `res/*.png`, rehydrates local image links back to embedded PNG data URLs, degrades missing linked images to editor-only placeholders, and collects associated image paths for delete flows.
+- `electron/services/frontmatter.ts`
+  - YAML frontmatter parse/serialize.
+- `electron/services/index-service.ts`
+  - `.trama.index.json` load/save/reconcile/updateCache.
+  - Architecture: `mds/architecture/project-index-architecture.md`.
+- `electron/services/git-history-service.ts`
+  - Local Git history orchestrator: repository discovery/init, scoped snapshot staging+commit, revision listing, preview reads, historical restore.
+- `electron/services/git-history-repository.ts`
+  - Git CLI/path helper layer: repo discovery, project-to-repo path scoping, managed pathspec rules, special-state detection.
+- `electron/services/git-history-restore-service.ts`
+  - Dedicated historical restore write path: exact markdown write, referenced image restore, internal-write tagging, cache sync.
+- `electron/services/project-state-cache.ts`
+  - In-memory cache for `tree`, `markdownFiles`, and `metaByPath` scoped to a project root.
+  - Used by `handleOpenProject` to avoid full filesystem rescans on incremental updates.
+- `electron/services/incremental-project-updater.ts`
+  - Pure logic to mutate a cached `ProjectSnapshot` for file/folder create, delete, and rename.
+  - Reads frontmatter only for newly created files; all other operations are in-memory.
+  - Delegates tree manipulation to `tree-mutations.ts`.
+- `electron/services/tree-mutations.ts`
+  - Pure tree mutation helpers used by `incremental-project-updater.ts`: deep clone, path parsing, folder/file add/remove/rename.
+- `electron/services/watcher-service.ts`
+  - Chokidar wrapper + internal/external write classification.
+- `electron/services/ai-import-service.ts`
+  - Parses AI clipboard blocks, builds preview metadata, and executes multi-file import writes.
+- `electron/services/ai-export-service.ts`
+- `electron/services/ai-export-pick-service.ts`
+  - Native open-file / open-directory dialogs for AI export staging basket (`defaultPath: projectRoot`, returns absolute paths).
+  - Formats selected files into `=== ARCHIVO: ... ===` blocks, validates relative paths against project root, and supports frontmatter include/exclude mode.
+- `electron/services/zulu-import-service.ts`
+  - ZuluPad import service: parses `.zulu` XML content into pages, generates frontmatter with optional tags, and writes markdown files to the target folder.
+- `electron/services/book-export-service.ts`
+  - Book export orchestrator: scans `book/`, builds ordered chapter models, sanitizes per format, dispatches renderer (`md/html/docx/epub/pdf`), and writes output artifact.
+- `electron/services/book-export-renderers.ts`
+  - Shared `BookExportChapter` model; HTML/Markdown renderers; PDF chapter HTML via `renderChapterHtmlFragmentForPdf` and `normalizePdfPrintChapterBody` (unwrap image `<p>` tags).
+- `electron/services/book-export-image-source-transform.ts`
+  - Shared markdown image-source rewriting helpers: converts local image references to embedded data URLs during chapter build and rewrites sources to EPUB-compatible `file://` URLs when packaging.
+- `electron/services/book-export-order.ts`
+  - Book export ordering logic: derives base order from tree and applies per-folder `corkboardOrder` from index with stable fallback.
+- `electron/services/book-export-sanitize.ts`
+  - Book export sanitize pipeline: strips frontmatter for all formats, strips HTML comments only for markdown output, and normalizes line endings/trailing whitespace.
+- `electron/services/book-export-directives.ts`
+  - Shared directive parsing helpers for `trama:center`, `trama:spacer`, and `trama:pagebreak`; `replaceDirectivesForPdfPrint` (omits pagebreak HTML in segment bodies); `stripLeadingPagebreakAndBlankLines`.
+- `electron/services/book-export-inline-markdown.ts`
+  - Shared inline emphasis parser for DOCX: `marked.lexer()` → `{ text, bold, italic }` runs (`**`, `__`, `*`, `_`, links, legacy `<strong>`/`<em>`). PDF uses `marked.parse()` in segment HTML.
+- `electron/services/book-export-pdf-segments.ts`
+  - Pure segment builder for PDF export: corkboard-ordered `BookExportChapter[]` → `PdfExportSegment[]` with inter-document gaps and author page break boundaries (`buildPdfExportSegments`).
+- `electron/services/book-export-pdf-print.css`
+  - Print stylesheet for PDF segment HTML (`@page` A4 + ~50pt margins, Times New Roman, image max-height for covers, zero `p` margins). Copied to `dist-electron` by `scripts/copy-electron-assets.mjs` on `build:electron`.
+- `electron/services/book-export-pdf-html.ts`
+  - Renders a `PdfExportSegment` to a print HTML document (`renderSegmentPrintHtml`): unified shell; optional book header on segment 0 when metadata set; loads embedded `book-export-pdf-print.css`.
+- `electron/services/book-export-pdf-print.ts`
+  - Book export print surface: hidden `BrowserWindow` + `printToPDF` (lazy dynamic `electron` import), `getBookExportPrintSurface` / `setBookExportPrintSurfaceForTests` / `disposeBookExportPrintSurface`, `runBookExportPrintExclusive` mutex, `withBookExportTempDirectory` for per-job segment HTML files. The dispose helper destroys the cached hidden window and is wired into the main-window `closed` path in `electron/main.ts` so the Electron process exits cleanly after the user closes the main window.
+- `tests/book-export-pdf-print.test.ts`
+  - Mock injection, mutex serialization, temp directory cleanup, and `disposeBookExportPrintSurface` safety (idempotent, preserves test mock) for the print surface.
+- `scripts/copy-electron-assets.mjs`
+  - Copies non-TS Electron assets (e.g. book export print CSS) into `dist-electron` after `tsc`.
+- `tests/book-export-pdf-html.test.ts`
+  - Unit tests for `renderSegmentPrintHtml` (Times New Roman CSS, header only on segment 0, no raw pagebreak tokens).
+- `tests/book-export-pdf-directives.test.ts`
+  - `replaceDirectivesForPdfPrint`, `stripLeadingPagebreakAndBlankLines`, `normalizePdfPrintChapterBody` (unwrap image paragraphs).
+- `electron/services/book-export-pdf-merge.ts`
+  - Linear in-memory PDF segment merge via `pdf-lib` `copyPages` (`mergePdfSegments`).
+- `electron/services/book-export-pdf-renderer.ts`
+  - PDF book orchestrator: `buildPdfExportSegments` → segment HTML → print surface → `mergePdfSegments` (`renderPdfBook`). Segment HTML must stay in temp files only; writing debug HTML into the repo root triggers Vite reloads and wipes renderer export/toast state during dev.
+- `tests/book-export-pdf-merge.test.ts`
+  - Merge order and page-count tests for `mergePdfSegments`.
+- `tests/book-export-pdf-segments.test.ts`
+  - Unit tests for `buildPdfExportSegments` (split boundaries, inter-document gap, empty segment skip).
+- `tests/helpers/book-export-mock-print-surface.ts`
+  - Vitest helper: one-page `pdf-lib` mock for `setBookExportPrintSurfaceForTests` in renderer/IPC tests.
+- `mds/architecture/book-export-architecture.md`
+  - Canonical reference for the book export pipeline. Explains the file layout, PDF render pipeline, data models, directive mapping, image handling, page metrics, and test coverage.
+- `mds/architecture/ai-import-export-architecture.md`
+  - AI import/export clipboard pipeline. Covers format grammar, import preview/execute flow, export formatting, path validation, IPC contract, and test coverage.
+
+## Renderer layer
+
+- `src/app.tsx`
+  - Top-level app composition.
+- `src/index.css`
+  - CSS import manifest only. Owns the ordered `@import` chain for `src/styles/01-10-*.css` after `@import 'tailwindcss'`.
+- `src/styles/`
+  - Physical CSS ownership split for the renderer shell, imported in numeric order from `src/index.css`.
+  - `01-theme-tokens.css` — app theme tokens and light-theme overrides.
+  - `02-base-reset.css` — global base/reset rules.
+  - `03-app-shell-layout.css` — editor shell/app/workspace structural layout.
+  - `04-focus-mode-layout-overrides.css` — grid-safe focus-mode sidebar hiding rules.
+  - `05-sidebar-layout.css` — sidebar shell/rail structural layout.
+  - `06-split-pane-layout.css` — split pane tracks, headers, divider, body shell.
+  - `07-editor-fill-contract.css` — named editor fill contract and editor host surfaces.
+  - `08-component-cosmetics.css` — non-Quill component cosmetics, dialogs, trees, revisions, conflict UI.
+  - `09-quill-theme-overrides.css` — global `.ql-*` and related rich-editor styling; must stay late in the cascade.
+  - `10-responsive.css` — all media queries, including the `900px` sidebar breakpoint.
+- `src/spellcheck/use-spellcheck-settings.ts`
+  - Renderer hook for spellcheck preferences: boot-time sync against Electron session, local persistence, enable/disable, language updates, and optimistic UI updates with rollback on IPC failure.
+- `src/features/project-editor/use-project-editor.ts`
+  - Main feature hook and public seam for the project editor Module.
+  - Owns the stable session-only pane-history store injected into `PaneWorkspace`.
+  - The only file that imports from `project-editor-private/`.
+- `src/features/project-editor/project-editor-view.tsx`
+  - Screen-level composition root for project editor shell, conflict overlays, layout shell, and dialogs.
+- `src/features/project-editor/project-editor-view-layout.tsx`
+  - Extracted shell/layout composition for the memoized sidebar boundary and main workspace pane.
+- `src/features/project-editor/project-editor-view-dialogs.ts`
+  - Dialog view-model hook: stabilizes AI import/export, book export, and Zulu import props so dialog shell subscriptions do not churn on editor typing.
+- `src/features/project-editor/project-editor-dialogs.tsx`
+  - Centralized overlay/dialog composition for AI import/export and markdown book export modals plus toast notifications.
+  - Wrapped in `memo(...)`; depends on stable dialog prop bundles from `project-editor-view-dialogs.ts`.
+- `src/features/project-editor/project-editor-shell.tsx`
+  - Memoized sidebar shell boundary plus narrow shell state/action selectors over the full project editor model.
+- `src/features/project-editor/project-editor-shell-props.ts`
+  - Shell prop types and sidebar prop-builder helpers used to adapt the flat project-editor action surface to `SidebarPanel` without inline churn in the view.
+- `src/features/project-editor/layout/layout-metrics.ts`
+  - Single TS source for project-editor layout constants and pure width/ratio math (`sidebarWidthPx`, `clampSplitRatio`, `clampSidebarWidth`).
+- `src/features/project-editor/layout/sidebar-resize-handle.tsx`
+  - Draggable sidebar edge handle; writes width through `setSidebarPanelWidth` using workspace bounds + `clampSidebarWidth()`.
+- `src/features/project-editor/layout/use-sidebar-layout.ts`
+  - Single renderer hook for effective sidebar collapse + width, combining persisted sidebar state with responsive collapse.
+- `src/features/project-editor/project-editor-revision-types.ts`
+  - Shared renderer-side Git-history types: pane-local revisions rail selection/confirmation state plus top-level Git availability state.
+- `src/features/project-editor/project-editor-git-history-state.ts`
+  - Constructors/mappers for empty Git-history state and empty pane revision-rail state.
+- `src/features/project-editor/git-history-actions.ts`
+  - Renderer action group for snapshot save, rail open/refresh, revision preview, and confirmed revision load.
+- `src/features/project-editor/git-history-helpers.ts`
+  - Shared renderer helpers for Git status sync, pane resolution, and revision-rail refresh.
+- `src/features/project-editor/project-editor-folder-logic.ts`
+  - Pure helpers for folder-prefix path remap (`isPathInsideFolder`, `remapFolderPrefix`, layout remap).
+- `src/features/project-editor/project-editor-logic/`
+  - Deep module for pure workspace helpers: layout persistence, pane projection, conflict copy paths, external-event tree refresh.
+  - `index.ts` — public facade re-exporting all helpers.
+  - `private/workspace-layout.ts` — `WORKSPACE_LAYOUT_STORAGE_KEY`, create/normalize/restore/reconcile layout state.
+  - `private/active-pane.ts` — `deriveActivePaneDocument`, `canSelectFile`, `resolvePreferredFile`.
+  - `private/conflict-copy.ts` — `buildConflictCopyPath`.
+  - `private/external-events.ts` — `shouldRefreshTreeOnExternalEvent`. Do not import from `private/` directly.
+- `src/features/project-editor/workspace-actions.ts`
+  - Deep module for workspace layout, pane activation, focus, fullscreen, editor view, save/revert actions.
+  - Revert path flushes pending editor DOM through `PaneWorkspace` before reloading from disk.
+  - Plain functions — no hooks. Caller applies setters.
+  - Pane-history navigation delegates to `workspace-actions/private/pane-history.ts`.
+- `src/features/project-editor/workspace-actions/private/`
+  - `view-modes.ts` — fullscreen, focus-mode, zoom helpers re-exported from workspace-actions.
+  - `pane-history.ts` — per-pane history navigation: `openPreviousInPaneHistory`, `openNextInPaneHistory`, and internal `openHistoryPathInPane`. Do not import from `private/` directly.
+- `src/features/project-editor/sidebar-file-actions/`
+  - Deep module for sidebar UI and file/folder CRUD.
+  - `index.ts` — public facade re-exporting all actions.
+  - `private/` — implementation helpers (sidebar UI, project picker, file select/create/crud/move, folder crud). Do not import from `private/` directly.
+- `src/features/project-editor/conflict-actions.ts`
+  - Deep module for external-edit conflict resolution (reload, keep, save-as-copy, compare, close-compare).
+  - Plain functions — no hooks.
+- `src/features/project-editor/open-project-types.ts`
+  - Shared `OpenProjectOptions` type used by the project editor Module, conflict flow, and sidebar file/folder adapters.
+- `src/features/project-editor/project-editor-private/`
+  - Private implementation directory for the `use-project-editor.ts` seam. Do not import from it outside `use-project-editor.ts`.
+  - `state.ts` — private state assembly: core state, persisted layout/sidebar state, active-pane projection, visible-files derivation, setters, and `paneBindings`.
+  - `actions.ts` — private action assembly: clear/load/save/open plus flat `ProjectEditorActions` composition over the deep Modules via `action-group-types.ts`, `sidebar-action-group.ts`, `workspace-action-group.ts`, and `conflict-action-group.ts`.
+  - `action-group-memos.ts` — memoized sidebar/workspace/conflict action-group hooks so the flat action surface only rebuilds when each domain's real inputs change.
+  - `open-project.ts` — private open-project orchestration: snapshot apply, layout reconcile, preferred-pane handling, inactive-pane preload.
+  - `action-group-types.ts` — shared `ProjectEditorActionSetters` and `ActionGroupParams` types used by the action-group files.
+  - `sidebar-action-group.ts` — delegates sidebar UI and file/folder CRUD actions to `sidebar-file-actions`.
+  - `workspace-action-group.ts` — delegates workspace/layout and editor-view actions to `workspace-actions`.
+  - `conflict-action-group.ts` — delegates conflict-resolution actions to `conflict-actions`.
+  - `state-builders.ts` — memoized sub-state hooks: `useProjectEditorSubStates`, `useProjectEditorBindings`.
+  - `state-values.ts` — `useProjectEditorValues` memoized projection.
+- `src/features/project-editor/use-project-editor-fullscreen-effect.ts`
+  - Renderer subscription to native fullscreen state changes.
+- `src/features/project-editor/use-project-editor-shortcuts-effect.ts`
+  - Global workspace shortcuts (split/fullscreen/focus/pane switch).
+  - Includes `Alt+Left` / `Alt+Right` pane-history navigation.
+- `src/features/project-editor/use-project-editor-close-effect.ts`
+  - Notifies dirty state to main process via `notifyCloseState` IPC and exposes `window.__tramaSaveAll` for the close handler to invoke saves before closing.
+- `src/features/project-editor/use-workspace-layout-state.ts`
+  - Persist workspace layout (`trama.workspace.layout.v1`).
+- `src/features/project-editor/use-last-project-state.ts`
+  - Persist the last successfully opened project root (`trama.last-project.v1`) and clear it when startup validation fails.
+- `src/features/project-editor/startup-project-open.ts`
+  - Small startup helper that decides between reopening the remembered project and falling back to the folder picker.
+- `mds/architecture/split-pane-coordination.md`
+  - Canonical reference for the split pane per-pane state model. Documents the two-layer state model (layout vs document), all 7 formal contracts, state projection map, and key implementation files.
+- `src/features/project-editor/use-project-editor-model.ts`
+  - Plain helpers for the `use-project-editor.ts` composition root: `createEditorSerializationRefs`, `createNavigationHistoryStore`, `createSaveDocumentProxy`, `buildShortcutsEffectParams`.
+- `src/features/project-editor/use-sidebar-ui-state.ts`
+  - Persist sidebar UI (`trama.sidebar.ui.v1`).
+- `src/features/project-editor/help-preferences.ts`
+  - Retrieves/saves help page auto-open preferences in renderer local storage.
+- `src/shared/help-storage-key.ts`
+  - Single source of truth for the `trama.help.getting-started.dismissed.v1` localStorage key, imported by the renderer helper, the help preload, and the main-process handler.
+- `src/features/project-editor/use-auto-open-getting-started-effect.ts`
+  - Renderer hook that triggers auto-opening the Getting Started page after a project is opened.
+- `src/help/help-screenshot-harness-types.ts`
+  - Shared types for the help screenshot harness: `CaptureRegion`, `HelpScreenshotHarnessDeps`, `HelpScreenshotHarness`.
+- `src/help/help-screenshot-scenarios.ts`
+  - Scenario ID constants, type union, and scenario definition rows (fileName, requiresGitRepository).
+- `src/help/help-screenshot-utils.ts`\r\n  - Shared utilities for help screenshot scenarios: `sleep`, `waitForCondition`, `waitForSelector`, `SCENARIO_SETTLE_MS`. Broken out from `help-screenshot-harness-logic.ts` to break a circular dependency.\r\n- `src/help/help-screenshot-harness-logic.ts`\r\n  - Orchestrates individual screenshot scenario functions. Consumes shared utilities from `help-screenshot-utils.ts`.\r\n- `src/help/help-screenshot-scenario-wiki-tags.ts`\r\n  - Wiki-tag screenshot scenarios: context menu and edit-tags modal. Returns `CaptureRegion` for region-based capture. Imports shared utilities from `help-screenshot-utils.ts`.
+- `src/help/use-help-screenshot-harness.ts`
+  - Preact hook that wires the screenshot harness onto `window.__tramaHelpScreenshotHarness` in capture mode.
+- `src/help/is-help-screenshot-capture-mode.ts`
+  - Guard predicate for screenshot capture mode detection.
+- `electron/main-process/help-screenshot-capture.ts`
+  - Electron-side screenshot capture driver: runs scenarios, captures pages (full or region-cropped), writes PNGs.
+
+- `src/features/project-editor/use-ai-import.ts`
+  - Renderer hook for AI import dialog state and calls to preview/execute import IPC actions.
+- `src/features/project-editor/use-ai-export.ts`
+  - Renderer hook for AI export dialog state, IPC export call, and clipboard copy flow.
+- `src/features/project-editor/use-book-export.ts`
+  - Renderer hook for book export dialog state: selected format, optional metadata (title/author), default output path handling, IPC export call, and success toast flow.
+- `src/features/project-editor/use-zulu-import.ts`
+  - Renderer hook for ZuluPad import dialog state: file selection, preview, and execution via IPC.
+
+### Project editor hooks (detailed)
+
+- `src/features/project-editor/project-editor-private/state.ts`
+  - Private state assembly behind `use-project-editor.ts`.
+  - Derives active editor state (`selectedPath` / `editorValue` / `isDirty`) from `workspaceLayout.activePane`.
+  - Pane documents now also carry `reloadVersion` so true disk reloads can force one in-place external re-apply even when the disk markdown is text-identical.
+  - Returns memoized `documentState`, `layoutState`, `sidebarState`, `projectState`, `uiState`, plus `values`, `setters`, and `paneBindings`.
+- `src/features/project-editor/project-editor-private/actions.ts`
+  - Private action assembly behind `use-project-editor.ts`.
+  - Keeps core operations (clear, load, save, open) and builds the flat `ProjectEditorActions` surface directly over the deep Modules (`workspace-actions`, `sidebar-file-actions`, `conflict-actions`).
+  - Save path hydrates both image placeholders and broken-image placeholders before IPC persistence.
+- `src/features/project-editor/use-project-editor-autosave-effect.ts`
+  - Minimal Preact adapter: detects dirty → calls `paneWorkspace.scheduleAutosave`, detects clean/unmount → calls `paneWorkspace.cancelAutosave`. Timer logic lives in `PaneWorkspace`.
+- `src/features/project-editor/pane/`
+  - Private module for pane coordination. All pane state, flush, save, and autosave access goes through this module.
+  - `pane/index.ts` — barrel exporting `PaneWorkspace`, `usePaneWorkspace`, and public types
+  - `pane/pane-workspace.ts` — coordinator class with read methods (`getPaneDocument`, `isPaneDirty`) and write methods (`savePaneNow`, `preparePaneExit`, `preparePaneRevert`, `saveAllDirtyPanes`, `scheduleAutosave`, `updatePaneContent`, etc.); `savePaneIfDirty` and `markPaneSaved` are internal.
+  - `pane/pane-workspace-private/pane-workspace-bindings.ts` — pane/serialization ref accessors and `updatePaneState` helper; consumed only by `PaneWorkspace` and sibling private modules.
+  - `pane/pane-workspace-private/pane-workspace-init.ts` — constructor arg resolution for navigation history vs saved-content map; consumed only by `PaneWorkspace`.
+  - `pane/pane-workspace-private/pane-workspace-mutations.ts` — document state mutations (load, clear, meta, revision rail, dirty/saved markers); consumed only by `PaneWorkspace`.
+  - `pane/pane-workspace-private/pane-workspace-exit.ts` — Pane exit intent types and pure helpers (`savePaneNowIntent`, `preparePaneExitIntent`, `preparePaneRevertIntent`); consumed by `PaneWorkspace`.
+  - `loadPaneDocument()` increments pane `reloadVersion` so disk reloads/removals of dirty DOM advance the editor force-apply signal.
+  - `pane/pane-workspace-types.ts` — extracted `PaneWorkspace` public info/binding types.
+  - `pane/pane-workspace-private/pane-workspace-document-info.ts` — pure builders for active-pane and pane document projections.
+  - `pane/pane-workspace-revision-state.ts` — pure pane revision-rail state transitions (`Current` label, preview exit, preview apply, load sync).
+  - `pane/pane-workspace-private/pane-workspace-autosave.ts` — `PaneAutosave` class extracted from `PaneWorkspace`: isolated timer management for autosave scheduling with `schedule(delay, shouldFire, onFire)` and `cancel()`.
+  - `pane/pane-workspace-snapshot.ts` — `PaneSnapshotTracker` class extracted from `PaneWorkspace`: owns the last-saved-content map, provides `get`/`set`, exact-match snapshot comparison against external content, and a `destroy` lifecycle for externally-owned maps.
+  - `pane/map-editor/map-editor-types.ts` — Shared types extracted from `map-editor-helpers.ts`: `MapMarker`, `MapConfig`, `MapAssetResult`.
+  - `pane/map-editor/map-config-serialization.ts` — Config serialization extracted from `map-editor-helpers.ts`: `getMapConfig`, `withMapConfig`, plus private `normalizeMarker` and `isRecord`.
+  - `pane/pane-navigation.ts` — `PaneNavigation` class extracted from `PaneWorkspace`: owns per-pane session history stack helpers (`recordPaneNavigation`, `getPreviousPathInPaneHistory`, `getNextPathInPaneHistory`, `stepPaneNavigationHistory`, `clearNavigationHistory`).
+  - `pane/pane-navigation-state.ts` — pure helpers for navigation history state: `getEmptyNavigationHistory`, `getHistoryForPane`, `createNavigationHistoryStore`.
+  - `pane/pane-editor.tsx` — `PaneEditor` component extracted from `workspace-editor-panels.tsx`.
+  - Wires pane-local revision rail state, preview-mode props, and explicit pane-targeted revision actions into `EditorPanel`.
+  - `pane/pane-title.ts` — `toPaneTitle` helper for deriving display labels from pane paths.
+  - `pane/snapshot-compare-logger.ts` — `logSnapshotComparison` helper for diagnosing false-positive external-change conflicts
+  - `pane/use-pane-workspace.ts` — factory hook that encapsulates Preact setter injection, creating a `PaneWorkspace` instance via `useMemo`
+- `src/features/project-editor/use-project-editor-external-events-effect.ts`
+  - Subscribes to external file events (watcher) and handles reloads/conflicts/tree refresh.
+- `src/features/project-editor/use-project-editor-context-menu-effect.ts`
+  - Handles workspace-level context menu commands (split/fullscreen/focus/split ratio).
+  - Also routes pane-history Back/Forward commands and pane-targeted `see-revisions` bridge commands.
+- `src/features/project-editor/use-project-editor-fullscreen-effect.ts`
+  - Listens for native fullscreen changes and mirrors them into UI state.
+- `src/features/project-editor/use-project-editor-shortcuts-effect.ts`
+  - Global keyboard shortcuts handling for editor workspace actions.
+  - Exports `isFormFieldTarget`, `hasOpenModal`, `handleCommandShortcut`, `handleNavigationAndZoomShortcut` for unit testing.
+- `src/features/project-editor/workspace-actions.ts`
+  - Deep module for workspace/layout, pane, focus, fullscreen, editor view, save, and revert actions.
+  - Plain functions. Callers pass setters/state and apply results.
+- `src/features/project-editor/sidebar-file-actions/`
+  - Deep module for sidebar UI and file/folder CRUD.
+  - `index.ts` — public facade. `private/` — implementation helpers.
+- `src/features/project-editor/conflict-actions.ts`
+  - Deep module for external-edit conflict resolution.
+  - Plain functions. Callers pass setters/state and apply results.
+
+### Editor workspace components
+
+- `src/features/project-editor/pane/workspace-editor-panels.tsx`
+  - Single/split editor rendering and pane interactions.
+  - Split-pane dirty routing source of truth: each pane editor must route onChange to its own pane (`updateEditorValue(..., pane)`).
+- `src/features/project-editor/pane/editor-panel.tsx`
+  - Pane editor shell, sync labels, save/revert affordance enablement, and renderer-to-native context-menu state publication.
+  - Forwards pane `reloadVersion` or revision `previewVersion` as `forceApplyVersion` so disk reloads and revision previews re-apply deterministically without remounting Quill.
+- `src/features/project-editor/pane/revisions/revisions-rail.tsx`
+  - Pane-local revisions rail UI: current row, revision rows, load-more pagination, and in-rail load confirmation.
+- `src/features/project-editor/components/ai-import-dialog.tsx`
+  - Modal dialog for AI import text input, mode selector (`replace` / `append`), preview trigger, and import confirmation.
+- `src/features/project-editor/components/ai-import-preview-section.tsx`
+  - Preview summary/list for parsed import files (new vs existing).
+- `src/features/project-editor/components/ai-export-dialog.tsx`
+  - Export dialog controller (portal, close behavior, keyboard handling) wired to export hook actions.
+- `src/features/project-editor/components/ai-export-dialog-body.tsx`
+  - Export dialog UI body: frontmatter option, staging basket mount, export/cancel actions.
+- `src/features/project-editor/components/ai-export-staging/index.ts`
+  - Deep module public API: `AiExportStagingController`, relative path hardening, native picker helpers, basket keyboard utilities.
+- `src/features/project-editor/components/ai-export-staging/private/`
+  - Staging implementation only (import via `ai-export-staging/index.ts`).
+- `src/features/project-editor/components/ai-export-staging-basket.tsx`
+  - Staging basket UI: Add Files/Folder actions, clear basket, wires `AiExportStagingController`.
+- `src/features/project-editor/components/ai-export-staging-chips.tsx`
+  - Wrapping chip list with keyboard focus and per-chip remove controls.
+- `src/features/project-editor/components/book-export-dialog.tsx`
+  - Markdown book export modal controller (portal, close behavior, keyboard handling).
+- `src/features/project-editor/components/book-export-dialog-body.tsx`
+  - Book export dialog body with project root display, optional metadata inputs, output path input, and export/cancel actions.
+- `src/features/project-editor/components/zulu-import-dialog.tsx`
+  - Modal dialog for ZuluPad file import: file selection trigger, target folder input, tag mode selector, preview state, and import execution portal.
+- `src/features/project-editor/components/zulu-import-dialog-private/zulu-import-dialog-body.tsx`
+  - ZuluPad import dialog body: file info display, folder/tag configuration form, actions row, and preview/execute sub-components (extracted from `zulu-import-dialog.tsx`).
+- `src/features/project-editor/components/zulu-import-dialog-private/zulu-import-dialog-state.ts`
+  - ZuluPad import dialog state hook: `useZuluImportDialogState` — file data, target folder, tag mode, preview, loading/importing/selecting file states (extracted from `zulu-import-dialog.tsx`).
+- `src/features/project-editor/components/zulu-import-dialog-private/zulu-import-dialog-logic.ts`
+  - ZuluPad import dialog logic hooks: `useZuluImportDialogActions` (select file, preview, execute) and `useZuluImportDialogLifecycle` (Escape key listener) (extracted from `zulu-import-dialog.tsx`).
+- `src/features/project-editor/components/rich-markdown-editor.tsx`
+  - Quill-based rich Markdown editor component (lifecycle, toolbar integration, focus-mode hookup).
+- `src/features/project-editor/components/rich-markdown-editor-core.ts`
+  - Core editor lifecycle and sync logic (initialize Quill, apply markdown, enable/disable, register typography handlers).
+  - Also listens for workspace `paste-markdown` commands and handles reading/parsing clipboard Markdown and inserting HTML into Quill.
+- `src/features/project-editor/components/rich-markdown-editor-external-sync.ts`
+  - External-value sync hook: compares canonical values via `normalizeEditorDocumentValue` + `areEquivalentEditorValues`, force-applies text-identical disk reloads via `forceApplyVersion`, preserves Quill selection and scroll, manages `isApplyingExternalValueRef` flag.
+- `src/features/project-editor/pane/rich-markdown-editor/rich-markdown-editor-overlay.ts`
+  - Tag overlay interaction hook cluster: Ctrl/Cmd state, overlay match recomputation, modifier-click tag navigation, and scroll-triggered overlay refresh.
+- `src/features/project-editor/pane/rich-markdown-editor/rich-markdown-editor-view.tsx`
+  - Presentational rich editor shell: host element, find bar mount point, and tag highlight overlay positioning.
+- `src/features/project-editor/pane/rich-markdown-editor/rich-markdown-editor.tsx`
+  - Public pane editor seam. Threads read-only revision preview mode into the rich editor core and toolbar/find controller stack.
+- `src/features/project-editor/pane/rich-markdown-editor/rich-markdown-editor-core.ts`
+  - Core Quill lifecycle plus preview-aware enable/contenteditable sync.
+- `src/features/project-editor/pane/rich-markdown-editor/rich-markdown-editor-commands.ts`
+  - Handles workspace commands and blocks markdown paste while revision preview is read-only.
+- `src/features/project-editor/pane/rich-markdown-editor/rich-markdown-editor-find.tsx`
+  - In-document find controller; suppresses replace affordances during read-only revision preview.
+- `src/features/project-editor/pane/rich-markdown-editor/rich-markdown-editor-find-overlay.tsx`
+  - Floating find UI with preview-aware replace toggle visibility.
+- `src/features/project-editor/components/rich-markdown-editor-serialization.ts`
+  - Editor debounced serialization session: registers text-change listener, manages debounce timer and flush lifecycle, and hydrates image placeholders before forwarding to parent state via `onChange`.
+- `src/features/project-editor/components/rich-markdown-editor-value-sync.ts`
+  - Canonical editor-value helpers: normalize image-bearing markdown into placeholder form and compare equivalent external/editor values without triggering destructive re-renders.
+- `src/features/project-editor/pane/rich-markdown-editor/rich-markdown-editor-layout-blots.ts`
+  - Registers Quill `BlockEmbed`-based layout directive blots (`center`, `spacer`, `pagebreak`, `broken-image`, unknown) so directive objects survive Quill canonicalization.
+- `src/features/project-editor/pane/rich-markdown-editor/rich-markdown-editor-layout-clipboard.ts`
+  - Adds clipboard matcher logic that maps directive artifact nodes, including broken-image placeholders, into embed Delta ops consumed by layout directive blots.
+- `src/features/project-editor/pane/rich-markdown-editor/rich-markdown-editor-layout-keyboard.ts`
+  - Registers explicit ArrowLeft/ArrowRight keyboard bindings so pagebreak embeds are traversed atomically in one cursor step.
+  - Intercepts narrow Backspace/Delete seam cases around `center:start` and `center:end` so deletion shifts the nearest boundary instead of leaking or truncating centering.
+- `src/features/project-editor/pane/rich-markdown-editor/rich-markdown-editor-layout-actions.ts`
+  - Toolbar-triggered layout helpers for pagebreak/spacer insertion and center toggle behavior; inside centered content the action rebuilds canonical non-nested center boundaries around the untoggled lines, and when toggling an adjacent line it extends the existing centered segment instead of creating a second pair.
+- `src/features/project-editor/pane/rich-markdown-editor/rich-markdown-editor-layout-center-ranges.ts`
+  - Center-range utility module for Quill Delta: extracts center boundaries from ops, derives center segments, detects whether an index is inside a segment, normalizes a selection to full line boundaries.
+  - Boundary-safe deletion logic moved to `rich-markdown-editor-layout-center-delete.ts`.
+- `src/features/project-editor/pane/rich-markdown-editor/rich-markdown-editor-layout-center-delete.ts`
+  - Extracted from `layout-center-ranges.ts`: `buildBoundarySafeDeleteContents` and its backspace/delete-forward branch helpers. Re-exports `CenterDeleteDirection` for import by `layout-keyboard.ts`.
+- `src/features/project-editor/pane/rich-markdown-editor/rich-markdown-editor-layout-centering.ts`
+  - Synchronizes centered styling for editor blocks located between `center:start` and `center:end` boundary artifacts.
+- `src/features/project-editor/pane/rich-markdown-editor/private/rich-markdown-editor-toolbar-controller.ts`
+  - Private toolbar controller class: owns toolbar state synchronization for layout buttons, pane-history back, revert/save controls, sync indicator, and zoom.
+  - Save control uses a diskette icon button and keeps dynamic state in tooltip/ARIA labels instead of replacing icon markup.
+- `src/features/project-editor/pane/rich-markdown-editor/private/rich-markdown-editor-toolbar-dom.ts`
+  - Private toolbar DOM helper: creates toolbar-specific controls and enforces the explicit current toolbar order behind the Quill toolbar seam.
+  - Owns the diskette save button element (`.ql-save-changes`) in the right-side toolbar control cluster.
+- `src/features/project-editor/components/rich-markdown-editor-commands.ts`
+  - Handles workspace context-menu commands (`paste-markdown`, `copy-as-markdown`) and clipboard serialization/paste flow for the rich editor.
+- `src/features/project-editor/components/rich-markdown-editor-find.tsx`
+  - In-document find hook: Ctrl/Cmd+F (find) and Ctrl/Cmd+H (find+replace) activation, query/match state, replace actions, and integration between floating UI and editor selection.
+- `src/features/project-editor/components/rich-markdown-editor-find-state.ts`
+  - Shared find/replace state helpers: search state hook (`useSearchState`), replace actions hook (`useReplaceActions`), Quill text helpers, and keyboard modifier detection.
+- `src/features/project-editor/components/rich-markdown-editor-find-overlay.tsx`
+  - Floating find bar UI (find input, replace input, counter, prev/next, replace, replace all, close, toggle-replace) plus active-match overlay rendering.
+- `src/features/project-editor/components/rich-markdown-editor-find-visual.ts`
+  - Active-match visual sync helpers: computes Quill bounds and keeps highlighted match visible while preserving input focus.
+  - Includes focus-mode-aware centering via `handleFocusModeMatch()`.
+- `src/features/project-editor/components/rich-markdown-editor-typography.ts`
+  - Smart typography auto-replacement on user input: `--` → `—`, `<<` → `«`, `>>` → `»`. Each substitution is isolated as its own Ctrl+Z undo entry via `history.cutoff()`.
+- `src/features/project-editor/components/rich-markdown-editor-focus-scope.ts`
+  - Focus-mode hook orchestration: applies emphasis classes and wires scroll centering, selection tracking, and listener setup.
+  - Coordinates between focus scope helpers and centered scroll updates.
+- `src/features/project-editor/components/rich-markdown-editor-focus-scope-helpers.ts`
+  - Focus scope helper functions: applies/clears CSS class emphasis, manages CSS Highlights API, handles fallback text emphasis.
+  - Contains `getSelectionViewportRect()` for real DOM viewport geometry of the current selection.
+- `src/features/project-editor/components/rich-markdown-editor-focus-scope-scroll.ts`
+  - Centered scroll logic: computes target scroll position to keep active line centered vertically.
+  - Uses requestAnimationFrame phases to recalculate after padding changes; expands top/bottom edge space dynamically.
+- `src/features/project-editor/components/rich-markdown-editor-focus-scope-geometry.ts`
+  - Geometry helpers for focus-mode (text offset resolution, visual line/sentence boundary calculations).
+- `src/features/project-editor/pane/rich-markdown-editor/rich-markdown-editor-toolbar.ts`
+  - Thin public toolbar hook. Delegates toolbar DOM ownership to the private controller/DOM Modules while preserving Quill as the seam.
+
+### Sidebar components
+
+- `src/features/project-editor/components/sidebar/sidebar-panel.tsx`
+  - Sidebar shell/orchestrator. Consumes `effectiveCollapsed` from the layout seam; no longer computes responsive collapse or writes inline width.
+- `src/features/project-editor/components/sidebar/sidebar-panel-body.tsx`
+  - Active section body composition. Thin adapter that converts raw sidebar callback strings through `sidebar-path-scoping.ts` before invoking project-level actions.
+- `src/features/project-editor/components/sidebar/sidebar-panel-logic.ts`
+  - Section scoping + filter-state helpers. Delegates path branding/scoping to `sidebar-path-scoping.ts`. Exports `formatProjectRootBreadcrumbLabel()` for the sidebar project-root breadcrumb.
+- `src/features/project-editor/components/sidebar/sidebar-scope-path-breadcrumb.tsx`
+  - Clickable project-root breadcrumb above the sidebar filter (full root path; CSS ellipsis when narrow). Left click and context menu **Select project folder...** open the picker; **Show in File Explorer** / **Reveal in Finder** and **Close project** are in the right-click menu.
+- `src/features/project-editor/components/sidebar/sidebar-project-root-context-menu.tsx`
+  - Context menu UI for the project-root breadcrumb.
+- `src/features/project-editor/components/sidebar/use-sidebar-project-root-context-menu.ts`
+  - Context menu open/close state and action wiring for the project-root breadcrumb.
+- `src/features/project-editor/sidebar-file-actions/private/project-close.ts`
+  - Closes the active project via IPC and resets renderer project/editor state.
+- `src/features/project-editor/sidebar-file-actions/private/project-reveal.ts`
+  - Opens the project root in the OS file manager via IPC.
+- `electron/ipc/handlers/project-handlers/project-close-handler.ts`
+  - Stops the watcher and clears active project runtime state.
+- `electron/ipc/handlers/project-handlers/project-reveal-handler.ts`
+  - Opens a project root path with `shell.openPath`.
+- `src/features/project-editor/components/sidebar/sidebar-path-scoping.ts`
+  - Canonical sidebar path-scoping module. Owns branded path types (`SectionRelativePath`, `ProjectRelativePath`, `SidebarSectionRoot`) and all conversions between section-relative/project-relative paths, reorder payload scoping, and create-path building.
+- `src/features/project-editor/components/sidebar/sidebar-rail.tsx`
+  - Section rail and collapse toggle.
+- `src/features/project-editor/components/sidebar/sidebar-explorer-content.tsx`
+  - Explorer container and dialog orchestration.
+- `src/features/project-editor/components/sidebar/sidebar-explorer-body.tsx`
+  - Explorer body (path, filter, tree, state hints, menus/dialogs).
+- `src/features/project-editor/components/sidebar/sidebar-tree.tsx`
+  - Interactive tree rows, keyboard nav, right-click file hook, and drag-and-drop reorder state. Measures row geometry once at drag start and delegates position calculation to `sidebar-drop-logic`.
+- `src/features/project-editor/components/sidebar/sidebar-tree-logic.ts`
+  - Pure tree build/flatten helpers.
+- `src/features/project-editor/components/sidebar/sidebar-tree-sort.ts`
+  - `sortTreeRowsByOrder()` — reorders sidebar tree rows by `corkboardOrder` from index. Re-exported via `sidebar-tree-logic.ts`.
+- `mds/architecture/sidebar-drag-drop-architecture.md`
+  - Comprehensive reference for sidebar drag-and-drop architecture: drop position model, data flow for reorder vs move, path scoping rules, IPC contracts, component hierarchy, and Slice 1 implementation details.
+- `src/features/project-editor/components/sidebar/sidebar-tree-row-button.tsx`
+  - Individual tree row with drag handle, drag event handlers, and drop-indicator CSS classes (`is-drop-before`, `is-drop-after`, `is-drop-onFolder`).
+- `src/features/project-editor/components/sidebar/drop-indicator.tsx`
+  - Drop indicator position type model (`before` | `after` | `onFolder` | `onSection`). Visual rendering is handled by CSS classes on `SidebarTreeRowButton`.
+- `src/features/project-editor/components/sidebar/use-sidebar-tree-expanded-folders.ts`
+  - Expanded folder state management, including rename remap consumption via sidebar folder-rename events.
+- `src/features/project-editor/components/sidebar/sidebar-drop-logic/index.ts`
+  - Public facade for drag-and-drop position calculation and execution. Do not import from `private/` directly.
+- `src/features/project-editor/components/sidebar/sidebar-drop-logic/private/drop-position.ts`
+  - Pure `calculateDropPosition(rows, draggingPath, hoveredPath, clientY, rowGeometries)` — no DOM queries.
+- `src/features/project-editor/components/sidebar/sidebar-drop-logic/private/drop-execution.ts`
+  - `executeDrop()` — routes folder drops and file drops (move vs reorder) behind a single interface.
+- `src/features/project-editor/components/sidebar/sidebar-drop-logic/private/file-reorder.ts`
+  - Pure helpers for cross-folder move + reorder (`handleFileCrossFolderDrop`) and same-folder reorder (`handleFileSameFolderReorder`).
+- `src/features/project-editor/components/sidebar/sidebar-drop-logic/private/container-handlers.ts`
+  - Container-level `onDragOver` / `onDrop` handlers that detect background drops geometrically via `e.target !== e.currentTarget`.
+- `src/features/project-editor/components/sidebar/use-sidebar-tree-rows-drag.ts`
+  - Adapter hook: builds `RowGeometry[]` once at drag start via `buildRowGeometries()`, then delegates position math and execution to `sidebar-drop-logic`.
+- `src/features/project-editor/components/sidebar/sidebar-folder-rename-events.ts`
+  - One-shot folder rename event bridge used to remap expanded folder state after refresh.
+- `src/features/project-editor/components/sidebar/sidebar-filter.tsx`
+  - Filter input UI.
+- `src/features/project-editor/components/sidebar/sidebar-explorer-hooks.ts`
+  - Consolidated explorer hooks: filter shortcut, responsive collapse, file context menu, folder context menu. `useSidebarResponsiveCollapse()` is the viewport-only breakpoint seam consumed by `use-sidebar-layout.ts`.
+- `src/features/project-editor/components/sidebar/sidebar-dialog-hooks.ts`
+  - Consolidated dialog hooks: create dialog state (article/map/category, including native map-image picker), folder actions dialog state.
+- `src/features/project-editor/components/sidebar/sidebar-create-dialog.tsx`
+  - Shared create modal dialog for article/map/category; map mode adds a browse-backed image field. Article mode supports optional template picker.
+- `src/features/project-editor/components/template-picker-combobox.tsx`
+  - Searchable combobox for selecting a template from `templates/` when creating an article.
+- `src/features/project-editor/templates/index.ts`
+  - Deep module public facade for templates logic (TemplatesCatalog, SidebarCreateController, React bridge).
+- `src/features/project-editor/templates/templates-catalog.ts`
+  - `TemplatesCatalog` class: owns template path filtering, search query, selection state, and subscribe/notify pattern.
+- `src/features/project-editor/templates/templates-catalog-private/filter-template-paths.ts`
+  - Pure functions for extracting and filtering `templates/**/*.md` paths by search query.
+- `src/features/project-editor/templates/sidebar-create-controller.ts`
+  - `SidebarCreateController` class: owns create dialog mode, input state, template selection, and submit payload building.
+- `src/features/project-editor/templates/use-sidebar-create-controller-bridge.ts`
+  - Thin React bridge: `useRef` singleton + `useEffect` subscribe into `SidebarCreateController`.
+- `electron/services/template-service.ts`
+  - `TemplateService`: `ensureTemplatesDirectory()` (silent creation on project open) and `createFromTemplate()` (raw file copy preserving frontmatter).
+- `electron/ipc/handlers/project-handlers/template-handlers.ts`
+  - IPC handler for `createFromTemplate` channel.
+- `src/features/project-editor/components/sidebar/sidebar-file-context-menu.tsx`
+  - Right-click file action menu.
+- `src/features/project-editor/components/sidebar/sidebar-folder-context-menu.tsx`
+  - Right-click folder action menu (rename in V1).
+- `src/features/project-editor/components/sidebar/sidebar-file-actions-dialog.tsx`
+  - Rename/delete confirmation/input dialog.
+  - File delete dialog optionally offers deleting linked `res/*.png` images.
+- `src/features/project-editor/components/sidebar/use-sidebar-file-actions-dialog.ts`
+  - Rename/delete dialog state.
+  - Loads linked image info before file delete confirmation so the user can choose whether associated images are removed.
+- `src/features/project-editor/components/sidebar/sidebar-folder-actions-dialog.tsx`
+  - Folder rename input dialog.
+- `src/features/project-editor/components/sidebar/use-sidebar-folder-actions-dialog.ts`
+  - Folder rename dialog state.
+- `src/features/project-editor/components/sidebar/sidebar-footer-actions.tsx`
+  - Footer create controls: split `+Article` button with chevron menu for `Create map`, plus `+Category`.
+- `src/features/project-editor/components/sidebar/sidebar-settings.tsx`
+  - Sidebar settings panel with `SettingsField` layout component and all control subcomponents (theme preference buttons, focus scope select, spellcheck controls, spellcheck language select, panel width control).
+- `src/features/project-editor/components/sidebar/sidebar-transfer-content.tsx`
+  - Transfer section composition: separate `Project interchange` (AI import/export) and `Book export` blocks with format selector + export trigger.
+
+## Shared contracts
+
+- `src/shared/ipc.ts`
+  - IPC channel constants, Zod schemas, shared envelope/types.
+  - Zulu schemas and types re-exported from `ipc-zulu.ts`.
+- `src/shared/ipc-git-history.ts`
+  - Shared Git history IPC schemas/types for status, snapshot, revisions, preview, and load-revision calls.
+- `src/shared/ipc-zulu.ts`
+  - ZuluPad import schemas (`zuluTagModeSchema`, `zuluSelectFileResponseSchema`, etc.) and their inferred types, extracted from `ipc.ts`.
+- `src/shared/project-sections/index.ts`
+  - Deep module public interface for relevant sections plus Git-managed roots (`book`, `outline`, `lore`, `res`, `.trama.index.json`).
+  - Exports `RELEVANT_SECTION_NAMES`, `RELEVANT_SECTION_ROOTS`, `TRAMA_INDEX_FILE_NAME`, `isRelevantPath()`, and `isManagedPath()`.
+  - Implementation: `private/constants.ts` (section names, managed directory names, derived root arrays), `private/path-matching.ts` (`isRelevantPath`, `isManagedPath`).
+- `src/shared/workspace-context-menu.ts`
+  - Event bridge contract between Electron context menu and the renderer: `WORKSPACE_CONTEXT_MENU_EVENT` constant and `WorkspaceContextCommand` union type.
+  - The `WorkspaceContextCommand` includes the `{ type: 'paste-markdown' }` case used by the native menu and editor listeners.
+  - Also carries renderer-published `WorkspaceContextMenuState` plus `{ type: 'see-revisions', pane, path }` for pane-targeted revision rail opening.
+- `src/shared/markdown-layout-directives.ts`
+  - Shared parser/serializer helpers for invisible markdown layout directives (`center`, `spacer`, `pagebreak`) and editor artifact mapping.
+- `src/shared/markdown-layout-directives-artifact-node.ts`
+  - Artifact-node serializer for converting directive blot/artifact DOM nodes back into canonical markdown comments.
+- `src/shared/markdown-layout-directives-spacing.ts`
+  - Markdown post-serialization normalization that converts repeated blank-line runs into canonical `trama:spacer` directives.
+- `src/shared/markdown-image-placeholder.ts`
+  - Shared image placeholder helpers: embedded-image cache, placeholder hydration, and editor-only broken-image placeholder encode/render/rehydrate helpers.
+- `src/shared/zulu-parser.ts`
+  - `.zulu` XML parser: extracts page titles and content from ZuluPad document format.
+- `src/types/trama-api.d.ts`
+  - Global declaration for `window.tramaApi`.
+
+## Tests
+
+Core and regression suites:
+
+- `tests/ipc-contract.test.ts`
+- `tests/map-editor-helpers.test.ts`
+  - Pure coverage for map config parsing/normalization and destination tag resolution.
+- `tests/git-history-service.test.ts`
+  - Focused backend coverage for Git history: parent-repo scoping, unrelated staged abort, ignored-file noop, rename-follow listing, preview fallback, restore behavior.
+- `tests/fullscreen-ipc.test.ts`
+- `tests/use-project-editor.test.ts`
+- `tests/workspace-layout-persistence.test.ts`
+- `tests/project-editor-conflict-flow.test.ts`
+- `tests/project-editor-logic.test.ts`
+- `tests/project-folder-dialog-handler.test.ts`
+- `tests/rich-markdown-editor.test.ts`
+- `tests/rich-markdown-editor-tag-overlay.test.ts`
+- `tests/paste-markdown.test.ts`
+- `tests/focus-mode-scope.test.ts`
+- `tests/rich-markdown-editor-focus-rendering.test.ts`
+  - CSS Highlights API priority, fallback overlay, scope change marker behavior.
+- `tests/rich-markdown-editor-focus-split-pane.test.ts`
+  - Split pane focus regression: active/inactive pane behavior, `isActive` strict equality (`=== false`), CSS class application for `.is-focus-mode-inactive` dimming.
+- `tests/sidebar-tree.test.ts`
+- `tests/sidebar-path-scoping-types.test.ts`
+  - Runtime smoke coverage for the new path-scoping seam plus compile-time brand assertions enforced through `tests/typescript-compile.test.ts`.
+- `tests/sidebar-filter.test.ts`
+- `tests/sidebar-panels.test.ts`
+- `tests/map-document-create-repository.test.ts`
+  - Repository coverage for map creation: copies selected source image into `res/`, writes map frontmatter, and handles image-name collisions.
+- `tests/sidebar-panels.test.ts`
+- `tests/spellcheck-settings.test.ts`
+- `tests/sidebar-scroll-regression.test.ts`
+- `tests/workspace-keyboard-shortcuts.test.ts`
+- `tests/frontmatter-parser.test.ts`
+- `tests/index-reconciliation.test.ts`
+  - Reconciliation and `updateCache` behavior tests.
+- `tests/incremental-project-updater.test.ts`
+  - Unit tests for `incremental-project-updater.ts`: file/folder create, delete, rename operations on cached tree state.
+- `tests/incremental-open-project.test.ts`
+  - Integration tests for `handleOpenProject` with `incrementalUpdate`: cache hits, cache invalidation on root change, empty-incremental reorder path.
+- `tests/theme-preference.test.ts`
+- `tests/startup-smoke.test.ts`
+- `tests/startup-project-open.test.ts`
+  - Startup restore decision coverage: valid remembered root auto-open, no-memory picker fallback, invalid-memory cleanup.
+- `tests/electron-smoke.test.ts`
+- `tests/typescript-compile.test.ts`
+- `tests/ai-import-parser.test.ts`
+  - Parser coverage for `=== ARCHIVO: ... ===` clipboard format and edge cases.
+- `tests/ai-export-service.test.ts`
+  - Export formatter service coverage (multi-file output, frontmatter toggle, path hardening, missing file behavior).
+- `tests/ai-export-ipc-handler.test.ts`
+  - IPC envelope validation for export handler success/error payload paths.
+- `tests/book-export-ipc-handler.test.ts`
+  - Book export IPC coverage: payload validation, markdown export success, phase C format exports (`html/docx/epub/pdf`), and failure envelope behavior.
+- `tests/book-export-order.test.ts`
+  - Book export order coverage: base tree ordering, index override, and non-book path filtering.
+- `tests/book-export-sanitize.test.ts`
+  - Book export sanitize coverage: frontmatter/tag removal, markdown-only comment stripping, and whitespace normalization.
+- `tests/book-export-renderers.test.ts`
+  - Renderer coverage for markdown/html/docx/epub/pdf outputs, including directive conversion and binary artifact generation.
+- `tests/book-export-image-utils.test.ts`
+  - Image utility coverage: PNG/JPEG dimension parsing from bytes, DOCX proportional size calculation, and markdown reference-style image extraction.
+- `tests/use-ai-export.test.ts`
+- `tests/ai-export-staging-hardening.test.ts`
+- `tests/ai-export-staging-keyboard.test.ts`
+  - Renderer export hook coverage for IPC call shape, clipboard copy, and error state handling.
+- `tests/folder-rename-repository.test.ts`
+  - Repository-level folder rename coverage (success + validation/collision failures).
+- `tests/folder-rename-ipc-handler.test.ts`
+  - IPC folder rename envelope coverage and on-disk subtree move assertions.
+- `tests/project-editor-folder-logic.test.ts`
+  - Pure path-remap coverage for folder rename in split-layout state.
+- `tests/order-handlers.test.ts`
+  - IPC handler coverage for `handleReorderFiles` (saves order to index, handles empty folder path, rejects no-active-project, rejects invalid payload).
+- `tests/drag-drop-sidebar.test.ts`
+  - Sidebar drag-drop logic coverage (folder vs file drop targets, before/after position reorder logic, tree row filtering).
+- `tests/markdown-layout-directives.test.ts`
+  - Unit coverage for directive extraction, warning behavior, artifact rendering, and canonical serialization helpers.
+- `tests/rich-markdown-editor-center-toggle.test.ts`
+  - Center-range and center toggle coverage: boundary extraction from Delta ops, center segment derivation (single/multiple/malformed), line-range selection normalization, inside-center split/left-only toggle behavior, outside-center insertion, adjacent-segment extension, and no-nesting idempotence checks.
+- `tests/rich-markdown-editor-center-delete-boundary.test.ts`
+  - Slice 3 center seam deletion coverage: Backspace/Delete around `center:start`/`center:end` shift the nearest boundary across the seam and leave unrelated deletes to Quill's default behavior.
+- `tests/ai-import-service.test.ts`
+  - Import service coverage: replace mode overwrites existing file content, append mode appends with separator, preview correctly classifies new vs existing files.
+- `tests/ai-import-ipc-handler.test.ts`
+  - IPC handler coverage: rejects invalid `importMode` with `VALIDATION_ERROR`, append mode produces expected written content via IPC.
+- `tests/pane-workspace.test.ts`
+  - Unit tests for `PaneWorkspace` coordinator class: mutation methods (`updatePaneContent`, `loadPaneDocument`, `clearPanes`, `updatePaneMeta`), save/isDirty contracts, autosave timer lifecycle.
+- `tests/use-pane-workspace.test.ts`
+  - Unit tests for the `usePaneWorkspace` factory hook: stable identity across re-renders, proper passing of bindings/refs/saveFn to `PaneWorkspace`.
+- `tests/use-ai-import.test.ts`
+  - Renderer import hook coverage: `importMode` forwarded to preview IPC call, `importMode` forwarded to execute IPC call, log message format matches created/appended/replaced/skipped/errors counts.
+- `tests/window-close.test.ts`
+  - Regression tests for window close behavior: dirty state IPC notification, `__tramaSaveAll` global function, parallel save of dirty panes.
+- `tests/project-editor-view-render-split.test.ts`
+  - Regression test for issue #4 shell narrowing: typing updates should not re-render the memoized sidebar shell or closed dialog leaf components.
+- `tests/rich-markdown-editor-value-sync.test.ts`
+  - Unit coverage for canonical editor-value normalization and equivalence between base64 markdown images and `IMAGE_PLACEHOLDER` markdown.
+
+## Architecture docs
+
+- `mds/architecture/rich-editor-hotspots.md`
+  - Fast routing document for the editor's fragile seams: debounce, external sync, pane persistence, layout-vs-document state, focus geometry, and command bridge.
+- `mds/architecture/window-close-architecture.md`
+  - Documents the window close architecture: main-process close handler, renderer dirty-state notification via IPC, `__tramaSaveAll` bridge, promise-chain cancel pattern, and key files.
+- `mds/architecture/zulu-import-architecture.md`
+  - Canonical reference for the ZuluPad import pipeline. Explains parser logic, encoding detection, tag generation, line ending normalization, IPC contract, file map, and UI flow.
+
+## Build outputs
+
+- `dist/` -> renderer build.
+- `dist-electron/` -> transpiled Electron and shared runtime files.
+- Required preload artifact: `dist-electron/electron/preload.cjs`.

@@ -115,24 +115,24 @@ npm run pack:win
 -   `src/`: Preact renderer source code.
     -   `features/project-editor/`: Domain-driven feature modules (editor, sidebar, pane workspace).
     -   `shared/`: Shared IPC types and constants between main and renderer.
--   `docs/`: Design specifications, architecture docs, implementation plans, and lessons learned.
+-   `mds/`: Design specifications, architecture docs, implementation plans, and lessons learned.
 -   `tests/`: Comprehensive test suite (unit, integration, and smoke tests).
 
 ## 🧭 Developer Documentation Entry
 
 If you are starting a new implementation conversation, begin with:
 
--   [docs/START-HERE.md](docs/START-HERE.md)
+-   [mds/START-HERE.md](mds/START-HERE.md)
 
 This entrypoint routes to the mandatory docs that are often missed:
--   [docs/live/current-status.md](docs/live/current-status.md)
--   [docs/live/file-map.md](docs/live/file-map.md)
--   [docs/lessons-learned/README.md](docs/lessons-learned/README.md)
--   [docs/dev-workflow.md](docs/dev-workflow.md)
+-   [mds/live/current-status.md](mds/live/current-status.md)
+-   [mds/live/file-map.md](mds/live/file-map.md)
+-   [mds/lessons-learned/README.md](mds/lessons-learned/README.md)
+-   [mds/dev-workflow.md](mds/dev-workflow.md)
 
 ## 🤝 Contributing
 
-Contributions are welcome. Please read [docs/dev-workflow.md](docs/dev-workflow.md) for the development workflow, testing requirements, and documentation update protocol.
+Contributions are welcome. Please read [mds/dev-workflow.md](mds/dev-workflow.md) for the development workflow, testing requirements, and documentation update protocol.
 
 ## 📄 License
 

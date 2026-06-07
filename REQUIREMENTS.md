@@ -34,7 +34,7 @@ Soporte Nativo de Markdown: Editor principal basado en Markdown.
 
 Soporte de Imágenes: Renderizado de imágenes dentro del documento, soportando tanto rutas locales/enlaces externos como imágenes incrustadas directamente en formato Base64.
 
-Autocompletado y Enlaces por Tags: Sistema de Wiki Tags que permite asociar términos del texto con artículos del Lore. Los tags se definen en el YAML frontmatter de los archivos de Lore y se resuelven implícitamente en el editor (Ctrl + click para abrir). Ver especificación técnica completa en `docs/wiki-tag-links-spec.md`.
+Autocompletado y Enlaces por Tags: Sistema de Wiki Tags que permite asociar términos del texto con artículos del Lore. Los tags se definen en el YAML frontmatter de los archivos de Lore y se resuelven implícitamente en el editor (Ctrl + click para abrir). Ver especificación técnica completa en `mds/wiki-tag-links-spec.md`.
 
 Plantillas (Templates): Posibilidad de crear nuevos documentos basados en esquemas predefinidos (ej. "Ficha de Personaje", "Ficha de Locación").
 
