@@ -123,6 +123,22 @@ em {
   box-shadow: 0 4px 20px var(--accent-glow);
 }
 
+.nav-links a.btn-primary {
+  color: var(--bg-color);
+}
+
+.nav-links a.btn-primary:hover {
+  color: var(--bg-color);
+}
+
+.nav-links a.btn-outline {
+  color: var(--text-main);
+}
+
+.nav-links a.btn-outline:hover {
+  color: var(--text-main);
+}
+
 .btn-outline {
   border: 1px solid var(--surface-border);
   color: var(--text-main);
@@ -155,17 +171,6 @@ em {
   text-align: center;
 }
 
-.hero-badge {
-  display: inline-block;
-  padding: 0.4rem 1rem;
-  border-radius: 100px;
-  border: 1px solid var(--surface-border);
-  font-size: 0.8rem;
-  color: var(--text-muted);
-  margin-bottom: 2rem;
-  background: var(--surface-color);
-}
-
 .hero-title {
   font-size: 6rem;
   line-height: 1.1;
@@ -185,7 +190,14 @@ em {
   gap: 1.5rem;
   justify-content: center;
   align-items: center;
-  margin-bottom: 6rem;
+  margin-bottom: 1.5rem;
+}
+
+.hero-cta-meta {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  margin-bottom: 5.5rem;
+  display: block;
 }
 
 .hero-visual {
