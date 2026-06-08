@@ -126,6 +126,7 @@ export function AiExportStagingBasket(props: AiExportStagingBasketProps) {
         }}
       />
       <AiExportStagingChips
+        projectRoot={props.projectRoot}
         selectedPaths={props.selectedPaths}
         exporting={props.exporting}
         focusedIndex={focusedIndex}

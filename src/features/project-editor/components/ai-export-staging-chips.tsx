@@ -1,4 +1,5 @@
 interface AiExportStagingChipsProps {
+  projectRoot: string
   selectedPaths: string[]
   exporting: boolean
   focusedIndex: number | null
@@ -14,23 +15,26 @@ function getShortFilename(relativePath: string): string {
 
 function AiExportStagingChip({
   filePath,
+  projectRoot,
   index,
   focusedIndex,
   exporting,
   onRemovePath,
 }: {
   filePath: string
+  projectRoot: string
   index: number
   focusedIndex: number | null
   exporting: boolean
   onRemovePath: (index: number) => void
 }) {
+  const fullPath = `${projectRoot.replace(/\\/g, '/')}/${filePath}`
   return (
     <span
       class={`ai-export-dialog__basket-chip${focusedIndex === index ? ' ai-export-dialog__basket-chip--focused' : ''}`}
       role="option"
       aria-selected={focusedIndex === index}
-      title={filePath}
+      title={fullPath}
     >
       <span class="ai-export-dialog__basket-chip-label">{getShortFilename(filePath)}</span>
       <button
@@ -47,6 +51,7 @@ function AiExportStagingChip({
 }
 
 export function AiExportStagingChips({
+  projectRoot,
   selectedPaths,
   exporting,
   focusedIndex,
@@ -83,6 +88,7 @@ export function AiExportStagingChips({
         <AiExportStagingChip
           key={filePath}
           filePath={filePath}
+          projectRoot={projectRoot}
           index={index}
           focusedIndex={focusedIndex}
           exporting={exporting}
