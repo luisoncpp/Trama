@@ -10,6 +10,7 @@ export {
   hardenAbsolutePaths,
   mergeIntoStagingBasket,
   formatStagingSkipMessage,
+  sortPathsByProjectIndex,
 } from './private/relative-path-hardening'
 export type { StagingHardenReport } from './private/relative-path-hardening'
 export { handleStagingBasketKeyDown } from './private/staging-basket-keyboard'

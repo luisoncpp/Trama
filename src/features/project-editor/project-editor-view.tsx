@@ -66,6 +66,7 @@ function useProjectEditorViewState(model: ProjectEditorModel, props: Omit<Projec
   const { dialogsProps } = useProjectEditorViewDialogs(
     shellState.rootPath,
     shellState.visibleFiles,
+    model.state.snapshot,
   )
   const sidebarStyle = buildSidebarStyle(sidebarWidthPx)
   const layoutProps = {

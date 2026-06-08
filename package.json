@@ -80,7 +80,7 @@
       "main": "dist-electron/electron/main.js"
     },
     "win": {
-      "signAndEditExecutable": false,
+      "signAndEditExecutable": true,
       "target": [
         {
           "target": "nsis",

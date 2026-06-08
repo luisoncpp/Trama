@@ -96,7 +96,7 @@ export function useProjectEditor(): ProjectEditorModel {
   useHelpScreenshotHarness(core.openProject, actions)
 
   return {
-    state: (({ snapshot, editorMeta, ...stateValue }) => stateValue)(values),
+    state: (({ editorMeta, ...stateValue }) => stateValue)(values),
     actions,
     serializationRefs: workspace.serializationRefs,
     zoomRef: workspace.zoomRef,

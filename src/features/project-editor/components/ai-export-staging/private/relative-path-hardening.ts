@@ -1,4 +1,5 @@
 import { isRelevantPath } from '../../../../../shared/project-sections'
+import type { ProjectSnapshot, TreeItem, ProjectIndex } from '../../../../../shared/ipc'
 
 export type StagingHardenReport = {
   accepted: string[]
@@ -114,3 +115,109 @@ export function formatStagingSkipMessage(report: StagingHardenReport): string | 
 
   return `Skipped: ${parts.join(', ')}.`
 }
+
+function idFromIndex(index: ProjectIndex, filePath: string): string {
+  const meta = index.cache[filePath]
+  if (meta && typeof meta.id === 'string' && meta.id.trim()) {
+    return meta.id
+  }
+  return filePath
+}
+
+function sortTreeItems(items: TreeItem[], index: ProjectIndex, parentPath: string): TreeItem[] {
+  const folders = items.filter((item) => item.type === 'folder')
+  const files = items.filter((item) => item.type === 'file')
+
+  if (parentPath === '') {
+    const SECTION_ORDER = ['book', 'outline', 'lore']
+    const getPriority = (item: TreeItem) => {
+      const idx = SECTION_ORDER.indexOf(item.path)
+      return idx === -1 ? 999 : idx
+    }
+
+    folders.sort((a, b) => {
+      const pA = getPriority(a)
+      const pB = getPriority(b)
+      if (pA !== pB) return pA - pB
+      return a.title.localeCompare(b.title, 'es')
+    })
+  } else {
+    folders.sort((a, b) => a.title.localeCompare(b.title, 'es'))
+  }
+
+  const explicitOrder = index.corkboardOrder[parentPath] ?? []
+  const rankById = new Map<string, number>()
+  for (let i = 0; i < explicitOrder.length; i++) {
+    rankById.set(explicitOrder[i], i)
+  }
+
+  files.sort((left, right) => {
+    const leftId = idFromIndex(index, left.path)
+    const rightId = idFromIndex(index, right.path)
+    const leftRank = rankById.get(leftId)
+    const rightRank = rankById.get(rightId)
+
+    if (leftRank != null && rightRank != null) {
+      return leftRank - rightRank
+    }
+    if (leftRank != null) {
+      return -1
+    }
+    if (rightRank != null) {
+      return 1
+    }
+    return left.title.localeCompare(right.title, 'es')
+  })
+
+  return [...folders, ...files]
+}
+
+function getSortedFilePaths(tree: TreeItem[], index: ProjectIndex): string[] {
+  const result: string[] = []
+
+  const visit = (items: TreeItem[], parentPath: string) => {
+    const sorted = sortTreeItems(items, index, parentPath)
+    for (const item of sorted) {
+      if (item.type === 'file') {
+        result.push(item.path)
+      } else if (item.children) {
+        visit(item.children, item.path)
+      }
+    }
+  }
+
+  visit(tree, '')
+  return result
+}
+
+export function sortPathsByProjectIndex(
+  basketPaths: string[],
+  snapshot: ProjectSnapshot | null,
+): string[] {
+  if (!snapshot || !snapshot.tree || !snapshot.index) {
+    return basketPaths
+  }
+
+  const sortedProjectFiles = getSortedFilePaths(snapshot.tree, snapshot.index)
+  const fileToIndex = new Map<string, number>()
+  for (let i = 0; i < sortedProjectFiles.length; i++) {
+    fileToIndex.set(sortedProjectFiles[i], i)
+  }
+
+  return [...basketPaths].sort((left, right) => {
+    const leftIndex = fileToIndex.get(left)
+    const rightIndex = fileToIndex.get(right)
+
+    if (leftIndex != null && rightIndex != null) {
+      return leftIndex - rightIndex
+    }
+    if (leftIndex != null) {
+      return -1
+    }
+    if (rightIndex != null) {
+      return 1
+    }
+    return left.localeCompare(right)
+  })
+}
+

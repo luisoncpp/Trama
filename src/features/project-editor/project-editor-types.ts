@@ -39,7 +39,7 @@ export interface SidebarRenameInput {
   newName: string
 }
 
-export type ProjectEditorState = Omit<ProjectEditorStateValues, 'snapshot' | 'editorMeta'>
+export type ProjectEditorState = Omit<ProjectEditorStateValues, 'editorMeta'>
 
 export interface ProjectEditorStateValues {
   apiAvailable: boolean

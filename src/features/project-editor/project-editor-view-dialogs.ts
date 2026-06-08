@@ -1,13 +1,18 @@
 import { useMemo } from 'preact/hooks'
+import type { ProjectSnapshot } from '../../shared/ipc'
 import type { ProjectEditorDialogsProps } from './project-editor-dialogs'
 import { useAiExport } from './use-ai-export'
 import { useAiImport } from './use-ai-import'
 import { useBookExport } from './use-book-export'
 import { useZuluImport } from './use-zulu-import'
 
-export function useProjectEditorViewDialogs(rootPath: string, visibleFiles: string[]) {
+export function useProjectEditorViewDialogs(
+  rootPath: string,
+  visibleFiles: string[],
+  snapshot: ProjectSnapshot | null,
+) {
   const aiImport = useAiImport(rootPath)
-  const aiExport = useAiExport(rootPath)
+  const aiExport = useAiExport(rootPath, snapshot)
   const bookExport = useBookExport(rootPath)
   const zuluImport = useZuluImport(rootPath)
 

@@ -18,9 +18,18 @@ type AiExportApiResponse = {
   }
 }
 
-function createHookHarness(projectRoot: string | null, onState: (state: HookState) => void) {
+function createHookHarness(projectRoot: string | null, onState: (state: HookState) => void): () => null
+function createHookHarness(projectRoot: string | null, snapshot: any, onState: (state: HookState) => void): () => null
+function createHookHarness(
+  projectRoot: string | null,
+  snapshotOrOnState: any,
+  maybeOnState?: (state: HookState) => void,
+) {
+  const snapshot = maybeOnState ? snapshotOrOnState : null
+  const onState = maybeOnState ? maybeOnState : snapshotOrOnState
+
   return function HookHarness() {
-    const state = useAiExport(projectRoot)
+    const state = useAiExport(projectRoot, snapshot)
     onState(state)
     return null
   }
@@ -135,5 +144,91 @@ describe('useAiExport', () => {
     expect(result).toBe(false)
     expect(writeClipboardMock).not.toHaveBeenCalled()
     expect(latestState?.lastError).toBe('Unable to export')
+  })
+
+  it('automatically sorts selectedPaths according to the snapshot tree and index', async () => {
+    const mockSnapshot = {
+      rootPath: 'C:/project',
+      tree: [
+        {
+          id: 'book',
+          title: 'book',
+          path: 'book',
+          type: 'folder',
+          children: [
+            {
+              id: 'book/Act-01',
+              title: 'Act-01',
+              path: 'book/Act-01',
+              type: 'folder',
+              children: [
+                { id: 'book/Act-01/scene-1.md', title: 'scene-1', path: 'book/Act-01/scene-1.md', type: 'file' },
+                { id: 'book/Act-01/scene-2.md', title: 'scene-2', path: 'book/Act-01/scene-2.md', type: 'file' },
+              ],
+            },
+          ],
+        },
+        {
+          id: 'outline',
+          title: 'outline',
+          path: 'outline',
+          type: 'folder',
+          children: [
+            { id: 'outline/out-1.md', title: 'out-1', path: 'outline/out-1.md', type: 'file' },
+          ],
+        },
+        {
+          id: 'lore',
+          title: 'lore',
+          path: 'lore',
+          type: 'folder',
+          children: [
+            { id: 'lore/character-1.md', title: 'character-1', path: 'lore/character-1.md', type: 'file' },
+          ],
+        },
+      ],
+      markdownFiles: [
+        'book/Act-01/scene-1.md',
+        'book/Act-01/scene-2.md',
+        'outline/out-1.md',
+        'lore/character-1.md',
+      ],
+      index: {
+        version: '1.0.0',
+        corkboardOrder: {
+          'book/Act-01': ['book/Act-01/scene-2.md', 'book/Act-01/scene-1.md'],
+        },
+        cache: {
+          'book/Act-01/scene-1.md': {},
+          'book/Act-01/scene-2.md': {},
+          'outline/out-1.md': {},
+          'lore/character-1.md': {},
+        },
+      },
+    }
+
+    const Harness = createHookHarness('C:/project', mockSnapshot, (state) => {
+      latestState = state
+    })
+
+    act(() => {
+      render(h(Harness, {}), container)
+    })
+
+    await act(async () => {
+      latestState?.setSelectedPaths([
+        'lore/character-1.md',
+        'outline/out-1.md',
+        'book/Act-01/scene-1.md',
+        'book/Act-01/scene-2.md',
+      ])
+    })
+
+    expect(latestState?.selectedPaths).toEqual([
+      'book/Act-01/scene-2.md',
+      'book/Act-01/scene-1.md',
+      'outline/out-1.md',
+      'lore/character-1.md',
+    ])
   })
 })

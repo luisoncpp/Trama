@@ -1,4 +1,6 @@
 import { useState, useCallback, useEffect, useMemo } from 'preact/hooks'
+import { sortPathsByProjectIndex } from './components/ai-export-staging'
+import type { ProjectSnapshot } from '../../shared/ipc'
 
 const COPY_TOAST_DURATION_MS = 3000
 
@@ -96,17 +98,25 @@ function useAiExportCopyToast(state: ReturnType<typeof useAiExportState>) {
   return { copyToastMessage, dismissCopyToast }
 }
 
-export function useAiExport(projectRoot: string | null) {
+export function useAiExport(projectRoot: string | null, snapshot: ProjectSnapshot | null = null) {
   const state = useAiExportState()
   const { handleExport } = useAiExportHandlers(state, projectRoot)
   const { copyToastMessage, dismissCopyToast } = useAiExportCopyToast(state)
+
+  const setSelectedPaths = useCallback(
+    /* setSelectedPathsSorted */ (paths: string[]) => {
+      const sorted = sortPathsByProjectIndex(paths, snapshot)
+      state.setSelectedPaths(sorted)
+    },
+    [snapshot, state.setSelectedPaths] /*Inputs for setSelectedPathsSorted*/,
+  )
 
   return useMemo(
     /* buildAiExportState */ () => ({
       open: state.open,
       setOpen: state.setOpen,
       selectedPaths: state.selectedPaths,
-      setSelectedPaths: state.setSelectedPaths,
+      setSelectedPaths: setSelectedPaths,
       includeFrontmatter: state.includeFrontmatter,
       setIncludeFrontmatter: state.setIncludeFrontmatter,
       exporting: state.exporting,
@@ -121,7 +131,7 @@ export function useAiExport(projectRoot: string | null) {
       state.open,
       state.setOpen,
       state.selectedPaths,
-      state.setSelectedPaths,
+      setSelectedPaths,
       state.includeFrontmatter,
       state.setIncludeFrontmatter,
       state.exporting,
