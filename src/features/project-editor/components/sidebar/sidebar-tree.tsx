@@ -68,20 +68,20 @@ function useSidebarTreeRows(
   filterQuery: string,
   corkboardOrder?: Record<string, string[]>,
 ) {
-  const tree = useMemo(() => buildSidebarTree(visibleFiles), [visibleFiles])
-  const filterResult = useMemo(() => filterSidebarTree(tree, filterQuery), [filterQuery, tree])
+  const tree = useMemo(/* getSidebarTree */ () => buildSidebarTree(visibleFiles), [visibleFiles] /*Inputs for getSidebarTree*/)
+  const filterResult = useMemo(/* getFilterResult */ () => filterSidebarTree(tree, filterQuery), [filterQuery, tree] /*Inputs for getFilterResult*/)
   const rawRows = useMemo(
-    () =>
+    /* getRawRows */ () =>
       getVisibleSidebarRows(
         tree,
         new Set(expandedFolders),
         filterResult.query ? filterResult.visibleNodePaths : undefined,
       ),
-    [expandedFolders, filterResult, tree],
+    [expandedFolders, filterResult, tree] /*Inputs for getRawRows*/
   )
   const rows = useMemo(
-    () => (corkboardOrder ? sortTreeRowsByOrder(rawRows, corkboardOrder) : rawRows),
-    [rawRows, corkboardOrder],
+    /* getSortedRows */ () => (corkboardOrder ? sortTreeRowsByOrder(rawRows, corkboardOrder) : rawRows),
+    [rawRows, corkboardOrder] /*Inputs for getSortedRows*/
   )
   return { rows, filterResult }
 }
@@ -149,22 +149,12 @@ function SidebarTreeRows({
   )
 }
 
-export function SidebarTree({
-  visibleFiles,
-  selectedPath,
-  loadingDocument,
-  onSelectFile,
-  filterQuery,
-  corkboardOrder,
-  onFileContextMenu,
-  onFolderContextMenu,
-  onReorderFiles,
-  onMoveFile,
-  onMoveFolder,
-  expandedFolders,
-  onToggleFolder,
-  isLoading,
-}: SidebarTreeProps) {
+export function SidebarTree(props: SidebarTreeProps) {
+  const {
+    visibleFiles, selectedPath, loadingDocument, onSelectFile, filterQuery,
+    corkboardOrder, onFileContextMenu, onFolderContextMenu, onReorderFiles,
+    onMoveFile, onMoveFolder, expandedFolders, onToggleFolder, isLoading,
+  } = props
   const { rows, filterResult } = useSidebarTreeRows(visibleFiles, expandedFolders, filterQuery, corkboardOrder)
   const containerRef = useRef<HTMLDivElement | null>(null)
   const hasFilterQuery = filterResult.query.length > 0

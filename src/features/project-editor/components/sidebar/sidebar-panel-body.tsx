@@ -5,10 +5,10 @@ import { SidebarSettingsContent } from './sidebar-settings.tsx'
 import { SidebarTransferContent } from './sidebar-transfer-content.tsx'
 import {
   buildScopedReorderHandler,
+  buildScopedMoveFileHandler,
+  buildScopedMoveFolderHandler,
   scopeCorkboardOrder,
-  toProjectFolderPath,
   toProjectPath,
-  toSectionRelativeFolderPath,
   toSectionRelativePath,
 } from './sidebar-path-scoping'
 import type {
@@ -93,6 +93,8 @@ function renderExplorer(props: SidebarPanelBodyProps) {
     onSelectFile, onReorderFiles, onMoveFile, onMoveFolder, corkboardOrder,
   } = props
   if (!sectionConfig) return null
+  const root = sectionConfig.root
+  const scopePath = (p: string) => toProjectPath(toSectionRelativePath(p), root)
   return (
     <SidebarExplorerContent
       {...contentProps}
@@ -111,32 +113,18 @@ function renderExplorer(props: SidebarPanelBodyProps) {
       onCreateArticle={onCreateArticle}
       onCreateMap={onCreateMap}
       onCreateCategory={onCreateCategory}
-      onRenameFile={(path, newName) => onRenameFile(toProjectPath(toSectionRelativePath(path), sectionConfig.root), newName)}
-      onRenameFolder={(path, newName) => onRenameFolder(toProjectPath(toSectionRelativePath(path), sectionConfig.root), newName)}
-      onDeleteFolder={(path) => onDeleteFolder(toProjectPath(toSectionRelativePath(path), sectionConfig.root))}
-      onDeleteFile={(path, options) => onDeleteFile(toProjectPath(toSectionRelativePath(path), sectionConfig.root), options)}
-      onEditFileTags={(path, tags) => onEditFileTags(toProjectPath(toSectionRelativePath(path), sectionConfig.root), tags)}
-      onLoadFileTags={loadFileTags(sectionConfig.root)}
-      onLoadFileDeleteInfo={loadFileDeleteInfo(sectionConfig.root)}
-      onSelectFile={(filePath) => onSelectFile(toProjectPath(toSectionRelativePath(filePath), sectionConfig.root))}
-      corkboardOrder={scopeCorkboardOrder(corkboardOrder, sectionConfig.root)}
-      onReorderFiles={buildScopedReorderHandler(onReorderFiles, sectionConfig.root)}
-      onMoveFile={
-        onMoveFile
-          ? (sourcePath, targetFolder) => onMoveFile(
-            toProjectPath(toSectionRelativePath(sourcePath), sectionConfig.root),
-            toProjectFolderPath(toSectionRelativeFolderPath(targetFolder), sectionConfig.root),
-          )
-          : undefined
-      }
-      onMoveFolder={
-        onMoveFolder
-          ? (sourcePath, targetParent) => onMoveFolder(
-            toProjectPath(toSectionRelativePath(sourcePath), sectionConfig.root),
-            toProjectFolderPath(toSectionRelativeFolderPath(targetParent), sectionConfig.root),
-          )
-          : undefined
-      }
+      onRenameFile={(path, newName) => onRenameFile(scopePath(path), newName)}
+      onRenameFolder={(path, newName) => onRenameFolder(scopePath(path), newName)}
+      onDeleteFolder={(path) => onDeleteFolder(scopePath(path))}
+      onDeleteFile={(path, options) => onDeleteFile(scopePath(path), options)}
+      onEditFileTags={(path, tags) => onEditFileTags(scopePath(path), tags)}
+      onLoadFileTags={loadFileTags(root)}
+      onLoadFileDeleteInfo={loadFileDeleteInfo(root)}
+      onSelectFile={(filePath) => onSelectFile(scopePath(filePath))}
+      corkboardOrder={scopeCorkboardOrder(corkboardOrder, root)}
+      onReorderFiles={buildScopedReorderHandler(onReorderFiles, root)}
+      onMoveFile={buildScopedMoveFileHandler(onMoveFile, root)}
+      onMoveFolder={buildScopedMoveFolderHandler(onMoveFolder, root)}
     />
   )
 }

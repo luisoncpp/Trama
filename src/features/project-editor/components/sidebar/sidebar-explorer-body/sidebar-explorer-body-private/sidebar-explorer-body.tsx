@@ -1,74 +1,18 @@
 import { useMemo } from 'preact/hooks'
-import { SidebarScopePathBreadcrumb } from './sidebar-scope-path-breadcrumb.tsx'
-import type { SidebarCreateInput } from '../../project-editor-types'
-import type { SidebarCreateMode } from './sidebar-create-dialog.tsx'
-import type { SidebarFileActionMode } from './sidebar-file-actions-dialog.tsx'
-import type { SidebarFolderActionMode } from './sidebar-folder-actions-dialog.tsx'
-import { SidebarExplorerDialogs } from './sidebar-explorer-dialogs.tsx'
-import { useSidebarDialogs } from './sidebar-dialogs-context-menus'
-import { SidebarFilter } from './sidebar-filter.tsx'
-import { SidebarTree } from './sidebar-tree.tsx'
-import { buildSidebarTree } from './sidebar-tree-logic'
-import { filterSidebarTree } from './sidebar-filter-logic'
-import { useSidebarTreeExpandedFolders } from './use-sidebar-tree-expanded-folders'
+import { SidebarScopePathBreadcrumb } from '../../sidebar-scope-path-breadcrumb.tsx'
+import type { SidebarCreateInput } from '../../../../project-editor-types'
+import type { SidebarCreateMode } from '../../sidebar-create-dialog.tsx'
+import type { SidebarFileActionMode } from '../../sidebar-file-actions-dialog.tsx'
+import type { SidebarFolderActionMode } from '../../sidebar-folder-actions-dialog.tsx'
+import { SidebarExplorerDialogs } from '../../sidebar-explorer-dialogs.tsx'
+import { useSidebarDialogs } from '../../sidebar-dialogs-context-menus'
+import { SidebarFilter } from '../../sidebar-filter.tsx'
+import { buildSidebarTree } from '../../sidebar-tree-logic'
+import { filterSidebarTree } from '../../sidebar-filter-logic'
+import { useSidebarTreeExpandedFolders } from '../../use-sidebar-tree-expanded-folders'
+import { SidebarTreeArea } from './sidebar-tree-area.tsx'
 
-function EmptyStateHint({ showOnlyStateHint, loadingProject, apiAvailable }: {
-  showOnlyStateHint: boolean
-  loadingProject: boolean
-  apiAvailable: boolean
-}) {
-  if (!showOnlyStateHint) return null
-  if (!apiAvailable) {
-    return <p class="file-tree__empty">Preload API unavailable. Reopen the app to restore sidebar actions.</p>
-  }
-  if (loadingProject) {
-    return <p class="file-tree__empty">Loading project files...</p>
-  }
-  return null
-}
-
-function SidebarTreeArea(props: {
-  showOnlyStateHint: boolean
-  loadingProject: boolean
-  apiAvailable: boolean
-  visibleFiles: string[]
-  selectedPath: string | null
-  loadingDocument: boolean
-  filterQuery: string
-  corkboardOrder?: Record<string, string[]>
-  onSelectFile: (path: string) => Promise<void>
-  onFileContextMenu: (path: string, event: MouseEvent) => void
-  onFolderContextMenu: (path: string, event: MouseEvent) => void
-  onReorderFiles?: (folderPath: string, orderedIds: string[]) => Promise<void>
-  onMoveFile?: (sourcePath: string, targetFolder: string) => Promise<void>
-  onMoveFolder?: (sourcePath: string, targetParent: string) => Promise<void>
-  expandedFolders: string[]
-  onToggleFolder: (path: string, expanded: boolean) => void
-}) {
-  if (props.showOnlyStateHint) {
-    return <EmptyStateHint loadingProject={props.loadingProject} apiAvailable={props.apiAvailable} showOnlyStateHint />
-  }
-  return (
-    <SidebarTree
-      visibleFiles={props.visibleFiles}
-      selectedPath={props.selectedPath}
-      loadingDocument={props.loadingDocument}
-      onSelectFile={props.onSelectFile}
-      filterQuery={props.filterQuery}
-      corkboardOrder={props.corkboardOrder}
-      onFileContextMenu={props.onFileContextMenu}
-      onFolderContextMenu={props.onFolderContextMenu}
-      onReorderFiles={props.onReorderFiles}
-      onMoveFile={props.onMoveFile}
-      onMoveFolder={props.onMoveFolder}
-      expandedFolders={props.expandedFolders}
-      onToggleFolder={props.onToggleFolder}
-      isLoading={props.loadingProject}
-    />
-  )
-}
-
-interface SidebarExplorerBodyProps {
+export interface SidebarExplorerBodyProps {
   title: string
   visibleFiles: string[]
   selectedPath: string | null
@@ -125,20 +69,28 @@ interface SidebarExplorerBodyProps {
   onTemplateSearchChange?: (value: string) => void
   onTemplateSelect?: (path: string | null) => void
   hideMapOption?: boolean
+  loadingDeleteInfo?: boolean
+  linkedImagePaths?: string[]
+  deleteAssociatedImages?: boolean
+  onDeleteAssociatedImagesChange?: (value: boolean) => void
 }
 
-  function buildDialogsProps(props: SidebarExplorerBodyProps, fileContextMenu: ReturnType<typeof useSidebarDialogs>['fileContextMenu'], folderContextMenu: ReturnType<typeof useSidebarDialogs>['folderContextMenu']) {
+function buildDialogsProps(
+  props: SidebarExplorerBodyProps,
+  fileContextMenu: ReturnType<typeof useSidebarDialogs>['fileContextMenu'],
+  folderContextMenu: ReturnType<typeof useSidebarDialogs>['folderContextMenu'],
+) {
   return {
     loadingProject: props.loadingProject,
     apiAvailable: props.apiAvailable,
     openCreateDialog: props.openCreateDialog,
-  createMode: props.createMode,
+    createMode: props.createMode,
     createInput: props.createInput,
     onDirectoryChange: props.onDirectoryChange,
-     onNameChange: props.onNameChange,
-     onSourceImagePathChange: props.onSourceImagePathChange,
-     onBrowseSourceImage: props.onBrowseSourceImage,
-     submitCreateDialog: props.submitCreateDialog,
+    onNameChange: props.onNameChange,
+    onSourceImagePathChange: props.onSourceImagePathChange,
+    onBrowseSourceImage: props.onBrowseSourceImage,
+    submitCreateDialog: props.submitCreateDialog,
     closeCreateDialog: props.closeCreateDialog,
     title: props.title,
     fileActionMode: props.fileActionMode,
@@ -165,6 +117,10 @@ interface SidebarExplorerBodyProps {
     onTemplateSearchChange: props.onTemplateSearchChange,
     onTemplateSelect: props.onTemplateSelect,
     hideMapOption: props.hideMapOption,
+    loadingDeleteInfo: props.loadingDeleteInfo,
+    linkedImagePaths: props.linkedImagePaths,
+    deleteAssociatedImages: props.deleteAssociatedImages,
+    onDeleteAssociatedImagesChange: props.onDeleteAssociatedImagesChange,
   }
 }
 
@@ -178,8 +134,8 @@ export function SidebarExplorerBody(props: SidebarExplorerBodyProps) {
     openDeleteFolderDialog: props.openDeleteFolderDialog,
   })
 
-  const tree = useMemo(() => buildSidebarTree(props.visibleFiles), [props.visibleFiles])
-  const filterResult = useMemo(() => filterSidebarTree(tree, props.filterQuery), [tree, props.filterQuery])
+  const tree = useMemo(/* getExplorerTree */ () => buildSidebarTree(props.visibleFiles), [props.visibleFiles] /*Inputs for getExplorerTree*/)
+  const filterResult = useMemo(/* getExplorerFilterResult */ () => filterSidebarTree(tree, props.filterQuery), [tree, props.filterQuery] /*Inputs for getExplorerFilterResult*/)
   const [setFolderExpanded, expandedFolders] = useSidebarTreeExpandedFolders(
     tree,
     props.selectedPath,
@@ -190,36 +146,25 @@ export function SidebarExplorerBody(props: SidebarExplorerBodyProps) {
   return (
     <>
       <SidebarScopePathBreadcrumb
-        projectRootPath={props.projectRootPath}
-        onPickFolder={props.onPickFolder}
-        onCloseProject={props.onCloseProject}
-        onRevealInFileManager={props.onRevealInFileManager}
+        projectRootPath={props.projectRootPath} onPickFolder={props.onPickFolder}
+        onCloseProject={props.onCloseProject} onRevealInFileManager={props.onRevealInFileManager}
         disabled={props.pickFolderDisabled}
       />
       {props.statusMessage && <p class="project-menu__status">{props.statusMessage}</p>}
       <SidebarFilter
-        value={props.filterQuery}
-        disabled={!props.apiAvailable || props.loadingProject}
-        inputRef={props.filterInputRef}
-        onChange={props.onFilterQueryChange}
+        value={props.filterQuery} onChange={props.onFilterQueryChange}
+        disabled={!props.apiAvailable || props.loadingProject} inputRef={props.filterInputRef}
       />
       <SidebarTreeArea
-        showOnlyStateHint={!props.apiAvailable}
-        loadingProject={props.loadingProject}
-        apiAvailable={props.apiAvailable}
-        visibleFiles={props.visibleFiles}
-        selectedPath={props.selectedPath}
-        loadingDocument={props.loadingDocument}
-        filterQuery={props.filterQuery}
-        corkboardOrder={props.corkboardOrder}
-        onSelectFile={props.onSelectFile}
+        showOnlyStateHint={!props.apiAvailable} loadingProject={props.loadingProject}
+        apiAvailable={props.apiAvailable} visibleFiles={props.visibleFiles}
+        selectedPath={props.selectedPath} loadingDocument={props.loadingDocument}
+        filterQuery={props.filterQuery} corkboardOrder={props.corkboardOrder}
+        onSelectFile={props.onSelectFile} expandedFolders={expandedFolders}
         onFileContextMenu={fileContextMenu.handleFileContextMenu}
         onFolderContextMenu={folderContextMenu.handleFolderContextMenu}
-        onReorderFiles={props.onReorderFiles}
-        onMoveFile={props.onMoveFile}
-        onMoveFolder={props.onMoveFolder}
-        expandedFolders={expandedFolders}
-        onToggleFolder={setFolderExpanded}
+        onReorderFiles={props.onReorderFiles} onToggleFolder={setFolderExpanded}
+        onMoveFile={props.onMoveFile} onMoveFolder={props.onMoveFolder}
       />
       <SidebarExplorerDialogs {...buildDialogsProps(props, fileContextMenu, folderContextMenu)} />
     </>

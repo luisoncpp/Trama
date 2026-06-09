@@ -1,76 +1,21 @@
-import type { CaptureRegion, HelpScreenshotHarnessDeps } from './help-screenshot-harness-types'
-import { waitForSelector, waitForCondition, sleep, SCENARIO_SETTLE_MS } from './help-screenshot-utils'
+import type { CaptureRegion, HelpScreenshotHarnessDeps } from '../../help-screenshot-harness-types'
+import {
+  waitForSelector,
+  waitForCondition,
+  sleep,
+  SCENARIO_SETTLE_MS,
+  dismissOpenOverlays,
+  closeRevisionsRailIfOpen,
+  dismissSidebarContextMenuLayer,
+  waitForContextMenuStable,
+} from './help-screenshot-utils'
+import {
+  computeSidebarContextMenuRegion,
+  computeEditTagsModalRegion,
+} from './help-screenshot-geometry'
 
 const WIKI_TAG_ROW_SELECTOR = '[data-path="characters/aldren.md"]'
 const CHARACTERS_FOLDER_SELECTOR = '[data-path="characters"]'
-
-function computeBoundingRegion(elements: Element[], padding = 16): CaptureRegion {
-  let minX = Infinity
-  let minY = Infinity
-  let maxX = -Infinity
-  let maxY = -Infinity
-
-  for (const el of elements) {
-    const rect = el.getBoundingClientRect()
-    minX = Math.min(minX, rect.left)
-    minY = Math.min(minY, rect.top)
-    maxX = Math.max(maxX, rect.right)
-    maxY = Math.max(maxY, rect.bottom)
-  }
-
-  const x = Math.max(0, Math.floor(minX - padding))
-  const y = Math.max(0, Math.floor(minY - padding))
-  const width = Math.ceil(maxX - minX + padding * 2)
-  const height = Math.ceil(maxY - minY + padding * 2)
-
-  return { x, y, width, height }
-}
-
-/** Crop around the lore sidebar tree, target row, and open context menu. */
-export function computeSidebarContextMenuRegion(row: Element, menu: Element): CaptureRegion {
-  const tree = document.querySelector('.sidebar-tree')
-  const treeRect = tree?.getBoundingClientRect()
-  const rowRect = row.getBoundingClientRect()
-  const menuRect = menu.getBoundingClientRect()
-  const padding = 12
-
-  const left = (treeRect?.left ?? rowRect.left) - padding
-  const top = Math.min(treeRect?.top ?? rowRect.top, rowRect.top - 56, menuRect.top) - padding
-  const right = Math.max(menuRect.right, rowRect.right, treeRect?.right ?? rowRect.right) + padding
-  const bottom = Math.max(menuRect.bottom, rowRect.bottom) + padding + 40
-
-  return {
-    x: Math.max(0, Math.floor(left)),
-    y: Math.max(0, Math.floor(top)),
-    width: Math.ceil(right - left),
-    height: Math.ceil(bottom - top),
-  }
-}
-
-async function dismissOpenOverlays(): Promise<void> {
-  document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))
-  await sleep(200)
-
-  const contextMenuLayer = document.querySelector('.sidebar-context-menu-layer')
-  if (contextMenuLayer) {
-    contextMenuLayer.dispatchEvent(new MouseEvent('click', { bubbles: true }))
-    await sleep(200)
-  }
-
-  const modal = document.querySelector('.sidebar-create-modal')
-  if (modal) {
-    modal.dispatchEvent(new MouseEvent('click', { bubbles: true }))
-    await sleep(200)
-  }
-}
-
-async function closeRevisionsRailIfOpen(): Promise<void> {
-  const backButton = document.querySelector('.revisions-rail__back')
-  if (backButton instanceof HTMLButtonElement) {
-    backButton.click()
-    await sleep(SCENARIO_SETTLE_MS)
-  }
-}
 
 async function ensureWikiTagRowVisible(): Promise<HTMLElement> {
   await waitForSelector(CHARACTERS_FOLDER_SELECTOR)
@@ -160,24 +105,6 @@ function tryFindEditTagsModal(): HTMLElement | null {
   return modal instanceof HTMLElement ? modal : null
 }
 
-export function computeEditTagsModalRegion(modal: Element): CaptureRegion {
-  const dialog = modal.querySelector('.sidebar-create-dialog[aria-label="Edit Tags"]')
-    ?? modal.querySelector('.sidebar-create-dialog')
-  if (!dialog) {
-    throw new Error('Edit Tags dialog element not found')
-  }
-
-  return computeBoundingRegion([dialog], 12)
-}
-
-async function dismissSidebarContextMenuLayer(): Promise<void> {
-  const layer = document.querySelector('.sidebar-context-menu-layer')
-  if (layer instanceof HTMLElement) {
-    layer.dispatchEvent(new MouseEvent('click', { bubbles: true }))
-    await sleep(200)
-  }
-}
-
 async function waitForEditTagsDialogReady(): Promise<HTMLElement> {
   await waitForSelector('.sidebar-create-modal .sidebar-create-dialog[aria-label="Edit Tags"]')
   await waitForCondition(() => {
@@ -227,24 +154,6 @@ export async function runEditTagsContextMenuScenario(
   }
 
   return computeSidebarContextMenuRegion(rowElement, contextMenu)
-}
-
-async function waitForContextMenuStable(): Promise<void> {
-  await new Promise<void>((resolve) => {
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => resolve())
-    })
-  })
-
-  const contextMenu = document.querySelector('.sidebar-context-menu')
-  if (!contextMenu) {
-    throw new Error('Context menu closed before capture')
-  }
-
-  const menuRect = contextMenu.getBoundingClientRect()
-  if (menuRect.width < 8 || menuRect.height < 8) {
-    throw new Error('Context menu is not visible before capture')
-  }
 }
 
 export async function runEditTagsModalScenario(

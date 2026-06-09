@@ -1,5 +1,5 @@
 import { useRef } from 'preact/hooks'
-import { SidebarExplorerBody } from './sidebar-explorer-body.tsx'
+import { SidebarExplorerBody } from './sidebar-explorer-body/index.ts'
 import type { SidebarExplorerCommonProps } from './sidebar-types'
 import { useSidebarFileActionsDialog } from './use-sidebar-file-actions-dialog'
 import { useSidebarCreateDialog, useSidebarFolderActionsDialog } from './sidebar-dialog-hooks'
@@ -111,51 +111,42 @@ export function SidebarExplorerContent(props: SidebarExplorerContentProps) {
 
   const catalogSnapshot = createCtrlSnapshot.catalog
 
-  const bodyProps = {
-    title: props.title, visibleFiles: props.visibleFiles, selectedPath: props.selectedPath,
-    loadingDocument: props.loadingDocument, onSelectFile: props.onSelectFile,
-    loadingProject: props.loadingProject, apiAvailable: props.apiAvailable,
-    statusMessage: props.statusMessage,
-    projectRootPath: props.projectRootPath,
-    onPickFolder: props.onPickFolder,
-    onCloseProject: props.onCloseProject,
-    onRevealInFileManager: props.onRevealInFileManager,
-    pickFolderDisabled: props.pickFolderDisabled,
-    filterQuery: props.filterQuery,
-    onFilterQueryChange: props.onFilterQueryChange,
-    createMode: createCtrlSnapshot.mode, createInput: createCtrlSnapshot.input,
-    openCreateDialog: createCtrl.open.bind(createCtrl), closeCreateDialog: createCtrl.close.bind(createCtrl),
-    submitCreateDialog: submitWithTemplate,
-    fileActionMode: fileDialog.mode, fileActionTargetPath: fileDialog.targetPath,
-    renameValue: fileDialog.renameValue, openRenameDialog: fileDialog.openRename,
-    openDeleteDialog: fileDialog.openDelete, openEditTagsDialog: fileDialog.openEditTags,
-    openRenameFolderDialog: folderDialog.openRename, openDeleteFolderDialog: folderDialog.openDelete,
-    closeFileActionDialog: fileDialog.closeDialog, confirmFileActionDialog: fileDialog.confirm,
-    onRenameValueChange: fileDialog.setRenameValue, tagsValue: fileDialog.tagsValue,
-    loadingTags: fileDialog.loadingTags, onTagsValueChange: fileDialog.setTagsValue,
-    loadingDeleteInfo: fileDialog.loadingDeleteInfo, linkedImagePaths: fileDialog.linkedImagePaths,
-    deleteAssociatedImages: fileDialog.deleteAssociatedImages, onDeleteAssociatedImagesChange: fileDialog.setDeleteAssociatedImages,
-    folderActionMode: folderDialog.mode, folderRenameValue: folderDialog.renameValue,
-    folderActionTargetPath: folderDialog.targetPath,
-    onFolderRenameValueChange: folderDialog.setRenameValue,
-    confirmFolderActionDialog: folderDialog.confirm, closeFolderActionDialog: folderDialog.closeDialog,
-    onDirectoryChange: createCtrl.setDirectory.bind(createCtrl), onNameChange: createCtrl.setName.bind(createCtrl),
-    onSourceImagePathChange: createCtrl.setSourceImagePath.bind(createCtrl), onBrowseSourceImage: createCtrl.browseSourceImage.bind(createCtrl),
-    filterInputRef: setFilterInputRef, corkboardOrder: props.corkboardOrder, onReorderFiles: props.onReorderFiles, onMoveFile: props.onMoveFile, onMoveFolder: props.onMoveFolder,
-    showTemplatePicker: createCtrlSnapshot.showTemplatePicker,
-    templateSearchQuery: catalogSnapshot.query,
-    templateSelectedPath: catalogSnapshot.selectedPath,
-    filteredTemplates: catalogSnapshot.filteredPaths,
-    onTemplateSearchChange: createCtrl.setTemplateSearch.bind(createCtrl),
-    onTemplateSelect: createCtrl.selectTemplate.bind(createCtrl),
-    hideMapOption: props.activeSection === 'templates',
-  }
-
   return (
     <div class="sidebar-panel-content">
       <aside class="workspace-panel workspace-panel--sidebar" aria-busy={props.loadingProject ? 'true' : 'false'}>
         <SidebarHeader title={props.title} />
-        <SidebarExplorerBody {...bodyProps} />
+        <SidebarExplorerBody
+          title={props.title} visibleFiles={props.visibleFiles} selectedPath={props.selectedPath}
+          loadingDocument={props.loadingDocument} onSelectFile={props.onSelectFile}
+          loadingProject={props.loadingProject} apiAvailable={props.apiAvailable}
+          statusMessage={props.statusMessage} projectRootPath={props.projectRootPath}
+          onPickFolder={props.onPickFolder} onCloseProject={props.onCloseProject}
+          onRevealInFileManager={props.onRevealInFileManager} pickFolderDisabled={props.pickFolderDisabled}
+          filterQuery={props.filterQuery} onFilterQueryChange={props.onFilterQueryChange}
+          createMode={createCtrlSnapshot.mode} createInput={createCtrlSnapshot.input}
+          openCreateDialog={createCtrl.open.bind(createCtrl)} closeCreateDialog={createCtrl.close.bind(createCtrl)}
+          submitCreateDialog={submitWithTemplate}
+          fileActionMode={fileDialog.mode} fileActionTargetPath={fileDialog.targetPath}
+          renameValue={fileDialog.renameValue} openRenameDialog={fileDialog.openRename}
+          openDeleteDialog={fileDialog.openDelete} openEditTagsDialog={fileDialog.openEditTags}
+          openRenameFolderDialog={folderDialog.openRename} openDeleteFolderDialog={folderDialog.openDelete}
+          closeFileActionDialog={fileDialog.closeDialog} confirmFileActionDialog={fileDialog.confirm}
+          onRenameValueChange={fileDialog.setRenameValue} tagsValue={fileDialog.tagsValue}
+          loadingTags={fileDialog.loadingTags} onTagsValueChange={fileDialog.setTagsValue}
+          loadingDeleteInfo={fileDialog.loadingDeleteInfo} linkedImagePaths={fileDialog.linkedImagePaths}
+          deleteAssociatedImages={fileDialog.deleteAssociatedImages} onDeleteAssociatedImagesChange={fileDialog.setDeleteAssociatedImages}
+          folderActionMode={folderDialog.mode} folderRenameValue={folderDialog.renameValue}
+          folderActionTargetPath={folderDialog.targetPath} onFolderRenameValueChange={folderDialog.setRenameValue}
+          confirmFolderActionDialog={folderDialog.confirm} closeFolderActionDialog={folderDialog.closeDialog}
+          onDirectoryChange={createCtrl.setDirectory.bind(createCtrl)} onNameChange={createCtrl.setName.bind(createCtrl)}
+          onSourceImagePathChange={createCtrl.setSourceImagePath.bind(createCtrl)} onBrowseSourceImage={createCtrl.browseSourceImage.bind(createCtrl)}
+          filterInputRef={setFilterInputRef} corkboardOrder={props.corkboardOrder} onReorderFiles={props.onReorderFiles}
+          onMoveFile={props.onMoveFile} onMoveFolder={props.onMoveFolder}
+          showTemplatePicker={createCtrlSnapshot.showTemplatePicker} templateSearchQuery={catalogSnapshot.query}
+          templateSelectedPath={catalogSnapshot.selectedPath} filteredTemplates={catalogSnapshot.filteredPaths}
+          onTemplateSearchChange={createCtrl.setTemplateSearch.bind(createCtrl)} onTemplateSelect={createCtrl.selectTemplate.bind(createCtrl)}
+          hideMapOption={props.activeSection === 'templates'}
+        />
       </aside>
     </div>
   )

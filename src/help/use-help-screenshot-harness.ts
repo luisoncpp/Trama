@@ -1,6 +1,6 @@
 import { useEffect } from 'preact/hooks'
 import type { ProjectEditorActions } from '../features/project-editor/project-editor-types'
-import { runHelpScreenshotScenario } from './help-screenshot-harness-logic'
+import { runHelpScreenshotScenario } from './screenshot-harness/index.ts'
 import {
   HELP_SCREENSHOT_HARNESS_READY_EVENT,
   type HelpScreenshotHarness,
@@ -36,7 +36,7 @@ export function useHelpScreenshotHarness(
   openProject: OpenProjectFn,
   actions: ProjectEditorActions,
 ): void {
-  useEffect(() => {
+  useEffect(/* registerHelpScreenshotHarness */ () => {
     if (!isHelpScreenshotCaptureMode()) {
       return
     }
@@ -47,5 +47,5 @@ export function useHelpScreenshotHarness(
     return () => {
       delete window.__tramaHelpScreenshotHarness
     }
-  }, [actions, openProject])
+  }, [actions, openProject] /*Inputs for registerHelpScreenshotHarness*/)
 }

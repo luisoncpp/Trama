@@ -1,12 +1,21 @@
-import { WORKSPACE_CONTEXT_MENU_EVENT } from '../shared/workspace-context-menu'
-import type { ResolvedTheme } from '../theme/theme-types'
-import type { CaptureRegion, HelpScreenshotHarnessDeps } from './help-screenshot-harness-types'
-import type { HelpScreenshotScenarioId } from './help-screenshot-scenarios'
+import { WORKSPACE_CONTEXT_MENU_EVENT } from '../../../shared/workspace-context-menu'
+import type { ResolvedTheme } from '../../../theme/theme-types'
+import type { CaptureRegion, HelpScreenshotHarnessDeps } from '../../help-screenshot-harness-types'
+import type { HelpScreenshotScenarioId } from '../../help-screenshot-scenarios'
 import {
   runEditTagsContextMenuScenario,
   runEditTagsModalScenario,
 } from './help-screenshot-scenario-wiki-tags'
-import { sleep, SCENARIO_SETTLE_MS, waitForCondition, waitForSelector } from './help-screenshot-utils'
+import {
+  sleep,
+  SCENARIO_SETTLE_MS,
+  waitForSelector,
+  waitForCondition,
+  waitForRichEditor,
+  waitForSplitLayout,
+  waitForFocusEmphasis,
+  waitForRevisionsLoaded,
+} from './help-screenshot-utils'
 
 function dispatchWorkspaceCommand(
   command:
@@ -24,25 +33,6 @@ function dispatchWorkspaceCommand(
 function applyResolvedThemeForScreenshot(theme: ResolvedTheme): void {
   document.documentElement.dataset.theme = theme
   document.documentElement.style.colorScheme = theme
-}
-
-async function waitForActiveEditorSurfaceIdle(): Promise<void> {
-  await waitForCondition(() => {
-    const activePane = document.querySelector('.workspace-split-pane.is-active .editor-manuscript')
-      ?? document.querySelector('.editor-panel-root .editor-manuscript')
-    return Boolean(activePane && !activePane.classList.contains('is-muted'))
-  }, 45_000)
-}
-
-async function waitForRichEditor(): Promise<void> {
-  await waitForActiveEditorSurfaceIdle()
-  await waitForSelector('.rich-editor .ql-editor')
-}
-
-async function waitForSplitLayout(): Promise<void> {
-  await waitForSelector('.workspace-split')
-  await waitForSelector('.workspace-split-divider')
-  await waitForSelector('.workspace-split-pane')
 }
 
 async function ensureProjectOpen(deps: HelpScreenshotHarnessDeps): Promise<void> {
@@ -111,14 +101,6 @@ async function placeCaretInBodyParagraph(): Promise<void> {
   await sleep(SCENARIO_SETTLE_MS)
 }
 
-async function waitForFocusEmphasis(): Promise<void> {
-  await waitForCondition(() => {
-    const editor = document.querySelector('.rich-editor .ql-editor.is-focus-mode')
-    return Boolean(editor?.querySelector('.is-focus-emphasis'))
-  }, 15_000)
-  await sleep(SCENARIO_SETTLE_MS * 2)
-}
-
 async function ensureFocusModeEnabled(deps: HelpScreenshotHarnessDeps): Promise<void> {
   if (!document.querySelector('.editor-shell.is-focus-mode')) {
     deps.actions.toggleFocusMode()
@@ -175,20 +157,6 @@ async function runMapDocument(deps: HelpScreenshotHarnessDeps): Promise<void> {
   await deps.actions.selectFile('lore/map.md')
   await waitForSelector('.map-editor', 90_000)
   await waitForSelector('.map-editor__image, .map-editor__stage', 90_000)
-  await sleep(SCENARIO_SETTLE_MS * 2)
-}
-
-async function waitForRevisionsLoaded(): Promise<void> {
-  await waitForSelector('.revisions-rail')
-  await waitForCondition(() => {
-    const loading = Array.from(document.querySelectorAll('.revisions-rail__hint'))
-      .some((element) => element.textContent?.includes('Loading revisions'))
-    if (loading) {
-      return false
-    }
-
-    return document.querySelectorAll('.revisions-rail__item').length > 0
-  }, 45_000)
   await sleep(SCENARIO_SETTLE_MS * 2)
 }
 

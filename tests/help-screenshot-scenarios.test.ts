@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
   computeEditTagsModalRegion,
   computeSidebarContextMenuRegion,
-} from '../src/help/help-screenshot-scenario-wiki-tags'
+} from '../src/help/screenshot-harness/index.ts'
 import {
   HELP_SCREENSHOT_SCENARIO_IDS,
   HELP_SCREENSHOT_SCENARIOS,

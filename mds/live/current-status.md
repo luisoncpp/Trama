@@ -28,7 +28,7 @@ Template MVP is now implemented: `templates/` rail section for browsing/editing 
 
 - `npm run build` ✅ on the current branch after MapEditor background rendering layout fixes.
 - Focused renderer regressions ✅: `npm run test -- tests/use-project-editor.test.ts tests/sidebar-panels.test.ts tests/rich-markdown-editor.test.ts`
-- `npm run lint` ⚠️ currently blocked by max-lines violations while the Git-history renderer slice is being split further; one existing failure is `electron/preload.cts`.
+- `npm run lint` ✅ passing with 0 warnings/errors.
 - `npm run test:smoke` — not re-run for this branch snapshot.
 
 In sandboxed agent environments use the PowerShell script — see `mds/dev-workflow.md`.

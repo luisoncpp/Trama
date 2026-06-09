@@ -36,16 +36,8 @@ export function SidebarScopePathBreadcrumb({
   disabled,
 }: SidebarScopePathBreadcrumbProps) {
   const hasProject = Boolean(projectRootPath.trim())
-  const label = hasProject
-    ? formatProjectRootBreadcrumbLabel(projectRootPath)
-    : PROJECT_EDITOR_STRINGS.noFolderSelected
-
-  const contextMenu = useSidebarProjectRootContextMenu({
-    hasProject,
-    onPickFolder,
-    onCloseProject,
-    onRevealInFileManager,
-  })
+  const label = hasProject ? formatProjectRootBreadcrumbLabel(projectRootPath) : PROJECT_EDITOR_STRINGS.noFolderSelected
+  const contextMenu = useSidebarProjectRootContextMenu({ hasProject, onPickFolder, onCloseProject, onRevealInFileManager })
 
   return (
     <>

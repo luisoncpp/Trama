@@ -139,51 +139,22 @@ export function useBookExport(projectRoot: string | null) {
   useBookExportDefaultPath(state.open, state.format, projectRoot, state.setOutputPath)
   const dismissToast = useBookExportToast(state.toastMessage, state.setToastMessage)
   const handleExport = useBookExportHandlers(
-    state.format,
-    state.title,
-    state.author,
-    state.outputPath,
-    projectRoot,
-    state.setExporting,
-    state.setLastError,
-    state.setToastMessage,
-    state.setOpen,
+    state.format, state.title, state.author, state.outputPath, projectRoot,
+    state.setExporting, state.setLastError, state.setToastMessage, state.setOpen,
   )
 
   return useMemo(
     /* buildBookExportState */ () => ({
-      open: state.open,
-      setOpen: state.setOpen,
-      format: state.format,
-      setFormat: state.setFormat,
-      title: state.title,
-      setTitle: state.setTitle,
-      author: state.author,
-      setAuthor: state.setAuthor,
-      outputPath: state.outputPath,
-      setOutputPath: state.setOutputPath,
-      exporting: state.exporting,
-      lastError: state.lastError,
-      toastMessage: state.toastMessage,
-      handleExport,
-      dismissToast,
+      open: state.open, setOpen: state.setOpen, format: state.format, setFormat: state.setFormat,
+      title: state.title, setTitle: state.setTitle, author: state.author, setAuthor: state.setAuthor,
+      outputPath: state.outputPath, setOutputPath: state.setOutputPath, exporting: state.exporting,
+      lastError: state.lastError, toastMessage: state.toastMessage, handleExport, dismissToast,
     }),
     [
-      state.open,
-      state.setOpen,
-      state.format,
-      state.setFormat,
-      state.title,
-      state.setTitle,
-      state.author,
-      state.setAuthor,
-      state.outputPath,
-      state.setOutputPath,
-      state.exporting,
-      state.lastError,
-      state.toastMessage,
-      handleExport,
-      dismissToast,
+      state.open, state.setOpen, state.format, state.setFormat,
+      state.title, state.setTitle, state.author, state.setAuthor,
+      state.outputPath, state.setOutputPath, state.exporting,
+      state.lastError, state.toastMessage, handleExport, dismissToast
     ] /*Inputs for buildBookExportState*/,
   )
 }

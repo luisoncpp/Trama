@@ -298,7 +298,16 @@ Mandatory doc navigation for new chats: start with `mds/START-HERE.md` — it pr
   - Shared types for the help screenshot harness: `CaptureRegion`, `HelpScreenshotHarnessDeps`, `HelpScreenshotHarness`.
 - `src/help/help-screenshot-scenarios.ts`
   - Scenario ID constants, type union, and scenario definition rows (fileName, requiresGitRepository).
-- `src/help/help-screenshot-utils.ts`\r\n  - Shared utilities for help screenshot scenarios: `sleep`, `waitForCondition`, `waitForSelector`, `SCENARIO_SETTLE_MS`. Broken out from `help-screenshot-harness-logic.ts` to break a circular dependency.\r\n- `src/help/help-screenshot-harness-logic.ts`\r\n  - Orchestrates individual screenshot scenario functions. Consumes shared utilities from `help-screenshot-utils.ts`.\r\n- `src/help/help-screenshot-scenario-wiki-tags.ts`\r\n  - Wiki-tag screenshot scenarios: context menu and edit-tags modal. Returns `CaptureRegion` for region-based capture. Imports shared utilities from `help-screenshot-utils.ts`.
+- `src/help/screenshot-harness/index.ts`
+  - Deep module public facade for the screenshot harness, exporting scenarios, coordinates, and bounding helpers.
+- `src/help/screenshot-harness/screenshot-harness-private/help-screenshot-geometry.ts`
+  - Bounding box and cropping region calculation functions for screenshot scenarios.
+- `src/help/screenshot-harness/screenshot-harness-private/help-screenshot-harness-logic.ts`
+  - Orchestrates individual screenshot scenario functions.
+- `src/help/screenshot-harness/screenshot-harness-private/help-screenshot-scenario-wiki-tags.ts`
+  - Wiki-tag screenshot scenarios: context menu and edit-tags modal. Returns `CaptureRegion` for region-based capture.
+- `src/help/screenshot-harness/screenshot-harness-private/help-screenshot-utils.ts`
+  - Shared utilities for help screenshot scenarios (`sleep`, `waitForCondition`, `waitForSelector`, `SCENARIO_SETTLE_MS`).
 - `src/help/use-help-screenshot-harness.ts`
   - Preact hook that wires the screenshot harness onto `window.__tramaHelpScreenshotHarness` in capture mode.
 - `src/help/is-help-screenshot-capture-mode.ts`
@@ -511,8 +520,12 @@ Mandatory doc navigation for new chats: start with `mds/START-HERE.md` — it pr
   - Section rail and collapse toggle.
 - `src/features/project-editor/components/sidebar/sidebar-explorer-content.tsx`
   - Explorer container and dialog orchestration.
-- `src/features/project-editor/components/sidebar/sidebar-explorer-body.tsx`
+- `src/features/project-editor/components/sidebar/sidebar-explorer-body/index.ts`
+  - Deep module public facade for the sidebar explorer body component.
+- `src/features/project-editor/components/sidebar/sidebar-explorer-body/sidebar-explorer-body-private/sidebar-explorer-body.tsx`
   - Explorer body (path, filter, tree, state hints, menus/dialogs).
+- `src/features/project-editor/components/sidebar/sidebar-explorer-body/sidebar-explorer-body-private/sidebar-tree-area.tsx`
+  - Helper rendering component for tree structure area and empty state placeholder hints.
 - `src/features/project-editor/components/sidebar/sidebar-tree.tsx`
   - Interactive tree rows, keyboard nav, right-click file hook, and drag-and-drop reorder state. Measures row geometry once at drag start and delegates position calculation to `sidebar-drop-logic`.
 - `src/features/project-editor/components/sidebar/sidebar-tree-logic.ts`
@@ -549,8 +562,14 @@ Mandatory doc navigation for new chats: start with `mds/START-HERE.md` — it pr
   - Consolidated dialog hooks: create dialog state (article/map/category, including native map-image picker), folder actions dialog state.
 - `src/features/project-editor/components/sidebar/sidebar-create-dialog.tsx`
   - Shared create modal dialog for article/map/category; map mode adds a browse-backed image field. Article mode supports optional template picker.
-- `src/features/project-editor/components/template-picker-combobox.tsx`
+- `src/features/project-editor/components/template-picker-combobox/index.ts`
+  - Deep module public facade for the template picker combobox component.
+- `src/features/project-editor/components/template-picker-combobox/template-picker-combobox-private/template-picker-combobox.tsx`
   - Searchable combobox for selecting a template from `templates/` when creating an article.
+- `src/features/project-editor/components/template-picker-combobox/template-picker-combobox-private/template-picker-dropdown.tsx`
+  - Dropdown menu options component for template list navigation.
+- `src/features/project-editor/components/template-picker-combobox/template-picker-combobox-private/use-template-picker-combobox.ts`
+  - Combobox logic hook (keyboard navigation, selection, and click closures).
 - `src/features/project-editor/templates/index.ts`
   - Deep module public facade for templates logic (TemplatesCatalog, SidebarCreateController, React bridge).
 - `src/features/project-editor/templates/templates-catalog.ts`

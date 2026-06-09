@@ -129,3 +129,30 @@ export function buildScopedReorderHandler(
     orderedIds.map((path) => toProjectPath(toSectionRelativePath(path), sectionRoot)),
   )
 }
+
+export function buildScopedMoveFileHandler(
+  onMoveFile: ((sourcePath: string, targetFolder: string) => Promise<void>) | undefined,
+  sectionRoot: SidebarSectionRoot,
+): ((sourcePath: string, targetFolder: string) => Promise<void>) | undefined {
+  if (!onMoveFile) {
+    return undefined
+  }
+  return (sourcePath: string, targetFolder: string) => onMoveFile(
+    toProjectPath(toSectionRelativePath(sourcePath), sectionRoot),
+    toProjectFolderPath(toSectionRelativeFolderPath(targetFolder), sectionRoot),
+  )
+}
+
+export function buildScopedMoveFolderHandler(
+  onMoveFolder: ((sourcePath: string, targetParent: string) => Promise<void>) | undefined,
+  sectionRoot: SidebarSectionRoot,
+): ((sourcePath: string, targetParent: string) => Promise<void>) | undefined {
+  if (!onMoveFolder) {
+    return undefined
+  }
+  return (sourcePath: string, targetParent: string) => onMoveFolder(
+    toProjectPath(toSectionRelativePath(sourcePath), sectionRoot),
+    toProjectFolderPath(toSectionRelativeFolderPath(targetParent), sectionRoot),
+  )
+}
+
