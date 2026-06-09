@@ -85,7 +85,12 @@ function ProjectEditorDialogPortals({ rootPath, aiImport, bookExport, aiExport, 
   )
 }
 
-function ProjectEditorDialogToasts({ bookExport, aiExport }: Pick<ProjectEditorDialogsProps, 'bookExport' | 'aiExport'>) {
+function ProjectEditorDialogToasts({
+  bookExport,
+  aiExport,
+  aiImport,
+  zuluImport,
+}: Pick<ProjectEditorDialogsProps, 'bookExport' | 'aiExport' | 'aiImport' | 'zuluImport'>) {
   return (
     <>
       {aiExport.copyToastMessage && (
@@ -102,6 +107,20 @@ function ProjectEditorDialogToasts({ bookExport, aiExport }: Pick<ProjectEditorD
           onDismiss={bookExport.dismissToast}
         />
       )}
+      {aiImport.toastMessage && (
+        <ExportToast
+          message={aiImport.toastMessage}
+          dismissLabel="Dismiss AI import notification"
+          onDismiss={aiImport.dismissToast}
+        />
+      )}
+      {zuluImport.toastMessage && (
+        <ExportToast
+          message={zuluImport.toastMessage}
+          dismissLabel="Dismiss Zulu import notification"
+          onDismiss={zuluImport.dismissToast}
+        />
+      )}
     </>
   )
 }
@@ -110,7 +129,12 @@ function ProjectEditorDialogsInner(props: ProjectEditorDialogsProps) {
   return (
     <>
       <ProjectEditorDialogPortals {...props} />
-      <ProjectEditorDialogToasts aiExport={props.aiExport} bookExport={props.bookExport} />
+      <ProjectEditorDialogToasts
+        aiExport={props.aiExport}
+        bookExport={props.bookExport}
+        aiImport={props.aiImport}
+        zuluImport={props.zuluImport}
+      />
     </>
   )
 }

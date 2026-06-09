@@ -107,14 +107,19 @@ function useSaveDocumentNow(
   )
 }
 
-export function useProjectEditorActions({
-  layoutState,
-  projectState,
-  uiState,
-  sidebarState,
-  setters,
-  paneWorkspace,
-}: {
+function usePaneNavigationCallbacks(paneWorkspace: PaneWorkspace) {
+  const reset = useCallback(
+    /* resetPaneNavigationHistory */ () => paneWorkspace.clearNavigationHistory(),
+    [paneWorkspace] /*Inputs for resetPaneNavigationHistory*/,
+  )
+  const seed = useCallback(
+    /* seedPaneNavigationHistory */ (pane: WorkspacePane, path: string) => paneWorkspace.recordPaneNavigation(pane, path),
+    [paneWorkspace] /*Inputs for seedPaneNavigationHistory*/,
+  )
+  return { reset, seed }
+}
+
+export function useProjectEditorActions(options: {
   layoutState: ProjectEditorLayoutState
   projectState: ProjectEditorProjectState
   uiState: ProjectEditorUiState
@@ -125,23 +130,11 @@ export function useProjectEditorActions({
   }
   paneWorkspace: PaneWorkspace
 }) {
+  const { layoutState, projectState, uiState, sidebarState, setters, paneWorkspace } = options
   const clearEditor = useClearEditor(setters, paneWorkspace)
   const loadDocument = useLoadDocument(setters, paneWorkspace)
-  const resetPaneNavigationHistory = useCallback(
-    /* resetPaneNavigationHistory */ () => paneWorkspace.clearNavigationHistory(),
-    [paneWorkspace] /*Inputs for resetPaneNavigationHistory*/,
-  )
-  const seedPaneNavigationHistory = useCallback(
-    /* seedPaneNavigationHistory */ (pane: WorkspacePane, path: string) => paneWorkspace.recordPaneNavigation(pane, path),
-    [paneWorkspace] /*Inputs for seedPaneNavigationHistory*/,
-  )
-  const openProject = useOpenProject(
-    setters,
-    clearEditor,
-    loadDocument,
-    resetPaneNavigationHistory,
-    seedPaneNavigationHistory,
-  )
+  const { reset, seed } = usePaneNavigationCallbacks(paneWorkspace)
+  const openProject = useOpenProject(setters, clearEditor, loadDocument, reset, seed)
   const saveDocumentNow = useSaveDocumentNow(setters)
   const actionParams = {
     layoutState,
@@ -163,8 +156,9 @@ export function useProjectEditorActions({
       ...sidebarActions,
       ...workspaceActions,
       ...conflictActions,
+      openProject,
     }),
-    [sidebarActions, workspaceActions, conflictActions] /*Inputs for buildProjectEditorActions*/,
+    [sidebarActions, workspaceActions, conflictActions, openProject] /*Inputs for buildProjectEditorActions*/,
   )
 
   return { actions, core: { clearEditor, loadDocument, openProject, saveDocumentNow } as CoreProjectEditorActions }

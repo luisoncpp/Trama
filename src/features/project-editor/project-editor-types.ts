@@ -1,5 +1,6 @@
 import type { DocumentMeta, ProjectSnapshot } from '../../shared/ipc.js'
 import type { GitHistoryState, RevisionRailState } from './project-editor-revision-types.js'
+import type { OpenProjectOptions } from './open-project-types.js'
 
 export type { GitHistoryState, RevisionRailState } from './project-editor-revision-types.js'
 
@@ -110,6 +111,7 @@ export interface ProjectEditorUiState {
 }
 
 export interface ProjectEditorActions {
+  openProject: (projectRoot: string, options?: OpenProjectOptions) => Promise<void>
   pickProjectFolder: () => Promise<void>
   closeProject: () => Promise<void>
   revealProjectInFileManager: () => Promise<void>

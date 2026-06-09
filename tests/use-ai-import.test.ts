@@ -136,12 +136,75 @@ describe('useAiImport', () => {
       result = await latestState!.handleExecute('=== FILE: book/old.md ===\n# Updated', 'replace')
     })
 
-    expect(result).toBe(true)
     expect(aiImportMock).toHaveBeenCalledWith({
       clipboardContent: '=== FILE: book/old.md ===\n# Updated',
       projectRoot: 'C:/project',
       importMode: 'replace',
     })
     expect(logSpy).toHaveBeenCalledWith('AI Import: 1 created, 0 appended, 1 replaced, 0 skipped, 0 errors')
+  })
+
+  it('calls onSuccess callback and sets toast message on successful execute', async () => {
+    aiImportMock.mockResolvedValue({
+      ok: true,
+      data: {
+        success: true,
+        created: ['book/new.md'],
+        appended: ['book/appended.md'],
+        replaced: [],
+        skipped: [],
+        errors: [],
+      },
+    })
+
+    const onSuccessMock = vi.fn()
+    let currentState: HookState | null = null
+    const Harness = () => {
+      const state = useAiImport('C:/project', onSuccessMock)
+      currentState = state
+      return null
+    }
+
+    act(() => {
+      render(h(Harness, {}), container)
+    })
+
+    let result = false
+    await act(async () => {
+      result = await currentState!.handleExecute('=== FILE: book/new.md ===\n# Content', 'replace')
+    })
+
+    expect(result).toBe(true)
+    expect(onSuccessMock).toHaveBeenCalledWith(['book/new.md'])
+    expect(currentState!.toastMessage).toBe('Import successful: 2 files imported.')
+  })
+
+  it('sets failure toast message when execute fails', async () => {
+    aiImportMock.mockResolvedValue({
+      ok: false,
+      error: {
+        code: 'AI_IMPORT_FAILED',
+        message: 'Something went wrong',
+      },
+    })
+
+    let currentState: HookState | null = null
+    const Harness = () => {
+      const state = useAiImport('C:/project')
+      currentState = state
+      return null
+    }
+
+    act(() => {
+      render(h(Harness, {}), container)
+    })
+
+    let result = true
+    await act(async () => {
+      result = await currentState!.handleExecute('=== FILE: book/new.md ===\n# Content', 'replace')
+    })
+
+    expect(result).toBe(false)
+    expect(currentState!.toastMessage).toBe('Import failed: Something went wrong')
   })
 })

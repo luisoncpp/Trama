@@ -67,6 +67,7 @@ function useProjectEditorViewState(model: ProjectEditorModel, props: Omit<Projec
     shellState.rootPath,
     shellState.visibleFiles,
     model.state.snapshot,
+    model.actions.openProject,
   )
   const sidebarStyle = buildSidebarStyle(sidebarWidthPx)
   const layoutProps = {
