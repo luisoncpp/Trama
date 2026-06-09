@@ -1,9 +1,33 @@
 import { app, BrowserWindow } from 'electron'
 import path from 'node:path'
+import fs from 'node:fs'
 import { fileURLToPath } from 'node:url'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
+
+function getAppVersion(): string {
+  try {
+    let currentDir = app.getAppPath()
+    for (let i = 0; i < 5; i++) {
+      const pkgPath = path.join(currentDir, 'package.json')
+      if (fs.existsSync(pkgPath)) {
+        const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8')) as { version?: string }
+        if (pkg.version) {
+          return pkg.version
+        }
+      }
+      const parentDir = path.dirname(currentDir)
+      if (parentDir === currentDir) {
+        break
+      }
+      currentDir = parentDir
+    }
+  } catch (err) {
+    console.error('Failed to read package.json version', err)
+  }
+  return app.getVersion()
+}
 
 let helpWindow: BrowserWindow | null = null
 
@@ -55,7 +79,7 @@ export function openHelpPage(
 
   helpWindow.webContents.on('did-finish-load', () => {
     if (!helpWindow || helpWindow.isDestroyed()) return
-    const version = app.getVersion()
+    const version = getAppVersion()
     void helpWindow.webContents.executeJavaScript(`
       document.documentElement.dataset.theme = '${resolvedTheme}';
       document.documentElement.style.colorScheme = '${resolvedTheme}';

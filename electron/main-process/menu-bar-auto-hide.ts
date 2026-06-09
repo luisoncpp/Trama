@@ -75,16 +75,40 @@ export function configureAutoHideMenuBar(win: BrowserWindow): void {
   win.setMenuBarVisibility(false)
   applyWin32TitleBarForMenuBar(win, false)
 
+  let isAltDown = false
+  let otherKeyPressed = false
+
   win.webContents.on('before-input-event', (_event, input) => {
-    if (!shouldRevealMenuBarOnAlt(input) || win.isMenuBarVisible()) {
+    if (win.isMenuBarVisible()) {
       return
     }
-    revealMenuBar(win)
+
+    if (input.type === 'keyDown') {
+      if (shouldRevealMenuBarOnAlt(input)) {
+        isAltDown = true
+        otherKeyPressed = false
+      } else if (isAltDown) {
+        otherKeyPressed = true
+      }
+    } else if (input.type === 'keyUp') {
+      const isAltKeyUp = (input.key === 'Alt' || input.code === 'AltLeft') && !(isWin32 && input.code === 'AltRight')
+      if (isAltKeyUp) {
+        isAltDown = false
+        if (!otherKeyPressed) {
+          revealMenuBar(win)
+        }
+      }
+    }
   })
 
   win.webContents.on('before-mouse-event', (_event, input) => {
     if (input.type === 'mouseDown' && win.isMenuBarVisible()) {
       hideMenuBar(win)
     }
+  })
+
+  win.on('blur', () => {
+    isAltDown = false
+    otherKeyPressed = false
   })
 }

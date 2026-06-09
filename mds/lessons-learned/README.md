@@ -137,3 +137,5 @@ Avoid: "bug description + fix". Prefer: "what I learned that applies to future w
 | `help-preload-must-unwrap-ipc-envelopes.md` | Child-window preloads that expose boolean APIs to inline HTML must unwrap `{ ok, data }` IPC envelopes; passing the raw envelope makes `Boolean(envelope)` always true | 2026-06-06 |
 | `help-preload-sandbox-local-imports.md` | Sandboxed preloads cannot `require` local helper modules; a failed help preload means `tramaHelpApi` is never exposed and the dismissal checkbox cannot persist | 2026-06-06 |
 | `electron-builder-sign-and-edit-executable.md` | `signAndEditExecutable: false` bypasses `rcedit` and prevents `electron-builder` from setting the executable icon on Windows | 2026-06-07 |
+| `alt-shortcut-key-down-interception.md` | Tapping Alt to reveal the menu bar must trigger on keyup if no other keys were pressed while Alt was held down; immediate keydown trigger intercepts modifier shortcuts like Alt+Left | 2026-06-09 |
+
