@@ -71,14 +71,14 @@ function parseDirectiveFromNode(node: Element): LayoutDirectiveEmbedValue | null
 }
 
 export function registerLayoutDirectiveClipboardMatchers(editor: Quill): void {
-  editor.clipboard.addMatcher('div', (node) => {
+  editor.clipboard.addMatcher('div', (node, delta) => {
     if (!(node instanceof Element)) {
-      return new Delta()
+      return delta
     }
 
     const value = parseDirectiveFromNode(node)
     if (!value) {
-      return new Delta()
+      return delta
     }
 
     return new Delta().insert({ [LAYOUT_DIRECTIVE_BLOT_NAME]: value })

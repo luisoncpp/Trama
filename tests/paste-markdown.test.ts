@@ -675,3 +675,105 @@ describe('Copy as Markdown workspace command', () => {
   })
 
 })
+
+describe('Quill Clipboard Matchers for layout directives', () => {
+  let container: HTMLDivElement
+  const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
+  const noop = () => {}
+
+  function getQuillInstance(root: ParentNode): Quill {
+    const quillContainer = root.querySelector('.ql-container')
+    if (!quillContainer) throw new Error('No se encontro instancia de Quill en el DOM de prueba')
+    const found = Quill.find(quillContainer, true)
+    if (!found || !(found instanceof Quill)) throw new Error('No se encontro instancia de Quill en el DOM de prueba')
+    return found
+  }
+
+  beforeEach(() => {
+    container = document.createElement('div')
+    document.body.appendChild(container)
+  })
+
+  afterEach(() => {
+    document.body.removeChild(container)
+  })
+
+  it('preserva contenido normal dentro de divs al pegar HTML', async () => {
+    act(() => {
+      render(
+        h(RichMarkdownEditor, {
+          documentId: 'paste-normal-div',
+          value: '',
+          disabled: false,
+          onChange: noop,
+          historyBackDisabled: true,
+          onHistoryBack: noop,
+          saveDisabled: false,
+          saveLabel: 'Guardar',
+          onSaveNow: noop,
+          revertDisabled: true,
+          revertLabel: '',
+          onRevertNow: noop,
+          syncState: 'clean',
+          syncStateLabel: 'Sin cambios',
+        }),
+        container,
+      )
+    })
+
+    await sleep(80)
+    const editor = getQuillInstance(container)
+
+    const htmlToPaste = '<div>Texto normal <strong>en negrita</strong> en un div</div>'
+    act(() => {
+      const delta = editor.clipboard.convert({ html: htmlToPaste })
+      editor.setContents(delta, 'user')
+    })
+
+    const text = editor.getText().trim()
+    expect(text).toBe('Texto normal en negrita en un div')
+  })
+
+  it('reconoce directivas de layout como trama-pagebreak al pegar HTML', async () => {
+    act(() => {
+      render(
+        h(RichMarkdownEditor, {
+          documentId: 'paste-directive-div',
+          value: '',
+          disabled: false,
+          onChange: noop,
+          historyBackDisabled: true,
+          onHistoryBack: noop,
+          saveDisabled: false,
+          saveLabel: 'Guardar',
+          onSaveNow: noop,
+          revertDisabled: true,
+          revertLabel: '',
+          onRevertNow: noop,
+          syncState: 'clean',
+          syncStateLabel: 'Sin cambios',
+        }),
+        container,
+      )
+    })
+
+    await sleep(80)
+    const editor = getQuillInstance(container)
+
+    const htmlToPaste = '<div class="trama-pagebreak"></div>'
+    act(() => {
+      const delta = editor.clipboard.convert({ html: htmlToPaste })
+      editor.setContents(delta, 'user')
+    })
+
+    const ops = editor.getContents().ops ?? []
+    const hasPagebreak = ops.some(op => 
+      typeof op.insert === 'object' && 
+      op.insert !== null && 
+      'trama-directive' in op.insert &&
+      (op.insert as any)['trama-directive']?.directive === 'pagebreak'
+    )
+    expect(hasPagebreak).toBe(true)
+  })
+})
+
