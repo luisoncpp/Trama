@@ -30,6 +30,11 @@ export function buildSidebarActions(params: ActionGroupParams): Pick<ProjectEdit
   }
 }
 
+function getTargetPath(rootPath: string, relativePath?: string) {
+  const cleanRoot = rootPath.replace(/\/$/, '')
+  return relativePath ? `${cleanRoot}/${relativePath.replace(/^\//, '')}` : cleanRoot
+}
+
 function buildSidebarUiActions({
   layoutState,
   projectState,
@@ -51,14 +56,10 @@ function buildSidebarUiActions({
       setStatusMessage: setters.setStatusMessage,
     }),
     revealInFileManager: (relativePath?: string) => {
-      const cleanRoot = projectState.rootPath.replace(/\/$/, '')
-      const targetPath = relativePath
-        ? `${cleanRoot}/${relativePath.replace(/^\//, '')}`
-        : cleanRoot
+      const targetPath = getTargetPath(projectState.rootPath, relativePath)
       return sidebarFileActions.revealInFileManager(
         targetPath,
-        setters.setStatusMessage,
-        !relativePath,
+        setters.setStatusMessage
       )
     },
     selectFile: (filePath: string) => sidebarFileActions.selectFile(filePath, {

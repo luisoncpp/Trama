@@ -1,9 +1,6 @@
-import { PROJECT_EDITOR_STRINGS } from '../../project-editor-strings'
-
 export async function revealInFileManager(
   path: string,
-  setStatusMessage: (message: string) => void,
-  isProjectRoot = false,
+  setStatusMessage: (message: string) => void
 ): Promise<void> {
   if (!path.trim()) {
     return
@@ -20,9 +17,5 @@ export async function revealInFileManager(
     return
   }
 
-  setStatusMessage(
-    isProjectRoot
-      ? PROJECT_EDITOR_STRINGS.projectRevealedInFileManager
-      : 'Item revealed in file explorer.'
-  )
+  setStatusMessage('Revealed in file explorer.')
 }
