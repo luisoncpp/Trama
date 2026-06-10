@@ -3,7 +3,7 @@ export const IPC_CHANNELS = {
   debugLog: 'trama:debug:log',
   openProject: 'trama:project:open',
   closeProject: 'trama:project:close',
-  revealProjectInFileManager: 'trama:project:reveal-in-file-manager',
+  revealInFileManager: 'trama:project:reveal-in-file-manager',
   selectProjectFolder: 'trama:project:select-folder',
   validateProjectFolder: 'trama:project:validate-folder',
   readDocument: 'trama:document:read',

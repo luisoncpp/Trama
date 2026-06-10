@@ -53,9 +53,10 @@ interface UseSidebarFileContextMenuParams {
   onOpenEditTags: (path: string) => void
   onOpenRename: (path: string) => void
   onOpenDelete: (path: string) => void
+  onOpenReveal: (path: string) => void
 }
 
-export function useSidebarFileContextMenu({ onSelectFile, onOpenEditTags, onOpenRename, onOpenDelete }: UseSidebarFileContextMenuParams) {
+export function useSidebarFileContextMenu({ onSelectFile, onOpenEditTags, onOpenRename, onOpenDelete, onOpenReveal }: UseSidebarFileContextMenuParams) {
   const [state, setState] = useState<{ path: string; x: number; y: number } | null>(null)
 
   const closeContextMenu = () => {
@@ -94,6 +95,15 @@ export function useSidebarFileContextMenu({ onSelectFile, onOpenEditTags, onOpen
     closeContextMenu()
   }
 
+  const handleRevealFromContextMenu = () => {
+    if (!state) {
+      return
+    }
+
+    onOpenReveal(state.path)
+    closeContextMenu()
+  }
+
   return {
     contextMenuState: state,
     closeContextMenu,
@@ -101,15 +111,17 @@ export function useSidebarFileContextMenu({ onSelectFile, onOpenEditTags, onOpen
     handleEditTagsFromContextMenu,
     handleRenameFromContextMenu,
     handleDeleteFromContextMenu,
+    handleRevealFromContextMenu,
   }
 }
 
 interface UseSidebarFolderContextMenuParams {
   onOpenRename: (path: string) => void
   onOpenDelete: (path: string) => void
+  onOpenReveal: (path: string) => void
 }
 
-export function useSidebarFolderContextMenu({ onOpenRename, onOpenDelete }: UseSidebarFolderContextMenuParams) {
+export function useSidebarFolderContextMenu({ onOpenRename, onOpenDelete, onOpenReveal }: UseSidebarFolderContextMenuParams) {
   const [state, setState] = useState<{ path: string; x: number; y: number } | null>(null)
 
   const closeContextMenu = () => {
@@ -138,11 +150,21 @@ export function useSidebarFolderContextMenu({ onOpenRename, onOpenDelete }: UseS
     closeContextMenu()
   }
 
+  const handleRevealFromContextMenu = () => {
+    if (!state) {
+      return
+    }
+
+    onOpenReveal(state.path)
+    closeContextMenu()
+  }
+
   return {
     contextMenuState: state,
     closeContextMenu,
     handleFolderContextMenu,
     handleRenameFromContextMenu,
     handleDeleteFromContextMenu,
+    handleRevealFromContextMenu,
   }
 }

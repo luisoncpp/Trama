@@ -45,6 +45,7 @@ function buildPanelProps(
     onPickFolder: () => undefined,
     onCloseProject: () => undefined,
     onRevealInFileManager: () => undefined,
+    onRevealPathInFileManager: (_path: string) => undefined,
     onImport: () => undefined,
     onImportZulu: () => undefined,
     onExportBook: (_format) => undefined,
@@ -214,6 +215,7 @@ describe('sidebar panels', () => {
           onPickFolder,
           onCloseProject: () => undefined,
           onRevealInFileManager: () => undefined,
+          onRevealPathInFileManager: () => undefined,
           onLoadFileTags: () => Promise.resolve([]),
         }),
         container,
@@ -263,6 +265,7 @@ describe('sidebar panels', () => {
           onPickFolder: () => undefined,
           onCloseProject: () => undefined,
           onRevealInFileManager: () => undefined,
+          onRevealPathInFileManager: () => undefined,
           onLoadFileTags: () => Promise.resolve([]),
         }),
         container,
@@ -308,6 +311,7 @@ describe('sidebar panels', () => {
           onPickFolder: () => undefined,
           onCloseProject: () => undefined,
           onRevealInFileManager: () => undefined,
+          onRevealPathInFileManager: () => undefined,
           onLoadFileTags: () => Promise.resolve([]),
         }),
         container,
@@ -345,6 +349,7 @@ describe('sidebar panels', () => {
           onPickFolder: () => undefined,
           onCloseProject: () => undefined,
           onRevealInFileManager: () => undefined,
+          onRevealPathInFileManager: () => undefined,
           onLoadFileTags: () => Promise.resolve([]),
         }),
         container,
@@ -919,6 +924,68 @@ describe('sidebar panels', () => {
     const shell = container.querySelector('.sidebar-shell') as HTMLElement
     expect(shell.className).toContain('is-collapsed')
     expect(container.textContent).not.toContain('Scene-001.md')
+  })
+
+  it('triggers reveal callback from file context menu', () => {
+    const onRevealPathInFileManager = vi.fn()
+
+    act(() => {
+      render(
+        h(SidebarPanel, buildPanelProps({ onRevealPathInFileManager })),
+        container,
+      )
+    })
+
+    const fileRowButton = Array.from(container.querySelectorAll('.sidebar-tree__row')).find((node) =>
+      node.textContent?.includes('Scene-001.md'),
+    ) as HTMLButtonElement
+    expect(fileRowButton).toBeTruthy()
+
+    act(() => {
+      fileRowButton.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true, clientX: 120, clientY: 140 }))
+    })
+
+    const revealMenuItem = Array.from(container.querySelectorAll('.sidebar-context-menu__item')).find((node) =>
+      node.textContent?.includes('Reveal in file explorer') || node.textContent?.includes('Reveal in Finder')
+    ) as HTMLButtonElement
+    expect(revealMenuItem).toBeTruthy()
+
+    act(() => {
+      revealMenuItem.click()
+    })
+
+    expect(onRevealPathInFileManager).toHaveBeenCalledWith('book/Act-01/Chapter-01/Scene-001.md')
+  })
+
+  it('triggers reveal callback from folder context menu', () => {
+    const onRevealPathInFileManager = vi.fn()
+
+    act(() => {
+      render(
+        h(SidebarPanel, buildPanelProps({ onRevealPathInFileManager })),
+        container,
+      )
+    })
+
+    const folderRowButton = Array.from(container.querySelectorAll('.sidebar-tree__row')).find((node) =>
+      node.textContent?.includes('Chapter-01'),
+    ) as HTMLButtonElement
+    expect(folderRowButton).toBeTruthy()
+
+    act(() => {
+      folderRowButton.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true, clientX: 120, clientY: 140 }))
+    })
+
+    const revealMenuItem = Array.from(container.querySelectorAll('.sidebar-context-menu__item')).find((node) =>
+      node.textContent?.includes('Reveal in file explorer') || node.textContent?.includes('Reveal in Finder')
+    ) as HTMLButtonElement
+    expect(revealMenuItem).toBeTruthy()
+
+    act(() => {
+      revealMenuItem.click()
+    })
+
+    expect(onRevealPathInFileManager).toHaveBeenCalledWith('book/Act-01/Chapter-01')
   })
 })
 

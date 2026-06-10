@@ -20,6 +20,7 @@ function FileContextMenu({ contextMenu }: FileContextMenuProps) {
       onEditTags={contextMenu.handleEditTagsFromContextMenu}
       onRename={contextMenu.handleRenameFromContextMenu}
       onDelete={contextMenu.handleDeleteFromContextMenu}
+      onReveal={contextMenu.handleRevealFromContextMenu}
       onClose={contextMenu.closeContextMenu}
     />
   )
@@ -39,6 +40,7 @@ function FolderContextMenu({ contextMenu }: FolderContextMenuProps) {
       position={position}
       onRename={contextMenu.handleRenameFromContextMenu}
       onDelete={contextMenu.handleDeleteFromContextMenu}
+      onReveal={contextMenu.handleRevealFromContextMenu}
       onClose={contextMenu.closeContextMenu}
     />
   )

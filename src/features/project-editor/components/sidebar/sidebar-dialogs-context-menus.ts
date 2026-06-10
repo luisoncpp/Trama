@@ -18,16 +18,19 @@ export function useSidebarDialogs(props: {
   openDeleteDialog: (path: string) => void
   openRenameFolderDialog: (path: string) => void
   openDeleteFolderDialog: (path: string) => void
+  onRevealPathInFileManager: (path: string) => void
 }) {
   const fileContextMenu = useSidebarFileContextMenu({
     onSelectFile: props.onSelectFile,
     onOpenEditTags: props.openEditTagsDialog,
     onOpenRename: props.openRenameDialog,
     onOpenDelete: props.openDeleteDialog,
+    onOpenReveal: props.onRevealPathInFileManager,
   })
   const folderContextMenu = useSidebarFolderContextMenu({
     onOpenRename: props.openRenameFolderDialog,
     onOpenDelete: props.openDeleteFolderDialog,
+    onOpenReveal: props.onRevealPathInFileManager,
   })
   return { fileContextMenu, folderContextMenu }
 }

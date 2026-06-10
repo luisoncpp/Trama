@@ -64,6 +64,7 @@ export interface SidebarFileActions {
   onDeleteFolder: (path: string) => void
   onDeleteFile: (path: string, options?: { deleteAssociatedImages?: boolean }) => void
   onEditFileTags: (path: string, tags: string[]) => void
+  onRevealPathInFileManager: (path: string) => void
   onReorderFiles?: (folderPath: string, orderedIds: string[]) => Promise<void>
   corkboardOrder?: Record<string, string[]>
 }

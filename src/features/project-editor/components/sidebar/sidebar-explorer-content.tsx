@@ -34,6 +34,7 @@ interface SidebarExplorerContentProps {
   onDeleteFolder: SidebarExplorerCommonProps['onDeleteFolder']
   onDeleteFile: SidebarExplorerCommonProps['onDeleteFile']
   onEditFileTags: SidebarExplorerCommonProps['onEditFileTags']
+  onRevealPathInFileManager: (path: string) => void
   onLoadFileTags: (path: string) => Promise<string[]>
   onLoadFileDeleteInfo?: (path: string) => Promise<{ linkedImagePaths: string[] }>
   corkboardOrder?: Record<string, string[]>
@@ -122,6 +123,7 @@ export function SidebarExplorerContent(props: SidebarExplorerContentProps) {
           statusMessage={props.statusMessage} projectRootPath={props.projectRootPath}
           onPickFolder={props.onPickFolder} onCloseProject={props.onCloseProject}
           onRevealInFileManager={props.onRevealInFileManager} pickFolderDisabled={props.pickFolderDisabled}
+          onRevealPathInFileManager={props.onRevealPathInFileManager}
           filterQuery={props.filterQuery} onFilterQueryChange={props.onFilterQueryChange}
           createMode={createCtrlSnapshot.mode} createInput={createCtrlSnapshot.input}
           openCreateDialog={createCtrl.open.bind(createCtrl)} closeCreateDialog={createCtrl.close.bind(createCtrl)}

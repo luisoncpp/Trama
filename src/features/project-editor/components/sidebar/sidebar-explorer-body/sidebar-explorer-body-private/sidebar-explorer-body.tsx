@@ -25,6 +25,7 @@ export interface SidebarExplorerBodyProps {
   onPickFolder: () => void
   onCloseProject: () => void
   onRevealInFileManager: () => void
+  onRevealPathInFileManager: (path: string) => void
   pickFolderDisabled: boolean
   filterQuery: string
   onFilterQueryChange: (value: string) => void
@@ -132,6 +133,7 @@ export function SidebarExplorerBody(props: SidebarExplorerBodyProps) {
     openDeleteDialog: props.openDeleteDialog,
     openRenameFolderDialog: props.openRenameFolderDialog,
     openDeleteFolderDialog: props.openDeleteFolderDialog,
+    onRevealPathInFileManager: props.onRevealPathInFileManager,
   })
 
   const tree = useMemo(/* getExplorerTree */ () => buildSidebarTree(props.visibleFiles), [props.visibleFiles] /*Inputs for getExplorerTree*/)

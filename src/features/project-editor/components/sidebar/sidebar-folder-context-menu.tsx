@@ -1,12 +1,20 @@
+function getRevealMenuLabel(): string {
+  if (typeof navigator !== 'undefined' && /Mac|iPhone|iPad|iPod/.test(navigator.platform)) {
+    return 'Reveal in Finder'
+  }
+  return 'Reveal in file explorer'
+}
+
 interface SidebarFolderContextMenuProps {
   isOpen: boolean
   position: { x: number; y: number } | null
   onRename: () => void
   onDelete: () => void
+  onReveal: () => void
   onClose: () => void
 }
 
-export function SidebarFolderContextMenu({ isOpen, position, onRename, onDelete, onClose }: SidebarFolderContextMenuProps) {
+export function SidebarFolderContextMenu({ isOpen, position, onRename, onDelete, onReveal, onClose }: SidebarFolderContextMenuProps) {
   if (!isOpen || !position) {
     return null
   }
@@ -22,6 +30,9 @@ export function SidebarFolderContextMenu({ isOpen, position, onRename, onDelete,
       >
         <button type="button" class="sidebar-context-menu__item" role="menuitem" onClick={onRename}>
           Rename
+        </button>
+        <button type="button" class="sidebar-context-menu__item" role="menuitem" onClick={onReveal}>
+          {getRevealMenuLabel()}
         </button>
         <button
           type="button"

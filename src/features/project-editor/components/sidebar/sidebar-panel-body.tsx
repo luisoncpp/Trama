@@ -49,6 +49,7 @@ export interface SidebarPanelBodyProps {
   onDeleteFolder: SidebarFileActions['onDeleteFolder']
   onDeleteFile: SidebarFileActions['onDeleteFile']
   onEditFileTags: SidebarFileActions['onEditFileTags']
+  onRevealPathInFileManager: SidebarFileActions['onRevealPathInFileManager']
   onImport: () => void
   onImportZulu: () => void
   onExportBook: SidebarProjectContextProps['onExportBook']
@@ -90,6 +91,7 @@ function renderExplorer(props: SidebarPanelBodyProps) {
     contentProps, sectionConfig, rootPath, scopedFiles, scopedSelectedPath,
     activeFilterQuery, onFilterQueryChange, onCreateArticle, onCreateMap, onCreateCategory,
     onRenameFile, onRenameFolder, onDeleteFolder, onDeleteFile, onEditFileTags,
+    onRevealPathInFileManager,
     onSelectFile, onReorderFiles, onMoveFile, onMoveFolder, corkboardOrder,
   } = props
   if (!sectionConfig) return null
@@ -118,6 +120,7 @@ function renderExplorer(props: SidebarPanelBodyProps) {
       onDeleteFolder={(path) => onDeleteFolder(scopePath(path))}
       onDeleteFile={(path, options) => onDeleteFile(scopePath(path), options)}
       onEditFileTags={(path, tags) => onEditFileTags(scopePath(path), tags)}
+      onRevealPathInFileManager={(path) => onRevealPathInFileManager(scopePath(path))}
       onLoadFileTags={loadFileTags(root)}
       onLoadFileDeleteInfo={loadFileDeleteInfo(root)}
       onSelectFile={(filePath) => onSelectFile(scopePath(filePath))}

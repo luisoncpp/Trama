@@ -37,7 +37,7 @@ export interface ProjectEditorShellActions {
   moveFolder: ProjectEditorModel['actions']['moveFolder']
   pickProjectFolder: ProjectEditorModel['actions']['pickProjectFolder']
   closeProject: ProjectEditorModel['actions']['closeProject']
-  revealProjectInFileManager: ProjectEditorModel['actions']['revealProjectInFileManager']
+  revealInFileManager: ProjectEditorModel['actions']['revealInFileManager']
   setFocusScope: ProjectEditorModel['actions']['setFocusScope']
   saveSnapshot: ProjectEditorModel['actions']['saveSnapshot']
 }
@@ -87,6 +87,9 @@ function buildSidebarFileActionProps(shellActions: ProjectEditorShellActions) {
     onEditFileTags: (path: string, tags: string[]) => {
       void shellActions.editFileTags(path, tags)
     },
+    onRevealPathInFileManager: (path: string) => {
+      void shellActions.revealInFileManager(path)
+    },
   }
 }
 
@@ -121,7 +124,7 @@ function buildSidebarProjectContextProps(
       void shellActions.closeProject()
     },
     onRevealInFileManager: () => {
-      void shellActions.revealProjectInFileManager()
+      void shellActions.revealInFileManager()
     },
     onImport: () => props.dialogsProps.aiImport.setOpen(true),
     onImportZulu: () => props.dialogsProps.zuluImport.setOpen(true),

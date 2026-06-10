@@ -509,11 +509,13 @@ Mandatory doc navigation for new chats: start with `mds/START-HERE.md` — it pr
 - `src/features/project-editor/sidebar-file-actions/private/project-close.ts`
   - Closes the active project via IPC and resets renderer project/editor state.
 - `src/features/project-editor/sidebar-file-actions/private/project-reveal.ts`
-  - Opens the project root in the OS file manager via IPC.
+  - Opens a path (folder or file) in the OS file manager via IPC.
 - `electron/ipc/handlers/project-handlers/project-close-handler.ts`
   - Stops the watcher and clears active project runtime state.
 - `electron/ipc/handlers/project-handlers/project-reveal-handler.ts`
-  - Opens a project root path with `shell.openPath`.
+  - Reveals a path in the OS file manager with `shell.openPath` or `shell.showItemInFolder`.
+- `tests/reveal-in-file-manager-ipc-handler.test.ts`
+  - Unit tests for the reveal-in-file-manager IPC handler (validation, traversal escape prevention, folder vs file routing).
 - `src/features/project-editor/components/sidebar/sidebar-path-scoping.ts`
   - Canonical sidebar path-scoping module. Owns branded path types (`SectionRelativePath`, `ProjectRelativePath`, `SidebarSectionRoot`) and all conversions between section-relative/project-relative paths, reorder payload scoping, and create-path building.
 - `src/features/project-editor/components/sidebar/sidebar-rail.tsx`

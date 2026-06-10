@@ -1,23 +1,28 @@
 import { PROJECT_EDITOR_STRINGS } from '../../project-editor-strings'
 
-export async function revealProjectInFileManager(
-  projectRootPath: string,
+export async function revealInFileManager(
+  path: string,
   setStatusMessage: (message: string) => void,
+  isProjectRoot = false,
 ): Promise<void> {
-  if (!projectRootPath.trim()) {
+  if (!path.trim()) {
     return
   }
 
-  if (!window.tramaApi?.revealProjectInFileManager) {
-    setStatusMessage('Preload API unavailable. Reopen the app to open the project folder.')
+  if (!window.tramaApi?.revealInFileManager) {
+    setStatusMessage('Preload API unavailable. Reopen the app to open the folder.')
     return
   }
 
-  const response = await window.tramaApi.revealProjectInFileManager({ rootPath: projectRootPath })
+  const response = await window.tramaApi.revealInFileManager({ path })
   if (!response.ok) {
-    setStatusMessage(`Could not open project folder: ${response.error.message}`)
+    setStatusMessage(`Could not open path: ${response.error.message}`)
     return
   }
 
-  setStatusMessage(PROJECT_EDITOR_STRINGS.projectRevealedInFileManager)
+  setStatusMessage(
+    isProjectRoot
+      ? PROJECT_EDITOR_STRINGS.projectRevealedInFileManager
+      : 'Item revealed in file explorer.'
+  )
 }

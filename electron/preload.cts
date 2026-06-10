@@ -37,8 +37,8 @@ import {
   type LoadDocumentRevisionResponse,
   type CloseProjectResponse,
   type OpenProjectRequest,
-  type RevealProjectInFileManagerRequest,
-  type RevealProjectInFileManagerResponse,
+  type RevealInFileManagerRequest,
+  type RevealInFileManagerResponse,
   type PingRequest,
   type PingResponse,
   type ProjectIndex,
@@ -101,10 +101,10 @@ const tramaApi = {
   closeProject(): Promise<IpcEnvelope<CloseProjectResponse>> {
     return ipcRenderer.invoke(IPC_CHANNELS.closeProject)
   },
-  revealProjectInFileManager(
-    payload: RevealProjectInFileManagerRequest,
-  ): Promise<IpcEnvelope<RevealProjectInFileManagerResponse>> {
-    return ipcRenderer.invoke(IPC_CHANNELS.revealProjectInFileManager, payload)
+  revealInFileManager(
+    payload: RevealInFileManagerRequest,
+  ): Promise<IpcEnvelope<RevealInFileManagerResponse>> {
+    return ipcRenderer.invoke(IPC_CHANNELS.revealInFileManager, payload)
   },
   selectProjectFolder(): Promise<IpcEnvelope<SelectProjectFolderResponse>> {
     return ipcRenderer.invoke(IPC_CHANNELS.selectProjectFolder)

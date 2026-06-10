@@ -28,6 +28,7 @@ function buildSidebarBodyProps(props: SidebarPanelProps, effectiveCollapsed: boo
     onDeleteFolder: props.onDeleteFolder,
     onDeleteFile: props.onDeleteFile,
     onEditFileTags: props.onEditFileTags,
+    onRevealPathInFileManager: props.onRevealPathInFileManager,
     onImport: props.onImport,
     onImportZulu: props.onImportZulu,
     onExportBook: props.onExportBook,

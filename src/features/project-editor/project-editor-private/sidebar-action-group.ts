@@ -5,7 +5,7 @@ import type { ActionGroupParams } from './action-group-types'
 export function buildSidebarActions(params: ActionGroupParams): Pick<ProjectEditorActions,
   | 'pickProjectFolder'
   | 'closeProject'
-  | 'revealProjectInFileManager'
+  | 'revealInFileManager'
   | 'selectFile'
   | 'setSidebarSection'
   | 'toggleSidebarPanelCollapsed'
@@ -50,10 +50,17 @@ function buildSidebarUiActions({
       setGitHistory: setters.setGitHistory,
       setStatusMessage: setters.setStatusMessage,
     }),
-    revealProjectInFileManager: () => sidebarFileActions.revealProjectInFileManager(
-      projectState.rootPath,
-      setters.setStatusMessage,
-    ),
+    revealInFileManager: (relativePath?: string) => {
+      const cleanRoot = projectState.rootPath.replace(/\/$/, '')
+      const targetPath = relativePath
+        ? `${cleanRoot}/${relativePath.replace(/^\//, '')}`
+        : cleanRoot
+      return sidebarFileActions.revealInFileManager(
+        targetPath,
+        setters.setStatusMessage,
+        !relativePath,
+      )
+    },
     selectFile: (filePath: string) => sidebarFileActions.selectFile(filePath, {
       workspace: paneWorkspace,
       loadDocument,
