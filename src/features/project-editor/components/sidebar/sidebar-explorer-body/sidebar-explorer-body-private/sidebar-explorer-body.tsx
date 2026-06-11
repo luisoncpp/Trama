@@ -17,15 +17,10 @@ export interface SidebarExplorerBodyProps {
   visibleFiles: string[]
   selectedPath: string | null
   loadingDocument: boolean
-  onSelectFile: (filePath: string) => Promise<void>
   loadingProject: boolean
   apiAvailable: boolean
   statusMessage: string
   projectRootPath: string
-  onPickFolder: () => void
-  onCloseProject: () => void
-  onRevealInFileManager: () => void
-  onRevealPathInFileManager: (path: string) => void
   pickFolderDisabled: boolean
   filterQuery: string
   onFilterQueryChange: (value: string) => void
@@ -60,9 +55,6 @@ export interface SidebarExplorerBodyProps {
   onBrowseSourceImage: () => Promise<void>
   filterInputRef: (element: HTMLInputElement | null) => void
   corkboardOrder?: Record<string, string[]>
-  onReorderFiles?: (folderPath: string, orderedIds: string[]) => Promise<void>
-  onMoveFile?: (sourcePath: string, targetFolder: string) => Promise<void>
-  onMoveFolder?: (sourcePath: string, targetParent: string) => Promise<void>
   showTemplatePicker?: boolean
   templateSearchQuery?: string
   templateSelectedPath?: string | null
@@ -127,13 +119,11 @@ function buildDialogsProps(
 
 export function SidebarExplorerBody(props: SidebarExplorerBodyProps) {
   const { fileContextMenu, folderContextMenu } = useSidebarDialogs({
-    onSelectFile: props.onSelectFile,
     openEditTagsDialog: props.openEditTagsDialog,
     openRenameDialog: props.openRenameDialog,
     openDeleteDialog: props.openDeleteDialog,
     openRenameFolderDialog: props.openRenameFolderDialog,
     openDeleteFolderDialog: props.openDeleteFolderDialog,
-    onRevealPathInFileManager: props.onRevealPathInFileManager,
   })
 
   const tree = useMemo(/* getExplorerTree */ () => buildSidebarTree(props.visibleFiles), [props.visibleFiles] /*Inputs for getExplorerTree*/)
@@ -148,8 +138,7 @@ export function SidebarExplorerBody(props: SidebarExplorerBodyProps) {
   return (
     <>
       <SidebarScopePathBreadcrumb
-        projectRootPath={props.projectRootPath} onPickFolder={props.onPickFolder}
-        onCloseProject={props.onCloseProject} onRevealInFileManager={props.onRevealInFileManager}
+        projectRootPath={props.projectRootPath}
         disabled={props.pickFolderDisabled}
       />
       {props.statusMessage && <p class="project-menu__status">{props.statusMessage}</p>}
@@ -162,11 +151,10 @@ export function SidebarExplorerBody(props: SidebarExplorerBodyProps) {
         apiAvailable={props.apiAvailable} visibleFiles={props.visibleFiles}
         selectedPath={props.selectedPath} loadingDocument={props.loadingDocument}
         filterQuery={props.filterQuery} corkboardOrder={props.corkboardOrder}
-        onSelectFile={props.onSelectFile} expandedFolders={expandedFolders}
+        expandedFolders={expandedFolders}
         onFileContextMenu={fileContextMenu.handleFileContextMenu}
         onFolderContextMenu={folderContextMenu.handleFolderContextMenu}
-        onReorderFiles={props.onReorderFiles} onToggleFolder={setFolderExpanded}
-        onMoveFile={props.onMoveFile} onMoveFolder={props.onMoveFolder}
+        onToggleFolder={setFolderExpanded}
       />
       <SidebarExplorerDialogs {...buildDialogsProps(props, fileContextMenu, folderContextMenu)} />
     </>

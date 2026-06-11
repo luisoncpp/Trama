@@ -1,10 +1,14 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { h, render } from 'preact'
+import { h, type VNode } from 'preact'
 import { act } from 'preact/test-utils'
 import { SidebarPanel } from '../src/features/project-editor/components/sidebar/sidebar-panel.tsx'
 import { SidebarExplorerContent } from '../src/features/project-editor/components/sidebar/sidebar-explorer-content.tsx'
 import { SidebarSettingsContent } from '../src/features/project-editor/components/sidebar/sidebar-settings.tsx'
 import type { ThemePreference } from '../src/theme/theme-types'
+import {
+  buildEditorActionsSpies,
+  renderWithEditorActions,
+} from './helpers/editor-actions-test-helper.ts'
 
 function buildPanelProps(
   overrides: Partial<Parameters<typeof SidebarPanel>[0]> = {},
@@ -17,20 +21,9 @@ function buildPanelProps(
     ],
     selectedPath: 'book/Act-01/Chapter-01/Scene-001.md',
     loadingDocument: false,
-    onSelectFile: async () => undefined,
     sidebarActiveSection: 'explorer',
     sidebarPanelCollapsed: false,
     effectiveCollapsed: false,
-    onSelectSidebarSection: () => undefined,
-    onToggleSidebarPanelCollapsed: () => undefined,
-          onCreateArticle: () => undefined,
-          onCreateMap: () => undefined,
-    onCreateCategory: () => undefined,
-    onRenameFile: () => undefined,
-    onRenameFolder: () => undefined,
-    onDeleteFolder: () => undefined,
-    onDeleteFile: () => undefined,
-    onEditFileTags: () => undefined,
     apiAvailable: true,
     loadingProject: false,
     rootPath: 'C:/Proyectos/test_trama',
@@ -42,15 +35,10 @@ function buildPanelProps(
       needsInitialization: false,
       loading: false,
     },
-    onPickFolder: () => undefined,
-    onCloseProject: () => undefined,
-    onRevealInFileManager: () => undefined,
-    onRevealPathInFileManager: (_path: string) => undefined,
     onImport: () => undefined,
     onImportZulu: () => undefined,
     onExportBook: (_format) => undefined,
     onExport: () => undefined,
-    onSaveSnapshot: () => undefined,
     themePreference: 'dark',
     resolvedTheme: 'dark',
     onThemePreferenceChange: () => undefined,
@@ -62,13 +50,16 @@ function buildPanelProps(
     onSpellcheckLanguageChange: () => undefined,
     focusModeEnabled: false,
     focusScope: 'paragraph',
-    onFocusScopeChange: () => undefined,
     ...overrides,
   }
 }
 
 describe('sidebar panels', () => {
   let container: HTMLDivElement
+
+  function renderSidebar(vnode: VNode<any>, actions = buildEditorActionsSpies(), scopeRoot?: string) {
+    return renderWithEditorActions(vnode, { container, actions, scopeRoot })
+  }
 
   beforeEach(() => {
     container = document.createElement('div')
@@ -80,9 +71,7 @@ describe('sidebar panels', () => {
   })
 
   it('renders explorer, outline, lore and settings sections with scoped trees', () => {
-    act(() => {
-      render(h(SidebarPanel, buildPanelProps()), container)
-    })
+    renderSidebar(h(SidebarPanel, buildPanelProps()))
 
     expect(container.textContent).toContain('Manuscript')
     expect(container.textContent).toContain('test_trama')
@@ -90,35 +79,20 @@ describe('sidebar panels', () => {
     expect(container.textContent).toContain('Scene-001.md')
     expect(container.textContent).not.toContain('arc-general.md')
 
-    act(() => {
-      render(
-        h(SidebarPanel, buildPanelProps({ sidebarActiveSection: 'outline' })),
-        container,
-      )
-    })
+    renderSidebar(h(SidebarPanel, buildPanelProps({ sidebarActiveSection: 'outline' })))
 
     expect(container.textContent).toContain('Outline')
     expect(container.textContent).toContain('test_trama')
     expect(container.textContent).toContain('arc-general.md')
     expect(container.textContent).not.toContain('Scene-001.md')
 
-    act(() => {
-      render(
-        h(SidebarPanel, buildPanelProps({ sidebarActiveSection: 'lore' })),
-        container,
-      )
-    })
+    renderSidebar(h(SidebarPanel, buildPanelProps({ sidebarActiveSection: 'lore' })))
 
     expect(container.textContent).toContain('Lore')
     expect(container.textContent).toContain('test_trama')
     expect(container.textContent).toContain('protagonista.md')
 
-    act(() => {
-      render(
-        h(SidebarPanel, buildPanelProps({ sidebarActiveSection: 'transfer' })),
-        container,
-      )
-    })
+    renderSidebar(h(SidebarPanel, buildPanelProps({ sidebarActiveSection: 'transfer' })))
 
     expect(container.textContent).toContain('Import / Export')
     expect(container.textContent).toContain('Import AI Content')
@@ -131,12 +105,7 @@ describe('sidebar panels', () => {
     expect(container.textContent).toContain('EPUB (.epub)')
     expect(container.textContent).toContain('PDF (.pdf)')
 
-    act(() => {
-      render(
-        h(SidebarPanel, buildPanelProps({ sidebarActiveSection: 'settings' })),
-        container,
-      )
-    })
+    renderSidebar(h(SidebarPanel, buildPanelProps({ sidebarActiveSection: 'settings' })))
 
     expect(container.textContent).toContain('Settings')
     expect(container.textContent).toContain('Theme')
@@ -145,34 +114,24 @@ describe('sidebar panels', () => {
   })
 
   it('hides Save Snapshot when Git is unavailable', () => {
-    act(() => {
-      render(
-        h(SidebarPanel, buildPanelProps({
-          sidebarActiveSection: 'transfer',
-          gitHistory: {
-            gitAvailable: false,
-            repositoryRoot: null,
-            usesParentRepository: false,
-            needsInitialization: false,
-            loading: false,
-          },
-        })),
-        container,
-      )
-    })
+    renderSidebar(h(SidebarPanel, buildPanelProps({
+      sidebarActiveSection: 'transfer',
+      gitHistory: {
+        gitAvailable: false,
+        repositoryRoot: null,
+        usesParentRepository: false,
+        needsInitialization: false,
+        loading: false,
+      },
+    })))
 
     expect(container.textContent).not.toContain('Save Snapshot')
   })
 
   it('maps scoped file selections back to project-relative paths', () => {
-    const onSelectFile = vi.fn()
+    const actions = buildEditorActionsSpies()
 
-    act(() => {
-      render(
-        h(SidebarPanel, buildPanelProps({ onSelectFile })),
-        container,
-      )
-    })
+    renderSidebar(h(SidebarPanel, buildPanelProps()), actions)
 
     const rowButtons = Array.from(container.querySelectorAll('.sidebar-tree__row')) as HTMLButtonElement[]
     const fileRowButton = rowButtons.find((button) => button.textContent?.includes('Scene-001.md'))
@@ -182,45 +141,27 @@ describe('sidebar panels', () => {
       fileRowButton?.click()
     })
 
-    expect(onSelectFile).toHaveBeenCalledWith('book/Act-01/Chapter-01/Scene-001.md')
+    expect(actions.selectFile).toHaveBeenCalledWith('book/Act-01/Chapter-01/Scene-001.md')
   })
 
   it('uses project-root breadcrumb to pick a folder and does not render status text', () => {
     const onPickFolder = vi.fn()
     const onFilterQueryChange = vi.fn()
+    const actions = buildEditorActionsSpies({ pickProjectFolder: onPickFolder })
 
-    act(() => {
-      render(
-        h(SidebarExplorerContent, {
-          title: 'Manuscript',
-          visibleFiles: ['docs/README.md'],
-          selectedPath: 'docs/README.md',
-          loadingDocument: false,
-          onSelectFile: async () => undefined,
-          apiAvailable: true,
-          loadingProject: false,
-          statusMessage: '',
-          projectRootPath: 'C:/Proyectos/test_trama',
-          pickFolderDisabled: false,
-          filterQuery: '',
-          onFilterQueryChange,
-                onCreateArticle: () => undefined,
-          onCreateMap: () => undefined,
-          onCreateCategory: () => undefined,
-          onRenameFile: () => undefined,
-          onRenameFolder: () => undefined,
-          onDeleteFolder: () => undefined,
-          onDeleteFile: () => undefined,
-          onEditFileTags: () => undefined,
-          onPickFolder,
-          onCloseProject: () => undefined,
-          onRevealInFileManager: () => undefined,
-          onRevealPathInFileManager: () => undefined,
-          onLoadFileTags: () => Promise.resolve([]),
-        }),
-        container,
-      )
-    })
+    renderSidebar(h(SidebarExplorerContent, {
+      title: 'Manuscript',
+      visibleFiles: ['docs/README.md'],
+      selectedPath: 'docs/README.md',
+      loadingDocument: false,
+      apiAvailable: true,
+      loadingProject: false,
+      statusMessage: '',
+      projectRootPath: 'C:/Proyectos/test_trama',
+      pickFolderDisabled: false,
+      filterQuery: '',
+      onFilterQueryChange,
+    }), actions, 'book/')
 
     const folderButton = container.querySelector('.path-breadcrumb-trigger') as HTMLButtonElement
     expect(folderButton).toBeTruthy()
@@ -239,38 +180,19 @@ describe('sidebar panels', () => {
   })
 
   it('does not capture Ctrl+F in the sidebar filter anymore', () => {
-    act(() => {
-      render(
-        h(SidebarExplorerContent, {
-          title: 'Manuscript',
-          visibleFiles: ['docs/README.md'],
-          selectedPath: 'docs/README.md',
-          loadingDocument: false,
-          onSelectFile: async () => undefined,
-          apiAvailable: true,
-          loadingProject: false,
-          statusMessage: '',
-          projectRootPath: 'C:/Proyectos/test_trama',
-          pickFolderDisabled: false,
-          filterQuery: '',
-          onFilterQueryChange: () => undefined,
-                onCreateArticle: () => undefined,
-          onCreateMap: () => undefined,
-          onCreateCategory: () => undefined,
-          onRenameFile: () => undefined,
-          onRenameFolder: () => undefined,
-          onDeleteFolder: () => undefined,
-          onDeleteFile: () => undefined,
-          onEditFileTags: () => undefined,
-          onPickFolder: () => undefined,
-          onCloseProject: () => undefined,
-          onRevealInFileManager: () => undefined,
-          onRevealPathInFileManager: () => undefined,
-          onLoadFileTags: () => Promise.resolve([]),
-        }),
-        container,
-      )
-    })
+    renderSidebar(h(SidebarExplorerContent, {
+      title: 'Manuscript',
+      visibleFiles: ['docs/README.md'],
+      selectedPath: 'docs/README.md',
+      loadingDocument: false,
+      apiAvailable: true,
+      loadingProject: false,
+      statusMessage: '',
+      projectRootPath: 'C:/Proyectos/test_trama',
+      pickFolderDisabled: false,
+      filterQuery: '',
+      onFilterQueryChange: () => undefined,
+    }), buildEditorActionsSpies(), 'book/')
 
     const filterInput = container.querySelector('.sidebar-filter__input') as HTMLInputElement
     expect(filterInput).toBeTruthy()
@@ -285,91 +207,46 @@ describe('sidebar panels', () => {
   })
 
   it('shows loading and api-unavailable sidebar states', () => {
-    act(() => {
-      render(
-        h(SidebarExplorerContent, {
-          title: 'Manuscript',
-          visibleFiles: ['docs/README.md'],
-          selectedPath: 'docs/README.md',
-          loadingDocument: false,
-          onSelectFile: async () => undefined,
-          apiAvailable: true,
-          loadingProject: true,
-          statusMessage: '',
-          projectRootPath: 'C:/Proyectos/test_trama',
-          pickFolderDisabled: true,
-          filterQuery: '',
-          onFilterQueryChange: () => undefined,
-                onCreateArticle: () => undefined,
-          onCreateMap: () => undefined,
-          onCreateCategory: () => undefined,
-          onRenameFile: () => undefined,
-          onRenameFolder: () => undefined,
-          onDeleteFolder: () => undefined,
-          onDeleteFile: () => undefined,
-          onEditFileTags: () => undefined,
-          onPickFolder: () => undefined,
-          onCloseProject: () => undefined,
-          onRevealInFileManager: () => undefined,
-          onRevealPathInFileManager: () => undefined,
-          onLoadFileTags: () => Promise.resolve([]),
-        }),
-        container,
-      )
-    })
+    renderSidebar(h(SidebarExplorerContent, {
+      title: 'Manuscript',
+      visibleFiles: ['docs/README.md'],
+      selectedPath: 'docs/README.md',
+      loadingDocument: false,
+      apiAvailable: true,
+      loadingProject: true,
+      statusMessage: '',
+      projectRootPath: 'C:/Proyectos/test_trama',
+      pickFolderDisabled: true,
+      filterQuery: '',
+      onFilterQueryChange: () => undefined,
+    }), buildEditorActionsSpies(), 'book/')
 
     const treeEl = container.querySelector('.sidebar-tree')
     expect(treeEl).toBeTruthy()
     expect(treeEl?.classList.contains('is-loading')).toBe(true)
     expect(container.textContent).toContain('README.md')
 
-    act(() => {
-      render(
-        h(SidebarExplorerContent, {
-          title: 'Manuscript',
-          visibleFiles: ['docs/README.md'],
-          selectedPath: 'docs/README.md',
-          loadingDocument: false,
-          onSelectFile: async () => undefined,
-          apiAvailable: false,
-          loadingProject: false,
-          statusMessage: '',
-          projectRootPath: 'C:/Proyectos/test_trama',
-          pickFolderDisabled: true,
-          filterQuery: '',
-          onFilterQueryChange: () => undefined,
-                onCreateArticle: () => undefined,
-          onCreateMap: () => undefined,
-          onCreateCategory: () => undefined,
-          onRenameFile: () => undefined,
-          onRenameFolder: () => undefined,
-          onDeleteFolder: () => undefined,
-          onDeleteFile: () => undefined,
-          onEditFileTags: () => undefined,
-          onPickFolder: () => undefined,
-          onCloseProject: () => undefined,
-          onRevealInFileManager: () => undefined,
-          onRevealPathInFileManager: () => undefined,
-          onLoadFileTags: () => Promise.resolve([]),
-        }),
-        container,
-      )
-    })
+    renderSidebar(h(SidebarExplorerContent, {
+      title: 'Manuscript',
+      visibleFiles: ['docs/README.md'],
+      selectedPath: 'docs/README.md',
+      loadingDocument: false,
+      apiAvailable: false,
+      loadingProject: false,
+      statusMessage: '',
+      projectRootPath: 'C:/Proyectos/test_trama',
+      pickFolderDisabled: true,
+      filterQuery: '',
+      onFilterQueryChange: () => undefined,
+    }), buildEditorActionsSpies(), 'book/')
 
     expect(container.textContent).toContain('Preload API unavailable.')
   })
 
   it('triggers create article/category callbacks from footer actions', async () => {
-    const onCreateArticle = vi.fn()
-    const onCreateMap = vi.fn()
-    const onCreateCategory = vi.fn()
+    const actions = buildEditorActionsSpies()
 
-    act(() => {
-      render(
-        h(SidebarPanel, buildPanelProps({ onCreateArticle, onCreateMap, onCreateCategory })),
-        container,
-      )
-    })
+    renderSidebar(h(SidebarPanel, buildPanelProps()), actions)
 
     const createArticleButton = Array.from(container.querySelectorAll('.sidebar-footer-actions .editor-button')).find(
       (node) => node.textContent?.includes('+ Article'),
@@ -410,7 +287,7 @@ describe('sidebar panels', () => {
       articleSubmitButton.click()
     })
 
-    expect(onCreateArticle).toHaveBeenCalledWith({
+    expect(actions.createArticle).toHaveBeenCalledWith({
       directory: 'Act-01/Chapter-03',
       name: 'Scene-007',
       sourceImagePath: '',
@@ -475,7 +352,7 @@ describe('sidebar panels', () => {
     await act(async () => {
       mapSubmitButton.click()
 
-      expect(onCreateMap).toHaveBeenCalledWith({
+      expect(actions.createMap).toHaveBeenCalledWith({
         directory: 'World',
         name: 'Realm Atlas',
         sourceImagePath: 'C:/maps/world.png',
@@ -509,9 +386,9 @@ describe('sidebar panels', () => {
       categorySubmitButton.click()
     })
 
-    expect(onCreateArticle).toHaveBeenCalledTimes(1)
-    expect(onCreateMap).toHaveBeenCalledTimes(1)
-    expect(onCreateCategory).toHaveBeenCalledWith({
+    expect(actions.createArticle).toHaveBeenCalledTimes(1)
+    expect(actions.createMap).toHaveBeenCalledTimes(1)
+    expect(actions.createCategory).toHaveBeenCalledWith({
       directory: 'World',
       name: 'Cities',
       sourceImagePath: '',
@@ -535,9 +412,7 @@ describe('sidebar panels', () => {
       }),
     }
 
-    act(() => {
-      render(h(SidebarPanel, buildPanelProps()), container)
-    })
+    renderSidebar(h(SidebarPanel, buildPanelProps()))
 
     const createArticleButton = Array.from(container.querySelectorAll('.sidebar-footer-actions .editor-button')).find(
       (node) => node.textContent?.includes('+ Article'),
@@ -560,9 +435,7 @@ describe('sidebar panels', () => {
   })
 
   it('triggers edit tags, rename and delete callbacks from file context menu', async () => {
-    const onRenameFile = vi.fn()
-    const onDeleteFile = vi.fn()
-    const onEditFileTags = vi.fn()
+    const actions = buildEditorActionsSpies()
 
     const readDocumentMock = vi.fn(async () => ({
       ok: true,
@@ -578,12 +451,7 @@ describe('sidebar panels', () => {
       readDocument: readDocumentMock,
     }
 
-    act(() => {
-      render(
-        h(SidebarPanel, buildPanelProps({ onRenameFile, onDeleteFile, onEditFileTags })),
-        container,
-      )
-    })
+    renderSidebar(h(SidebarPanel, buildPanelProps()), actions)
 
     const fileRowButton = Array.from(container.querySelectorAll('.sidebar-tree__row')).find((node) =>
       node.textContent?.includes('Scene-001.md'),
@@ -626,7 +494,7 @@ describe('sidebar panels', () => {
       saveTagsConfirm.click()
     })
 
-    expect(onEditFileTags).toHaveBeenCalledWith('book/Act-01/Chapter-01/Scene-001.md', ['magic', 'north', 'selene valeria'])
+    expect(actions.editFileTags).toHaveBeenCalledWith('book/Act-01/Chapter-01/Scene-001.md', ['magic', 'north', 'selene valeria'])
 
     act(() => {
       fileRowButton.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true, clientX: 160, clientY: 180 }))
@@ -661,7 +529,7 @@ describe('sidebar panels', () => {
       renameConfirm.click()
     })
 
-    expect(onRenameFile).toHaveBeenCalledWith('book/Act-01/Chapter-01/Scene-001.md', 'Scene-009.md')
+    expect(actions.renameFile).toHaveBeenCalledWith({ path: 'book/Act-01/Chapter-01/Scene-001.md', newName: 'Scene-009.md' })
 
     act(() => {
       fileRowButton.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true, clientX: 180, clientY: 220 }))
@@ -696,22 +564,16 @@ describe('sidebar panels', () => {
       deleteConfirm.click()
     })
 
-    expect(onDeleteFile).toHaveBeenCalledWith(
+    expect(actions.deleteFile).toHaveBeenCalledWith(
       'book/Act-01/Chapter-01/Scene-001.md',
       deleteImagesCheckbox ? { deleteAssociatedImages: true } : undefined,
     )
   })
 
   it('triggers rename and delete callbacks from folder context menu', () => {
-    const onRenameFolder = vi.fn()
-    const onDeleteFolder = vi.fn()
+    const actions = buildEditorActionsSpies()
 
-    act(() => {
-      render(
-        h(SidebarPanel, buildPanelProps({ onRenameFolder, onDeleteFolder })),
-        container,
-      )
-    })
+    renderSidebar(h(SidebarPanel, buildPanelProps()), actions)
 
     const folderRowButton = Array.from(container.querySelectorAll('.sidebar-tree__row')).find((node) =>
       node.textContent?.includes('Chapter-01'),
@@ -751,7 +613,7 @@ describe('sidebar panels', () => {
       renameConfirm.click()
     })
 
-    expect(onRenameFolder).toHaveBeenCalledWith('book/Act-01/Chapter-01', 'Chapter-09')
+    expect(actions.renameFolder).toHaveBeenCalledWith({ path: 'book/Act-01/Chapter-01', newName: 'Chapter-09' })
 
     act(() => {
       folderRowButton.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true, clientX: 160, clientY: 180 }))
@@ -777,14 +639,15 @@ describe('sidebar panels', () => {
       deleteConfirm.click()
     })
 
-    expect(onDeleteFolder).toHaveBeenCalledWith('book/Act-01/Chapter-01')
+    expect(actions.deleteFolder).toHaveBeenCalledWith('book/Act-01/Chapter-01')
   })
 
   it('updates theme preference from settings buttons', () => {
     const onThemePreferenceChange = vi.fn<(preference: ThemePreference) => void>()
+    const actions = buildEditorActionsSpies()
 
     act(() => {
-      render(
+      renderWithEditorActions(
         h(SidebarSettingsContent, {
           themePreference: 'dark',
           resolvedTheme: 'dark',
@@ -796,9 +659,8 @@ describe('sidebar panels', () => {
           onSpellcheckEnabledChange: () => undefined,
           onSpellcheckLanguageChange: () => undefined,
           focusScope: 'paragraph',
-          onFocusScopeChange: () => undefined,
         }),
-        container,
+        { container, actions },
       )
     })
 
@@ -816,10 +678,10 @@ describe('sidebar panels', () => {
   })
 
   it('updates focus scope from settings select', () => {
-    const onFocusScopeChange = vi.fn()
+    const actions = buildEditorActionsSpies()
 
     act(() => {
-      render(
+      renderWithEditorActions(
         h(SidebarSettingsContent, {
           themePreference: 'dark',
           resolvedTheme: 'dark',
@@ -831,9 +693,8 @@ describe('sidebar panels', () => {
           onSpellcheckEnabledChange: () => undefined,
           onSpellcheckLanguageChange: () => undefined,
           focusScope: 'paragraph',
-          onFocusScopeChange,
         }),
-        container,
+        { container, actions },
       )
     })
 
@@ -846,14 +707,15 @@ describe('sidebar panels', () => {
       select.dispatchEvent(new Event('change', { bubbles: true }))
     })
 
-    expect(onFocusScopeChange).toHaveBeenCalledWith('sentence')
+    expect(actions.setFocusScope).toHaveBeenCalledWith('sentence')
   })
 
   it('updates spellcheck enabled state from settings checkbox', () => {
     const onSpellcheckEnabledChange = vi.fn()
+    const actions = buildEditorActionsSpies()
 
     act(() => {
-      render(
+      renderWithEditorActions(
         h(SidebarSettingsContent, {
           themePreference: 'dark',
           resolvedTheme: 'dark',
@@ -865,9 +727,8 @@ describe('sidebar panels', () => {
           onSpellcheckEnabledChange,
           onSpellcheckLanguageChange: () => undefined,
           focusScope: 'paragraph',
-          onFocusScopeChange: () => undefined,
         }),
-        container,
+        { container, actions },
       )
     })
 
@@ -884,9 +745,10 @@ describe('sidebar panels', () => {
 
   it('updates spellcheck language from settings select', () => {
     const onSpellcheckLanguageChange = vi.fn()
+    const actions = buildEditorActionsSpies()
 
     act(() => {
-      render(
+      renderWithEditorActions(
         h(SidebarSettingsContent, {
           themePreference: 'dark',
           resolvedTheme: 'dark',
@@ -898,9 +760,8 @@ describe('sidebar panels', () => {
           onSpellcheckEnabledChange: () => undefined,
           onSpellcheckLanguageChange,
           focusScope: 'paragraph',
-          onFocusScopeChange: () => undefined,
         }),
-        container,
+        { container, actions },
       )
     })
 
@@ -917,9 +778,7 @@ describe('sidebar panels', () => {
   })
 
   it('hides panel body when effectiveCollapsed is true', () => {
-    act(() => {
-      render(h(SidebarPanel, buildPanelProps({ effectiveCollapsed: true })), container)
-    })
+    renderSidebar(h(SidebarPanel, buildPanelProps({ effectiveCollapsed: true })))
 
     const shell = container.querySelector('.sidebar-shell') as HTMLElement
     expect(shell.className).toContain('is-collapsed')
@@ -927,14 +786,9 @@ describe('sidebar panels', () => {
   })
 
   it('triggers reveal callback from file context menu', () => {
-    const onRevealPathInFileManager = vi.fn()
+    const actions = buildEditorActionsSpies()
 
-    act(() => {
-      render(
-        h(SidebarPanel, buildPanelProps({ onRevealPathInFileManager })),
-        container,
-      )
-    })
+    renderSidebar(h(SidebarPanel, buildPanelProps()), actions)
 
     const fileRowButton = Array.from(container.querySelectorAll('.sidebar-tree__row')).find((node) =>
       node.textContent?.includes('Scene-001.md'),
@@ -954,18 +808,13 @@ describe('sidebar panels', () => {
       revealMenuItem.click()
     })
 
-    expect(onRevealPathInFileManager).toHaveBeenCalledWith('book/Act-01/Chapter-01/Scene-001.md')
+    expect(actions.revealInFileManager).toHaveBeenCalledWith('book/Act-01/Chapter-01/Scene-001.md')
   })
 
   it('triggers reveal callback from folder context menu', () => {
-    const onRevealPathInFileManager = vi.fn()
+    const actions = buildEditorActionsSpies()
 
-    act(() => {
-      render(
-        h(SidebarPanel, buildPanelProps({ onRevealPathInFileManager })),
-        container,
-      )
-    })
+    renderSidebar(h(SidebarPanel, buildPanelProps()), actions)
 
     const folderRowButton = Array.from(container.querySelectorAll('.sidebar-tree__row')).find((node) =>
       node.textContent?.includes('Chapter-01'),
@@ -985,7 +834,7 @@ describe('sidebar panels', () => {
       revealMenuItem.click()
     })
 
-    expect(onRevealPathInFileManager).toHaveBeenCalledWith('book/Act-01/Chapter-01')
+    expect(actions.revealInFileManager).toHaveBeenCalledWith('book/Act-01/Chapter-01')
   })
 })
 

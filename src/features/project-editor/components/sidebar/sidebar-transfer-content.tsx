@@ -1,4 +1,5 @@
 import { useState } from 'preact/hooks'
+import { useEditorActions } from '../../project-editor-actions-context.tsx'
 import type { BookExportFormat } from '../../../../shared/ipc'
 
 const BOOK_EXPORT_FORMAT_OPTIONS: Array<{ value: BookExportFormat; label: string }> = [
@@ -17,7 +18,6 @@ interface SidebarTransferContentProps {
   onExport: () => void
   onExportBook: (format: BookExportFormat) => void
   onImportZulu: () => void
-  onSaveSnapshot: () => void
 }
 
 function SidebarInterchangeActions({ disabled, onImport, onExport }: Pick<SidebarTransferContentProps, 'disabled' | 'onImport' | 'onExport'>) {
@@ -74,7 +74,8 @@ function SidebarBookExportActions({ disabled, onExportBook }: Pick<SidebarTransf
   )
 }
 
-function SidebarGitActions({ disabled, savingSnapshot = false, onSaveSnapshot }: Pick<SidebarTransferContentProps, 'disabled' | 'savingSnapshot' | 'onSaveSnapshot'>) {
+function SidebarGitActions({ disabled, savingSnapshot = false }: Pick<SidebarTransferContentProps, 'disabled' | 'savingSnapshot'>) {
+  const { saveSnapshot } = useEditorActions()
   return (
     <div class="project-menu">
       <label class="project-menu__field">
@@ -88,7 +89,7 @@ function SidebarGitActions({ disabled, savingSnapshot = false, onSaveSnapshot }:
           type="button"
           class="editor-button editor-button--secondary"
           disabled={disabled || savingSnapshot}
-          onClick={onSaveSnapshot}
+          onClick={saveSnapshot}
         >
           {savingSnapshot ? 'Saving Snapshot...' : 'Save Snapshot'}
         </button>
@@ -97,7 +98,7 @@ function SidebarGitActions({ disabled, savingSnapshot = false, onSaveSnapshot }:
   )
 }
 
-export function SidebarTransferContent({ disabled, gitAvailable, savingSnapshot, onImport, onExport, onExportBook, onImportZulu, onSaveSnapshot }: SidebarTransferContentProps) {
+export function SidebarTransferContent({ disabled, gitAvailable, savingSnapshot, onImport, onExport, onExportBook, onImportZulu }: SidebarTransferContentProps) {
   return (
     <div class="sidebar-panel-content">
       <aside class="workspace-panel workspace-panel--sidebar">
@@ -144,7 +145,7 @@ export function SidebarTransferContent({ disabled, gitAvailable, savingSnapshot,
           </label>
           <SidebarBookExportActions disabled={disabled} onExportBook={onExportBook} />
         </div>
-        {gitAvailable ? <SidebarGitActions disabled={disabled} savingSnapshot={savingSnapshot} onSaveSnapshot={onSaveSnapshot} /> : null}
+        {gitAvailable ? <SidebarGitActions disabled={disabled} savingSnapshot={savingSnapshot} /> : null}
       </aside>
     </div>
   )

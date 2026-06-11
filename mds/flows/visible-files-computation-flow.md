@@ -55,7 +55,7 @@ Any state setter that updates `coreState.snapshot` — typically from `applyOpen
 
 8. `App` passes `model` to `ProjectEditorView`.
 
-9. `ProjectEditorView.sidebarSection` calls `buildSidebarSectionProps(model, ...)`:
+9. `ProjectEditorView` calls `buildSidebarSectionProps(model, ...)`:
    ```
    visibleFiles: state.visibleFiles,
    corkboardOrder: state.corkboardOrder,

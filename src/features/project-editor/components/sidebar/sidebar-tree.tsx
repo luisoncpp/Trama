@@ -8,6 +8,7 @@ import {
 } from './sidebar-drop-logic'
 import { useSidebarTreeRowsDrag } from './use-sidebar-tree-rows-drag'
 import { SidebarTreeRowButton } from './sidebar-tree-row-button'
+import { useScopedSidebarActions } from './use-scoped-sidebar-actions'
 import type { DropIndicatorPosition } from './drop-indicator'
 import type { SidebarTreeRow } from './sidebar-tree-logic'
 
@@ -15,14 +16,10 @@ export interface SidebarTreeProps {
   visibleFiles: string[]
   selectedPath: string | null
   loadingDocument: boolean
-  onSelectFile: (filePath: string) => Promise<void>
   filterQuery: string
   corkboardOrder?: Record<string, string[]>
   onFileContextMenu?: (filePath: string, event: MouseEvent) => void
   onFolderContextMenu?: (folderPath: string, event: MouseEvent) => void
-  onReorderFiles?: (folderPath: string, orderedIds: string[]) => Promise<void>
-  onMoveFile?: (sourcePath: string, targetFolder: string) => Promise<void>
-  onMoveFolder?: (sourcePath: string, targetParent: string) => Promise<void>
   expandedFolders: string[]
   onToggleFolder: (path: string, expanded: boolean) => void
   isLoading?: boolean
@@ -151,10 +148,11 @@ function SidebarTreeRows({
 
 export function SidebarTree(props: SidebarTreeProps) {
   const {
-    visibleFiles, selectedPath, loadingDocument, onSelectFile, filterQuery,
-    corkboardOrder, onFileContextMenu, onFolderContextMenu, onReorderFiles,
-    onMoveFile, onMoveFolder, expandedFolders, onToggleFolder, isLoading,
+    visibleFiles, selectedPath, loadingDocument, filterQuery,
+    corkboardOrder, onFileContextMenu, onFolderContextMenu,
+    expandedFolders, onToggleFolder, isLoading,
   } = props
+  const { selectFile, reorderFiles, moveFile, moveFolder } = useScopedSidebarActions()
   const { rows, filterResult } = useSidebarTreeRows(visibleFiles, expandedFolders, filterQuery, corkboardOrder)
   const containerRef = useRef<HTMLDivElement | null>(null)
   const hasFilterQuery = filterResult.query.length > 0
@@ -173,20 +171,20 @@ export function SidebarTree(props: SidebarTreeProps) {
       role='tree'
       aria-label='Project files'
       onDragOver={createContainerDragOverHandler(rows, draggingPath, setDropPosition)}
-      onDrop={createContainerDropHandler(draggingPath, dropPosition, onMoveFolder, setDraggingPath, setDropPosition)}
+      onDrop={createContainerDropHandler(draggingPath, dropPosition, moveFolder, setDraggingPath, setDropPosition)}
     >
       <SidebarTreeRows
         rows={rows}
         selectedPath={selectedPath}
         loadingDocument={loadingDocument}
-        onSelectFile={onSelectFile}
+        onSelectFile={selectFile}
         onToggleFolder={onToggleFolder}
         containerRef={containerRef}
         onFileContextMenu={onFileContextMenu}
         onFolderContextMenu={onFolderContextMenu}
-        onReorderFiles={onReorderFiles}
-        onMoveFile={onMoveFile}
-        onMoveFolder={onMoveFolder}
+        onReorderFiles={reorderFiles}
+        onMoveFile={moveFile}
+        onMoveFolder={moveFolder}
         dragState={{ draggingPath, dropPosition, setDraggingPath, setDropPosition }}
       />
     </div>

@@ -1,4 +1,5 @@
 import { useRef } from 'preact/hooks'
+import { useEditorActions } from '../../project-editor-actions-context.tsx'
 import { SidebarExplorerBody } from './sidebar-explorer-body/index.ts'
 import type { SidebarExplorerCommonProps } from './sidebar-types'
 import { useSidebarFileActionsDialog } from './use-sidebar-file-actions-dialog'
@@ -15,55 +16,26 @@ interface SidebarExplorerContentProps {
   visibleFiles: SidebarExplorerCommonProps['visibleFiles']
   selectedPath: SidebarExplorerCommonProps['selectedPath']
   loadingDocument: SidebarExplorerCommonProps['loadingDocument']
-  onSelectFile: SidebarExplorerCommonProps['onSelectFile']
   apiAvailable: SidebarExplorerCommonProps['apiAvailable']
   loadingProject: SidebarExplorerCommonProps['loadingProject']
   statusMessage: SidebarExplorerCommonProps['statusMessage']
   projectRootPath: string
-  onPickFolder: SidebarExplorerCommonProps['onPickFolder']
-  onCloseProject: SidebarExplorerCommonProps['onCloseProject']
-  onRevealInFileManager: SidebarExplorerCommonProps['onRevealInFileManager']
   pickFolderDisabled: boolean
   filterQuery: string
   onFilterQueryChange: (value: string) => void
-  onCreateArticle: SidebarExplorerCommonProps['onCreateArticle']
-  onCreateMap: SidebarExplorerCommonProps['onCreateMap']
-  onCreateCategory: SidebarExplorerCommonProps['onCreateCategory']
-  onRenameFile: SidebarExplorerCommonProps['onRenameFile']
-  onRenameFolder: SidebarExplorerCommonProps['onRenameFolder']
-  onDeleteFolder: SidebarExplorerCommonProps['onDeleteFolder']
-  onDeleteFile: SidebarExplorerCommonProps['onDeleteFile']
-  onEditFileTags: SidebarExplorerCommonProps['onEditFileTags']
-  onRevealPathInFileManager: (path: string) => void
-  onLoadFileTags: (path: string) => Promise<string[]>
-  onLoadFileDeleteInfo?: (path: string) => Promise<{ linkedImagePaths: string[] }>
   corkboardOrder?: Record<string, string[]>
-  onReorderFiles?: (folderPath: string, orderedIds: string[]) => Promise<void>
-  onMoveFile?: (sourcePath: string, targetFolder: string) => Promise<void>
-  onMoveFolder?: (sourcePath: string, targetParent: string) => Promise<void>
   allVisibleFiles?: string[]
   activeSection?: string
 }
 
 function useSidebarExplorerDialogs(props: SidebarExplorerContentProps) {
+  const actions = useEditorActions()
   const createDialog = useSidebarCreateDialog({
     selectedPath: props.selectedPath,
-    onCreateArticle: props.onCreateArticle,
-    onCreateMap: props.onCreateMap,
-    onCreateCategory: props.onCreateCategory,
   })
 
-  const fileDialog = useSidebarFileActionsDialog({
-    onRenameFile: props.onRenameFile,
-    onDeleteFile: props.onDeleteFile,
-    onEditFileTags: props.onEditFileTags,
-    onLoadFileTags: props.onLoadFileTags,
-    onLoadFileDeleteInfo: props.onLoadFileDeleteInfo ?? (async () => ({ linkedImagePaths: [] })),
-  })
-  const folderDialog = useSidebarFolderActionsDialog({
-    onRenameFolder: props.onRenameFolder,
-    onDeleteFolder: props.onDeleteFolder,
-  })
+  const fileDialog = useSidebarFileActionsDialog()
+  const folderDialog = useSidebarFolderActionsDialog()
 
   const allVisibleFiles = props.allVisibleFiles ?? []
 
@@ -82,14 +54,14 @@ function useSidebarExplorerDialogs(props: SidebarExplorerContentProps) {
     }
 
     if (payload.mode === 'article') {
-      props.onCreateArticle(
+      actions.createArticle(
         payload.input,
         payload.selectedTemplatePath,
       )
     } else if (payload.mode === 'map') {
-      props.onCreateMap(payload.input)
+      actions.createMap(payload.input)
     } else if (payload.mode === 'category') {
-      props.onCreateCategory(payload.input)
+      actions.createCategory(payload.input)
     }
     createCtrl.close()
   }
@@ -118,12 +90,10 @@ export function SidebarExplorerContent(props: SidebarExplorerContentProps) {
         <SidebarHeader title={props.title} />
         <SidebarExplorerBody
           title={props.title} visibleFiles={props.visibleFiles} selectedPath={props.selectedPath}
-          loadingDocument={props.loadingDocument} onSelectFile={props.onSelectFile}
+          loadingDocument={props.loadingDocument}
           loadingProject={props.loadingProject} apiAvailable={props.apiAvailable}
           statusMessage={props.statusMessage} projectRootPath={props.projectRootPath}
-          onPickFolder={props.onPickFolder} onCloseProject={props.onCloseProject}
-          onRevealInFileManager={props.onRevealInFileManager} pickFolderDisabled={props.pickFolderDisabled}
-          onRevealPathInFileManager={props.onRevealPathInFileManager}
+          pickFolderDisabled={props.pickFolderDisabled}
           filterQuery={props.filterQuery} onFilterQueryChange={props.onFilterQueryChange}
           createMode={createCtrlSnapshot.mode} createInput={createCtrlSnapshot.input}
           openCreateDialog={createCtrl.open.bind(createCtrl)} closeCreateDialog={createCtrl.close.bind(createCtrl)}
@@ -142,8 +112,7 @@ export function SidebarExplorerContent(props: SidebarExplorerContentProps) {
           confirmFolderActionDialog={folderDialog.confirm} closeFolderActionDialog={folderDialog.closeDialog}
           onDirectoryChange={createCtrl.setDirectory.bind(createCtrl)} onNameChange={createCtrl.setName.bind(createCtrl)}
           onSourceImagePathChange={createCtrl.setSourceImagePath.bind(createCtrl)} onBrowseSourceImage={createCtrl.browseSourceImage.bind(createCtrl)}
-          filterInputRef={setFilterInputRef} corkboardOrder={props.corkboardOrder} onReorderFiles={props.onReorderFiles}
-          onMoveFile={props.onMoveFile} onMoveFolder={props.onMoveFolder}
+          filterInputRef={setFilterInputRef} corkboardOrder={props.corkboardOrder}
           showTemplatePicker={createCtrlSnapshot.showTemplatePicker} templateSearchQuery={catalogSnapshot.query}
           templateSelectedPath={catalogSnapshot.selectedPath} filteredTemplates={catalogSnapshot.filteredPaths}
           onTemplateSearchChange={createCtrl.setTemplateSearch.bind(createCtrl)} onTemplateSelect={createCtrl.selectTemplate.bind(createCtrl)}

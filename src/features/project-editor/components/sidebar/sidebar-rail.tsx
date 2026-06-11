@@ -1,13 +1,12 @@
 import type { JSX } from 'preact'
 import type { SidebarSection } from '../../project-editor-types'
+import { useEditorActions } from '../../project-editor-actions-context.tsx'
 import { LoreIcon, ManuscriptIcon, OutlineIcon, SettingsIcon, TemplatesIcon, TransferIcon, HelpIcon, CollapseLeftIcon, ExpandRightIcon } from './sidebar-rail-icons.tsx'
 
 interface SidebarRailProps {
   activeSection: SidebarSection
   collapsed: boolean
   focusModeEnabled: boolean
-  onSelectSection: (section: SidebarSection) => void
-  onToggleCollapsed: () => void
   onOpenHelp: () => void
 }
 
@@ -31,7 +30,9 @@ function RailItemLabel({ item }: { item: SidebarRailItem }): JSX.Element {
   return <Icon />
 }
 
-export function SidebarRail({ activeSection, collapsed, focusModeEnabled, onSelectSection, onToggleCollapsed, onOpenHelp }: SidebarRailProps) {
+export function SidebarRail({ activeSection, collapsed, focusModeEnabled, onOpenHelp }: SidebarRailProps) {
+  const { setSidebarSection, toggleSidebarPanelCollapsed } = useEditorActions()
+
   return (
     <nav class="sidebar-rail" aria-label="Workspace sections">
       <div class="sidebar-rail__items">
@@ -42,7 +43,7 @@ export function SidebarRail({ activeSection, collapsed, focusModeEnabled, onSele
             class={`sidebar-rail__item ${activeSection === item.section ? 'is-active' : ''}`}
             title={item.title}
             aria-label={item.title}
-            onClick={() => onSelectSection(item.section)}
+            onClick={() => setSidebarSection(item.section)}
           >
             <RailItemLabel item={item} />
           </button>
@@ -63,7 +64,7 @@ export function SidebarRail({ activeSection, collapsed, focusModeEnabled, onSele
         <button
           type="button"
           class="sidebar-rail__toggle"
-          onClick={onToggleCollapsed}
+          onClick={toggleSidebarPanelCollapsed}
           disabled={focusModeEnabled}
           aria-label={collapsed ? 'Expand sidebar panel' : 'Collapse sidebar panel'}
           title={focusModeEnabled ? 'Sidebar is locked while focus mode is active' : collapsed ? 'Expand panel' : 'Collapse panel'}

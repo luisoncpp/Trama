@@ -1,6 +1,7 @@
 import type { ComponentChildren } from 'preact'
 import type { ResolvedTheme, ThemePreference } from '../../../../theme/theme-types'
 import type { FocusScope } from '../../project-editor-types'
+import { useEditorActions } from '../../project-editor-actions-context.tsx'
 
 interface SettingsFieldProps {
   label: string
@@ -30,15 +31,15 @@ interface SidebarSettingsContentProps {
   onSpellcheckEnabledChange: (enabled: boolean) => void
   onSpellcheckLanguageChange: (language: string) => void
   focusScope: FocusScope
-  onFocusScopeChange: (scope: FocusScope) => void
 }
 
 export function SidebarSettingsContent({
   themePreference, resolvedTheme, onThemePreferenceChange,
   spellcheckEnabled, spellcheckLanguage, spellcheckLanguageOptions,
   spellcheckLanguageSelectionSupported, onSpellcheckEnabledChange, onSpellcheckLanguageChange,
-  focusScope, onFocusScopeChange,
+  focusScope,
 }: SidebarSettingsContentProps) {
+  const { setFocusScope } = useEditorActions()
   return (
     <div class="sidebar-panel-content">
       <aside class="workspace-panel workspace-panel--sidebar">
@@ -55,7 +56,7 @@ export function SidebarSettingsContent({
             onSpellcheckEnabledChange={onSpellcheckEnabledChange} onSpellcheckLanguageChange={onSpellcheckLanguageChange} />
         </SettingsField>
         <SettingsField label="Focus Mode Scope">
-          <FocusScopeSelect focusScope={focusScope} onFocusScopeChange={onFocusScopeChange} />
+          <FocusScopeSelect focusScope={focusScope} onFocusScopeChange={setFocusScope} />
         </SettingsField>
       </aside>
     </div>

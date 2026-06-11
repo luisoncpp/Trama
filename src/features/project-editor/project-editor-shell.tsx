@@ -4,7 +4,6 @@ import type { ProjectEditorModel } from './project-editor-types'
 import { SidebarPanel } from './components/sidebar/sidebar-panel.tsx'
 import {
   buildSidebarSectionProps,
-  type ProjectEditorShellActions,
   type ProjectEditorShellState,
   type ProjectEditorSidebarShellProps,
 } from './project-editor-shell-props'
@@ -51,52 +50,4 @@ export function useProjectEditorShellState(model: ProjectEditorModel): ProjectEd
   )
 }
 
-export function useProjectEditorShellActions(model: ProjectEditorModel): ProjectEditorShellActions {
-  const { actions } = model
-  return useMemo(
-    /* buildProjectEditorShellActions */ () => ({
-      selectFile: actions.selectFile,
-      setSidebarSection: actions.setSidebarSection,
-      toggleSidebarPanelCollapsed: actions.toggleSidebarPanelCollapsed,
-      setSidebarPanelWidth: actions.setSidebarPanelWidth,
-      createArticle: actions.createArticle,
-      createMap: actions.createMap,
-      createCategory: actions.createCategory,
-      renameFile: actions.renameFile,
-      renameFolder: actions.renameFolder,
-      deleteFolder: actions.deleteFolder,
-      deleteFile: actions.deleteFile,
-      editFileTags: actions.editFileTags,
-      reorderFiles: actions.reorderFiles,
-      moveFile: actions.moveFile,
-      moveFolder: actions.moveFolder,
-      pickProjectFolder: actions.pickProjectFolder,
-      closeProject: actions.closeProject,
-      revealInFileManager: actions.revealInFileManager,
-      setFocusScope: actions.setFocusScope,
-      saveSnapshot: actions.saveSnapshot,
-    }),
-    [
-      actions.selectFile,
-      actions.setSidebarSection,
-      actions.toggleSidebarPanelCollapsed,
-      actions.setSidebarPanelWidth,
-      actions.createArticle,
-      actions.createMap,
-      actions.createCategory,
-      actions.renameFile,
-      actions.renameFolder,
-      actions.deleteFolder,
-      actions.deleteFile,
-      actions.editFileTags,
-      actions.reorderFiles,
-      actions.moveFile,
-      actions.moveFolder,
-      actions.pickProjectFolder,
-      actions.closeProject,
-      actions.revealInFileManager,
-      actions.setFocusScope,
-      actions.saveSnapshot,
-    ] /*Inputs for buildProjectEditorShellActions*/,
-  )
-}
+

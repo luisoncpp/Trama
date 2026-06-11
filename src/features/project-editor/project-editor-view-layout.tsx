@@ -2,7 +2,7 @@ import { useRef } from 'preact/hooks'
 import type { ProjectEditorModel } from './project-editor-types'
 import { ProjectEditorSidebarShell } from './project-editor-shell'
 import type { ProjectEditorDialogsProps } from './project-editor-dialogs'
-import type { ProjectEditorShellActions, ProjectEditorShellSettingsProps, ProjectEditorShellState } from './project-editor-shell-props'
+import type { ProjectEditorShellSettingsProps, ProjectEditorShellState } from './project-editor-shell-props'
 import { SidebarResizeHandle } from './layout/sidebar-resize-handle'
 import { WorkspaceLayoutPanel } from './pane'
 
@@ -14,7 +14,7 @@ interface ProjectEditorMainPaneProps {
 interface ProjectEditorLayoutProps extends ProjectEditorShellSettingsProps {
   model: ProjectEditorModel
   shellState: ProjectEditorShellState
-  shellActions: ProjectEditorShellActions
+  setSidebarPanelWidth: (width: number) => void
   effectiveCollapsed: boolean
   sidebarStyle: { '--sidebar-width': string }
   dialogsProps: ProjectEditorDialogsProps
@@ -47,7 +47,7 @@ function ProjectEditorWorkspace(props: ProjectEditorLayoutProps & {
   showSidebarResizeHandle: boolean
 }) {
   const {
-    model, shellState, shellActions, effectiveCollapsed, sidebarStyle,
+    model, shellState, setSidebarPanelWidth, effectiveCollapsed, sidebarStyle,
     spellcheckEnabled, showSidebarResizeHandle, workspaceRef,
     themePreference, resolvedTheme, onThemePreferenceChange,
     spellcheckLanguage, spellcheckLanguageOptions, spellcheckLanguageSelectionSupported,
@@ -58,7 +58,7 @@ function ProjectEditorWorkspace(props: ProjectEditorLayoutProps & {
     <section class="editor-workspace" style={sidebarStyle} ref={workspaceRef}>
       <ProjectEditorSidebarColumn
         shellState={shellState}
-        shellActions={shellActions}
+        setSidebarPanelWidth={setSidebarPanelWidth}
         effectiveCollapsed={effectiveCollapsed}
         themePreference={themePreference}
         resolvedTheme={resolvedTheme}
@@ -74,7 +74,7 @@ function ProjectEditorWorkspace(props: ProjectEditorLayoutProps & {
       {showSidebarResizeHandle && (
         <SidebarResizeHandle
           workspaceRef={workspaceRef}
-          onWidthChange={shellActions.setSidebarPanelWidth}
+          onWidthChange={setSidebarPanelWidth}
         />
       )}
       <ProjectEditorMainPane model={model} spellcheckEnabled={spellcheckEnabled} />

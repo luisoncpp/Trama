@@ -1,21 +1,22 @@
 import { describe, expect, it, vi } from 'vitest'
-import { h, render } from 'preact'
+import { h } from 'preact'
 import { act } from 'preact/test-utils'
 import { SidebarScopePathBreadcrumb } from '../src/features/project-editor/components/sidebar/sidebar-scope-path-breadcrumb.tsx'
+import {
+  buildEditorActionsSpies,
+  renderWithEditorActions,
+} from './helpers/editor-actions-test-helper.ts'
 
 describe('SidebarScopePathBreadcrumb context menu', () => {
   it('opens menu on right click and runs select project', () => {
     const onPickFolder = vi.fn()
     const container = document.createElement('div')
-    render(
+    renderWithEditorActions(
       h(SidebarScopePathBreadcrumb, {
         projectRootPath: 'C:/Proyectos/trama/example-fantasy',
-        onPickFolder,
-        onCloseProject: () => undefined,
-        onRevealInFileManager: () => undefined,
         disabled: false,
       }),
-      container,
+      { container, actions: buildEditorActionsSpies({ pickProjectFolder: onPickFolder }) },
     )
 
     const button = container.querySelector('.path-breadcrumb-trigger') as HTMLButtonElement
@@ -40,15 +41,12 @@ describe('SidebarScopePathBreadcrumb context menu', () => {
 
   it('disables project-only actions when no project is open', () => {
     const container = document.createElement('div')
-    render(
+    renderWithEditorActions(
       h(SidebarScopePathBreadcrumb, {
         projectRootPath: '',
-        onPickFolder: () => undefined,
-        onCloseProject: () => undefined,
-        onRevealInFileManager: () => undefined,
         disabled: false,
       }),
-      container,
+      { container },
     )
 
     const button = container.querySelector('.path-breadcrumb-trigger') as HTMLButtonElement

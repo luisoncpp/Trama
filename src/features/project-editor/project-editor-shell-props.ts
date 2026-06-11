@@ -19,29 +19,6 @@ export interface ProjectEditorShellState {
   gitHistory: ProjectEditorModel['state']['gitHistory']
 }
 
-export interface ProjectEditorShellActions {
-  selectFile: ProjectEditorModel['actions']['selectFile']
-  setSidebarSection: ProjectEditorModel['actions']['setSidebarSection']
-  toggleSidebarPanelCollapsed: ProjectEditorModel['actions']['toggleSidebarPanelCollapsed']
-  setSidebarPanelWidth: ProjectEditorModel['actions']['setSidebarPanelWidth']
-  createArticle: ProjectEditorModel['actions']['createArticle']
-  createMap: ProjectEditorModel['actions']['createMap']
-  createCategory: ProjectEditorModel['actions']['createCategory']
-  renameFile: ProjectEditorModel['actions']['renameFile']
-  renameFolder: ProjectEditorModel['actions']['renameFolder']
-  deleteFolder: ProjectEditorModel['actions']['deleteFolder']
-  deleteFile: ProjectEditorModel['actions']['deleteFile']
-  editFileTags: ProjectEditorModel['actions']['editFileTags']
-  reorderFiles: ProjectEditorModel['actions']['reorderFiles']
-  moveFile: ProjectEditorModel['actions']['moveFile']
-  moveFolder: ProjectEditorModel['actions']['moveFolder']
-  pickProjectFolder: ProjectEditorModel['actions']['pickProjectFolder']
-  closeProject: ProjectEditorModel['actions']['closeProject']
-  revealInFileManager: ProjectEditorModel['actions']['revealInFileManager']
-  setFocusScope: ProjectEditorModel['actions']['setFocusScope']
-  saveSnapshot: ProjectEditorModel['actions']['saveSnapshot']
-}
-
 export interface ProjectEditorShellSettingsProps {
   themePreference: ThemePreference
   resolvedTheme: ResolvedTheme
@@ -56,58 +33,13 @@ export interface ProjectEditorShellSettingsProps {
 
 export interface ProjectEditorSidebarShellProps extends ProjectEditorShellSettingsProps {
   shellState: ProjectEditorShellState
-  shellActions: ProjectEditorShellActions
   effectiveCollapsed: boolean
   dialogsProps: ProjectEditorDialogsProps
-}
-
-function buildSidebarFileActionProps(shellActions: ProjectEditorShellActions) {
-  return {
-    onCreateArticle: (input: Parameters<typeof shellActions.createArticle>[0], templatePath?: string | null) => {
-      void shellActions.createArticle(input, templatePath)
-    },
-    onCreateMap: (input: Parameters<typeof shellActions.createMap>[0]) => {
-      void shellActions.createMap(input)
-    },
-    onCreateCategory: (input: Parameters<typeof shellActions.createCategory>[0]) => {
-      void shellActions.createCategory(input)
-    },
-    onRenameFile: (path: string, newName: string) => {
-      void shellActions.renameFile({ path, newName })
-    },
-    onRenameFolder: (path: string, newName: string) => {
-      void shellActions.renameFolder({ path, newName })
-    },
-    onDeleteFolder: (path: string) => {
-      void shellActions.deleteFolder(path)
-    },
-    onDeleteFile: (path: string, options?: { deleteAssociatedImages?: boolean }) => {
-      void shellActions.deleteFile(path, options)
-    },
-    onEditFileTags: (path: string, tags: string[]) => {
-      void shellActions.editFileTags(path, tags)
-    },
-    onRevealPathInFileManager: (path: string) => {
-      void shellActions.revealInFileManager(path)
-    },
-  }
-}
-
-function buildSidebarWorkspaceActionProps(shellActions: ProjectEditorShellActions) {
-  return {
-    onSelectFile: shellActions.selectFile,
-    onSelectSidebarSection: shellActions.setSidebarSection,
-    onToggleSidebarPanelCollapsed: shellActions.toggleSidebarPanelCollapsed,
-    onReorderFiles: (folderPath: string, orderedIds: string[]) => shellActions.reorderFiles(folderPath, orderedIds),
-    onMoveFile: (sourcePath: string, targetFolder: string) => shellActions.moveFile(sourcePath, targetFolder),
-    onMoveFolder: (sourcePath: string, targetParent: string) => shellActions.moveFolder(sourcePath, targetParent),
-    onFocusScopeChange: shellActions.setFocusScope,
-  }
+  setSidebarPanelWidth: (width: number) => void
 }
 
 function buildSidebarProjectContextProps(
   shellState: ProjectEditorShellState,
-  shellActions: ProjectEditorShellActions,
   props: ProjectEditorSidebarShellProps,
 ) {
   return {
@@ -117,15 +49,6 @@ function buildSidebarProjectContextProps(
     rootPath: shellState.rootPath,
     statusMessage: shellState.statusMessage,
     gitHistory: shellState.gitHistory,
-    onPickFolder: () => {
-      void shellActions.pickProjectFolder()
-    },
-    onCloseProject: () => {
-      void shellActions.closeProject()
-    },
-    onRevealInFileManager: () => {
-      void shellActions.revealInFileManager()
-    },
     onImport: () => props.dialogsProps.aiImport.setOpen(true),
     onImportZulu: () => props.dialogsProps.zuluImport.setOpen(true),
     onExportBook: (format: BookExportFormat) => {
@@ -134,9 +57,6 @@ function buildSidebarProjectContextProps(
       props.dialogsProps.bookExport.setOpen(true)
     },
     onExport: () => props.dialogsProps.aiExport.setOpen(true),
-    onSaveSnapshot: () => {
-      void shellActions.saveSnapshot()
-    },
     themePreference: props.themePreference,
     resolvedTheme: props.resolvedTheme,
     onThemePreferenceChange: props.onThemePreferenceChange,
@@ -152,7 +72,7 @@ function buildSidebarProjectContextProps(
 }
 
 export function buildSidebarSectionProps(props: ProjectEditorSidebarShellProps) {
-  const { shellState, shellActions } = props
+  const { shellState } = props
 
   return {
     visibleFiles: shellState.visibleFiles,
@@ -161,8 +81,6 @@ export function buildSidebarSectionProps(props: ProjectEditorSidebarShellProps) 
     sidebarActiveSection: shellState.sidebarActiveSection,
     sidebarPanelCollapsed: shellState.sidebarPanelCollapsed,
     effectiveCollapsed: props.effectiveCollapsed,
-    ...buildSidebarFileActionProps(shellActions),
-    ...buildSidebarWorkspaceActionProps(shellActions),
-    ...buildSidebarProjectContextProps(shellState, shellActions, props),
+    ...buildSidebarProjectContextProps(shellState, props),
   }
 }

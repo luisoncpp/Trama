@@ -13,11 +13,10 @@ User right-clicks the project-root breadcrumb above the sidebar filter and click
 1. `SidebarScopePathBreadcrumb` captures the right-click via `useSidebarProjectRootContextMenu`, which stores `{ x, y }` position in local state (`use-sidebar-project-root-context-menu.ts:22`).
 2. `SidebarProjectRootContextMenu` renders at the mouse position. The label is platform-sensitive: `navigator.platform` check at `sidebar-project-root-context-menu.tsx:4` returns **"Reveal in Finder"** on Mac, **"Show in File Explorer"** everywhere else.
 3. User clicks the menu item → `onRevealInFileManager` fires → `handleRevealInFileManager` closes the menu and calls the action (`use-sidebar-project-root-context-menu.ts:33`).
-4. Prop wiring:
-   - `sidebar-scope-path-breadcrumb.tsx:40` receives `onRevealInFileManager`
-   - `project-editor-shell-props.ts:123` calls `shellActions.revealProjectInFileManager()`
-   - `project-editor-shell.tsx:75` passes `actions.revealProjectInFileManager`
-   - `sidebar-action-group.ts:53` calls `sidebarFileActions.revealProjectInFileManager(rootPath, setStatusMessage)`
+4. Action consumption:
+   - `sidebar-scope-path-breadcrumb.tsx:40` consumes `revealInFileManager` via `useEditorActions()`
+   - `use-sidebar-project-root-context-menu.ts` also reads `revealInFileManager` from the editor actions context
+   - No prop drilling — the action is accessed directly through the stable Preact context facade
 5. `revealProjectInFileManager()` (`sidebar-file-actions/private/project-reveal.ts:3`):
    - Guards: no-op if `rootPath` is empty; errors if `window.tramaApi.revealProjectInFileManager` is missing
    - Calls `window.tramaApi.revealProjectInFileManager({ rootPath })` via typed IPC
@@ -70,11 +69,9 @@ User right-clicks the project-root breadcrumb above the sidebar filter and click
 |------|----------------|
 | `src/features/project-editor/components/sidebar/sidebar-scope-path-breadcrumb.tsx` | Trigger — right-click on breadcrumb |
 | `src/features/project-editor/components/sidebar/sidebar-project-root-context-menu.tsx` | Context menu component with platform label |
-| `src/features/project-editor/components/sidebar/use-sidebar-project-root-context-menu.ts` | Hook managing position state and handler wiring |
+| `src/features/project-editor/components/sidebar/use-sidebar-project-root-context-menu.ts` | Hook managing position state and handler wiring; consumes `revealInFileManager` from context |
 | `src/features/project-editor/sidebar-file-actions/private/project-reveal.ts` | Action: guards + tramaApi call |
-| `src/features/project-editor/project-editor-shell-props.ts` | Prop wiring from shell to sidebar |
-| `src/features/project-editor/project-editor-private/sidebar-action-group.ts` | Action group: wires reveal to sidebarFileActions |
-| `src/features/project-editor/project-editor-shell.tsx` | Shell: passes actions down |
+| `src/features/project-editor/project-editor-actions-context.tsx` | Stable Preact context providing `useEditorActions()` |
 | `electron/preload.cts` | Preload bridge: ipcRenderer.invoke |
 | `electron/ipc-features.ts` | Handler registration |
 | `electron/ipc/handlers/project-handlers/project-reveal-handler.ts` | Main process handler: shell.openPath |

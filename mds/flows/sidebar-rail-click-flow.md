@@ -6,10 +6,10 @@ User clicks a rail section button (e.g., `explorer`, `outline`, `lore`, `transfe
 
 ## Entry point
 
-`SidebarRail` component — `src/features/project-editor/components/sidebar/sidebar-rail.tsx:43`
+`SidebarRail` component — `src/features/project-editor/components/sidebar/sidebar-rail.tsx:34`
 
 ```typescript
-onClick={() => onSelectSection(item.section)}
+const { setSidebarSection, toggleSidebarPanelCollapsed } = useEditorActions()
 ```
 
 ---
@@ -18,50 +18,23 @@ onClick={() => onSelectSection(item.section)}
 
 ### Step 1 — User clicks rail item
 
-**File:** `sidebar-rail.tsx:43`
+**File:** `sidebar-rail.tsx:46`
 
-The button's `onClick` handler calls `onSelectSection(item.section)` where `item.section` is a `SidebarSection` value (`'explorer' | 'outline' | 'lore' | 'transfer' | 'settings'`).
-
----
-
-### Step 2 — `SidebarPanel` passes callback to rail
-
-**File:** `sidebar-panel.tsx:123`
-
-```typescript
-onSelectSection={props.onSelectSidebarSection}
-```
-
-The `SidebarPanel` component receives `onSelectSidebarSection` as a prop and wires it directly to the `SidebarRail`'s `onSelectSection` prop.
+The button's `onClick` handler calls `setSidebarSection(item.section)` where `item.section` is a `SidebarSection` value (`'explorer' | 'outline' | 'lore' | 'transfer' | 'settings'`). The action is consumed directly from `useEditorActions()` — no prop drilling through the sidebar shell.
 
 ---
 
-### Step 3 — `project-editor-view.tsx` wires model action
+### Step 2 — `useSidebarActions` handles the action with auto-expand logic
 
-**File:** `project-editor-view.tsx:90`
-
-```typescript
-onSelectSidebarSection: actions.setSidebarSection,
-```
-
-`buildSidebarSectionProps` passes `actions.setSidebarSection` (the model's bound action) to `SidebarPanel`'s `onSelectSidebarSection` prop.
-
----
-
-### Step 4 — `useSidebarActions` handles the action with auto-expand logic
-
-**File:** `use-project-editor-ui-actions-helpers.ts:139-147`
+**File:** `src/features/project-editor/workspace-actions.ts` (via `ProjectEditorActions` facade)
 
 ```typescript
-setSidebarSection: useCallback(
-  (section: SidebarSection) => {
-    setters.setSidebarActiveSection(section)
-    if (sidebarState.sidebarPanelCollapsed && !layout.focusModeEnabled) {
-      setters.setSidebarPanelCollapsed(false)
-    }
-  },
-  [setters, sidebarState.sidebarPanelCollapsed, layout.focusModeEnabled],
-),
+setSidebarSection: (section: SidebarSection) => {
+  setters.setSidebarActiveSection(section)
+  if (sidebarState.sidebarPanelCollapsed && !layout.focusModeEnabled) {
+    setters.setSidebarPanelCollapsed(false)
+  }
+}
 ```
 
 **Decisions taken at this step:**
@@ -72,15 +45,15 @@ setSidebarSection: useCallback(
 | `sidebarPanelCollapsed === false` | Only update the active section; no state change needed for collapse |
 | `sidebarPanelCollapsed === true` AND `focusModeEnabled === true` | Do NOT expand — focus mode locks sidebar in collapsed state |
 
-This is the core of the auto-expand behavior. The `useSidebarActions` hook receives `layout` (containing `focusModeEnabled`) and `sidebarState` (containing `sidebarPanelCollapsed`) as parameters from its caller.
+This is the core of the auto-expand behavior. The action reads `sidebarState` and `layout` from the stable model state.
 
 ---
 
-### Step 5 — State setters update Preact state
+### Step 3 — State setters update Preact state
 
-**File:** `use-sidebar-ui-state.ts:64-66`
+**File:** `use-sidebar-ui-state.ts`
 
-The `setters` passed to `useSidebarActions` come from `useSidebarUiState`, which returns setters backed by `useState`:
+The `setters` used by the action come from `useSidebarUiState`, which returns setters backed by `useState`:
 
 ```typescript
 const [activeSection, setActiveSection] = useState<SidebarSection>(() => readSidebarUiState().activeSection)
@@ -91,16 +64,15 @@ Calling `setSidebarActiveSection(section)` and `setSidebarPanelCollapsed(false)`
 
 ---
 
-### Step 6 — Re-render: sidebar width updates
+### Step 4 — Re-render: sidebar width updates
 
-**File:** `sidebar-panel.tsx:116-117`
+**File:** `sidebar-panel.tsx:51`
 
 ```typescript
 class={`sidebar-shell ${effectiveCollapsed ? 'is-collapsed' : ''}`}
-style={{ width: `${effectiveCollapsed ? 72 : props.sidebarPanelWidth}px` }}
 ```
 
-After the state update, `SidebarPanel` re-renders. Since `effectiveCollapsed` (derived from `props.sidebarPanelCollapsed || isResponsiveCollapsed`) is now `false`, the `sidebar-shell` element loses the `is-collapsed` class and its width changes from `72px` to `sidebarPanelWidth` (e.g., `300px`).
+After the state update, `SidebarPanel` re-renders. Since `effectiveCollapsed` (derived from `props.sidebarPanelCollapsed || isResponsiveCollapsed`) is now `false`, the `sidebar-shell` element loses the `is-collapsed` class and its width is driven by the layout CSS.
 
 The panel body (`SidebarPanelBody`) also becomes visible since `effectiveCollapsed` is now `false`.
 
@@ -110,12 +82,11 @@ The panel body (`SidebarPanelBody`) also becomes visible since `effectiveCollaps
 
 | File | Role |
 |------|------|
-| `src/features/project-editor/components/sidebar/sidebar-rail.tsx:43` | Entry: button `onClick` calls `onSelectSection` |
-| `src/features/project-editor/components/sidebar/sidebar-panel.tsx:123` | Passes `onSelectSidebarSection` prop to rail |
-| `src/features/project-editor/project-editor-view.tsx:90` | Wires `actions.setSidebarSection` to panel prop |
-| `src/features/project-editor/use-project-editor-ui-actions-helpers.ts:139-147` | Core logic: sets section + conditionally expands panel |
-| `src/features/project-editor/use-sidebar-ui-state.ts:64-66` | State setters backed by `useState` |
-| `src/features/project-editor/components/sidebar/sidebar-panel.tsx:116-117` | CSS class and width driven by `effectiveCollapsed` |
+| `src/features/project-editor/components/sidebar/sidebar-rail.tsx:34` | Entry: button `onClick` calls `setSidebarSection` from `useEditorActions()` |
+| `src/features/project-editor/project-editor-actions-context.tsx` | Stable Preact context for `ProjectEditorActions` |
+| `src/features/project-editor/workspace-actions.ts` | Core logic: sets section + conditionally expands panel |
+| `src/features/project-editor/use-sidebar-ui-state.ts` | State setters backed by `useState` |
+| `src/features/project-editor/components/sidebar/sidebar-panel.tsx:51` | CSS class driven by `effectiveCollapsed` |
 
 ## Common failure modes
 

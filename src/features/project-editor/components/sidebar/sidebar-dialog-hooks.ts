@@ -1,16 +1,11 @@
 /* eslint-disable max-lines-per-function */
 import { useState } from 'preact/hooks'
+import { useEditorActions } from '../../project-editor-actions-context.tsx'
+import { useScopedSidebarActions } from './use-scoped-sidebar-actions'
 import type { SidebarCreateInput } from '../../project-editor-types'
 import type { SidebarCreateMode } from './sidebar-create-dialog.tsx'
 import { getBaseName } from '../../../../shared/sidebar-utils'
 import type { SidebarFolderActionMode } from './sidebar-folder-actions-dialog.tsx'
-
-interface UseSidebarCreateDialogParams {
-  selectedPath: string | null
-  onCreateArticle: (input: SidebarCreateInput) => void
-  onCreateMap: (input: SidebarCreateInput) => void
-  onCreateCategory: (input: SidebarCreateInput) => void
-}
 
 function normalizeDirectory(value: string): string {
   return value.trim().replaceAll('\\', '/').replace(/^\/+/, '').replace(/\/+$/, '')
@@ -37,12 +32,8 @@ function buildInitialInput(selectedPath: string | null): SidebarCreateInput {
   }
 }
 
-export function useSidebarCreateDialog({
-  selectedPath,
-  onCreateArticle,
-  onCreateMap,
-  onCreateCategory,
-}: UseSidebarCreateDialogParams) {
+export function useSidebarCreateDialog({ selectedPath }: { selectedPath: string | null }) {
+  const actions = useEditorActions()
   const [createMode, setCreateMode] = useState<SidebarCreateMode | null>(null)
   const [createInput, setCreateInput] = useState<SidebarCreateInput>(buildInitialInput(selectedPath))
 
@@ -76,19 +67,19 @@ export function useSidebarCreateDialog({
     }
 
     if (createMode === 'article') {
-      onCreateArticle(payload)
+      actions.createArticle(payload)
       closeCreateDialog()
       return
     }
 
     if (createMode === 'map') {
-      onCreateMap(payload)
+      actions.createMap(payload)
       closeCreateDialog()
       return
     }
 
     if (createMode === 'category') {
-      onCreateCategory(payload)
+      actions.createCategory(payload)
       closeCreateDialog()
     }
   }
@@ -106,12 +97,8 @@ export function useSidebarCreateDialog({
   }
 }
 
-interface UseSidebarFolderActionsDialogParams {
-  onRenameFolder: (path: string, newName: string) => void
-  onDeleteFolder: (path: string) => void
-}
-
-export function useSidebarFolderActionsDialog({ onRenameFolder, onDeleteFolder }: UseSidebarFolderActionsDialogParams) {
+export function useSidebarFolderActionsDialog() {
+  const actions = useScopedSidebarActions()
   const [mode, setMode] = useState<SidebarFolderActionMode | null>(null)
   const [targetPath, setTargetPath] = useState<string | null>(null)
   const [renameValue, setRenameValue] = useState('')
@@ -148,9 +135,9 @@ export function useSidebarFolderActionsDialog({ onRenameFolder, onDeleteFolder }
     }
 
     if (mode === 'rename') {
-      onRenameFolder(targetPath, renameValue)
+      actions.renameFolder({ path: targetPath, newName: renameValue })
     } else {
-      onDeleteFolder(targetPath)
+      actions.deleteFolder(targetPath)
     }
 
     closeDialog()

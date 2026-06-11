@@ -1,18 +1,12 @@
 import { useState } from 'preact/hooks'
+import { useEditorActions } from '../../project-editor-actions-context.tsx'
 
 interface UseSidebarProjectRootContextMenuParams {
   hasProject: boolean
-  onPickFolder: () => void
-  onCloseProject: () => void
-  onRevealInFileManager: () => void
 }
 
-export function useSidebarProjectRootContextMenu({
-  hasProject,
-  onPickFolder,
-  onCloseProject,
-  onRevealInFileManager,
-}: UseSidebarProjectRootContextMenuParams) {
+export function useSidebarProjectRootContextMenu({ hasProject }: UseSidebarProjectRootContextMenuParams) {
+  const { pickProjectFolder, closeProject, revealInFileManager } = useEditorActions()
   const [position, setPosition] = useState<{ x: number; y: number } | null>(null)
 
   const closeContextMenu = () => {
@@ -27,7 +21,7 @@ export function useSidebarProjectRootContextMenu({
 
   const handleSelectProject = () => {
     closeContextMenu()
-    onPickFolder()
+    void pickProjectFolder()
   }
 
   const handleRevealInFileManager = () => {
@@ -35,7 +29,7 @@ export function useSidebarProjectRootContextMenu({
       return
     }
     closeContextMenu()
-    void onRevealInFileManager()
+    void revealInFileManager()
   }
 
   const handleCloseProject = () => {
@@ -43,7 +37,7 @@ export function useSidebarProjectRootContextMenu({
       return
     }
     closeContextMenu()
-    void onCloseProject()
+    void closeProject()
   }
 
   return {

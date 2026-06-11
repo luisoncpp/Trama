@@ -1,17 +1,12 @@
-import { SidebarPanelBody, buildSidebarPanelBodyProps } from './sidebar-panel-body.tsx'
+import { SidebarPanelBody } from './sidebar-panel-body.tsx'
 import { SidebarRail } from './sidebar-rail'
 import { useSidebarContentSection } from './sidebar-panel-logic'
 import type { SidebarPanelCommonProps } from './sidebar-types'
 
-type SidebarPanelProps = SidebarPanelCommonProps & {
-  onReorderFiles?: (folderPath: string, orderedIds: string[]) => Promise<void>
-  onMoveFile?: (sourcePath: string, targetFolder: string) => Promise<void>
-  onMoveFolder?: (sourcePath: string, targetParent: string) => Promise<void>
-  corkboardOrder?: Record<string, string[]>
-}
+type SidebarPanelProps = SidebarPanelCommonProps
 
 function buildSidebarBodyProps(props: SidebarPanelProps, effectiveCollapsed: boolean, sectionState: ReturnType<typeof useSidebarContentSection>) {
-  return buildSidebarPanelBodyProps({
+  return {
     effectiveCollapsed,
     sidebarActiveSection: props.sidebarActiveSection,
     sectionConfig: sectionState.sectionConfig,
@@ -20,20 +15,10 @@ function buildSidebarBodyProps(props: SidebarPanelProps, effectiveCollapsed: boo
     scopedSelectedPath: sectionState.scopedSelectedPath,
     activeFilterQuery: sectionState.activeFilterQuery,
     onFilterQueryChange: sectionState.onFilterQueryChange,
-    onCreateArticle: props.onCreateArticle,
-    onCreateMap: props.onCreateMap,
-    onCreateCategory: props.onCreateCategory,
-    onRenameFile: props.onRenameFile,
-    onRenameFolder: props.onRenameFolder,
-    onDeleteFolder: props.onDeleteFolder,
-    onDeleteFile: props.onDeleteFile,
-    onEditFileTags: props.onEditFileTags,
-    onRevealPathInFileManager: props.onRevealPathInFileManager,
     onImport: props.onImport,
     onImportZulu: props.onImportZulu,
     onExportBook: props.onExportBook,
     onExport: props.onExport,
-    onSelectFile: props.onSelectFile,
     themePreference: props.themePreference,
     resolvedTheme: props.resolvedTheme,
     onThemePreferenceChange: props.onThemePreferenceChange,
@@ -44,15 +29,11 @@ function buildSidebarBodyProps(props: SidebarPanelProps, effectiveCollapsed: boo
     onSpellcheckEnabledChange: props.onSpellcheckEnabledChange,
     onSpellcheckLanguageChange: props.onSpellcheckLanguageChange,
     focusScope: props.focusScope,
-    onFocusScopeChange: props.onFocusScopeChange,
-    onReorderFiles: props.onReorderFiles,
-    onMoveFile: props.onMoveFile,
-    onMoveFolder: props.onMoveFolder,
     corkboardOrder: props.corkboardOrder,
     allVisibleFiles: props.visibleFiles,
     activeSectionForController: props.sidebarActiveSection,
     contentProps: props,
-  })
+  }
 }
 
 function openHelpGettingStarted() {
@@ -72,8 +53,6 @@ export function SidebarPanel(props: SidebarPanelProps) {
         activeSection={props.sidebarActiveSection}
         collapsed={effectiveCollapsed}
         focusModeEnabled={props.focusModeEnabled}
-        onSelectSection={props.onSelectSidebarSection}
-        onToggleCollapsed={props.onToggleSidebarPanelCollapsed}
         onOpenHelp={openHelpGettingStarted}
       />
       <SidebarPanelBody {...bodyProps} />

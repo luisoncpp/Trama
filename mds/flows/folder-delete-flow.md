@@ -6,7 +6,7 @@ The user right-clicks a folder in the sidebar tree and selects "Delete", then co
 
 ## Entry point
 
-`onDeleteFolder(path)` in `src/features/project-editor/components/sidebar/sidebar-panel-body.tsx` — dispatches to `actions.deleteFolder(toProjectPath(toSectionRelativePath(path), sectionConfig.root))`.
+`useSidebarFolderActionsDialog().confirm()` in `src/features/project-editor/components/sidebar/sidebar-dialog-hooks.ts` — dispatches to `actions.deleteFolder(path)` where `path` is already project-relative (converted earlier via `toProjectPath(toSectionRelativePath(path), sectionConfig.root)` in `useSidebarFileActionsDialog` / `useSidebarFolderActionsDialog`).
 
 ## Why this flow matters
 
@@ -18,9 +18,9 @@ This flow involves two IPC calls, two workspace layout updates, and a snapshot r
 
 2. **Click "Delete"** — `handleDeleteFromContextMenu` calls `onOpenDelete(state.path)`.
 
-3. **Confirmation dialog** — `useSidebarFolderActionsDialog.confirm()` calls `onDeleteFolder(targetPath)`. The path is **section-relative** (e.g. `Act-01/`).
+3. **Confirmation dialog** — `useSidebarFolderActionsDialog.confirm()` calls `actions.deleteFolder(targetPath)`. The path is **project-relative** (e.g. `book/Act-01/`).
 
-4. **Path conversion** — `sidebar-panel-body.tsx` wraps the callback and immediately delegates to `sidebar-path-scoping.ts`: `(path) => onDeleteFolder(toProjectPath(toSectionRelativePath(path), sectionConfig.root))`. That produces the **project-relative** path (e.g. `book/Act-01/`).
+4. **Path conversion** — The dialog hook receives a section-relative path from the context menu and converts it via `sidebar-path-scoping.ts` (`toProjectPath(toSectionRelativePath(path), sectionConfig.root)`) before calling the action. This happens inside the dialog hook rather than in `sidebar-panel-body.tsx`.
 
 5. **`executeFolderDelete`** in `sidebar-file-actions/private/folder-crud.ts:61`:
    - Calls `window.tramaApi.deleteFolder({ path })` — backend removes the folder from disk.
@@ -99,8 +99,9 @@ This flow involves two IPC calls, two workspace layout updates, and a snapshot r
 | `src/features/project-editor/project-editor-private/open-project.ts` | `applyOpenedProject` — applies snapshot to state |
 | `src/features/project-editor/project-editor-private/state.ts` | `getVisibleSidebarPaths` → `useMemo` chain |
 | `src/features/project-editor/components/sidebar/sidebar-panel-logic.ts` | `useSidebarContentSection` + `getScopedFiles` |
-| `src/features/project-editor/components/sidebar/sidebar-panel-body.tsx` | Thin adapter that converts raw dialog paths through the scoping seam |
+| `src/features/project-editor/components/sidebar/sidebar-dialog-hooks.ts` | Dialog hooks that consume `deleteFolder` via `useEditorActions()` and scope paths |
 | `src/features/project-editor/components/sidebar/sidebar-path-scoping.ts` | `toSectionRelativePath()` + `toProjectPath()` used for delete-path conversion |
+| `src/features/project-editor/project-editor-actions-context.tsx` | Stable Preact context providing `useEditorActions()` |
 | `src/features/project-editor/components/sidebar/sidebar-tree.tsx` | `useSidebarTreeData` → tree build → render |
 | `src/features/project-editor/components/sidebar/sidebar-tree-logic.ts` | `buildSidebarTree`, `parseSidebarPath` |
 | `src/features/project-editor/components/sidebar/use-sidebar-tree-expanded-folders.ts` | Expanded folder state cleanup |

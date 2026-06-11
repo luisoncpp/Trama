@@ -175,6 +175,8 @@ Mandatory doc navigation for new chats: start with `mds/START-HERE.md` — it pr
   - Unit tests for `buildPdfExportSegments` (split boundaries, inter-document gap, empty segment skip).
 - `tests/helpers/book-export-mock-print-surface.ts`
   - Vitest helper: one-page `pdf-lib` mock for `setBookExportPrintSurfaceForTests` in renderer/IPC tests.
+- `tests/helpers/editor-actions-test-helper.ts`
+  - Vitest helper for context-migrated editor-action consumers: builds `ProjectEditorActions` spies and renders test VNodes inside `EditorActionsProvider`.
 - `mds/architecture/book-export-architecture.md`
   - Canonical reference for the book export pipeline. Explains the file layout, PDF render pipeline, data models, directive mapping, image handling, page metrics, and test coverage.
 - `mds/architecture/ai-import-export-architecture.md`
@@ -206,6 +208,9 @@ Mandatory doc navigation for new chats: start with `mds/START-HERE.md` — it pr
   - The only file that imports from `project-editor-private/`.
 - `src/features/project-editor/project-editor-view.tsx`
   - Screen-level composition root for project editor shell, conflict overlays, layout shell, and dialogs.
+  - Mounts `EditorActionsProvider` so sidebar leaves can consume `ProjectEditorActions` without prop drilling.
+- `src/features/project-editor/project-editor-actions-context.tsx`
+  - Stable Preact actions context for `ProjectEditorActions`: provider keeps latest actions in a ref and exposes a stable facade through `useEditorActions()`.
 - `src/features/project-editor/project-editor-view-layout.tsx`
   - Extracted shell/layout composition for the memoized sidebar boundary and main workspace pane.
 - `src/features/project-editor/project-editor-view-dialogs.ts`
@@ -500,12 +505,18 @@ Mandatory doc navigation for new chats: start with `mds/START-HERE.md` — it pr
   - Active section body composition. Thin adapter that converts raw sidebar callback strings through `sidebar-path-scoping.ts` before invoking project-level actions.
 - `src/features/project-editor/components/sidebar/sidebar-panel-logic.ts`
   - Section scoping + filter-state helpers. Delegates path branding/scoping to `sidebar-path-scoping.ts`. Exports `formatProjectRootBreadcrumbLabel()` for the sidebar project-root breadcrumb.
+- `src/features/project-editor/components/sidebar/sidebar-section-scope-context.tsx`
+  - Tiny Preact context providing `sectionConfig.root` to scoped action consumers inside `renderExplorer`.
+- `src/features/project-editor/components/sidebar/use-scoped-sidebar-actions.ts`
+  - Hook that reads raw actions from `useEditorActions()` + root from `useSidebarSectionRoot()` and returns same-name scoped wrappers (`renameFile`, `deleteFolder`, `selectFile`, etc.) with path conversion built in.
 - `src/features/project-editor/components/sidebar/sidebar-scope-path-breadcrumb.tsx`
   - Clickable project-root breadcrumb above the sidebar filter (full root path; CSS ellipsis when narrow). Left click and context menu **Select project folder...** open the picker; **Show in File Explorer** / **Reveal in Finder** and **Close project** are in the right-click menu.
+  - Consumes project-root actions from `useEditorActions()` instead of receiving them through the sidebar prop chain.
 - `src/features/project-editor/components/sidebar/sidebar-project-root-context-menu.tsx`
   - Context menu UI for the project-root breadcrumb.
 - `src/features/project-editor/components/sidebar/use-sidebar-project-root-context-menu.ts`
   - Context menu open/close state and action wiring for the project-root breadcrumb.
+  - Reads `pickProjectFolder`, `closeProject`, and `revealInFileManager` from the editor actions context.
 - `src/features/project-editor/sidebar-file-actions/private/project-close.ts`
   - Closes the active project via IPC and resets renderer project/editor state.
 - `src/features/project-editor/sidebar-file-actions/private/project-reveal.ts`

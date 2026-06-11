@@ -121,7 +121,6 @@ return <ProjectEditorView model={model} ... />
 `ProjectEditorView` now narrows the full model into stable memoized prop bundles using dedicated hooks:
 
 - `useProjectEditorShellState(model)` — picks only shell-relevant fields (`rootPath`, `visibleFiles`, `sidebarActiveSection`, etc.) into a memoized object
-- `useProjectEditorShellActions(model)` — picks only shell-relevant actions (`selectFile`, `setSidebarSection`, file/folder CRUD, etc.) into a memoized object
 - `useProjectEditorViewDialogs(rootPath, visibleFiles)` — repackages dialog hook state (AI import/export, book export, Zulu import) into stable memoized prop bundles
 
 The sidebar shell (`ProjectEditorSidebarShell`) is wrapped in `memo(...)` and only re-renders when its narrowed props actually change. `ProjectEditorDialogs` is also memoized so closed dialog leaf components do not receive new props during typing.

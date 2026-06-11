@@ -1,4 +1,4 @@
-import type { FocusScope, SidebarCreateInput, SidebarSection } from '../../project-editor-types'
+import type { FocusScope, SidebarSection } from '../../project-editor-types'
 import type { GitHistoryState } from '../../project-editor-types'
 import type { ResolvedTheme, ThemePreference } from '../../../../theme/theme-types'
 import type { BookExportFormat } from '../../../../shared/ipc'
@@ -7,15 +7,12 @@ export interface SidebarSelectionProps {
   visibleFiles: string[]
   selectedPath: string | null
   loadingDocument: boolean
-  onSelectFile: (filePath: string) => Promise<void>
 }
 
 export interface SidebarPanelLayoutProps {
   sidebarActiveSection: SidebarSection
   sidebarPanelCollapsed: boolean
   effectiveCollapsed: boolean
-  onSelectSidebarSection: (section: SidebarSection) => void
-  onToggleSidebarPanelCollapsed: () => void
 }
 
 export interface SidebarProjectContextProps {
@@ -24,14 +21,10 @@ export interface SidebarProjectContextProps {
   rootPath: string
   statusMessage: string
   gitHistory: GitHistoryState
-  onPickFolder: () => void
-  onCloseProject: () => void
-  onRevealInFileManager: () => void
   onImport: () => void
   onImportZulu: () => void
   onExportBook: (format: BookExportFormat) => void
   onExport: () => void
-  onSaveSnapshot: () => void
 }
 
 export interface SidebarThemeProps {
@@ -52,31 +45,17 @@ export interface SidebarSpellcheckProps {
 export interface SidebarWorkspacePrefsProps {
   focusModeEnabled: boolean
   focusScope: FocusScope
-  onFocusScopeChange: (scope: FocusScope) => void
-}
-
-export interface SidebarFileActions {
-  onCreateArticle: (input: SidebarCreateInput, templatePath?: string | null) => void
-  onCreateMap: (input: SidebarCreateInput) => void
-  onCreateCategory: (input: SidebarCreateInput) => void
-  onRenameFile: (path: string, newName: string) => void
-  onRenameFolder: (path: string, newName: string) => void
-  onDeleteFolder: (path: string) => void
-  onDeleteFile: (path: string, options?: { deleteAssociatedImages?: boolean }) => void
-  onEditFileTags: (path: string, tags: string[]) => void
-  onRevealPathInFileManager: (path: string) => void
-  onReorderFiles?: (folderPath: string, orderedIds: string[]) => Promise<void>
-  corkboardOrder?: Record<string, string[]>
 }
 
 export type SidebarPanelCommonProps = SidebarSelectionProps &
   SidebarPanelLayoutProps &
-  SidebarFileActions &
   SidebarProjectContextProps &
   SidebarThemeProps &
   SidebarSpellcheckProps &
-  SidebarWorkspacePrefsProps
+  SidebarWorkspacePrefsProps & {
+    corkboardOrder?: Record<string, string[]>
+  }
 
-export type SidebarExplorerCommonProps = SidebarSelectionProps & SidebarProjectContextProps & SidebarFileActions & {
-  onReorderFiles?: (folderPath: string, orderedIds: string[]) => Promise<void>
+export type SidebarExplorerCommonProps = SidebarSelectionProps & SidebarProjectContextProps & {
+  corkboardOrder?: Record<string, string[]>
 }

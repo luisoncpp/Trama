@@ -1,3 +1,4 @@
+import { useScopedSidebarActions } from './use-scoped-sidebar-actions'
 import {
   useSidebarFileContextMenu,
   useSidebarFolderContextMenu,
@@ -12,25 +13,24 @@ export interface SidebarDialogsContextMenus {
 }
 
 export function useSidebarDialogs(props: {
-  onSelectFile: (filePath: string) => Promise<void>
   openEditTagsDialog: (path: string) => void
   openRenameDialog: (path: string) => void
   openDeleteDialog: (path: string) => void
   openRenameFolderDialog: (path: string) => void
   openDeleteFolderDialog: (path: string) => void
-  onRevealPathInFileManager: (path: string) => void
 }) {
+  const actions = useScopedSidebarActions()
   const fileContextMenu = useSidebarFileContextMenu({
-    onSelectFile: props.onSelectFile,
+    onSelectFile: actions.selectFile,
     onOpenEditTags: props.openEditTagsDialog,
     onOpenRename: props.openRenameDialog,
     onOpenDelete: props.openDeleteDialog,
-    onOpenReveal: props.onRevealPathInFileManager,
+    onOpenReveal: actions.revealInFileManager,
   })
   const folderContextMenu = useSidebarFolderContextMenu({
     onOpenRename: props.openRenameFolderDialog,
     onOpenDelete: props.openDeleteFolderDialog,
-    onOpenReveal: props.onRevealPathInFileManager,
+    onOpenReveal: actions.revealInFileManager,
   })
   return { fileContextMenu, folderContextMenu }
 }

@@ -1,7 +1,11 @@
 import { describe, expect, it, vi } from 'vitest'
-import { h, render } from 'preact'
+import { h } from 'preact'
 import { formatProjectRootBreadcrumbLabel } from '../src/features/project-editor/components/sidebar/sidebar-panel-logic'
 import { SidebarScopePathBreadcrumb } from '../src/features/project-editor/components/sidebar/sidebar-scope-path-breadcrumb.tsx'
+import {
+  buildEditorActionsSpies,
+  renderWithEditorActions,
+} from './helpers/editor-actions-test-helper.ts'
 
 describe('formatProjectRootBreadcrumbLabel', () => {
   it('normalizes project root paths for display', () => {
@@ -18,15 +22,15 @@ describe('SidebarScopePathBreadcrumb', () => {
   it('renders placeholder and calls onPickFolder when empty', () => {
     const onPickFolder = vi.fn()
     const container = document.createElement('div')
-    render(
+    renderWithEditorActions(
       h(SidebarScopePathBreadcrumb, {
         projectRootPath: '',
-        onPickFolder,
-        onCloseProject: () => undefined,
-        onRevealInFileManager: () => undefined,
         disabled: false,
       }),
-      container,
+      {
+        container,
+        actions: buildEditorActionsSpies({ pickProjectFolder: onPickFolder }),
+      },
     )
 
     expect(container.textContent).toContain('Select project folder...')
@@ -36,15 +40,12 @@ describe('SidebarScopePathBreadcrumb', () => {
 
   it('renders full project root with tooltip and css ellipsis class', () => {
     const container = document.createElement('div')
-    render(
+    renderWithEditorActions(
       h(SidebarScopePathBreadcrumb, {
         projectRootPath: 'C:/Proyectos/trama/example-fantasy',
-        onPickFolder: () => undefined,
-        onCloseProject: () => undefined,
-        onRevealInFileManager: () => undefined,
         disabled: false,
       }),
-      container,
+      { container },
     )
 
     const button = container.querySelector('button')

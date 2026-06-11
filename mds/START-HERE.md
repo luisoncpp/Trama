@@ -42,6 +42,7 @@ Trama is a file-first desktop writing tool (Electron + Preact + TypeScript). The
 | Add/change IPC channel | `src/shared/ipc.ts` → `electron/ipc.ts` → `electron/preload.cts` → `src/types/trama-api.d.ts` |
 | Add/change IPC handler | `electron/ipc/handlers/` + `electron/ipc-handlers.ts` → `mds/ipc-architecture.md` |
 | Change sidebar UX | `src/features/project-editor/components/sidebar/sidebar-types.ts` → target component in `sidebar/` |
+| Refactor sidebar action propagation | `mds/plan/sidebar-editor-actions-context-plan.md` → `src/features/project-editor/project-editor-actions-context.tsx` → `src/features/project-editor/components/sidebar/sidebar-scope-path-breadcrumb.tsx` |
 | Debug sidebar path scoping | `mds/architecture/sidebar-path-scoping-model.md` → `src/features/project-editor/components/sidebar/sidebar-path-scoping.ts` → `src/features/project-editor/components/sidebar/sidebar-panel-body.tsx` → `src/features/project-editor/components/sidebar/sidebar-panel-logic.ts` |
 | Change editor behavior | `src/features/project-editor/components/rich-markdown-editor*.ts*` + `mds/architecture/editor-serialization-debounce-architecture.md` + `mds/architecture/image-handling-architecture.md` |
 | Implement/debug map documents | `mds/spec/map-document-markers-spec.md` → `mds/architecture/map-document-architecture.md` → `mds/plan/map-document-markers-implementation-plan.md` → `src/features/project-editor/pane/editor-panel.tsx` + `src/features/project-editor/pane/map-editor/` |

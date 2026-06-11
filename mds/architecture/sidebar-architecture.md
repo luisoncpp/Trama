@@ -83,6 +83,18 @@ Functions responsible:
 
 ## Data flow
 
+### Action propagation
+
+Sidebar state still flows as props from `ProjectEditorView` into `SidebarPanel`, but editor-owned actions are being migrated to a dedicated context:
+
+- `src/features/project-editor/project-editor-actions-context.tsx` provides `useEditorActions()`
+- `src/features/project-editor/project-editor-view.tsx` mounts the provider at the project-editor view root
+- leaf components consume raw `ProjectEditorActions` names directly instead of renamed `on*` wrappers when the action truly comes from the editor model
+
+Phase 1 migrated the project-root breadcrumb flow (`pickProjectFolder`, `closeProject`, `revealInFileManager`). Those actions no longer travel through `sidebar-panel.tsx` / `sidebar-panel-body.tsx` / `sidebar-explorer-content.tsx` / `sidebar-explorer-body.tsx`.
+
+**Invariant:** the provider must expose a stable facade over a ref, not `model.actions` directly, or every consumer will rerender whenever the editor action object is rebuilt.
+
 ### 1. File list ingestion
 
 ```
@@ -207,6 +219,7 @@ Pattern: `openX(path) → set mode + target → render dialog → confirm/close 
 Two context menus rendered via overlay layer:
 - `SidebarFileContextMenu` — Edit Tags, Rename, Delete
 - `SidebarFolderContextMenu` — Rename, Delete
+- `SidebarProjectRootContextMenu` — Select project folder, reveal project root, close project. The breadcrumb leaf now consumes those editor actions through `useEditorActions()` instead of drilled props.
 
 Note: right-clicking a file row triggers file selection/open and then immediately shows the file context menu; the selection call is not awaited before the menu opens.
 

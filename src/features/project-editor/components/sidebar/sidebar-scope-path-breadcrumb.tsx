@@ -1,13 +1,11 @@
 import { PROJECT_EDITOR_STRINGS } from '../../project-editor-strings'
+import { useEditorActions } from '../../project-editor-actions-context.tsx'
 import { formatProjectRootBreadcrumbLabel } from './sidebar-panel-logic'
 import { SidebarProjectRootContextMenu } from './sidebar-project-root-context-menu.tsx'
 import { useSidebarProjectRootContextMenu } from './use-sidebar-project-root-context-menu.ts'
 
 interface SidebarScopePathBreadcrumbProps {
   projectRootPath: string
-  onPickFolder: () => void
-  onCloseProject: () => void
-  onRevealInFileManager: () => void
   disabled: boolean
 }
 
@@ -30,21 +28,21 @@ function ScopePathFolderIcon() {
 
 export function SidebarScopePathBreadcrumb({
   projectRootPath,
-  onPickFolder,
-  onCloseProject,
-  onRevealInFileManager,
   disabled,
 }: SidebarScopePathBreadcrumbProps) {
+  const { pickProjectFolder } = useEditorActions()
   const hasProject = Boolean(projectRootPath.trim())
   const label = hasProject ? formatProjectRootBreadcrumbLabel(projectRootPath) : PROJECT_EDITOR_STRINGS.noFolderSelected
-  const contextMenu = useSidebarProjectRootContextMenu({ hasProject, onPickFolder, onCloseProject, onRevealInFileManager })
+  const contextMenu = useSidebarProjectRootContextMenu({ hasProject })
 
   return (
     <>
       <button
         type="button"
         class={`path-breadcrumb-trigger${hasProject ? '' : ' path-breadcrumb-trigger--empty'}`}
-        onClick={onPickFolder}
+        onClick={() => {
+          void pickProjectFolder()
+        }}
         onContextMenu={contextMenu.handleContextMenu}
         disabled={disabled}
         title={hasProject ? label : PROJECT_EDITOR_STRINGS.noFolderSelected}

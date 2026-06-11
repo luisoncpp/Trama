@@ -2,7 +2,8 @@ import type { ProjectEditorModel } from './project-editor-types'
 import { ConflictBanner } from './components/conflict-banner'
 import { ConflictComparePanel } from './components/conflict-compare-panel'
 import { ProjectEditorDialogs } from './project-editor-dialogs'
-import { useProjectEditorShellActions, useProjectEditorShellState } from './project-editor-shell'
+import { EditorActionsProvider } from './project-editor-actions-context.tsx'
+import { useProjectEditorShellState } from './project-editor-shell'
 import { useProjectEditorViewDialogs } from './project-editor-view-dialogs'
 import { ProjectEditorLayout } from './project-editor-view-layout'
 import type { ProjectEditorShellSettingsProps } from './project-editor-shell-props'
@@ -58,7 +59,7 @@ function ProjectEditorConflictOverlays({ model }: { model: ProjectEditorModel })
 
 function useProjectEditorViewState(model: ProjectEditorModel, props: Omit<ProjectEditorViewProps, 'model'>) {
   const shellState = useProjectEditorShellState(model)
-  const shellActions = useProjectEditorShellActions(model)
+  const setSidebarPanelWidth = model.actions.setSidebarPanelWidth
   const { effectiveCollapsed, sidebarWidthPx } = useSidebarLayout({
     sidebarPanelCollapsed: shellState.sidebarPanelCollapsed,
     sidebarPanelWidth: shellState.sidebarPanelWidth,
@@ -73,7 +74,7 @@ function useProjectEditorViewState(model: ProjectEditorModel, props: Omit<Projec
   const layoutProps = {
     model,
     shellState,
-    shellActions,
+    setSidebarPanelWidth,
     effectiveCollapsed,
     sidebarStyle,
     dialogsProps,
@@ -93,13 +94,15 @@ function useProjectEditorViewState(model: ProjectEditorModel, props: Omit<Projec
 export function ProjectEditorView({ model, ...rest }: ProjectEditorViewProps) {
   const { layoutProps, dialogsProps } = useProjectEditorViewState(model, rest)
   return (
-    <>
-      <WindowTitlebar />
-      <main class={buildShellClassName(model)}>
-        <ProjectEditorConflictOverlays model={model} />
-        <ProjectEditorLayout {...layoutProps} />
-        <ProjectEditorDialogs {...dialogsProps} />
-      </main>
-    </>
+    <EditorActionsProvider actions={model.actions}>
+      <>
+        <WindowTitlebar />
+        <main class={buildShellClassName(model)}>
+          <ProjectEditorConflictOverlays model={model} />
+          <ProjectEditorLayout {...layoutProps} />
+          <ProjectEditorDialogs {...dialogsProps} />
+        </main>
+      </>
+    </EditorActionsProvider>
   )
 }

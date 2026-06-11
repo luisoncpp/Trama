@@ -1,21 +1,30 @@
-import { useState } from 'preact/hooks'
+import { useMemo, useState } from 'preact/hooks'
 import { getBaseName, parseStringAsTags, serializeTags } from '../../../../shared/sidebar-utils'
+import { useScopedSidebarActions } from './use-scoped-sidebar-actions'
+import { useSidebarSectionRoot } from './sidebar-section-scope-context'
+import { toProjectPath, toSectionRelativePath, type SidebarSectionRoot } from './sidebar-path-scoping'
 import type { SidebarFileActionMode } from './sidebar-file-actions-dialog.tsx'
 
-interface UseSidebarFileActionsDialogParams {
-  onRenameFile: (path: string, newName: string) => void
-  onDeleteFile: (path: string, options?: { deleteAssociatedImages?: boolean }) => void
-  onEditFileTags: (path: string, tags: string[]) => void
-  onLoadFileTags: (path: string) => Promise<string[]>
-  onLoadFileDeleteInfo: (path: string) => Promise<{ linkedImagePaths: string[] }>
+function buildFileLoaders(root: string) {
+  const sectionRoot = root as SidebarSectionRoot
+  const scope = (path: string) => toProjectPath(toSectionRelativePath(path), sectionRoot)
+  return {
+    loadFileTags: (path: string) => window.tramaApi.readDocument({ path: scope(path) }).then((response) => {
+      if (!response.ok || !Array.isArray(response.data.meta.tags)) return []
+      return response.data.meta.tags.filter((value): value is string => typeof value === 'string')
+    }),
+    loadFileDeleteInfo: (path: string) => window.tramaApi.readDocument({ path: scope(path) }).then((response) => ({
+      linkedImagePaths: response.ok ? (response.data.linkedImagePaths ?? []) : [],
+    })),
+  }
 }
 
 interface CreateSidebarFileDialogActionsParams {
-  onRenameFile: (path: string, newName: string) => void
-  onDeleteFile: (path: string, options?: { deleteAssociatedImages?: boolean }) => void
-  onEditFileTags: (path: string, tags: string[]) => void
-  onLoadFileTags: (path: string) => Promise<string[]>
-  onLoadFileDeleteInfo: (path: string) => Promise<{ linkedImagePaths: string[] }>
+  renameFile: (input: { path: string; newName: string }) => void
+  deleteFile: (path: string, options?: { deleteAssociatedImages?: boolean }) => void
+  editFileTags: (path: string, tags: string[]) => void
+  loadFileTags: (path: string) => Promise<string[]>
+  loadFileDeleteInfo: (path: string) => Promise<{ linkedImagePaths: string[] }>
   getState: () => {
     mode: SidebarFileActionMode | null
     targetPath: string | null
@@ -55,7 +64,7 @@ function createOpenEditTagsAction(params: CreateSidebarFileDialogActionsParams) 
     params.setTagsValue('')
     params.setLoadingTags(true)
 
-    void params.onLoadFileTags(path)
+    void params.loadFileTags(path)
       .then((tags) => {
         params.setTagsValue(serializeTags(tags))
       })
@@ -73,18 +82,18 @@ function createConfirmAction(params: CreateSidebarFileDialogActionsParams, close
     }
 
     if (mode === 'rename') {
-      params.onRenameFile(targetPath, renameValue)
+      params.renameFile({ path: targetPath, newName: renameValue })
       closeDialog()
       return
     }
 
     if (mode === 'edit-tags') {
-      params.onEditFileTags(targetPath, parseStringAsTags(tagsValue))
+      params.editFileTags(targetPath, parseStringAsTags(tagsValue))
       closeDialog()
       return
     }
 
-    params.onDeleteFile(targetPath, params.getState().deleteAssociatedImages ? { deleteAssociatedImages: true } : undefined)
+    params.deleteFile(targetPath, params.getState().deleteAssociatedImages ? { deleteAssociatedImages: true } : undefined)
     closeDialog()
   }
 }
@@ -113,7 +122,7 @@ function createSidebarFileDialogActions(params: CreateSidebarFileDialogActionsPa
     params.setLinkedImagePaths([])
     params.setDeleteAssociatedImages(false)
 
-    void params.onLoadFileDeleteInfo(path)
+    void params.loadFileDeleteInfo(path)
       .then((info) => {
         params.setLinkedImagePaths(info.linkedImagePaths)
       })
@@ -133,13 +142,10 @@ function createSidebarFileDialogActions(params: CreateSidebarFileDialogActionsPa
   }
 }
 
-export function useSidebarFileActionsDialog({
-  onRenameFile,
-  onDeleteFile,
-  onEditFileTags,
-  onLoadFileTags,
-  onLoadFileDeleteInfo,
-}: UseSidebarFileActionsDialogParams) {
+export function useSidebarFileActionsDialog() {
+  const actions = useScopedSidebarActions()
+  const root = useSidebarSectionRoot()
+  const { loadFileTags, loadFileDeleteInfo } = useMemo(() => buildFileLoaders(root), [root])
   const [mode, setMode] = useState<SidebarFileActionMode | null>(null)
   const [targetPath, setTargetPath] = useState<string | null>(null)
   const [renameValue, setRenameValue] = useState('')
@@ -148,13 +154,12 @@ export function useSidebarFileActionsDialog({
   const [loadingDeleteInfo, setLoadingDeleteInfo] = useState(false)
   const [linkedImagePaths, setLinkedImagePaths] = useState<string[]>([])
   const [deleteAssociatedImages, setDeleteAssociatedImages] = useState(false)
-
-  const actions = createSidebarFileDialogActions({
-    onRenameFile,
-    onDeleteFile,
-    onEditFileTags,
-    onLoadFileTags,
-    onLoadFileDeleteInfo,
+  const { openRename, openDelete, openEditTags, closeDialog, confirm } = createSidebarFileDialogActions({
+    renameFile: actions.renameFile,
+    deleteFile: actions.deleteFile,
+    editFileTags: actions.editFileTags,
+    loadFileTags,
+    loadFileDeleteInfo,
     getState: () => ({ mode, targetPath, renameValue, tagsValue, deleteAssociatedImages }),
     setMode,
     setTargetPath,
@@ -165,7 +170,6 @@ export function useSidebarFileActionsDialog({
     setLinkedImagePaths,
     setDeleteAssociatedImages,
   })
-
   return {
     mode,
     targetPath,
@@ -178,10 +182,10 @@ export function useSidebarFileActionsDialog({
     setRenameValue,
     setTagsValue,
     setDeleteAssociatedImages,
-    openRename: actions.openRename,
-    openDelete: actions.openDelete,
-    openEditTags: actions.openEditTags,
-    closeDialog: actions.closeDialog,
-    confirm: actions.confirm,
+    openRename,
+    openDelete,
+    openEditTags,
+    closeDialog,
+    confirm,
   }
 }

@@ -16,7 +16,7 @@ App (src/app.tsx)
   │ model.state.visibleFiles
   ▼
 ProjectEditorView (src/features/project-editor/project-editor-view.tsx)
-  │ SidebarSection (inline, receives model)
+  │ EditorActionsProvider (wraps sidebar + workspace)
   │   buildSidebarSectionProps(model, ...) → { visibleFiles: state.visibleFiles, corkboardOrder, ... }
   ▼
 SidebarPanel (src/.../sidebar/sidebar-panel.tsx)
@@ -35,7 +35,6 @@ SidebarPanelBody (sidebar-panel-body.tsx)
   │ if sectionConfig → renderExplorer(props)
   │   section paths enter the sidebar-path-scoping seam
   │   scopedCorkboardOrder = scopeCorkboardOrder(corkboardOrder, sectionConfig.root)
-  │   scopedReorderHandler = buildScopedReorderHandler(onReorderFiles, sectionConfig.root)
   ▼
 SidebarExplorerContent (sidebar-explorer-content.tsx)
   │ visibleFiles={scopedFiles}
