@@ -35,20 +35,41 @@ export interface EdgeGeometry {
   labelY: number
 }
 
-const NODE_ANCHOR_RADIUS = 26
+// Matches `.relationships-node` pill layout: dot, gap, horizontal padding, border.
+const NODE_PILL_FIXED_WIDTH = 10 + 7 + 24 + 4
+const NODE_PILL_CHAR_WIDTH = 7.2
+const NODE_PILL_HALF_HEIGHT = 15
 
-function shortenTowards(fromX: number, fromY: number, toX: number, toY: number, distance: number): { x: number; y: number } {
-  const deltaX = toX - fromX
-  const deltaY = toY - fromY
-  const length = Math.hypot(deltaX, deltaY)
-  if (length === 0) return { x: fromX, y: fromY }
-  const ratio = Math.min(distance / length, 0.4)
-  return { x: fromX + deltaX * ratio, y: fromY + deltaY * ratio }
+export function estimateNodeHalfExtents(label: string): { halfWidth: number; halfHeight: number } {
+  return {
+    halfWidth: (NODE_PILL_FIXED_WIDTH + label.length * NODE_PILL_CHAR_WIDTH) / 2,
+    halfHeight: NODE_PILL_HALF_HEIGHT,
+  }
+}
+
+function anchorOnNodeBoundary(node: RelationshipNode, targetX: number, targetY: number): { x: number; y: number } {
+  const { halfWidth, halfHeight } = estimateNodeHalfExtents(node.label)
+  const deltaX = targetX - node.x
+  const deltaY = targetY - node.y
+  const absX = Math.abs(deltaX)
+  const absY = Math.abs(deltaY)
+  if (absX === 0 && absY === 0) return { x: node.x, y: node.y }
+
+  let scale: number
+  if (absX === 0) {
+    scale = halfHeight / absY
+  } else if (absY === 0) {
+    scale = halfWidth / absX
+  } else {
+    scale = Math.min(halfWidth / absX, halfHeight / absY)
+  }
+
+  return { x: node.x + deltaX * scale, y: node.y + deltaY * scale }
 }
 
 export function buildEdgeGeometry(from: RelationshipNode, to: RelationshipNode, parallelIndex: number): EdgeGeometry {
-  const start = shortenTowards(from.x, from.y, to.x, to.y, NODE_ANCHOR_RADIUS)
-  const end = shortenTowards(to.x, to.y, from.x, from.y, NODE_ANCHOR_RADIUS)
+  const start = anchorOnNodeBoundary(from, to.x, to.y)
+  const end = anchorOnNodeBoundary(to, from.x, from.y)
   const midX = (start.x + end.x) / 2
   const midY = (start.y + end.y) / 2
   const length = Math.hypot(end.x - start.x, end.y - start.y) || 1

@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import {
+  buildEdgeGeometry,
   buildNodeId,
+  estimateNodeHalfExtents,
   getEdgeDashArray,
   getParallelEdgeIndex,
   getRelationshipsConfig,
@@ -122,5 +124,20 @@ describe('relationships-editor-helpers', () => {
     expect(getParallelEdgeIndex(edges, 1)).toBe(1)
     expect(getParallelEdgeIndex(edges, 2)).toBe(0)
     expect(getParallelEdgeIndex(edges, 3)).toBe(2)
+  })
+
+  it('estimates wider node pills for longer labels', () => {
+    expect(estimateNodeHalfExtents('A').halfWidth).toBeLessThan(estimateNodeHalfExtents('Morokha').halfWidth)
+  })
+
+  it('anchors horizontal edge endpoints on the pill border, not a fixed inset', () => {
+    const from = { id: 'morokha', x: 200, y: 300, label: 'Morokha', destinationTag: '', color: '#ffffff' }
+    const to = { id: 'areki', x: 500, y: 300, label: 'Areki', destinationTag: '', color: '#ffffff' }
+    const geometry = buildEdgeGeometry(from, to, 0)
+    const startX = Number(geometry.path.match(/^M ([\d.]+)/)?.[1])
+    const endX = Number(geometry.path.match(/([\d.]+) ([\d.]+)$/)?.[1])
+
+    expect(startX).toBeGreaterThan(240)
+    expect(endX).toBeLessThan(460)
   })
 })

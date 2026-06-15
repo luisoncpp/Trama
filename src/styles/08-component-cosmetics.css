@@ -1514,6 +1514,15 @@
   overflow: visible;
 }
 
+.relationships-edges-markers-layer {
+  position: absolute;
+  left: 0;
+  top: 0;
+  overflow: visible;
+  pointer-events: none;
+  z-index: 2;
+}
+
 .relationships-edge__hit {
   fill: none;
   stroke: transparent;
@@ -1524,6 +1533,12 @@
 .relationships-edge__line {
   fill: none;
   stroke-width: 2.5;
+  pointer-events: none;
+}
+
+.relationships-edge__markers {
+  fill: none;
+  stroke: none;
   pointer-events: none;
 }
 
@@ -1540,6 +1555,7 @@
   position: absolute;
   inset: 0;
   pointer-events: none;
+  z-index: 1;
 }
 
 .relationships-node {

@@ -18,7 +18,7 @@ import {
   type RelationshipsConfig,
 } from './relationships-editor-helpers'
 import { RelationshipsEdgeDialog } from './relationships-edge-dialog'
-import { RelationshipsEdgesLayer } from './relationships-edges-layer'
+import { RelationshipsEdgeMarkersLayer, RelationshipsEdgesLayer } from './relationships-edges-layer'
 import { RelationshipsNodeDialog } from './relationships-node-dialog'
 import { RelationshipsNodesLayer } from './relationships-nodes-layer'
 
@@ -286,6 +286,10 @@ export function RelationshipsEditor({ meta, pane, layoutMode, readOnlyPreview = 
               if (readOnlyPreview) return
               setContextMenu({ clientX: event.clientX, clientY: event.clientY, target: { kind: 'node', index } })
             }}
+          />
+          <RelationshipsEdgeMarkersLayer
+            nodes={config.nodes.map((node) => draggedOverride?.id === node.id ? { ...node, x: draggedOverride.x, y: draggedOverride.y } : node)}
+            edges={config.edges}
           />
           {config.nodes.length === 0 ? <div class="relationships-editor__empty">Right-click anywhere to add your first character.</div> : null}
         </div>

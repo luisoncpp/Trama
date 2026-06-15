@@ -65,9 +65,10 @@ Same contract as maps: `EditorPanel` switches on `editorMeta.type === 'relations
 ## Rendering
 
 - Nodes are absolutely-positioned HTML pill buttons (`relationships-nodes-layer.tsx`), so labels are always visible.
-- Edges are an SVG layer under the nodes (`relationships-edges-layer.tsx`): quadratic paths with per-color `<marker>` arrowheads (`orient="auto-start-reverse"` supports bidirectional arrows), dash arrays for styles, a wide transparent hit path for right-click targeting, and the label at the curve midpoint.
+- Edges are an SVG layer under the nodes (`relationships-edges-layer.tsx`): quadratic paths with dash arrays for styles, a wide transparent hit path for right-click targeting, and the label at the curve midpoint.
+- Arrowheads render in a second SVG layer above the node pills (`RelationshipsEdgeMarkersLayer` in `relationships-edges-layer.tsx`) so bidirectional markers stay visible when nodes overlap the line ends.
 - Parallel edges between the same pair bow out on alternating sides (`getParallelEdgeIndex` + `buildEdgeGeometry`).
-- Edge endpoints are shortened by a node-anchor radius so arrowheads stop at the pill border, not the center.
+- Edge endpoints are shortened to the pill border using label-width estimates (`estimateNodeHalfExtents` + `anchorOnNodeBoundary`), not a fixed radius.
 
 ## File Map By Responsibility
 
