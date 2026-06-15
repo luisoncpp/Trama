@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
   buildEdgeGeometry,
   buildNodeId,
+  resolveAutoNodeTag,
   estimateNodeHalfExtents,
   getEdgeDashArray,
   getParallelEdgeIndex,
@@ -97,6 +98,16 @@ describe('relationships-editor-helpers', () => {
     }
 
     expect(getRelationshipsConfig(withRelationshipsConfig({}, original))).toEqual(original)
+  })
+
+  it('resolves auto node tags from character names when the tag exists', () => {
+    const tagIndex = { aldren: 'lore/aldren.md', 'norte salvaje': 'lore/north.md' }
+    expect(resolveAutoNodeTag('Aldren', tagIndex)).toBe('aldren')
+    expect(resolveAutoNodeTag('Norte Salvaje', tagIndex)).toBe('norte salvaje')
+    expect(resolveAutoNodeTag('#aldren', tagIndex)).toBe('aldren')
+    expect(resolveAutoNodeTag('Unknown', tagIndex)).toBe('')
+    expect(resolveAutoNodeTag('  ', tagIndex)).toBe('')
+    expect(resolveAutoNodeTag('Aldren', null)).toBe('')
   })
 
   it('builds unique slug node ids', () => {

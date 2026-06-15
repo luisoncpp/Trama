@@ -2,12 +2,15 @@
 import { createPortal } from 'preact/compat'
 import { useCallback, useEffect, useState } from 'preact/hooks'
 import { DEFAULT_NODE_COLOR } from './relationships-config-serialization'
+import { resolveAutoNodeTag } from './relationships-editor-helpers'
 import type { RelationshipNode } from './relationships-editor-types'
 
 interface RelationshipsNodeDialogProps {
   open: boolean
+  mode: 'add' | 'edit'
   node: RelationshipNode | null
   title: string
+  tagIndex?: Record<string, string> | null
   readOnly?: boolean
   onClose: () => void
   onSave: (node: RelationshipNode) => void
@@ -17,14 +20,16 @@ function createDraft(node: RelationshipNode | null): RelationshipNode {
   return node ?? { id: '', x: 0, y: 0, label: '', destinationTag: '', color: DEFAULT_NODE_COLOR, description: '' }
 }
 
-export function RelationshipsNodeDialog({ open, node, title, readOnly = false, onClose, onSave }: RelationshipsNodeDialogProps) {
+export function RelationshipsNodeDialog({ open, mode, node, title, tagIndex = null, readOnly = false, onClose, onSave }: RelationshipsNodeDialogProps) {
   const [draft, setDraft] = useState<RelationshipNode>(createDraft(node))
+  const [autoTag, setAutoTag] = useState(true)
 
   useEffect(/* syncDraftFromNode */ () => {
     if (open) {
       setDraft(createDraft(node))
+      setAutoTag(mode === 'add')
     }
-  }, [node, open] /*Inputs for syncDraftFromNode*/)
+  }, [mode, node, open] /*Inputs for syncDraftFromNode*/)
 
   useEffect(/* closeRelationshipsNodeDialogOnEscape */ () => {
     if (!open) return
@@ -38,17 +43,22 @@ export function RelationshipsNodeDialog({ open, node, title, readOnly = false, o
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [onClose, open] /*Inputs for closeRelationshipsNodeDialogOnEscape*/)
 
+  const resolvedAutoTag = mode === 'add' && autoTag ? resolveAutoNodeTag(draft.label, tagIndex) : ''
+
   const handleSave = useCallback(/* handleRelationshipsNodeSave */ () => {
     if (readOnly) return
     const label = draft.label.trim()
     if (!label) return
+    const destinationTag = mode === 'add' && autoTag
+      ? resolveAutoNodeTag(label, tagIndex)
+      : draft.destinationTag.trim()
     onSave({
       ...draft,
       label,
-      destinationTag: draft.destinationTag.trim(),
+      destinationTag,
       description: draft.description?.trim() || undefined,
     })
-  }, [draft, onSave, readOnly] /*Inputs for handleRelationshipsNodeSave*/)
+  }, [autoTag, draft, mode, onSave, readOnly, tagIndex] /*Inputs for handleRelationshipsNodeSave*/)
 
   if (!open) return null
 
@@ -63,8 +73,20 @@ export function RelationshipsNodeDialog({ open, node, title, readOnly = false, o
         </label>
         <label class="sidebar-create-dialog__field">
           <span>Character tag (optional)</span>
-          <input type="text" value={draft.destinationTag} placeholder="aldren" disabled={readOnly} onInput={(event) => setDraft((prev) => ({ ...prev, destinationTag: event.currentTarget.value }))} />
+          <input
+            type="text"
+            value={mode === 'add' && autoTag ? resolvedAutoTag : draft.destinationTag}
+            placeholder="aldren"
+            disabled={readOnly || (mode === 'add' && autoTag)}
+            onInput={(event) => setDraft((prev) => ({ ...prev, destinationTag: event.currentTarget.value }))}
+          />
         </label>
+        {mode === 'add' ? (
+          <label class="sidebar-create-dialog__field sidebar-create-dialog__field--inline">
+            <input type="checkbox" checked={autoTag} disabled={readOnly} onChange={(event) => setAutoTag(event.currentTarget.checked)} />
+            <span>Auto</span>
+          </label>
+        ) : null}
         <label class="sidebar-create-dialog__field">
           <span>Color</span>
           <input type="color" value={draft.color} disabled={readOnly} onInput={(event) => setDraft((prev) => ({ ...prev, color: event.currentTarget.value }))} />

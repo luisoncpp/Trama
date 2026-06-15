@@ -7,6 +7,12 @@ export { clampMapValue as clampChartValue, resolveMarkerDestination as resolveNo
 export const RELATIONSHIPS_STAGE_WIDTH = 2400
 export const RELATIONSHIPS_STAGE_HEIGHT = 1600
 
+export function resolveAutoNodeTag(label: string, tagIndex: Record<string, string> | null): string {
+  if (!tagIndex) return ''
+  const normalizedTag = label.trim().toLowerCase().replace(/^#/, '')
+  return normalizedTag && tagIndex[normalizedTag] !== undefined ? normalizedTag : ''
+}
+
 export function buildNodeId(label: string, existingIds: Iterable<string>): string {
   const taken = new Set(existingIds)
   const slug = label

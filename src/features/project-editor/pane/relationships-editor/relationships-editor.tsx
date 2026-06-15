@@ -378,8 +378,10 @@ export function RelationshipsEditor({ meta, pane, layoutMode, readOnlyPreview = 
       ) : null}
       <RelationshipsNodeDialog
         open={nodeDialog !== null}
+        mode={nodeDialog?.mode ?? 'add'}
         node={nodeDialog?.node ?? null}
         title={nodeDialog?.mode === 'edit' ? 'Edit character' : 'Add character'}
+        tagIndex={tagIndex}
         readOnly={readOnlyPreview}
         onClose={() => { setNodeDialog(null); setContextMenu(null) }}
         onSave={saveNodeFromDialog}

@@ -59,6 +59,7 @@ Same contract as maps: `EditorPanel` switches on `editorMeta.type === 'relations
 - **Add relationship**: sub-toolbar lists `edgePresets` plus **Custom…** (opens the edge dialog in template mode to define color/style/direction/label and optionally save a new preset). After a type is chosen, two node clicks create an edge immediately (no dialog); the tool stays active for repeated additions. Escape or background click cancels a pending first node only.
 - **Remove relationship**: click an edge line/arrow to delete it; characters remain.
 - **Context menu** (unchanged): right-click stage → add character; node → add relationship (legacy two-click flow opens edge dialog if no toolbar template), edit/delete; edge → edit/delete.
+- **Add character dialog**: **Auto** checkbox (on by default) matches the character name against the project tag index (case-insensitive, same normalization as map markers); when a tag exists it is stored as `destinationTag`, otherwise the node is saved with no tag. Uncheck **Auto** to set the tag manually.
 - **Presets**: edge dialog still offers preset apply/save for context-menu and edit flows; toolbar preset buttons mirror `edgePresets` styling.
 
 ## Rendering
