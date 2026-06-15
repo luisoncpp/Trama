@@ -13,6 +13,7 @@ export const IPC_CHANNELS = {
   getTemplates: 'trama:template:list',
   createMapDocument: 'trama:document:create-map',
   selectMapImage: 'trama:document:select-map-image',
+  createRelationshipsDocument: 'trama:document:create-relationships',
   createFolder: 'trama:folder:create',
   renameFolder: 'trama:folder:rename',
   deleteFolder: 'trama:folder:delete',

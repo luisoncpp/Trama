@@ -121,6 +121,7 @@ export interface ProjectEditorActions {
   openNextInPaneHistory: (pane?: WorkspacePane) => Promise<void>
   createArticle: (input: SidebarCreateInput, templatePath?: string | null) => Promise<void>
   createMap: (input: SidebarCreateInput) => Promise<void>
+  createRelationships: (input: SidebarCreateInput) => Promise<void>
   createCategory: (input: SidebarCreateInput) => Promise<void>
   renameFile: (input: SidebarRenameInput) => Promise<void>
   renameFolder: (input: SidebarRenameInput) => Promise<void>

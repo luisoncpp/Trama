@@ -3,7 +3,7 @@ import type { SidebarCreateInput } from '../../project-editor-types'
 import type { FilteredTemplate } from '../../templates/templates-catalog-private/filter-template-paths'
 import { TemplatePickerCombobox } from '../template-picker-combobox/index.ts'
 
-export type SidebarCreateMode = 'article' | 'category' | 'map'
+export type SidebarCreateMode = 'article' | 'category' | 'map' | 'relationships'
 
 interface SidebarCreateDialogProps {
   mode: SidebarCreateMode | null
@@ -37,6 +37,14 @@ function getDialogCopy(mode: SidebarCreateMode) {
       title: 'Create New Map',
       buttonLabel: 'Create map',
       nameLabel: 'Map name',
+    }
+  }
+
+  if (mode === 'relationships') {
+    return {
+      title: 'Create New Relationships Chart',
+      buttonLabel: 'Create chart',
+      nameLabel: 'Chart name',
     }
   }
 
@@ -97,7 +105,7 @@ export function SidebarCreateDialog({
           <input
             type="text"
             value={value.name}
-            placeholder={mode === 'article' ? 'Scene-001' : mode === 'map' ? 'World Map' : 'Locations'}
+            placeholder={mode === 'article' ? 'Scene-001' : mode === 'map' ? 'World Map' : mode === 'relationships' ? 'Character Relationships' : 'Locations'}
             onInput={(event) => onNameChange(event.currentTarget.value)}
           />
         </label>

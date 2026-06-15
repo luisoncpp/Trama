@@ -4,6 +4,7 @@ import type { EditorSerializationRefs, FocusScope, EditorZoomRef, WorkspaceLayou
 import { WORKSPACE_CONTEXT_MENU_STATE_GLOBAL, type WorkspaceContextMenuState } from '../../../shared/workspace-context-menu'
 import { RichMarkdownEditor } from './rich-markdown-editor/rich-markdown-editor'
 import { MapEditor } from './map-editor/map-editor'
+import { RelationshipsEditor } from './relationships-editor/relationships-editor'
 import { RevisionsRail } from './revisions/revisions-rail'
 import type { RichEditorSyncState } from './rich-markdown-editor/rich-markdown-editor-toolbar'
 import type { DocumentMeta } from '../../../shared/ipc'
@@ -140,6 +141,16 @@ function renderEditorPanelBody(
         {props.editorMeta.type === 'map'
           ? <MapEditor
               projectRoot={props.projectRoot}
+              meta={props.editorMeta}
+              pane={props.pane}
+              layoutMode={props.layoutMode}
+              readOnlyPreview={Boolean(props.previewReadOnly)}
+              tagIndex={props.tagIndex}
+              onMetaChange={props.onEditorMetaChange}
+              onNavigate={(filePath, pane) => props.onMapMarkerNavigate?.(filePath, pane)}
+            />
+          : props.editorMeta.type === 'relationships'
+          ? <RelationshipsEditor
               meta={props.editorMeta}
               pane={props.pane}
               layoutMode={props.layoutMode}

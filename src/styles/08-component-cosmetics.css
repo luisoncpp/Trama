@@ -408,7 +408,8 @@
   color: var(--text-muted);
 }
 
-.sidebar-create-dialog__field input {
+.sidebar-create-dialog__field input,
+.sidebar-create-dialog__field select {
   border: 1px solid var(--border-strong);
   border-radius: 9px;
   background: var(--surface-input-bg);
@@ -1452,6 +1453,168 @@
   color: var(--warning-text);
   font-size: 0.72rem;
   box-shadow: var(--shadow-float);
+}
+
+.relationships-editor__hud {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-muted);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.relationships-editor__viewport {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+  cursor: grab;
+}
+
+.relationships-editor__viewport.is-readonly {
+  cursor: default;
+}
+
+.relationships-editor__viewport.is-linking {
+  cursor: crosshair;
+}
+
+.relationships-editor__viewport:active {
+  cursor: grabbing;
+}
+
+.relationships-editor__stage {
+  position: absolute;
+  left: 0;
+  top: 0;
+  transform-origin: 0 0;
+}
+
+.relationships-editor__empty {
+  position: absolute;
+  left: 24px;
+  top: 24px;
+  padding: 16px 24px;
+  border: 1px dashed var(--border-strong);
+  border-radius: 10px;
+  color: var(--text-dim);
+  font-size: 0.82rem;
+  background: color-mix(in oklab, var(--surface-input-bg) 86%, transparent);
+  pointer-events: none;
+}
+
+.relationships-edges-layer {
+  position: absolute;
+  left: 0;
+  top: 0;
+  overflow: visible;
+}
+
+.relationships-edge__hit {
+  fill: none;
+  stroke: transparent;
+  stroke-width: 14;
+  pointer-events: stroke;
+}
+
+.relationships-edge__line {
+  fill: none;
+  stroke-width: 2.5;
+  pointer-events: none;
+}
+
+.relationships-edge__label {
+  font-size: 13px;
+  paint-order: stroke;
+  stroke: var(--surface);
+  stroke-width: 4px;
+  pointer-events: none;
+  user-select: none;
+}
+
+.relationships-nodes-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.relationships-node {
+  position: absolute;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 12px;
+  transform: translate(-50%, -50%);
+  border: 2px solid;
+  border-radius: 999px;
+  background: var(--context-menu-bg);
+  color: var(--text-main);
+  font-size: 0.78rem;
+  white-space: nowrap;
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.12);
+  cursor: pointer;
+  pointer-events: auto;
+  touch-action: none;
+}
+
+.relationships-node.is-link-source {
+  box-shadow: 0 0 0 4px color-mix(in oklab, currentColor 35%, transparent);
+}
+
+.relationships-node__dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+
+.relationships-node:hover .relationships-node__tooltip,
+.relationships-node:focus-visible .relationships-node__tooltip {
+  opacity: 1;
+  transform: translate(-50%, -6px);
+}
+
+.relationships-node__tooltip {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 4px);
+  min-width: 140px;
+  max-width: 220px;
+  padding: 8px 10px;
+  border: 1px solid var(--border-strong);
+  border-radius: 10px;
+  background: var(--context-menu-bg);
+  color: var(--text-muted);
+  font-size: 0.68rem;
+  white-space: normal;
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, 0);
+  transition: opacity 120ms ease, transform 120ms ease;
+  box-shadow: var(--shadow-float);
+}
+
+.relationships-editor__notice {
+  position: absolute;
+  right: 14px;
+  bottom: 14px;
+  padding: 8px 10px;
+  border: 1px solid var(--warning-border);
+  border-radius: 10px;
+  background: color-mix(in oklab, var(--dialog-bg) 88%, transparent);
+  color: var(--warning-text);
+  font-size: 0.72rem;
+  box-shadow: var(--shadow-float);
+}
+
+.sidebar-create-dialog__field--inline {
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
 }
 
 .revisions-rail {

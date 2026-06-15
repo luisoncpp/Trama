@@ -9,6 +9,7 @@ export {
 	handleSaveDocument,
 	handleSelectMapImage,
 } from './document-handlers.js'
+export { handleCreateRelationshipsDocument } from './relationships-document-handler.js'
 export { handleDeleteFolder, handleMoveFolder, handleRenameFolder } from './folder-handlers.js'
 export { handleOpenProject } from './project-open-handler.js'
 export { handleCloseProject } from './project-close-handler.js'

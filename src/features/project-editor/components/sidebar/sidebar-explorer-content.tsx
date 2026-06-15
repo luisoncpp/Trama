@@ -60,6 +60,8 @@ function useSidebarExplorerDialogs(props: SidebarExplorerContentProps) {
       )
     } else if (payload.mode === 'map') {
       actions.createMap(payload.input)
+    } else if (payload.mode === 'relationships') {
+      actions.createRelationships(payload.input)
     } else if (payload.mode === 'category') {
       actions.createCategory(payload.input)
     }

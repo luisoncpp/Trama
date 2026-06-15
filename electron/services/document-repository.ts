@@ -227,6 +227,40 @@ export class DocumentRepository {
     }
   }
 
+  async createRelationshipsDocument(
+    projectRoot: string,
+    relativePath: string,
+    name: string,
+  ): Promise<{ path: string; createdAt: string }> {
+    const normalizedPath = validateRelativePath(relativePath)
+    if (!normalizedPath.endsWith('.md')) throw new Error('Only markdown files are supported')
+
+    const documentFullPath = resolveProjectPath(projectRoot, normalizedPath)
+    await ensurePathDoesNotExist(documentFullPath)
+    await mkdir(path.dirname(documentFullPath), { recursive: true })
+
+    const markdown = serializeMarkdownWithFrontmatter(
+      {
+        type: 'relationships',
+        name: name.trim(),
+        relationshipsConfig: {
+          nodes: [],
+          edges: [],
+          edgePresets: [
+            { name: 'Family', color: '#f1c40f', style: 'solid', direction: 'both' },
+            { name: 'Allies', color: '#2ecc71', style: 'solid', direction: 'both' },
+            { name: 'Enemies', color: '#e74c3c', style: 'dashed', direction: 'both' },
+            { name: 'Romance', color: '#e84393', style: 'solid', direction: 'both' },
+          ],
+        },
+      },
+      '',
+    )
+    await writeFile(documentFullPath, markdown, { encoding: 'utf8', flag: 'wx' })
+
+    return { path: normalizeRelative(normalizedPath), createdAt: new Date().toISOString() }
+  }
+
   async renameFolder(projectRoot: string, relativePath: string, newName: string): Promise<{ path: string; renamedTo: string; updatedAt: string }> {
     const normalizedPath = validateRelativePath(relativePath)
     const nextRelativePath = extractNextRelativePath(normalizedPath, newName)

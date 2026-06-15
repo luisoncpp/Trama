@@ -20,6 +20,8 @@ import {
   type CreateMapDocumentRequest,
   type CreateMapDocumentResponse,
   type SelectMapImageResponse,
+  type CreateRelationshipsDocumentRequest,
+  type CreateRelationshipsDocumentResponse,
   type CreateFolderRequest,
   type CreateFolderResponse,
   type DeleteFolderRequest,
@@ -135,6 +137,9 @@ const tramaApi = {
   },
   selectMapImage(): Promise<IpcEnvelope<SelectMapImageResponse>> {
     return ipcRenderer.invoke(IPC_CHANNELS.selectMapImage)
+  },
+  createRelationshipsDocument(payload: CreateRelationshipsDocumentRequest): Promise<IpcEnvelope<CreateRelationshipsDocumentResponse>> {
+    return ipcRenderer.invoke(IPC_CHANNELS.createRelationshipsDocument, payload)
   },
   createFolder(payload: CreateFolderRequest): Promise<IpcEnvelope<CreateFolderResponse>> {
     return ipcRenderer.invoke(IPC_CHANNELS.createFolder, payload)

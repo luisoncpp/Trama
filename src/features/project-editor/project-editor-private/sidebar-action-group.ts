@@ -12,6 +12,7 @@ export function buildSidebarActions(params: ActionGroupParams): Pick<ProjectEdit
   | 'setSidebarPanelWidth'
   | 'createArticle'
   | 'createMap'
+  | 'createRelationships'
   | 'createCategory'
   | 'renameFile'
   | 'deleteFile'
@@ -92,6 +93,12 @@ function buildSidebarFileCreateActions({ projectState, sidebarState, setters, op
       openProject,
     }, templatePath),
     createMap: (input: any) => sidebarFileActions.createMap(input, {
+      projectState,
+      sidebarState,
+      setStatusMessage: setters.setStatusMessage,
+      openProject,
+    }),
+    createRelationships: (input: any) => sidebarFileActions.createRelationships(input, {
       projectState,
       sidebarState,
       setStatusMessage: setters.setStatusMessage,

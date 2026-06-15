@@ -5,6 +5,7 @@ interface SidebarFooterActionsProps {
   disabled: boolean
   onCreateArticle: () => void
   onCreateMap?: () => void
+  onCreateRelationships?: () => void
   onCreateCategory: () => void
 }
 
@@ -12,6 +13,7 @@ export function SidebarFooterActions({
   disabled,
   onCreateArticle,
   onCreateMap,
+  onCreateRelationships,
   onCreateCategory,
 }: SidebarFooterActionsProps) {
   const [menuOpen, setMenuOpen] = useState(false)
@@ -38,7 +40,7 @@ export function SidebarFooterActions({
 
   return (
     <div class="sidebar-footer-actions">
-      {onCreateMap ? (
+      {onCreateMap || onCreateRelationships ? (
         <div class="sidebar-split-button" ref={menuRef}>
           <button
             type="button"
@@ -62,17 +64,32 @@ export function SidebarFooterActions({
           </button>
           {menuOpen && !disabled && (
             <div class="sidebar-split-button__menu" role="menu" aria-label="Article creation options">
-              <button
-                type="button"
-                class="sidebar-split-button__menu-item"
-                role="menuitem"
-                onClick={() => {
-                  setMenuOpen(false)
-                  onCreateMap()
-                }}
-              >
-                Create map
-              </button>
+              {onCreateMap && (
+                <button
+                  type="button"
+                  class="sidebar-split-button__menu-item"
+                  role="menuitem"
+                  onClick={() => {
+                    setMenuOpen(false)
+                    onCreateMap()
+                  }}
+                >
+                  Create map
+                </button>
+              )}
+              {onCreateRelationships && (
+                <button
+                  type="button"
+                  class="sidebar-split-button__menu-item"
+                  role="menuitem"
+                  onClick={() => {
+                    setMenuOpen(false)
+                    onCreateRelationships()
+                  }}
+                >
+                  Create relationships chart
+                </button>
+              )}
             </div>
           )}
         </div>

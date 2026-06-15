@@ -16,6 +16,8 @@ import type {
   CreateMapDocumentRequest,
   CreateMapDocumentResponse,
   SelectMapImageResponse,
+  CreateRelationshipsDocumentRequest,
+  CreateRelationshipsDocumentResponse,
   CreateFolderRequest,
   CreateFolderResponse,
   DeleteFolderRequest,
@@ -105,6 +107,7 @@ declare global {
       getTemplates(): Promise<IpcEnvelope<GetTemplatesResponse>>
       createMapDocument(payload: CreateMapDocumentRequest): Promise<IpcEnvelope<CreateMapDocumentResponse>>
       selectMapImage(): Promise<IpcEnvelope<SelectMapImageResponse>>
+      createRelationshipsDocument(payload: CreateRelationshipsDocumentRequest): Promise<IpcEnvelope<CreateRelationshipsDocumentResponse>>
       createFolder(payload: CreateFolderRequest): Promise<IpcEnvelope<CreateFolderResponse>>
       renameFolder(payload: RenameFolderRequest): Promise<IpcEnvelope<RenameFolderResponse>>
       deleteFolder(payload: DeleteFolderRequest): Promise<IpcEnvelope<DeleteFolderResponse>>

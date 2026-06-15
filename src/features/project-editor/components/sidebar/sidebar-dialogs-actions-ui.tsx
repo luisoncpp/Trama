@@ -55,6 +55,7 @@ export function FooterAndCreateDialog({
         disabled={loadingProject || !apiAvailable}
         onCreateArticle={() => openCreateDialog('article')}
         onCreateMap={hideMapOption ? undefined : (() => openCreateDialog('map'))}
+        onCreateRelationships={hideMapOption ? undefined : (() => openCreateDialog('relationships'))}
         onCreateCategory={() => openCreateDialog('category')}
       />
       <SidebarCreateDialog

@@ -5,7 +5,7 @@ export { IPC_CHANNELS } from './ipc-channels.js'
 export const pingRequestSchema = z.object({ message: z.string().trim().min(1).max(120) })
 const pingResponseSchema = z.object({ echo: z.string(), timestamp: z.string() })
 export const debugLogRequestSchema = z.object({ source: z.string().trim().min(1).max(80), message: z.string().trim().min(1).max(300), details: z.unknown().optional() })
-export const documentMetaSchema = z.object({ id: z.string().trim().min(1).optional(), type: z.enum(['character', 'location', 'scene', 'note', 'outline', 'map']).optional(), name: z.string().trim().min(1).optional(), tags: z.array(z.string()).optional() }).catchall(z.unknown())
+export const documentMetaSchema = z.object({ id: z.string().trim().min(1).optional(), type: z.enum(['character', 'location', 'scene', 'note', 'outline', 'map', 'relationships']).optional(), name: z.string().trim().min(1).optional(), tags: z.array(z.string()).optional() }).catchall(z.unknown())
 const treeItemSchema: z.ZodType<TreeItem> = z.lazy(() => z.object({ id: z.string(), title: z.string(), path: z.string(), type: z.enum(['file', 'folder']), children: z.array(treeItemSchema).optional() }))
 const projectIndexSchema = z.object({ version: z.string(), corkboardOrder: z.record(z.string(), z.array(z.string())), cache: z.record(z.string(), documentMetaSchema) })
 const projectSnapshotSchema = z.object({ rootPath: z.string(), tree: z.array(treeItemSchema), markdownFiles: z.array(z.string()), index: projectIndexSchema })
@@ -30,6 +30,14 @@ const createMapDocumentResponseSchema = z.object({
 })
 const selectMapImageResponseSchema = z.object({
   filePath: z.string(),
+})
+export const createRelationshipsDocumentRequestSchema = z.object({
+  path: z.string().trim().min(1),
+  name: z.string().trim().min(1),
+})
+const createRelationshipsDocumentResponseSchema = z.object({
+  path: z.string(),
+  createdAt: z.string(),
 })
 export const createFolderRequestSchema = z.object({ path: z.string().trim().min(1) })
 const createFolderResponseSchema = z.object({ path: z.string(), createdAt: z.string() })
@@ -167,6 +175,8 @@ export type GetTemplatesResponse = z.infer<typeof getTemplatesResponseSchema>
 export type CreateMapDocumentRequest = z.infer<typeof createMapDocumentRequestSchema>
 export type CreateMapDocumentResponse = z.infer<typeof createMapDocumentResponseSchema>
 export type SelectMapImageResponse = z.infer<typeof selectMapImageResponseSchema>
+export type CreateRelationshipsDocumentRequest = z.infer<typeof createRelationshipsDocumentRequestSchema>
+export type CreateRelationshipsDocumentResponse = z.infer<typeof createRelationshipsDocumentResponseSchema>
 export type CreateFolderRequest = z.infer<typeof createFolderRequestSchema>
 export type CreateFolderResponse = z.infer<typeof createFolderResponseSchema>
 export type RenameFolderRequest = z.infer<typeof renameFolderRequestSchema>

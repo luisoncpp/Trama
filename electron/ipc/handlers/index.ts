@@ -2,6 +2,7 @@ export { buildPingResponse } from './ping-handler.js'
 export {
   handleCreateDocument,
   handleCreateMapDocument,
+  handleCreateRelationshipsDocument,
   handleCreateFolder,
   handleDeleteFolder,
   handleDeleteDocument,

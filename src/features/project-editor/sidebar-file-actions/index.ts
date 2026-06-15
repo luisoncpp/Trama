@@ -10,7 +10,7 @@ export { revealInFileManager } from './private/project-reveal'
 
 export { selectFile } from './private/file-select'
 
-export { createArticle, createCategory, createMap } from './private/file-create'
+export { createArticle, createCategory, createMap, createRelationships } from './private/file-create'
 
 export { renameFile, deleteFile, editFileTags } from './private/file-crud'
 

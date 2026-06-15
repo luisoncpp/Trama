@@ -38,7 +38,7 @@ async function createFileWithRetries(
     openProject: (projectRoot: string, options?: OpenProjectOptions) => Promise<void>
   },
   options: {
-    label: 'article' | 'map'
+    label: 'article' | 'map' | 'relationships chart'
     createPath: (sectionRoot: SidebarSectionRoot, directory: string, name: string, attempt: number) => string
     submit: (path: string, name: string) => Promise<{ ok: true; data: { path: string } } | { ok: false; error: { message: string } }>
   },
@@ -132,6 +132,22 @@ export async function createMap(
       name,
       sourceImagePath: input.sourceImagePath.trim(),
     }),
+  })
+}
+
+export async function createRelationships(
+  input: SidebarCreateInput,
+  deps: {
+    projectState: ProjectEditorProjectState
+    sidebarState: ProjectEditorSidebarState
+    setStatusMessage: (value: string) => void
+    openProject: (projectRoot: string, options?: OpenProjectOptions) => Promise<void>
+  },
+): Promise<void> {
+  await createFileWithRetries(input, deps, {
+    label: 'relationships chart',
+    createPath: (sectionRoot, directory, name, attempt) => buildProjectCandidatePath({ sectionRoot, directory, name, attempt, asMarkdown: true }),
+    submit: (path, name) => window.tramaApi.createRelationshipsDocument({ path, name }),
   })
 }
 

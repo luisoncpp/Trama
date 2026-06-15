@@ -78,6 +78,12 @@ export function useSidebarCreateDialog({ selectedPath }: { selectedPath: string 
       return
     }
 
+    if (createMode === 'relationships') {
+      actions.createRelationships(payload)
+      closeCreateDialog()
+      return
+    }
+
     if (createMode === 'category') {
       actions.createCategory(payload)
       closeCreateDialog()

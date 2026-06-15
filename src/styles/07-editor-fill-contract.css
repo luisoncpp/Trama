@@ -21,7 +21,8 @@
   flex-direction: column;
 }
 
-.map-editor {
+.map-editor,
+.relationships-editor {
   position: relative;
   display: flex;
   flex: 1 1 auto;

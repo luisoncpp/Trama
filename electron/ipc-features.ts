@@ -12,6 +12,7 @@ import {
   handleCreateFromTemplate,
   handleGetTemplates,
   handleCreateMapDocument,
+  handleCreateRelationshipsDocument,
   handleCreateFolder,
   handleDeleteFolder,
   handleDeleteDocument,
@@ -70,6 +71,7 @@ export function registerDocumentHandlers(ipcMain: IpcMain): void {
   ipcMain.handle(IPC_CHANNELS.getTemplates, () => handleGetTemplates())
   ipcMain.handle(IPC_CHANNELS.createMapDocument, (_event, payload) => handleCreateMapDocument(payload))
   ipcMain.handle(IPC_CHANNELS.selectMapImage, () => handleSelectMapImage())
+  ipcMain.handle(IPC_CHANNELS.createRelationshipsDocument, (_event, payload) => handleCreateRelationshipsDocument(payload))
   ipcMain.handle(IPC_CHANNELS.renameDocument, (_event, payload) => handleRenameDocument(payload))
   ipcMain.handle(IPC_CHANNELS.deleteDocument, (_event, payload) => handleDeleteDocument(payload))
 }
