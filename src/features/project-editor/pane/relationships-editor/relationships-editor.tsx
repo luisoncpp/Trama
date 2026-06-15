@@ -21,6 +21,8 @@ import { RelationshipsEdgeDialog } from './relationships-edge-dialog'
 import { RelationshipsEdgeMarkersLayer, RelationshipsEdgesLayer } from './relationships-edges-layer'
 import { RelationshipsNodeDialog } from './relationships-node-dialog'
 import { RelationshipsNodesLayer } from './relationships-nodes-layer'
+import { RelationshipsEditorToolbar } from './relationships-editor-toolbar'
+import type { RelationshipLinkTemplate, RelationshipsEditorTool } from './relationships-editor-types'
 
 interface RelationshipsEditorProps {
   meta: DocumentMeta
@@ -36,7 +38,7 @@ interface ContextMenuState { clientX: number; clientY: number; target: { kind: '
 
 interface NodeDialogState { mode: 'add' | 'edit'; nodeIndex: number | null; node: RelationshipNode }
 
-interface EdgeDialogState { mode: 'add' | 'edit'; edgeIndex: number | null; edge: RelationshipEdge }
+interface EdgeDialogState { mode: 'add' | 'edit' | 'template'; edgeIndex: number | null; edge: RelationshipEdge }
 
 interface NodeDragState { pointerId: number; nodeIndex: number; clientX: number; clientY: number; nodeX: number; nodeY: number; moved: boolean }
 
@@ -46,6 +48,17 @@ function getTargetPane(layoutMode: WorkspaceLayoutMode, pane: WorkspacePane): Wo
   return layoutMode === 'split' ? 'secondary' : pane
 }
 
+function presetToTemplate(preset: RelationshipEdgePreset): RelationshipLinkTemplate {
+  return { label: preset.name, color: preset.color, style: preset.style, direction: preset.direction }
+}
+
+function getHudSecondaryText(scale: number, activeTool: RelationshipsEditorTool, linkSourceId: string | null, linkTemplate: RelationshipLinkTemplate | null): string {
+  if (linkSourceId) return 'Click a character to link · Esc to cancel'
+  if (activeTool === 'add-relationship' && !linkTemplate) return 'Select a relationship type'
+  if (activeTool === 'add-relationship') return 'Click two characters to link'
+  if (activeTool === 'remove-relationship') return 'Click a relationship to remove'
+  return `${Math.round(scale * 100)}%`
+}
 function mergePreset(presets: RelationshipEdgePreset[], presetToAdd: RelationshipEdgePreset | null): RelationshipEdgePreset[] {
   if (!presetToAdd) return presets
   const withoutSameName = presets.filter((preset) => preset.name.toLowerCase() !== presetToAdd.name.toLowerCase())
@@ -64,6 +77,8 @@ export function RelationshipsEditor({ meta, pane, layoutMode, readOnlyPreview = 
   const [nodeDialog, setNodeDialog] = useState<NodeDialogState | null>(null)
   const [edgeDialog, setEdgeDialog] = useState<EdgeDialogState | null>(null)
   const [linkSourceId, setLinkSourceId] = useState<string | null>(null)
+  const [activeTool, setActiveTool] = useState<RelationshipsEditorTool>('select')
+  const [linkTemplate, setLinkTemplate] = useState<RelationshipLinkTemplate | null>(null)
   const [draggedOverride, setDraggedOverride] = useState<{ id: string; x: number; y: number } | null>(null)
 
   useEffect(/* clearRelationshipsNoticeAfterDelay */ () => {
@@ -122,15 +137,16 @@ export function RelationshipsEditor({ meta, pane, layoutMode, readOnlyPreview = 
 
   const handleNodePointerDown = useCallback(/* handleRelationshipsNodePointerDown */ (index: number, event: PointerEvent) => {
     if (event.button !== 0) return
+    if (activeTool === 'remove-relationship') return
     const node = config.nodes[index]
     ;(event.target as Element | null)?.closest('[data-relationships-node="true"]')?.setPointerCapture(event.pointerId)
     nodeDragRef.current = { pointerId: event.pointerId, nodeIndex: index, clientX: event.clientX, clientY: event.clientY, nodeX: node.x, nodeY: node.y, moved: false }
-  }, [config.nodes] /*Inputs for handleRelationshipsNodePointerDown*/)
+  }, [activeTool, config.nodes] /*Inputs for handleRelationshipsNodePointerDown*/)
 
   const handlePointerMove = useCallback(/* handleRelationshipsPointerMove */ (event: PointerEvent) => {
     const nodeDrag = nodeDragRef.current
     if (nodeDrag && nodeDrag.pointerId === event.pointerId) {
-      if (readOnlyPreview) return
+      if (readOnlyPreview || activeTool !== 'select') return
       const deltaX = (event.clientX - nodeDrag.clientX) / scale
       const deltaY = (event.clientY - nodeDrag.clientY) / scale
       if (!nodeDrag.moved && Math.hypot(event.clientX - nodeDrag.clientX, event.clientY - nodeDrag.clientY) < DRAG_THRESHOLD_PX) return
@@ -144,7 +160,7 @@ export function RelationshipsEditor({ meta, pane, layoutMode, readOnlyPreview = 
     }
     if (!panRef.current || panRef.current.pointerId !== event.pointerId) return
     setOffset({ x: panRef.current.offsetX + event.clientX - panRef.current.x, y: panRef.current.offsetY + event.clientY - panRef.current.y })
-  }, [config.nodes, readOnlyPreview, scale] /*Inputs for handleRelationshipsPointerMove*/)
+  }, [activeTool, config.nodes, readOnlyPreview, scale] /*Inputs for handleRelationshipsPointerMove*/)
 
   const handleNodeClick = useCallback(/* handleRelationshipsNodeClick */ (index: number) => {
     const node = config.nodes[index]
@@ -153,10 +169,25 @@ export function RelationshipsEditor({ meta, pane, layoutMode, readOnlyPreview = 
         setNotice('Select a different character to link.')
         return
       }
+      if (linkTemplate) {
+        updateConfig({ ...config, edges: [...config.edges, { from: linkSourceId, to: node.id, ...linkTemplate }] })
+        setLinkSourceId(null)
+        return
+      }
       setEdgeDialog({ mode: 'add', edgeIndex: null, edge: { from: linkSourceId, to: node.id, label: '', color: DEFAULT_EDGE_COLOR, style: 'solid', direction: 'forward' } })
       setLinkSourceId(null)
       return
     }
+    if (activeTool === 'add-relationship') {
+      if (!linkTemplate) {
+        setNotice('Select a relationship type from the toolbar.')
+        return
+      }
+      setLinkSourceId(node.id)
+      setNotice(`From ${node.label}: click another character.`)
+      return
+    }
+    if (activeTool === 'remove-relationship') return
     if (!node.destinationTag) {
       setNotice(`No character tag set for ${node.label}.`)
       return
@@ -167,13 +198,13 @@ export function RelationshipsEditor({ meta, pane, layoutMode, readOnlyPreview = 
       return
     }
     onNavigate(destination, getTargetPane(layoutMode, pane))
-  }, [config.nodes, layoutMode, linkSourceId, onNavigate, pane, tagIndex] /*Inputs for handleRelationshipsNodeClick*/)
+  }, [activeTool, config, layoutMode, linkSourceId, linkTemplate, onNavigate, pane, tagIndex, updateConfig] /*Inputs for handleRelationshipsNodeClick*/)
 
   const handlePointerUp = useCallback(/* handleRelationshipsPointerUp */ (event: PointerEvent) => {
     const nodeDrag = nodeDragRef.current
     if (nodeDrag && nodeDrag.pointerId === event.pointerId) {
       nodeDragRef.current = null
-      if (nodeDrag.moved) {
+      if (nodeDrag.moved && activeTool === 'select') {
         const point = {
           x: clampChartValue(nodeDrag.nodeX + (event.clientX - nodeDrag.clientX) / scale, 0, RELATIONSHIPS_STAGE_WIDTH),
           y: clampChartValue(nodeDrag.nodeY + (event.clientY - nodeDrag.clientY) / scale, 0, RELATIONSHIPS_STAGE_HEIGHT),
@@ -189,7 +220,7 @@ export function RelationshipsEditor({ meta, pane, layoutMode, readOnlyPreview = 
       return
     }
     if (panRef.current?.pointerId === event.pointerId) panRef.current = null
-  }, [config, handleNodeClick, readOnlyPreview, scale, updateConfig] /*Inputs for handleRelationshipsPointerUp*/)
+  }, [activeTool, config, handleNodeClick, readOnlyPreview, scale, updateConfig] /*Inputs for handleRelationshipsPointerUp*/)
 
   const saveNodeFromDialog = useCallback(/* saveRelationshipsNodeFromDialog */ (nextNode: RelationshipNode) => {
     if (nodeDialog?.mode === 'add') {
@@ -203,6 +234,15 @@ export function RelationshipsEditor({ meta, pane, layoutMode, readOnlyPreview = 
   }, [config, nodeDialog, updateConfig] /*Inputs for saveRelationshipsNodeFromDialog*/)
 
   const saveEdgeFromDialog = useCallback(/* saveRelationshipsEdgeFromDialog */ (nextEdge: RelationshipEdge, presetToAdd: RelationshipEdgePreset | null) => {
+    if (edgeDialog?.mode === 'template') {
+      setLinkTemplate({ label: nextEdge.label, color: nextEdge.color, style: nextEdge.style, direction: nextEdge.direction })
+      if (presetToAdd) {
+        updateConfig({ ...config, edgePresets: mergePreset(config.edgePresets, presetToAdd) })
+      }
+      setEdgeDialog(null)
+      setActiveTool('add-relationship')
+      return
+    }
     const edges = edgeDialog?.mode === 'add'
       ? [...config.edges, nextEdge]
       : config.edges.map((edge, index) => index === edgeDialog?.edgeIndex ? nextEdge : edge)
@@ -210,6 +250,30 @@ export function RelationshipsEditor({ meta, pane, layoutMode, readOnlyPreview = 
     setEdgeDialog(null)
     setContextMenu(null)
   }, [config, edgeDialog, updateConfig] /*Inputs for saveRelationshipsEdgeFromDialog*/)
+
+  const handleToolChange = useCallback(/* handleRelationshipsToolChange */ (tool: RelationshipsEditorTool) => {
+    setActiveTool(tool)
+    setLinkSourceId(null)
+  }, [] /*Inputs for handleRelationshipsToolChange - stable*/)
+
+  const handlePresetSelect = useCallback(/* handleRelationshipsPresetSelect */ (preset: RelationshipEdgePreset) => {
+    setLinkTemplate(presetToTemplate(preset))
+    setLinkSourceId(null)
+  }, [] /*Inputs for handleRelationshipsPresetSelect - stable*/)
+
+  const handleCustomType = useCallback(/* handleRelationshipsCustomType */ () => {
+    setEdgeDialog({
+      mode: 'template',
+      edgeIndex: null,
+      edge: linkTemplate
+        ? { from: '', to: '', ...linkTemplate }
+        : { from: '', to: '', label: '', color: DEFAULT_EDGE_COLOR, style: 'solid', direction: 'forward' },
+    })
+  }, [linkTemplate] /*Inputs for handleRelationshipsCustomType*/)
+
+  const handleEdgeRemove = useCallback(/* handleRelationshipsEdgeRemove */ (index: number) => {
+    updateConfig({ ...config, edges: config.edges.filter((_, edgeIndex) => edgeIndex !== index) })
+  }, [config, updateConfig] /*Inputs for handleRelationshipsEdgeRemove*/)
 
   const deleteNode = useCallback(/* deleteRelationshipsNode */ (index: number) => {
     const node = config.nodes[index]
@@ -249,13 +313,22 @@ export function RelationshipsEditor({ meta, pane, layoutMode, readOnlyPreview = 
 
   return (
     <div class="relationships-editor">
+      <RelationshipsEditorToolbar
+        activeTool={activeTool}
+        presets={config.edgePresets}
+        linkTemplate={linkTemplate}
+        readOnly={readOnlyPreview}
+        onToolChange={handleToolChange}
+        onPresetSelect={handlePresetSelect}
+        onCustomType={handleCustomType}
+      />
       <div class="relationships-editor__hud">
         <span>Relationships</span>
-        <span>{linkSourceId ? 'Click a character to link · Esc to cancel' : `${Math.round(scale * 100)}%`}</span>
+        <span>{getHudSecondaryText(scale, activeTool, linkSourceId, linkTemplate)}</span>
       </div>
       <div
         ref={viewportRef}
-        class={`relationships-editor__viewport${readOnlyPreview ? ' is-readonly' : ''}${linkSourceId ? ' is-linking' : ''}`}
+        class={`relationships-editor__viewport${readOnlyPreview ? ' is-readonly' : ''}${linkSourceId || (activeTool === 'add-relationship' && linkTemplate) ? ' is-linking' : ''}${activeTool === 'remove-relationship' ? ' is-removing' : ''}`}
         onWheel={(event) => handleWheel(event as WheelEvent)}
         onPointerDown={(event) => handlePointerDown(event as PointerEvent)}
         onPointerMove={(event) => handlePointerMove(event as PointerEvent)}
@@ -276,6 +349,7 @@ export function RelationshipsEditor({ meta, pane, layoutMode, readOnlyPreview = 
               if (readOnlyPreview) return
               setContextMenu({ clientX: event.clientX, clientY: event.clientY, target: { kind: 'edge', index } })
             }}
+            onEdgeClick={activeTool === 'remove-relationship' && !readOnlyPreview ? (index) => handleEdgeRemove(index) : undefined}
           />
           <RelationshipsNodesLayer
             nodes={config.nodes}
@@ -315,8 +389,9 @@ export function RelationshipsEditor({ meta, pane, layoutMode, readOnlyPreview = 
         edge={edgeDialog?.edge ?? null}
         nodes={config.nodes}
         presets={config.edgePresets}
-        title={edgeDialog?.mode === 'edit' ? 'Edit relationship' : 'Add relationship'}
+        title={edgeDialog?.mode === 'edit' ? 'Edit relationship' : edgeDialog?.mode === 'template' ? 'Custom relationship type' : 'Add relationship'}
         lockedFrom={edgeDialog?.mode === 'add'}
+        purpose={edgeDialog?.mode === 'template' ? 'template' : 'edge'}
         readOnly={readOnlyPreview}
         onClose={() => { setEdgeDialog(null); setContextMenu(null) }}
         onSave={saveEdgeFromDialog}

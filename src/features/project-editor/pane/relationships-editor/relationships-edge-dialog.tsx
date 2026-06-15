@@ -11,6 +11,7 @@ interface RelationshipsEdgeDialogProps {
   presets: RelationshipEdgePreset[]
   title: string
   lockedFrom?: boolean
+  purpose?: 'edge' | 'template'
   readOnly?: boolean
   onClose: () => void
   onSave: (edge: RelationshipEdge, presetToAdd: RelationshipEdgePreset | null) => void
@@ -24,7 +25,8 @@ function getNodeLabel(nodes: RelationshipNode[], id: string): string {
   return nodes.find((node) => node.id === id)?.label ?? id
 }
 
-export function RelationshipsEdgeDialog({ open, edge, nodes, presets, title, lockedFrom = false, readOnly = false, onClose, onSave }: RelationshipsEdgeDialogProps) {
+export function RelationshipsEdgeDialog({ open, edge, nodes, presets, title, lockedFrom = false, purpose = 'edge', readOnly = false, onClose, onSave }: RelationshipsEdgeDialogProps) {
+  const isTemplate = purpose === 'template'
   const [draft, setDraft] = useState<RelationshipEdge>(createDraft(edge))
   const [saveAsPreset, setSaveAsPreset] = useState(false)
   const [presetName, setPresetName] = useState('')
@@ -63,12 +65,12 @@ export function RelationshipsEdgeDialog({ open, edge, nodes, presets, title, loc
 
   const handleSave = useCallback(/* handleRelationshipsEdgeSave */ () => {
     if (readOnly) return
-    if (!draft.from || !draft.to || draft.from === draft.to) return
+    if (!isTemplate && (!draft.from || !draft.to || draft.from === draft.to)) return
     const presetToAdd = saveAsPreset && presetName.trim()
       ? { name: presetName.trim(), color: draft.color, style: draft.style, direction: draft.direction }
       : null
     onSave({ ...draft, label: draft.label.trim() }, presetToAdd)
-  }, [draft, onSave, presetName, readOnly, saveAsPreset] /*Inputs for handleRelationshipsEdgeSave*/)
+  }, [draft, isTemplate, onSave, presetName, readOnly, saveAsPreset] /*Inputs for handleRelationshipsEdgeSave*/)
 
   if (!open) return null
 
@@ -76,7 +78,7 @@ export function RelationshipsEdgeDialog({ open, edge, nodes, presets, title, loc
     <div class="sidebar-create-modal" onClick={onClose}>
       <div class="sidebar-create-dialog" role="dialog" aria-modal="true" aria-label={title} onClick={(event) => event.stopPropagation()}>
         <p class="sidebar-create-dialog__title">{title}</p>
-        <p class="sidebar-create-dialog__hint">From: {getNodeLabel(nodes, draft.from)}</p>
+        {!isTemplate ? <p class="sidebar-create-dialog__hint">From: {getNodeLabel(nodes, draft.from)}</p> : null}
         {presets.length > 0 ? (
           <label class="sidebar-create-dialog__field">
             <span>Relationship preset</span>
@@ -88,17 +90,19 @@ export function RelationshipsEdgeDialog({ open, edge, nodes, presets, title, loc
             </select>
           </label>
         ) : null}
+        {!isTemplate ? (
+          <label class="sidebar-create-dialog__field">
+            <span>To</span>
+            <select value={draft.to} disabled={readOnly} onChange={(event) => setDraft((prev) => ({ ...prev, to: event.currentTarget.value }))}>
+              <option value="">Select a character...</option>
+              {nodes.filter((node) => node.id !== draft.from || !lockedFrom).map((node) => (
+                <option key={node.id} value={node.id} disabled={node.id === draft.from}>{node.label}</option>
+              ))}
+            </select>
+          </label>
+        ) : null}
         <label class="sidebar-create-dialog__field">
-          <span>To</span>
-          <select value={draft.to} disabled={readOnly} onChange={(event) => setDraft((prev) => ({ ...prev, to: event.currentTarget.value }))}>
-            <option value="">Select a character...</option>
-            {nodes.filter((node) => node.id !== draft.from || !lockedFrom).map((node) => (
-              <option key={node.id} value={node.id} disabled={node.id === draft.from}>{node.label}</option>
-            ))}
-          </select>
-        </label>
-        <label class="sidebar-create-dialog__field">
-          <span>Label (optional)</span>
+          <span>{isTemplate ? 'Label' : 'Label (optional)'}</span>
           <input type="text" value={draft.label} placeholder="mentor of" disabled={readOnly} onInput={(event) => setDraft((prev) => ({ ...prev, label: event.currentTarget.value }))} />
         </label>
         <label class="sidebar-create-dialog__field">
@@ -133,8 +137,8 @@ export function RelationshipsEdgeDialog({ open, edge, nodes, presets, title, loc
         ) : null}
         <div class="sidebar-create-dialog__actions">
           <button type="button" class="editor-button editor-button--secondary editor-button--inline" onClick={onClose}>Cancel</button>
-          <button type="button" class="editor-button editor-button--primary editor-button--inline" onClick={handleSave} disabled={readOnly || !draft.from || !draft.to || draft.from === draft.to || (saveAsPreset && !presetName.trim())}>
-            Save relationship
+          <button type="button" class="editor-button editor-button--primary editor-button--inline" onClick={handleSave} disabled={readOnly || (!isTemplate && (!draft.from || !draft.to || draft.from === draft.to)) || (saveAsPreset && !presetName.trim())}>
+            {isTemplate ? 'Use this type' : 'Save relationship'}
           </button>
         </div>
       </div>

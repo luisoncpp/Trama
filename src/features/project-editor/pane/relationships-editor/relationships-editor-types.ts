@@ -28,6 +28,15 @@ export interface RelationshipEdgePreset {
   direction: RelationshipEdgeDirection
 }
 
+export interface RelationshipLinkTemplate {
+  label: string
+  color: string
+  style: RelationshipEdgeStyle
+  direction: RelationshipEdgeDirection
+}
+
+export type RelationshipsEditorTool = 'select' | 'add-relationship' | 'remove-relationship'
+
 export interface RelationshipsConfig {
   nodes: RelationshipNode[]
   edges: RelationshipEdge[]

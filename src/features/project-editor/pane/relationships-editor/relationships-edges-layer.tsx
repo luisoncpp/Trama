@@ -5,6 +5,7 @@ interface RelationshipsEdgesLayerProps {
   nodes: RelationshipNode[]
   edges: RelationshipEdge[]
   onEdgeContextMenu: (index: number, event: MouseEvent) => void
+  onEdgeClick?: (index: number, event: MouseEvent) => void
 }
 
 interface RelationshipsEdgeGroupProps {
@@ -13,6 +14,7 @@ interface RelationshipsEdgeGroupProps {
   to: RelationshipNode
   parallelIndex: number
   onContextMenu: (event: MouseEvent) => void
+  onClick?: (event: MouseEvent) => void
   showMarkers: boolean
 }
 
@@ -21,13 +23,14 @@ interface RelationshipsEdgesSvgProps {
   edges: RelationshipEdge[]
   showMarkers: boolean
   onEdgeContextMenu?: (index: number, event: MouseEvent) => void
+  onEdgeClick?: (index: number, event: MouseEvent) => void
 }
 
 function buildArrowMarkerId(color: string): string {
   return `relationships-arrow-${color.replace('#', '')}`
 }
 
-function RelationshipsEdgeGroup({ edge, from, to, parallelIndex, onContextMenu, showMarkers }: RelationshipsEdgeGroupProps) {
+function RelationshipsEdgeGroup({ edge, from, to, parallelIndex, onContextMenu, onClick, showMarkers }: RelationshipsEdgeGroupProps) {
   const geometry = buildEdgeGeometry(from, to, parallelIndex)
   const markerUrl = `url(#${buildArrowMarkerId(edge.color)})`
   return (
@@ -48,7 +51,15 @@ function RelationshipsEdgeGroup({ edge, from, to, parallelIndex, onContextMenu, 
         />
       ) : (
         <>
-          <path class="relationships-edge__hit" d={geometry.path} />
+          <path
+            class="relationships-edge__hit"
+            d={geometry.path}
+            onClick={onClick ? (event) => {
+              event.preventDefault()
+              event.stopPropagation()
+              onClick(event as unknown as MouseEvent)
+            } : undefined}
+          />
           <path
             class="relationships-edge__line"
             d={geometry.path}
@@ -66,11 +77,30 @@ function RelationshipsEdgeGroup({ edge, from, to, parallelIndex, onContextMenu, 
   )
 }
 
-function RelationshipsEdgesSvg({ nodes, edges, showMarkers, onEdgeContextMenu }: RelationshipsEdgesSvgProps) {
+function RelationshipsEdgeMarkersDefs({ edges }: { edges: RelationshipEdge[] }) {
+  const arrowColors = [...new Set(edges.filter((edge) => edge.direction !== 'none').map((edge) => edge.color))]
+  return (
+    <defs>
+      {arrowColors.map((color) => (
+        <marker
+          key={color}
+          id={buildArrowMarkerId(color)}
+          viewBox="0 0 10 10"
+          refX="8"
+          refY="5"
+          markerWidth="7"
+          markerHeight="7"
+          orient="auto-start-reverse"
+        >
+          <path d="M 0 0 L 10 5 L 0 10 z" fill={color} />
+        </marker>
+      ))}
+    </defs>
+  )
+}
+
+function RelationshipsEdgesSvg({ nodes, edges, showMarkers, onEdgeContextMenu, onEdgeClick }: RelationshipsEdgesSvgProps) {
   const nodesById = new Map(nodes.map((node) => [node.id, node]))
-  const arrowColors = showMarkers
-    ? [...new Set(edges.filter((edge) => edge.direction !== 'none').map((edge) => edge.color))]
-    : []
 
   return (
     <svg
@@ -80,24 +110,7 @@ function RelationshipsEdgesSvg({ nodes, edges, showMarkers, onEdgeContextMenu }:
       viewBox={`0 0 ${RELATIONSHIPS_STAGE_WIDTH} ${RELATIONSHIPS_STAGE_HEIGHT}`}
       xmlns="http://www.w3.org/2000/svg"
     >
-      {showMarkers ? (
-        <defs>
-          {arrowColors.map((color) => (
-            <marker
-              key={color}
-              id={buildArrowMarkerId(color)}
-              viewBox="0 0 10 10"
-              refX="8"
-              refY="5"
-              markerWidth="7"
-              markerHeight="7"
-              orient="auto-start-reverse"
-            >
-              <path d="M 0 0 L 10 5 L 0 10 z" fill={color} />
-            </marker>
-          ))}
-        </defs>
-      ) : null}
+      {showMarkers ? <RelationshipsEdgeMarkersDefs edges={edges} /> : null}
       {edges.map((edge, index) => {
         const from = nodesById.get(edge.from)
         const to = nodesById.get(edge.to)
@@ -111,6 +124,7 @@ function RelationshipsEdgesSvg({ nodes, edges, showMarkers, onEdgeContextMenu }:
             parallelIndex={getParallelEdgeIndex(edges, index)}
             showMarkers={showMarkers}
             onContextMenu={(event) => onEdgeContextMenu?.(index, event)}
+            onClick={onEdgeClick ? (event) => onEdgeClick(index, event) : undefined}
           />
         )
       })}
@@ -118,8 +132,8 @@ function RelationshipsEdgesSvg({ nodes, edges, showMarkers, onEdgeContextMenu }:
   )
 }
 
-export function RelationshipsEdgesLayer({ nodes, edges, onEdgeContextMenu }: RelationshipsEdgesLayerProps) {
-  return <RelationshipsEdgesSvg nodes={nodes} edges={edges} showMarkers={false} onEdgeContextMenu={onEdgeContextMenu} />
+export function RelationshipsEdgesLayer({ nodes, edges, onEdgeContextMenu, onEdgeClick }: RelationshipsEdgesLayerProps) {
+  return <RelationshipsEdgesSvg nodes={nodes} edges={edges} showMarkers={false} onEdgeContextMenu={onEdgeContextMenu} onEdgeClick={onEdgeClick} />
 }
 
 export function RelationshipsEdgeMarkersLayer({ nodes, edges }: Pick<RelationshipsEdgesLayerProps, 'nodes' | 'edges'>) {

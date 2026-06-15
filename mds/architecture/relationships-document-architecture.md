@@ -54,13 +54,12 @@ Same contract as maps: `EditorPanel` switches on `editorMeta.type === 'relations
 
 ## Editor Interactions
 
-- **Pan/zoom**: identical to the map editor (drag background, wheel zoom 0.25x–4x). Never marks the pane dirty.
-- **Add character**: right-click empty stage → `Add a character` → node dialog (name, optional tag, color, description). Node `id` is a uniqueness-suffixed slug of the label.
-- **Move character**: left-drag a node (4px threshold distinguishes drag from click); position commits to meta on pointer-up.
-- **Navigate**: plain click on a node resolves `destinationTag` through the tag index and opens the document (secondary pane in split mode), exactly like map markers. Missing/unset tags show a transient notice.
-- **Add relationship**: right-click a node → `Add relationship` enters linking mode (crosshair cursor, HUD hint); clicking a second node opens the edge dialog with from/to prefilled. Escape or clicking the background cancels.
-- **Edit/delete**: right-click a node or an edge line for context-menu edit/delete. Deleting a node also deletes its edges.
-- **Presets**: the edge dialog offers an `Apply a preset...` select (fills color/style/direction and default label) and a `Save as reusable preset` checkbox that stores the current edge styling under a name (same-name presets are replaced).
+- **Toolbar** (`relationships-editor-toolbar.tsx`): three tools — **Select / Move** (default), **Add relationship**, **Remove relationship**. Hidden in read-only preview.
+- **Select / Move**: pan/zoom (drag background, wheel zoom 0.25x–4x, never marks dirty); left-drag a node (4px threshold) commits position on pointer-up; plain click navigates via `destinationTag` like map markers.
+- **Add relationship**: sub-toolbar lists `edgePresets` plus **Custom…** (opens the edge dialog in template mode to define color/style/direction/label and optionally save a new preset). After a type is chosen, two node clicks create an edge immediately (no dialog); the tool stays active for repeated additions. Escape or background click cancels a pending first node only.
+- **Remove relationship**: click an edge line/arrow to delete it; characters remain.
+- **Context menu** (unchanged): right-click stage → add character; node → add relationship (legacy two-click flow opens edge dialog if no toolbar template), edit/delete; edge → edit/delete.
+- **Presets**: edge dialog still offers preset apply/save for context-menu and edit flows; toolbar preset buttons mirror `edgePresets` styling.
 
 ## Rendering
 
@@ -75,7 +74,8 @@ Same contract as maps: `EditorPanel` switches on `editorMeta.type === 'relations
 | File | Role |
 |------|------|
 | `src/features/project-editor/pane/editor-panel.tsx` | Document-type switch including `relationships` |
-| `src/features/project-editor/pane/relationships-editor/relationships-editor.tsx` | Pan/zoom, node drag, linking mode, context menus, dialog orchestration |
+| `src/features/project-editor/pane/relationships-editor/relationships-editor.tsx` | Pan/zoom, node drag, toolbar tool modes, linking mode, context menus, dialog orchestration |
+| `src/features/project-editor/pane/relationships-editor/relationships-editor-toolbar.tsx` | Select/Move, Add relationship (preset sub-toolbar), Remove relationship tool buttons |
 | `src/features/project-editor/pane/relationships-editor/relationships-editor-types.ts` | Node/edge/preset/config interfaces |
 | `src/features/project-editor/pane/relationships-editor/relationships-config-serialization.ts` | `relationshipsConfig` normalization and meta write-back |
 | `src/features/project-editor/pane/relationships-editor/relationships-editor-helpers.ts` | Node id slugs, edge geometry, dash arrays, stage constants; re-exports map clamping/tag helpers |

@@ -358,6 +358,15 @@ Mandatory doc navigation for new chats: start with `mds/START-HERE.md` — it pr
   - `pane/pane-workspace-snapshot.ts` — `PaneSnapshotTracker` class extracted from `PaneWorkspace`: owns the last-saved-content map, provides `get`/`set`, exact-match snapshot comparison against external content, and a `destroy` lifecycle for externally-owned maps.
   - `pane/map-editor/map-editor-types.ts` — Shared types extracted from `map-editor-helpers.ts`: `MapMarker`, `MapConfig`, `MapAssetResult`.
   - `pane/map-editor/map-config-serialization.ts` — Config serialization extracted from `map-editor-helpers.ts`: `getMapConfig`, `withMapConfig`, plus private `normalizeMarker` and `isRecord`.
+  - `pane/relationships-editor/relationships-editor.tsx` — Relationships chart editor: pan/zoom, toolbar tool modes (select, add, remove), node drag, linking, context menus, dialog orchestration.
+  - `pane/relationships-editor/relationships-editor-toolbar.tsx` — Toolbar with Select/Move, Add relationship (preset sub-toolbar + custom type), and Remove relationship tools.
+  - `pane/relationships-editor/relationships-editor-types.ts` — Node/edge/preset/config interfaces plus editor tool types.
+  - `pane/relationships-editor/relationships-config-serialization.ts` — `relationshipsConfig` normalization and meta write-back.
+  - `pane/relationships-editor/relationships-editor-helpers.ts` — Node id slugs, edge geometry, dash arrays, stage constants.
+  - `pane/relationships-editor/relationships-nodes-layer.tsx` — Node pill overlay and tooltips.
+  - `pane/relationships-editor/relationships-edges-layer.tsx` — SVG edge rendering with arrow markers and click-to-remove hit targets.
+  - `pane/relationships-editor/relationships-node-dialog.tsx` — Character create/edit modal.
+  - `pane/relationships-editor/relationships-edge-dialog.tsx` — Relationship create/edit modal with preset apply/save; template mode for custom toolbar types.
   - `pane/pane-navigation.ts` — `PaneNavigation` class extracted from `PaneWorkspace`: owns per-pane session history stack helpers (`recordPaneNavigation`, `getPreviousPathInPaneHistory`, `getNextPathInPaneHistory`, `stepPaneNavigationHistory`, `clearNavigationHistory`).
   - `pane/pane-navigation-state.ts` — pure helpers for navigation history state: `getEmptyNavigationHistory`, `getHistoryForPane`, `createNavigationHistoryStore`.
   - `pane/pane-editor.tsx` — `PaneEditor` component extracted from `workspace-editor-panels.tsx`.
