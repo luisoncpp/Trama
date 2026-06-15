@@ -1471,70 +1471,216 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 6px;
-  padding: 8px 12px;
+  gap: 10px;
+  padding: 10px 14px;
   border-bottom: 1px solid var(--border);
-  background: color-mix(in oklab, var(--surface) 94%, var(--surface-elevated) 6%);
+  background:
+    radial-gradient(circle at center, color-mix(in oklab, var(--border-strong) 28%, transparent) 0.65px, transparent 0.65px),
+    linear-gradient(180deg, color-mix(in oklab, var(--panel-bg) 88%, var(--canvas) 12%), var(--panel-bg));
+  background-size: 14px 14px, auto;
+  box-shadow: inset 0 1px 0 color-mix(in oklab, var(--text-main) 4%, transparent);
 }
 
-.relationships-editor__tool-group {
-  display: flex;
-  flex-wrap: wrap;
+.relationships-editor__tool-strip {
+  display: inline-flex;
+  align-items: stretch;
+  gap: 2px;
+  padding: 3px;
+  border: 1px solid var(--border-strong);
+  border-radius: 11px;
+  background: color-mix(in oklab, var(--surface-input-bg) 72%, var(--panel-bg) 28%);
+  box-shadow: inset 0 1px 0 color-mix(in oklab, var(--text-main) 5%, transparent);
+}
+
+.relationships-editor__tool {
+  display: inline-flex;
   align-items: center;
   gap: 6px;
+  min-height: 30px;
+  padding: 0 11px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition:
+    background 140ms ease,
+    border-color 140ms ease,
+    color 140ms ease,
+    box-shadow 140ms ease,
+    transform 140ms ease;
 }
 
-.relationships-editor__tool,
-.relationships-editor__preset {
-  border: 1px solid var(--border-strong);
-  border-radius: 8px;
-  background: var(--surface-input-bg);
-  color: var(--text-main);
-  font-size: 0.74rem;
-  padding: 5px 10px;
-  cursor: pointer;
+.relationships-editor__tool-icon {
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+  opacity: 0.82;
+  transition: opacity 140ms ease, transform 140ms ease;
+}
+
+.relationships-editor__tool-label {
+  line-height: 1;
 }
 
 .relationships-editor__tool:hover:not(:disabled),
-.relationships-editor__preset:hover:not(:disabled),
-.relationships-editor__tool:focus-visible,
-.relationships-editor__preset:focus-visible {
-  border-color: var(--accent-border-strong);
-  background: var(--surface-accent-strong-bg);
+.relationships-editor__tool:focus-visible {
+  color: var(--text-main);
+  background: color-mix(in oklab, var(--surface-hover-bg) 55%, transparent);
+  border-color: color-mix(in oklab, var(--accent-border) 35%, transparent);
 }
 
-.relationships-editor__tool.is-active,
-.relationships-editor__preset.is-active {
-  border-color: var(--accent-border-strong);
-  background: var(--surface-accent-strong-bg);
+.relationships-editor__tool:hover:not(:disabled) .relationships-editor__tool-icon,
+.relationships-editor__tool:focus-visible .relationships-editor__tool-icon {
+  opacity: 1;
+}
+
+.relationships-editor__tool.is-active {
   color: var(--accent-strong);
+  background: color-mix(in oklab, var(--surface-accent-strong-bg) 88%, var(--accent) 12%);
+  border-color: var(--accent-border);
+  box-shadow:
+    inset 0 0 0 1px color-mix(in oklab, var(--accent) 12%, transparent),
+    0 1px 0 color-mix(in oklab, var(--text-main) 6%, transparent);
+}
+
+.relationships-editor__tool.is-active .relationships-editor__tool-icon {
+  opacity: 1;
+  transform: scale(1.04);
+}
+
+.relationships-editor__tool--remove.is-active {
+  color: var(--warning-text);
+  background: color-mix(in oklab, var(--warning-soft) 72%, var(--surface-accent-strong-bg) 28%);
+  border-color: var(--warning-border);
+  box-shadow:
+    inset 0 0 0 1px color-mix(in oklab, var(--warning-text) 10%, transparent),
+    0 1px 0 color-mix(in oklab, var(--text-main) 6%, transparent);
 }
 
 .relationships-editor__subtoolbar {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 4px;
-  padding-left: 4px;
-  border-left: 1px solid var(--border);
+  gap: 8px;
+  min-width: 0;
+  padding: 4px 4px 4px 12px;
+  border-left: 1px solid var(--border-strong);
+  animation: relationships-subtoolbar-in 180ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes relationships-subtoolbar-in {
+  from {
+    opacity: 0;
+    transform: translateX(-6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.relationships-editor__subtoolbar-label {
+  flex-shrink: 0;
+  color: var(--text-dim);
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.relationships-editor__preset-strip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
 }
 
 .relationships-editor__preset {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 7px;
+  min-height: 28px;
+  padding: 0 10px 0 6px;
+  border: 1px solid var(--border-strong);
+  border-radius: 999px;
+  background: color-mix(in oklab, var(--context-menu-bg) 90%, transparent);
+  color: var(--text-main);
+  font-size: 0.72rem;
+  cursor: pointer;
+  box-shadow: inset 0 1px 0 color-mix(in oklab, var(--text-main) 4%, transparent);
+  transition:
+    border-color 140ms ease,
+    background 140ms ease,
+    box-shadow 140ms ease,
+    transform 140ms ease;
+}
+
+.relationships-editor__preset:hover:not(:disabled),
+.relationships-editor__preset:focus-visible {
+  border-color: color-mix(in oklab, var(--preset-color, var(--accent-border)) 55%, var(--border-strong) 45%);
+  background: color-mix(in oklab, var(--surface-hover-bg) 40%, var(--context-menu-bg) 60%);
+  transform: translateY(-1px);
+}
+
+.relationships-editor__preset.is-active {
+  border-color: color-mix(in oklab, var(--preset-color, var(--accent-border-strong)) 70%, var(--border-strong) 30%);
+  background: color-mix(in oklab, var(--preset-color, var(--accent)) 14%, var(--context-menu-bg) 86%);
+  box-shadow:
+    0 0 0 1px color-mix(in oklab, var(--preset-color, var(--accent)) 22%, transparent),
+    inset 0 1px 0 color-mix(in oklab, var(--text-main) 5%, transparent);
+}
+
+.relationships-editor__preset-copy {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+}
+
+.relationships-editor__preset-name {
+  line-height: 1.1;
+  white-space: nowrap;
+}
+
+.relationships-editor__preset-direction {
+  color: var(--text-dim);
+  font-size: 0.64rem;
+  line-height: 1;
+}
+
+.relationships-editor__preset.is-active .relationships-editor__preset-direction {
+  color: color-mix(in oklab, var(--preset-color, var(--accent-strong)) 55%, var(--text-muted) 45%);
 }
 
 .relationships-editor__preset-swatch {
-  width: 10px;
-  height: 10px;
+  width: 12px;
+  height: 12px;
   border-radius: 999px;
   flex-shrink: 0;
-  box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--text-main) 18%, transparent);
+  box-shadow:
+    inset 0 0 0 1px color-mix(in oklab, var(--text-main) 16%, transparent),
+    0 0 0 2px color-mix(in oklab, var(--preset-color, currentColor) 18%, transparent);
 }
 
-.relationships-editor__preset--custom {
+.relationships-editor__preset-swatch--custom {
+  background:
+    conic-gradient(from 45deg, #e74c3c, #f39c12, #2ecc71, #3498db, #9b59b6, #e74c3c);
+  box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--text-main) 16%, transparent);
+}
+
+.relationships-editor__preset--custom .relationships-editor__preset-name {
   font-style: italic;
+  color: var(--text-muted);
+}
+
+.relationships-editor__preset--custom.is-active .relationships-editor__preset-name {
+  color: var(--text-main);
 }
 
 .relationships-editor__viewport {
