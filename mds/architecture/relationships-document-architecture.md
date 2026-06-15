@@ -14,7 +14,7 @@ name: Character Relationships
 relationshipsConfig:
   nodes:
     - id: aldren            # unique slug, generated from the label on creation
-      x: 600                # stage coordinates (fixed 2400x1600 logical canvas)
+      x: 600                # stage coordinates (-2400..2400 x -1600..1600 logical canvas)
       y: 300
       label: "Aldren"
       destinationTag: "aldren"   # optional wiki tag; click navigates like map markers
@@ -35,6 +35,7 @@ relationshipsConfig:
 ```
 
 - Edges reference nodes by `id`, not by tag, so a node can exist without a tag and tags can change freely.
+- `destinationTag` is optional on nodes. When set, plain click in Select mode navigates to the tagged lore file (same contract as map markers).
 - `getRelationshipsConfig()` drops edges whose endpoints are missing or identical, and normalizes unknown styles/directions/colors to defaults.
 - New documents are seeded with four default presets (Family, Allies, Enemies, Romance).
 
@@ -52,14 +53,44 @@ relationshipsConfig:
 
 Same contract as maps: `EditorPanel` switches on `editorMeta.type === 'relationships'` and renders `RelationshipsEditor`, which edits **meta only** via `onMetaChange(...)` → `updateEditorMeta(...)`. The markdown body is untouched; the existing pane save/revert flow persists frontmatter.
 
+### Add character with Auto tag
+
+End-to-end flow when the user right-clicks the stage and chooses **Add a character**:
+
+```
+Stage context menu (relationships-editor.tsx)
+         │
+         ▼
+RelationshipsNodeDialog (mode: add, autoTag: true)
+  live preview + save via resolveAutoNodeTag(label, tagIndex)
+         │
+         ▼
+saveNodeFromDialog → buildNodeId(label) + destinationTag → updateConfig
+         │
+         ▼
+withRelationshipsConfig(meta, config) → pane save/revert persists frontmatter
+```
+
+1. `RelationshipsEditor` receives `tagIndex` from `useTagIndex` (same renderer cache as rich-editor wiki links).
+2. `RelationshipsNodeDialog` opens in `mode: 'add'` with **Auto** checked. The tag field is read-only and shows the resolved tag as the user types the name.
+3. On save, when **Auto** is on, `resolveAutoNodeTag(label, tagIndex)` normalizes the name (`trim` → `toLowerCase` → strip leading `#`) and returns that string only if it exists as a key in `tagIndex`; otherwise returns `''`.
+4. When **Auto** is off, the user-edited tag field is saved as-is (same as edit mode).
+5. `buildNodeId(label, existingIds)` assigns the node `id` independently — it slugifies the label and does **not** derive from `destinationTag`. See `mds/lessons-learned/relationships-auto-tag-uses-label-not-slug.md`.
+6. Edit character dialog has no **Auto** checkbox; `destinationTag` is always manual.
+
+**Invariants:**
+- Auto tag lookup uses the same normalization as `resolveNodeDestination` / map markers, not the node-id slug algorithm.
+- Auto is add-only UI state; it is not persisted in frontmatter.
+- Missing tag index (`null` / empty) yields no auto tag — the node is saved with `destinationTag: ''`.
+
 ## Editor Interactions
 
 - **Toolbar** (`relationships-editor-toolbar.tsx`): three tools — **Select / Move** (default), **Add relationship**, **Remove relationship**. Hidden in read-only preview.
 - **Select / Move**: pan/zoom (drag background, wheel zoom 0.25x–4x, never marks dirty); left-drag a node (4px threshold) commits position on pointer-up; plain click navigates via `destinationTag` like map markers.
 - **Add relationship**: sub-toolbar lists `edgePresets` plus **Custom…** (opens the edge dialog in template mode to define color/style/direction/label and optionally save a new preset). After a type is chosen, two node clicks create an edge immediately (no dialog); the tool stays active for repeated additions. Escape or background click cancels a pending first node only.
 - **Remove relationship**: click an edge line/arrow to delete it; characters remain.
-- **Context menu** (unchanged): right-click stage → add character; node → add relationship (legacy two-click flow opens edge dialog if no toolbar template), edit/delete; edge → edit/delete.
-- **Add character dialog**: **Auto** checkbox (on by default) matches the character name against the project tag index (case-insensitive, same normalization as map markers); when a tag exists it is stored as `destinationTag`, otherwise the node is saved with no tag. Uncheck **Auto** to set the tag manually.
+- **Context menu**: right-click stage → add character; node → add relationship (legacy two-click flow opens edge dialog if no toolbar template), edit/delete; edge → edit/delete.
+- **Add character dialog** (`relationships-node-dialog.tsx`): **Auto** checkbox (on by default, add mode only). When on, `resolveAutoNodeTag` matches the typed name against `tagIndex`; existing tag → stored as `destinationTag`, no match → empty tag. Tag field is read-only while Auto is on. Uncheck **Auto** to type a tag manually. Edit mode always uses manual tag entry.
 - **Presets**: edge dialog still offers preset apply/save for context-menu and edit flows; toolbar preset buttons mirror `edgePresets` styling.
 
 ## Rendering
@@ -79,17 +110,17 @@ Same contract as maps: `EditorPanel` switches on `editorMeta.type === 'relations
 | `src/features/project-editor/pane/relationships-editor/relationships-editor-toolbar.tsx` | Select/Move, Add relationship (preset sub-toolbar), Remove relationship tool buttons |
 | `src/features/project-editor/pane/relationships-editor/relationships-editor-types.ts` | Node/edge/preset/config interfaces |
 | `src/features/project-editor/pane/relationships-editor/relationships-config-serialization.ts` | `relationshipsConfig` normalization and meta write-back |
-| `src/features/project-editor/pane/relationships-editor/relationships-editor-helpers.ts` | Node id slugs, edge geometry, dash arrays, stage constants; re-exports map clamping/tag helpers |
+| `src/features/project-editor/pane/relationships-editor/relationships-editor-helpers.ts` | Node id slugs, `resolveAutoNodeTag`, edge geometry, dash arrays, stage constants; re-exports map clamping/tag helpers |
 | `src/features/project-editor/pane/relationships-editor/relationships-nodes-layer.tsx` | Node pill overlay and tooltips |
 | `src/features/project-editor/pane/relationships-editor/relationships-edges-layer.tsx` | SVG edge rendering with arrow markers |
-| `src/features/project-editor/pane/relationships-editor/relationships-node-dialog.tsx` | Character create/edit modal |
+| `src/features/project-editor/pane/relationships-editor/relationships-node-dialog.tsx` | Character create/edit modal; add-mode **Auto** tag checkbox and live tag preview |
 | `src/features/project-editor/pane/relationships-editor/relationships-edge-dialog.tsx` | Relationship create/edit modal with preset apply/save |
 | `src/features/project-editor/components/sidebar/sidebar-footer-actions.tsx` | Split-button menu entry |
 | `src/features/project-editor/sidebar-file-actions/private/file-create.ts` | `createRelationships` action |
 | `electron/ipc/handlers/project-handlers/relationships-document-handler.ts` | `createRelationshipsDocument` IPC handler |
 | `electron/services/document-repository.ts` | Writes the initial relationships markdown with default presets |
 | `src/shared/ipc.ts` | `'relationships'` meta type plus create-request schema |
-| `tests/relationships-editor-helpers.test.ts` | Config parsing/normalization, slug ids, edge geometry indexes |
+| `tests/relationships-editor-helpers.test.ts` | Config parsing/normalization, slug ids, `resolveAutoNodeTag`, edge geometry indexes |
 | `tests/relationships-document-create-repository.test.ts` | Repository coverage for initial chart frontmatter |
 | `example-fantasy/lore/relationships.md` | Working example chart |
 
@@ -98,3 +129,24 @@ Same contract as maps: `EditorPanel` switches on `editorMeta.type === 'relations
 ```bash
 npm run test -- tests/relationships-editor-helpers.test.ts tests/relationships-document-create-repository.test.ts tests/ipc-contract.test.ts tests/sidebar-panels.test.ts
 ```
+
+## Debug Playbook
+
+### Auto tag not applied after adding a character
+
+1. Confirm the lore file declares the tag in frontmatter `tags:` (lowercase in index — see `wiki-tag-links-architecture.md`).
+2. Verify the character **name** matches the tag text exactly after lowercasing (Auto uses the full label, not the node `id` slug). Example: name `Aldren the Bold` looks up `aldren the bold`, not `aldren-the-bold`.
+3. Check `tagIndex` is loaded: save a lore file and confirm wiki links work in the rich editor for the same tag.
+4. Run `npm run test -- tests/relationships-editor-helpers.test.ts -t resolveAutoNodeTag`.
+
+### Click does not navigate to lore file
+
+1. Confirm `destinationTag` is set in saved frontmatter (Auto off + manual tag, or Auto matched a tag).
+2. Trace `resolveNodeDestination(destinationTag, tagIndex)` in `map-editor-helpers.ts` (re-exported as `resolveNodeDestination`).
+3. Confirm Select tool is active (other tools intercept node clicks).
+
+### Related docs
+
+- `mds/architecture/map-document-architecture.md` — shared pan/zoom + tag navigation contract
+- `mds/architecture/wiki-tag-links-architecture.md` — tag index build/normalization
+- `mds/lessons-learned/relationships-auto-tag-uses-label-not-slug.md` — Auto vs `buildNodeId` distinction

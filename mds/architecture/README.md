@@ -22,6 +22,7 @@ Canonical technical guides — the single source of truth for each subsystem's d
 | `ipc-architecture.md` | IPC channel taxonomy, extension workflow, envelope pattern, cache invalidation | |
 | `layout-ownership.md` | Project editor layout ownership map: sidebar width, focus overrides, split ratio, editor fill contract | |
 | `map-document-architecture.md` | Map document renderer path: meta-only marker edits, pan/zoom view state, pane-targeted navigation | |
+| `relationships-document-architecture.md` | Relationships chart renderer: graph nodes/edges, toolbar tools, add-character Auto tag, tag navigation | |
 | `project-index-architecture.md` | `.trama.index.json` model, reconciliation, scanner coordination | |
 | `project-history-git-architecture.md` | Local Git snapshot/history backend: repo discovery, scoped staging, revision listing, preview hydration, restore writes | |
 | `rich-editor-hotspots.md` | Fast map of fragile editor seams: debounce, external sync, pane persistence, layout-vs-document state, focus scroll | Open this first when you need the shortest debug path rather than the full editor architecture |

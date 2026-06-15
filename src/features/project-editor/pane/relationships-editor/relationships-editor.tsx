@@ -5,6 +5,7 @@ import type { WorkspaceLayoutMode, WorkspacePane } from '../../project-editor-ty
 import {
   buildNodeId,
   clampChartValue,
+  clampNodePosition,
   DEFAULT_EDGE_COLOR,
   DEFAULT_NODE_COLOR,
   getRelationshipsConfig,
@@ -103,10 +104,10 @@ export function RelationshipsEditor({ meta, pane, layoutMode, readOnlyPreview = 
   const toStagePoint = useCallback(/* toRelationshipsStagePoint */ (clientX: number, clientY: number) => {
     const bounds = viewportRef.current?.getBoundingClientRect()
     if (!bounds) return { x: 0, y: 0 }
-    return {
-      x: clampChartValue((clientX - bounds.left - offset.x) / scale, 0, RELATIONSHIPS_STAGE_WIDTH),
-      y: clampChartValue((clientY - bounds.top - offset.y) / scale, 0, RELATIONSHIPS_STAGE_HEIGHT),
-    }
+    return clampNodePosition(
+      (clientX - bounds.left - offset.x) / scale,
+      (clientY - bounds.top - offset.y) / scale,
+    )
   }, [offset.x, offset.y, scale] /*Inputs for toRelationshipsStagePoint*/)
 
   const handleWheel = useCallback(/* handleRelationshipsWheelZoom */ (event: WheelEvent) => {
@@ -153,8 +154,7 @@ export function RelationshipsEditor({ meta, pane, layoutMode, readOnlyPreview = 
       nodeDrag.moved = true
       setDraggedOverride({
         id: config.nodes[nodeDrag.nodeIndex].id,
-        x: clampChartValue(nodeDrag.nodeX + deltaX, 0, RELATIONSHIPS_STAGE_WIDTH),
-        y: clampChartValue(nodeDrag.nodeY + deltaY, 0, RELATIONSHIPS_STAGE_HEIGHT),
+        ...clampNodePosition(nodeDrag.nodeX + deltaX, nodeDrag.nodeY + deltaY),
       })
       return
     }
@@ -205,10 +205,10 @@ export function RelationshipsEditor({ meta, pane, layoutMode, readOnlyPreview = 
     if (nodeDrag && nodeDrag.pointerId === event.pointerId) {
       nodeDragRef.current = null
       if (nodeDrag.moved && activeTool === 'select') {
-        const point = {
-          x: clampChartValue(nodeDrag.nodeX + (event.clientX - nodeDrag.clientX) / scale, 0, RELATIONSHIPS_STAGE_WIDTH),
-          y: clampChartValue(nodeDrag.nodeY + (event.clientY - nodeDrag.clientY) / scale, 0, RELATIONSHIPS_STAGE_HEIGHT),
-        }
+        const point = clampNodePosition(
+          nodeDrag.nodeX + (event.clientX - nodeDrag.clientX) / scale,
+          nodeDrag.nodeY + (event.clientY - nodeDrag.clientY) / scale,
+        )
         setDraggedOverride(null)
         if (!readOnlyPreview) {
           updateConfig({ ...config, nodes: config.nodes.map((node, index) => index === nodeDrag.nodeIndex ? { ...node, ...point } : node) })

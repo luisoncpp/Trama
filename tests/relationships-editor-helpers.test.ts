@@ -3,6 +3,7 @@ import {
   buildEdgeGeometry,
   buildNodeId,
   resolveAutoNodeTag,
+  clampNodePosition,
   estimateNodeHalfExtents,
   getEdgeDashArray,
   getParallelEdgeIndex,
@@ -98,6 +99,24 @@ describe('relationships-editor-helpers', () => {
     }
 
     expect(getRelationshipsConfig(withRelationshipsConfig({}, original))).toEqual(original)
+  })
+
+  it('clamps node positions to the extended stage bounds including negative coordinates', () => {
+    expect(clampNodePosition(-3000, -2000)).toEqual({ x: -2400, y: -1600 })
+    expect(clampNodePosition(-120, 80)).toEqual({ x: -120, y: 80 })
+    expect(clampNodePosition(3000, 2000)).toEqual({ x: 2400, y: 1600 })
+  })
+
+  it('accepts negative node coordinates from persisted config', () => {
+    const config = getRelationshipsConfig({
+      type: 'relationships',
+      relationshipsConfig: {
+        nodes: [{ id: 'north', x: -400, y: -250, label: 'North', destinationTag: '', color: '#ffffff' }],
+        edges: [],
+      },
+    })
+
+    expect(config.nodes[0]).toMatchObject({ x: -400, y: -250 })
   })
 
   it('resolves auto node tags from character names when the tag exists', () => {

@@ -2,10 +2,27 @@ import type { RelationshipEdge, RelationshipNode } from './relationships-editor-
 
 export type { RelationshipEdge, RelationshipEdgePreset, RelationshipNode, RelationshipsConfig, RelationshipEdgeStyle, RelationshipEdgeDirection } from './relationships-editor-types'
 export { getRelationshipsConfig, withRelationshipsConfig, DEFAULT_NODE_COLOR, DEFAULT_EDGE_COLOR } from './relationships-config-serialization'
+import { clampMapValue } from '../map-editor/map-editor-helpers'
+
 export { clampMapValue as clampChartValue, resolveMarkerDestination as resolveNodeDestination } from '../map-editor/map-editor-helpers'
 
+export const RELATIONSHIPS_STAGE_MIN_X = -2400
+export const RELATIONSHIPS_STAGE_MIN_Y = -1600
+export const RELATIONSHIPS_STAGE_MAX_X = 2400
+export const RELATIONSHIPS_STAGE_MAX_Y = 1600
+/** Visible stage size in the editor (logical origin stays at top-left of this box). */
 export const RELATIONSHIPS_STAGE_WIDTH = 2400
 export const RELATIONSHIPS_STAGE_HEIGHT = 1600
+/** Full logical span used by the SVG layers so negative node coordinates render. */
+export const RELATIONSHIPS_STAGE_SPAN_WIDTH = RELATIONSHIPS_STAGE_MAX_X - RELATIONSHIPS_STAGE_MIN_X
+export const RELATIONSHIPS_STAGE_SPAN_HEIGHT = RELATIONSHIPS_STAGE_MAX_Y - RELATIONSHIPS_STAGE_MIN_Y
+
+export function clampNodePosition(x: number, y: number): { x: number; y: number } {
+  return {
+    x: clampMapValue(x, RELATIONSHIPS_STAGE_MIN_X, RELATIONSHIPS_STAGE_MAX_X),
+    y: clampMapValue(y, RELATIONSHIPS_STAGE_MIN_Y, RELATIONSHIPS_STAGE_MAX_Y),
+  }
+}
 
 export function resolveAutoNodeTag(label: string, tagIndex: Record<string, string> | null): string {
   if (!tagIndex) return ''

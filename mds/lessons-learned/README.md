@@ -141,4 +141,5 @@ Avoid: "bug description + fix". Prefer: "what I learned that applies to future w
 | `quill-clipboard-matchers-must-return-delta-parameter.md` | Quill clipboard matchers must accept and return the default `delta` parameter to avoid stripping unmatched nested elements (like standard divs) on paste | 2026-06-10 |
 | `stable-context-facade-prevents-preact-consumer-rerenders.md` | For action-only Preact contexts, expose a stable facade over a ref instead of the rebuilt action object or every consumer rerenders on state changes | 2026-06-10 |
 | `relationships-chart-arrowheads-above-nodes.md` | Relationship chart arrow markers must render in an SVG layer above HTML node pills; anchor endpoints with label-width box intersection, not a fixed radius | 2026-06-14 |
+| `relationships-auto-tag-uses-label-not-slug.md` | Add-character Auto tag matches the lowered full label against `tagIndex`, not the `buildNodeId` slug; `id` and `destinationTag` are independent | 2026-06-14 |
 

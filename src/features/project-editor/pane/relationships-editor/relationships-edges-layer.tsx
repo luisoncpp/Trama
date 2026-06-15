@@ -1,4 +1,12 @@
-import { buildEdgeGeometry, getEdgeDashArray, getParallelEdgeIndex, RELATIONSHIPS_STAGE_HEIGHT, RELATIONSHIPS_STAGE_WIDTH } from './relationships-editor-helpers'
+import {
+  buildEdgeGeometry,
+  getEdgeDashArray,
+  getParallelEdgeIndex,
+  RELATIONSHIPS_STAGE_MIN_X,
+  RELATIONSHIPS_STAGE_MIN_Y,
+  RELATIONSHIPS_STAGE_SPAN_HEIGHT,
+  RELATIONSHIPS_STAGE_SPAN_WIDTH,
+} from './relationships-editor-helpers'
 import type { RelationshipEdge, RelationshipNode } from './relationships-editor-types'
 
 interface RelationshipsEdgesLayerProps {
@@ -105,9 +113,10 @@ function RelationshipsEdgesSvg({ nodes, edges, showMarkers, onEdgeContextMenu, o
   return (
     <svg
       class={showMarkers ? 'relationships-edges-markers-layer' : 'relationships-edges-layer'}
-      width={RELATIONSHIPS_STAGE_WIDTH}
-      height={RELATIONSHIPS_STAGE_HEIGHT}
-      viewBox={`0 0 ${RELATIONSHIPS_STAGE_WIDTH} ${RELATIONSHIPS_STAGE_HEIGHT}`}
+      width={RELATIONSHIPS_STAGE_SPAN_WIDTH}
+      height={RELATIONSHIPS_STAGE_SPAN_HEIGHT}
+      viewBox={`${RELATIONSHIPS_STAGE_MIN_X} ${RELATIONSHIPS_STAGE_MIN_Y} ${RELATIONSHIPS_STAGE_SPAN_WIDTH} ${RELATIONSHIPS_STAGE_SPAN_HEIGHT}`}
+      style={{ left: `${RELATIONSHIPS_STAGE_MIN_X}px`, top: `${RELATIONSHIPS_STAGE_MIN_Y}px` }}
       xmlns="http://www.w3.org/2000/svg"
     >
       {showMarkers ? <RelationshipsEdgeMarkersDefs edges={edges} /> : null}
