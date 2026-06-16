@@ -1,6 +1,6 @@
 import { useEffect } from 'preact/hooks'
 import type Quill from 'quill'
-import type { EditorZoomRef } from '../../project-editor-types'
+import type { EditorZoomRef } from '../../../../project-editor-types.js'
 
 interface UseEditorZoomParams {
   editorRef: { current: Quill | null }

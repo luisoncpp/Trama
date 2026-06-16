@@ -12,8 +12,8 @@ import { buildActivePaneDocumentInfo, buildPaneDocumentInfo } from './pane-works
 import { PaneAutosave } from './pane-workspace-private/pane-workspace-autosave'
 import {
   getPaneState,
-  getSerializationRefForPane,
-  type PaneSerializationRefs,
+  getEditorSessionRefForPane,
+  type PaneEditorSessionRefs,
 } from './pane-workspace-private/pane-workspace-bindings'
 import {
   preparePaneExitIntent,
@@ -51,7 +51,7 @@ export class PaneWorkspace {
   constructor(
     private layoutState: WorkspaceLayoutState,
     private paneBindings: PaneBindings,
-    private serializationRefs: PaneSerializationRefs,
+    private editorSessionRefs: PaneEditorSessionRefs,
     private saveDocumentFn: (path: string, content: string, meta: DocumentMeta) => Promise<void>,
     navigationHistoryOrSavedContent?: PaneNavigationHistoryStore | Map<string, string>,
     savedContentMap?: Map<string, string>,
@@ -67,12 +67,12 @@ export class PaneWorkspace {
   updateDependencies(
     layoutState: WorkspaceLayoutState,
     paneBindings: PaneBindings,
-    serializationRefs: PaneSerializationRefs,
+    editorSessionRefs: PaneEditorSessionRefs,
     saveDocumentFn: (path: string, content: string, meta: DocumentMeta) => Promise<void>,
   ): void {
     this.layoutState = layoutState
     this.paneBindings = paneBindings
-    this.serializationRefs = serializationRefs
+    this.editorSessionRefs = editorSessionRefs
     this.saveDocumentFn = saveDocumentFn
   }
 
@@ -103,7 +103,7 @@ export class PaneWorkspace {
   clearNavigationHistory(): void { return this.navigation.clearNavigationHistory() }
 
   flushPaneContent(pane: WorkspacePane): string | null {
-    return getSerializationRefForPane(pane, this.serializationRefs).current.flush()
+    return getEditorSessionRefForPane(pane, this.editorSessionRefs).current?.flush() ?? null
   }
 
   async savePaneIfDirty(pane: WorkspacePane): Promise<void> {

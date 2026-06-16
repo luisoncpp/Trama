@@ -27,6 +27,7 @@ Avoid: "bug description + fix". Prefer: "what I learned that applies to future w
 
 | File | Topic | Date |
 |------|-------|------|
+| `editor-session-electron-type-seam.md` | Split the `EditorSession` interface: a minimal contract in shared types for the Electron build, extended in the renderer module for the full Quill/DOM surface | 2026-06-15 |
 | `electron-fsa-picker-empty-path.md` | `showOpenFilePicker` files cannot be turned into disk paths in Electron; use main-process `dialog.showOpenDialog` when staging needs `projectRoot`-relative paths | 2026-06-03 |
 | `find-bar-toolbar-click-blocked.md` | Floating find bar over `-webkit-app-region: drag` toolbar needs `no-drag`, higher z-index, and non-shrinking controls or buttons stay inert on Windows | 2026-06-01 |
 | `sidebar-rail-and-revisions-back-blocked-by-drag-strip.md` | Any control whose bounding box intersects the 32px `.window-drag-region` strip needs `-webkit-app-region: no-drag`; sidebar rail items and `.revisions-rail__back` are easy to miss because the rail is not itself a drag region | 2026-06-06 |

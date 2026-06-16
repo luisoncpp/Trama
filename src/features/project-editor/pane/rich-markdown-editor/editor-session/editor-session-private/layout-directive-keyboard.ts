@@ -1,12 +1,8 @@
 import type Quill from 'quill'
 import Delta from 'quill-delta'
-import { LAYOUT_DIRECTIVE_BLOT_NAME } from './rich-markdown-editor-layout-blots'
-import { buildBoundarySafeDeleteContents, type CenterDeleteDirection } from './rich-markdown-editor-layout-center-delete'
-
-interface SelectionRange {
-  index: number
-  length: number
-}
+import { LAYOUT_DIRECTIVE_BLOT_NAME } from './layout-directive-types.js'
+import { buildBoundarySafeDeleteContents } from './layout-directive-center-delete.js'
+import type { CenterDeleteDirection, SelectionRange } from './layout-directive-types.js'
 
 type KeyboardHandler = (this: { quill: Quill }, range: SelectionRange) => boolean
 

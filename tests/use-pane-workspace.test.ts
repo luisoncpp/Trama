@@ -3,7 +3,7 @@ import { h, render } from 'preact'
 import { useMemo } from 'preact/hooks'
 import { act } from 'preact/test-utils'
 import { usePaneWorkspace, type PaneBindings } from '../src/features/project-editor/pane'
-import type { EditorSerializationRefs, PaneDocumentState, WorkspaceLayoutState } from '../src/features/project-editor/project-editor-types'
+import type { EditorSession, PaneDocumentState, WorkspaceLayoutState } from '../src/features/project-editor/project-editor-types'
 
 function makeLayout(activePane: 'primary' | 'secondary', primaryPath: string | null = 'docs/a.md', secondaryPath: string | null = 'docs/b.md'): WorkspaceLayoutState {
   return {
@@ -22,22 +22,10 @@ function makePane(path: string | null, content: string, isDirty: boolean): PaneD
   return { path, content, meta: {}, isDirty, reloadVersion: 0, revisionRail: {} as any }
 }
 
-function makeSerializationRefs(): { primary: { current: EditorSerializationRefs }, secondary: { current: EditorSerializationRefs } } {
+function makeEditorSessionRefs(): { primary: { current: EditorSession | null }; secondary: { current: EditorSession | null } } {
   return {
-    primary: {
-      current: {
-        flush: () => null,
-        tagOverlayRecalcRef: { current: false },
-        tagOverlayMatchesRef: { current: [] },
-      },
-    },
-    secondary: {
-      current: {
-        flush: () => null,
-        tagOverlayRecalcRef: { current: false },
-        tagOverlayMatchesRef: { current: [] },
-      },
-    },
+    primary: { current: null },
+    secondary: { current: null },
   }
 }
 
@@ -66,11 +54,11 @@ describe('usePaneWorkspace', () => {
     const primary = makePane('docs/a.md', '# A', false)
     const secondary = makePane('docs/b.md', '# B', false)
     const paneBindings = makePaneBindings(primary, secondary)
-    const serializationRefs = makeSerializationRefs()
+    const editorSessionRefs = makeEditorSessionRefs()
     const navigationHistory = makeNavigationHistory()
 
     function Harness() {
-      const ws = usePaneWorkspace(layout, paneBindings, serializationRefs, noopSaveDocumentFn, navigationHistory)
+      const ws = usePaneWorkspace(layout, paneBindings, editorSessionRefs, noopSaveDocumentFn, navigationHistory)
       workspaceRef = ws
       return null
     }
@@ -95,11 +83,11 @@ describe('usePaneWorkspace', () => {
     const primary = makePane('docs/a.md', '# A', false)
     const secondary = makePane('docs/b.md', '# B', false)
     const paneBindings = makePaneBindings(primary, secondary)
-    const serializationRefs = makeSerializationRefs()
+    const editorSessionRefs = makeEditorSessionRefs()
     const navigationHistory = makeNavigationHistory()
 
     function Harness({ layout }: { layout: WorkspaceLayoutState }) {
-      const ws = usePaneWorkspace(layout, paneBindings, serializationRefs, noopSaveDocumentFn, navigationHistory)
+      const ws = usePaneWorkspace(layout, paneBindings, editorSessionRefs, noopSaveDocumentFn, navigationHistory)
       if (!firstInstance) firstInstance = ws
       else secondInstance = ws
       return null
@@ -125,12 +113,12 @@ describe('usePaneWorkspace', () => {
     let secondInstance: any = null
     const layout = makeLayout('primary')
     const secondary = makePane('docs/b.md', '# B', false)
-    const serializationRefs = makeSerializationRefs()
+    const editorSessionRefs = makeEditorSessionRefs()
     const navigationHistory = makeNavigationHistory()
 
     function Harness({ primary }: { primary: PaneDocumentState }) {
       const paneBindings = useMemo(() => makePaneBindings(primary, secondary), [primary, secondary])
-      const ws = usePaneWorkspace(layout, paneBindings, serializationRefs, noopSaveDocumentFn, navigationHistory)
+      const ws = usePaneWorkspace(layout, paneBindings, editorSessionRefs, noopSaveDocumentFn, navigationHistory)
       if (!firstInstance) firstInstance = ws
       else secondInstance = ws
       return null
@@ -156,12 +144,12 @@ describe('usePaneWorkspace', () => {
     let secondInstance: any = null
     const layout = makeLayout('primary')
     const primary = makePane('docs/a.md', '# A', false)
-    const serializationRefs = makeSerializationRefs()
+    const editorSessionRefs = makeEditorSessionRefs()
     const navigationHistory = makeNavigationHistory()
 
     function Harness({ secondary }: { secondary: PaneDocumentState }) {
       const paneBindings = useMemo(() => makePaneBindings(primary, secondary), [primary, secondary])
-      const ws = usePaneWorkspace(layout, paneBindings, serializationRefs, noopSaveDocumentFn, navigationHistory)
+      const ws = usePaneWorkspace(layout, paneBindings, editorSessionRefs, noopSaveDocumentFn, navigationHistory)
       if (!firstInstance) firstInstance = ws
       else secondInstance = ws
       return null
@@ -190,12 +178,12 @@ describe('usePaneWorkspace', () => {
     const primary = makePane('docs/a.md', '# A', false)
     const secondary = makePane('docs/b.md', '# B', false)
     const paneBindings = makePaneBindings(primary, secondary)
-    const serializationRefs = makeSerializationRefs()
+    const editorSessionRefs = makeEditorSessionRefs()
     const navigationHistory = makeNavigationHistory()
 
     function Harness() {
       renderCount++
-      const ws = usePaneWorkspace(layout, paneBindings, serializationRefs, noopSaveDocumentFn, navigationHistory)
+      const ws = usePaneWorkspace(layout, paneBindings, editorSessionRefs, noopSaveDocumentFn, navigationHistory)
       if (renderCount === 1) firstInstance = ws
       else secondInstance = ws
       return null

@@ -1,23 +1,64 @@
-import { useEffect, useState } from 'preact/hooks'
-import Quill from 'quill'
-import { buildTagOverlayMatches, useTagOverlay, findMatchAtPosition } from './rich-markdown-editor-tag-overlay'
-import { useCtrlKeyState } from './rich-markdown-editor-ctrl-key'
-import type { EditorSerializationRefs } from '../../project-editor-types'
+import type Quill from 'quill'
+import { useEffect, useRef, useState } from 'preact/hooks'
+import type { TagMatch } from './editor-session-tag-helpers'
+import { findTagMatchesInText, filterMatchesOutsideCode } from './editor-session-tag-helpers'
+import type { EditorSession } from '../editor-session.js'
+import { useCtrlKeyState } from './editor-session-ctrl-key'
+import { buildTagOverlayMatches, findMatchAtPosition } from './editor-session-tag-math'
+
+interface UseTagOverlayParams {
+  editorRef: { current: Quill | null }
+  tagIndex: Record<string, string> | null
+  ctrlPressed: boolean
+  tagOverlayRecalcRef: { current: boolean }
+  tagOverlayMatchesRef: { current: TagMatch[] }
+}
+
+export function useTagOverlay({ editorRef, tagIndex, ctrlPressed, tagOverlayRecalcRef, tagOverlayMatchesRef }: UseTagOverlayParams): TagMatch[] {
+  const editor = editorRef.current
+  if (!editor || !tagIndex || Object.keys(tagIndex).length === 0) {
+    return []
+  }
+
+  if (ctrlPressed) {
+    if (tagOverlayRecalcRef.current || tagOverlayMatchesRef.current.length === 0) {
+      const text = editor.getText()
+      const allMatches = findTagMatchesInText(text, tagIndex)
+      tagOverlayMatchesRef.current = filterMatchesOutsideCode(text, allMatches)
+      tagOverlayRecalcRef.current = false
+    }
+  }
+
+  return tagOverlayMatchesRef.current
+}
 
 export function useRichEditorOverlay(
   editorRef: { current: Quill | null },
   tagIndex: Record<string, string> | null,
-  serializationRef: { current: EditorSerializationRefs },
+  session: EditorSession | null,
   onTagClick?: (filePath: string) => void,
 ) {
   const ctrlPressed = useCtrlKeyState()
   const [, setTagScrollTick] = useState(0)
+  const recalcRef = useRef(true)
+  const matchesRef = useRef<TagMatch[]>([])
+
+  useEffect(/* recalcOnSessionChange */ () => {
+    if (!session) return
+    recalcRef.current = true
+    setTagScrollTick((t) => t + 1)
+    return session.subscribeContentMutated(() => {
+      recalcRef.current = true
+      setTagScrollTick((t) => t + 1)
+    })
+  }, [session])
+
   const tagMatches = useTagOverlay({
     editorRef,
     tagIndex,
     ctrlPressed,
-    tagOverlayRecalcRef: serializationRef.current.tagOverlayRecalcRef,
-    tagOverlayMatchesRef: serializationRef.current.tagOverlayMatchesRef,
+    tagOverlayRecalcRef: recalcRef,
+    tagOverlayMatchesRef: matchesRef,
   })
   const handleEditorMouseDown = useTagClickHandler(editorRef, tagIndex, onTagClick)
   useTagOverlayScrollEffect(ctrlPressed, editorRef, setTagScrollTick)

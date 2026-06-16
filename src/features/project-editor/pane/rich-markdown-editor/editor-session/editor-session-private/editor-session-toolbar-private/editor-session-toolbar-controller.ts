@@ -1,16 +1,17 @@
-import type Quill from 'quill'
 import {
   isEditorInteractive,
   normalizeZoomValue,
   type RichEditorSyncState,
-} from './rich-markdown-editor-toolbar-helpers'
-import { insertPagebreakDirective, toggleCenterDirectives } from '../rich-markdown-editor-layout-actions'
-import { attachToolbarElements, type ToolbarElements } from './rich-markdown-editor-toolbar-dom'
+} from './editor-session-toolbar-helpers'
+import { LayoutDirectiveController } from '../layout-directive-controller'
+import { attachToolbarElements, type ToolbarElements } from './editor-session-toolbar-dom'
+
+import type { EditorSession } from '../../editor-session'
 
 export interface SyncToolbarControlsParams {
   documentId: string | null
   hostRef: { current: HTMLDivElement | null }
-  editorRef: { current: Quill | null }
+  session: EditorSession | null
   historyBackDisabled: boolean
   onHistoryBack: () => void
   saveDisabled: boolean
@@ -38,7 +39,7 @@ export class RichEditorToolbarController {
     const toolbar = host.querySelector('.ql-toolbar')
     if (!(toolbar instanceof HTMLElement)) return
     if (this.toolbar !== toolbar) this.attach(toolbar)
-    this.syncLayoutButtons(params.editorRef)
+    this.syncLayoutButtons(params.session)
     this.syncDocumentControls(params)
     this.syncZoom(params.zoomLevel, params.onZoomChange)
   }
@@ -48,21 +49,23 @@ export class RichEditorToolbarController {
     this.elements = attachToolbarElements(toolbar)
   }
 
-  private syncLayoutButtons(editorRef: { current: Quill | null }): void {
+  private syncLayoutButtons(session: EditorSession | null): void {
     if (!this.elements) return
-    const currentEditor = editorRef.current
-    const canUseLayoutActions = isEditorInteractive(currentEditor)
+    const currentEditor = session?.getEditor()
+    const canUseLayoutActions = isEditorInteractive(currentEditor ?? null)
     this.elements.centerButton.disabled = !canUseLayoutActions
     this.elements.centerButton.onclick = () => {
-      if (!currentEditor) return
-      currentEditor.focus()
-      toggleCenterDirectives(currentEditor)
+      const editor = session?.getEditor()
+      if (!editor) return
+      editor.focus()
+      LayoutDirectiveController.toggleCenter(editor)
     }
     this.elements.pagebreakButton.disabled = !canUseLayoutActions
     this.elements.pagebreakButton.onclick = () => {
-      if (!currentEditor) return
-      currentEditor.focus()
-      insertPagebreakDirective(currentEditor)
+      const editor = session?.getEditor()
+      if (!editor) return
+      editor.focus()
+      LayoutDirectiveController.insertPagebreak(editor)
     }
   }
 

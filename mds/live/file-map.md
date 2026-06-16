@@ -180,7 +180,7 @@ Mandatory doc navigation for new chats: start with `mds/START-HERE.md` — it pr
 - `mds/architecture/book-export-architecture.md`
   - Canonical reference for the book export pipeline. Explains the file layout, PDF render pipeline, data models, directive mapping, image handling, page metrics, and test coverage.
 - `mds/architecture/ai-import-export-architecture.md`
-  - AI import/export clipboard pipeline. Covers format grammar, import preview/execute flow, export formatting, path validation, IPC contract, and test coverage.
+  - AI import/export clipboard pipeline. Covers format grammar, import preview/execute flow, export formatting, IPC contract, and test coverage.
 
 ## Renderer layer
 
@@ -201,7 +201,7 @@ Mandatory doc navigation for new chats: start with `mds/START-HERE.md` — it pr
   - `09-quill-theme-overrides.css` — global `.ql-*` and related rich-editor styling; must stay late in the cascade.
   - `10-responsive.css` — all media queries, including the `900px` sidebar breakpoint.
 - `src/spellcheck/use-spellcheck-settings.ts`
-  - Renderer hook for spellcheck preferences: boot-time sync against Electron session, local persistence, enable/disable, language updates, and optimistic UI updates with rollback on IPC failure.
+  - Renderer hook for spellcheck preferences: boot-time sync against Electron session, local persistence, enable/ disable, language updates, and optimistic UI updates with rollback on IPC failure.
 - `src/features/project-editor/use-project-editor.ts`
   - Main feature hook and public seam for the project editor Module.
   - Owns the stable session-only pane-history store injected into `PaneWorkspace`.
@@ -290,7 +290,7 @@ Mandatory doc navigation for new chats: start with `mds/START-HERE.md` — it pr
 - `mds/architecture/split-pane-coordination.md`
   - Canonical reference for the split pane per-pane state model. Documents the two-layer state model (layout vs document), all 7 formal contracts, state projection map, and key implementation files.
 - `src/features/project-editor/use-project-editor-model.ts`
-  - Plain helpers for the `use-project-editor.ts` composition root: `createEditorSerializationRefs`, `createNavigationHistoryStore`, `createSaveDocumentProxy`, `buildShortcutsEffectParams`.
+  - Plain helpers for the `use-project-editor.ts` composition root: `createNavigationHistoryStore`, `createSaveDocumentProxy`, `buildShortcutsEffectParams`.
 - `src/features/project-editor/use-sidebar-ui-state.ts`
   - Persist sidebar UI (`trama.sidebar.ui.v1`).
 - `src/features/project-editor/help-preferences.ts`
@@ -346,7 +346,7 @@ Mandatory doc navigation for new chats: start with `mds/START-HERE.md` — it pr
   - Private module for pane coordination. All pane state, flush, save, and autosave access goes through this module.
   - `pane/index.ts` — barrel exporting `PaneWorkspace`, `usePaneWorkspace`, and public types
   - `pane/pane-workspace.ts` — coordinator class with read methods (`getPaneDocument`, `isPaneDirty`) and write methods (`savePaneNow`, `preparePaneExit`, `preparePaneRevert`, `saveAllDirtyPanes`, `scheduleAutosave`, `updatePaneContent`, etc.); `savePaneIfDirty` and `markPaneSaved` are internal.
-  - `pane/pane-workspace-private/pane-workspace-bindings.ts` — pane/serialization ref accessors and `updatePaneState` helper; consumed only by `PaneWorkspace` and sibling private modules.
+  - `pane/pane-workspace-private/pane-workspace-bindings.ts` — pane/editor-session ref accessors and `updatePaneState` helper; consumed only by `PaneWorkspace` and sibling private modules.
   - `pane/pane-workspace-private/pane-workspace-init.ts` — constructor arg resolution for navigation history vs saved-content map; consumed only by `PaneWorkspace`.
   - `pane/pane-workspace-private/pane-workspace-mutations.ts` — document state mutations (load, clear, meta, revision rail, dirty/saved markers); consumed only by `PaneWorkspace`.
   - `pane/pane-workspace-private/pane-workspace-exit.ts` — Pane exit intent types and pure helpers (`savePaneNowIntent`, `preparePaneExitIntent`, `preparePaneRevertIntent`); consumed by `PaneWorkspace`.
@@ -432,79 +432,88 @@ Mandatory doc navigation for new chats: start with `mds/START-HERE.md` — it pr
   - ZuluPad import dialog state hook: `useZuluImportDialogState` — file data, target folder, tag mode, preview, loading/importing/selecting file states (extracted from `zulu-import-dialog.tsx`).
 - `src/features/project-editor/components/zulu-import-dialog-private/zulu-import-dialog-logic.ts`
   - ZuluPad import dialog logic hooks: `useZuluImportDialogActions` (select file, preview, execute) and `useZuluImportDialogLifecycle` (Escape key listener) (extracted from `zulu-import-dialog.tsx`).
-- `src/features/project-editor/components/rich-markdown-editor.tsx`
-  - Quill-based rich Markdown editor component (lifecycle, toolbar integration, focus-mode hookup).
-- `src/features/project-editor/components/rich-markdown-editor-core.ts`
-  - Core editor lifecycle and sync logic (initialize Quill, apply markdown, enable/disable, register typography handlers).
-  - Also listens for workspace `paste-markdown` commands and handles reading/parsing clipboard Markdown and inserting HTML into Quill.
-- `src/features/project-editor/components/rich-markdown-editor-external-sync.ts`
-  - External-value sync hook: compares canonical values via `normalizeEditorDocumentValue` + `areEquivalentEditorValues`, force-applies text-identical disk reloads via `forceApplyVersion`, preserves Quill selection and scroll, manages `isApplyingExternalValueRef` flag.
-- `src/features/project-editor/pane/rich-markdown-editor/rich-markdown-editor-overlay.ts`
-  - Tag overlay interaction hook cluster: Ctrl/Cmd state, overlay match recomputation, modifier-click tag navigation, and scroll-triggered overlay refresh.
+- `src/features/project-editor/pane/rich-markdown-editor/rich-markdown-editor.tsx`
+  - Public pane editor seam. Thin wrapper: creates shared host/shell refs, calls `useEditorSession`, and renders `RichMarkdownEditorView`.
 - `src/features/project-editor/pane/rich-markdown-editor/rich-markdown-editor-view.tsx`
   - Presentational rich editor shell: host element, find bar mount point, and tag highlight overlay positioning.
-- `src/features/project-editor/pane/rich-markdown-editor/rich-markdown-editor.tsx`
-  - Public pane editor seam. Threads read-only revision preview mode into the rich editor core and toolbar/find controller stack.
-- `src/features/project-editor/pane/rich-markdown-editor/rich-markdown-editor-core.ts`
-  - Core Quill lifecycle plus preview-aware enable/contenteditable sync.
-- `src/features/project-editor/pane/rich-markdown-editor/rich-markdown-editor-commands.ts`
-  - Handles workspace commands and blocks markdown paste while revision preview is read-only.
-- `src/features/project-editor/pane/rich-markdown-editor/rich-markdown-editor-find.tsx`
-  - In-document find controller; suppresses replace affordances during read-only revision preview.
-- `src/features/project-editor/pane/rich-markdown-editor/rich-markdown-editor-find-overlay.tsx`
-  - Floating find UI with preview-aware replace toggle visibility.
-- `src/features/project-editor/components/rich-markdown-editor-serialization.ts`
+- `src/features/project-editor/pane/rich-markdown-editor/editor-session/editor-session.ts`
+  - Public `EditorSession` hook (`useEditorSession`) and `UseEditorSessionProps` type.
+  - Orchestrates lifecycle effects, find, focus, tag overlay, zoom, and toolbar hooks into a single session facade.
+- `src/features/project-editor/pane/rich-markdown-editor/editor-session/editor-session-types.ts`
+  - Full `EditorSession` interface exported for rich-editor consumers; extends the minimal `EditorSession` in `project-editor-types.ts`.
+- `src/features/project-editor/pane/rich-markdown-editor/editor-session/editor-session-private/editor-session-lifecycle.ts`
+  - Core Quill lifecycle class (`EditorSessionImpl`): initialize Quill, apply markdown, enable/disable, spellcheck, typography, workspace commands, external sync, and serialization.
+- `src/features/project-editor/pane/rich-markdown-editor/editor-session/editor-session-private/editor-session-serialization.ts`
   - Editor debounced serialization session: registers text-change listener, manages debounce timer and flush lifecycle, and hydrates image placeholders before forwarding to parent state via `onChange`.
-- `src/features/project-editor/components/rich-markdown-editor-value-sync.ts`
-  - Canonical editor-value helpers: normalize image-bearing markdown into placeholder form and compare equivalent external/editor values without triggering destructive re-renders.
-- `src/features/project-editor/pane/rich-markdown-editor/rich-markdown-editor-layout-blots.ts`
+- `src/features/project-editor/pane/rich-markdown-editor/editor-session/editor-session-private/editor-session-external-sync.ts`
+  - External-value sync helper: compares canonical values, force-applies text-identical disk reloads via `forceApplyVersion`, preserves Quill selection and scroll, manages `isApplyingExternalValueRef` flag.
+- `src/features/project-editor/pane/rich-markdown-editor/editor-session/editor-session-private/editor-session-hooks.ts`
+  - Private lifecycle and render orchestration hooks extracted from `useEditorSession` for lint compliance.
+- `src/features/project-editor/pane/rich-markdown-editor/editor-session/editor-session-private/editor-session-facade.ts`
+  - Builds the public `EditorSession` facade object from the lifecycle session and render-state accessors.
+- `src/features/project-editor/pane/rich-markdown-editor/editor-session/editor-session-private/editor-session-find.tsx`
+  - In-document find controller; suppresses replace affordances during read-only revision preview.
+- `src/features/project-editor/pane/rich-markdown-editor/editor-session/editor-session-private/editor-session-find-overlay.tsx`
+  - Floating find UI with preview-aware replace toggle visibility.
+- `src/features/project-editor/pane/rich-markdown-editor/editor-session/editor-session-private/editor-session-find-state.ts`
+  - Shared find/replace state helpers: search state hook (`useSearchState`), replace actions hook (`useReplaceActions`), Quill text helpers, and keyboard modifier detection.
+- `src/features/project-editor/pane/rich-markdown-editor/editor-session/editor-session-private/editor-session-find-visual.ts`
+  - Active-match visual sync helpers: computes Quill bounds and keeps highlighted match visible while preserving input focus.
+- `src/features/project-editor/pane/rich-markdown-editor/editor-session/editor-session-private/editor-session-focus.ts`
+  - Focus-mode hook orchestration: applies emphasis classes and wires scroll centering, selection tracking, and listener setup.
+- `src/features/project-editor/pane/rich-markdown-editor/editor-session/editor-session-private/editor-session-focus-helpers.ts`
+  - Focus scope helper functions: applies/clears CSS class emphasis, manages CSS Highlights API, handles fallback text emphasis.
+- `src/features/project-editor/pane/rich-markdown-editor/editor-session/editor-session-private/editor-session-focus-scroll.ts`
+  - Centered scroll logic: computes target scroll position to keep active line centered vertically.
+- `src/features/project-editor/pane/rich-markdown-editor/editor-session/editor-session-private/editor-session-focus-geometry.ts`
+  - Geometry helpers for focus-mode (text offset resolution, visual line/sentence boundary calculations).
+- `src/features/project-editor/pane/rich-markdown-editor/editor-session/editor-session-private/editor-session-tag-overlay.ts`
+  - Tag overlay interaction hook cluster: Ctrl/Cmd state, overlay match recomputation, modifier-click tag navigation, and scroll-triggered overlay refresh.
+- `src/features/project-editor/pane/rich-markdown-editor/editor-session/editor-session-private/editor-session-tag-helpers.ts`
+  - Tag text matching helpers: accent normalization, regex escaping, code-block filtering.
+- `src/features/project-editor/pane/rich-markdown-editor/editor-session/editor-session-private/editor-session-tag-math.ts`
+  - Tag overlay geometry: plain-text to Quill index mapping, rect computation, and hit testing.
+- `src/features/project-editor/pane/rich-markdown-editor/editor-session/editor-session-private/editor-session-tag-highlights.tsx`
+  - Renders tag-link underline highlights over the editor surface.
+- `src/features/project-editor/pane/rich-markdown-editor/editor-session/editor-session-private/editor-session-ctrl-key.ts`
+  - Tracks Ctrl/Cmd pressed state for tag modifier-click navigation.
+- `src/features/project-editor/pane/rich-markdown-editor/editor-session/editor-session-private/editor-session-zoom.ts`
+  - Applies the shared zoom level to the editor root and triggers overlay re-render.
+- `src/features/project-editor/pane/rich-markdown-editor/editor-session/editor-session-private/editor-session-toolbar.ts`
+  - Thin public toolbar hook. Delegates toolbar DOM ownership to the private controller/DOM modules while preserving Quill as the seam.
+- `src/features/project-editor/pane/rich-markdown-editor/editor-session/editor-session-private/editor-session-toolbar-private/editor-session-toolbar-controller.ts`
+  - Private toolbar controller class: owns toolbar state synchronization for layout buttons, pane-history back, revert/save controls, sync indicator, and zoom.
+- `src/features/project-editor/pane/rich-markdown-editor/editor-session/editor-session-private/editor-session-toolbar-private/editor-session-toolbar-dom.ts`
+  - Private toolbar DOM helper: creates toolbar-specific controls and enforces the explicit current toolbar order behind the Quill toolbar seam.
+- `src/features/project-editor/pane/rich-markdown-editor/editor-session/editor-session-private/editor-session-toolbar-private/editor-session-toolbar-helpers.ts`
+  - Toolbar control factories (icon buttons, zoom select) and zoom normalization helpers.
+- `src/features/project-editor/pane/rich-markdown-editor/editor-session/editor-session-private/layout-directive-controller.ts`
+  - Single controller for layout directive blots: registers blots, handles keyboard bindings, clipboard matchers, center toggle, pagebreak/spacer insertion, and centered styling sync.
+- `src/features/project-editor/pane/rich-markdown-editor/editor-session/editor-session-private/layout-directive-types.ts`
+  - Shared layout directive types (`LayoutDirectiveEmbedType`, `LayoutDirectiveEmbedValue`, `CenterSegment`, `LineRange`, etc.).
+- `src/features/project-editor/pane/rich-markdown-editor/editor-session/editor-session-private/layout-directive-blots.ts`
   - Registers Quill `BlockEmbed`-based layout directive blots (`center`, `spacer`, `pagebreak`, `broken-image`, unknown) so directive objects survive Quill canonicalization.
-- `src/features/project-editor/pane/rich-markdown-editor/rich-markdown-editor-layout-clipboard.ts`
+- `src/features/project-editor/pane/rich-markdown-editor/editor-session/editor-session-private/layout-directive-clipboard.ts`
   - Adds clipboard matcher logic that maps directive artifact nodes, including broken-image placeholders, into embed Delta ops consumed by layout directive blots.
-- `src/features/project-editor/pane/rich-markdown-editor/rich-markdown-editor-layout-keyboard.ts`
+- `src/features/project-editor/pane/rich-markdown-editor/editor-session/editor-session-private/layout-directive-keyboard.ts`
   - Registers explicit ArrowLeft/ArrowRight keyboard bindings so pagebreak embeds are traversed atomically in one cursor step.
   - Intercepts narrow Backspace/Delete seam cases around `center:start` and `center:end` so deletion shifts the nearest boundary instead of leaking or truncating centering.
-- `src/features/project-editor/pane/rich-markdown-editor/rich-markdown-editor-layout-actions.ts`
+- `src/features/project-editor/pane/rich-markdown-editor/editor-session/editor-session-private/layout-directive-actions.ts`
   - Toolbar-triggered layout helpers for pagebreak/spacer insertion and center toggle behavior; inside centered content the action rebuilds canonical non-nested center boundaries around the untoggled lines, and when toggling an adjacent line it extends the existing centered segment instead of creating a second pair.
-- `src/features/project-editor/pane/rich-markdown-editor/rich-markdown-editor-layout-center-ranges.ts`
+- `src/features/project-editor/pane/rich-markdown-editor/editor-session/editor-session-private/layout-directive-center-ranges.ts`
   - Center-range utility module for Quill Delta: extracts center boundaries from ops, derives center segments, detects whether an index is inside a segment, normalizes a selection to full line boundaries.
-  - Boundary-safe deletion logic moved to `rich-markdown-editor-layout-center-delete.ts`.
-- `src/features/project-editor/pane/rich-markdown-editor/rich-markdown-editor-layout-center-delete.ts`
-  - Extracted from `layout-center-ranges.ts`: `buildBoundarySafeDeleteContents` and its backspace/delete-forward branch helpers. Re-exports `CenterDeleteDirection` for import by `layout-keyboard.ts`.
-- `src/features/project-editor/pane/rich-markdown-editor/rich-markdown-editor-layout-centering.ts`
+- `src/features/project-editor/pane/rich-markdown-editor/editor-session/editor-session-private/layout-directive-center-delete.ts`
+  - Boundary-safe deletion logic: `buildBoundarySafeDeleteContents` and its backspace/delete-forward branch helpers. Re-exports `CenterDeleteDirection` for import by `layout-keyboard.ts`.
+- `src/features/project-editor/pane/rich-markdown-editor/editor-session/editor-session-private/layout-directive-centering.ts`
   - Synchronizes centered styling for editor blocks located between `center:start` and `center:end` boundary artifacts.
-- `src/features/project-editor/pane/rich-markdown-editor/private/rich-markdown-editor-toolbar-controller.ts`
-  - Private toolbar controller class: owns toolbar state synchronization for layout buttons, pane-history back, revert/save controls, sync indicator, and zoom.
-  - Save control uses a diskette icon button and keeps dynamic state in tooltip/ARIA labels instead of replacing icon markup.
-- `src/features/project-editor/pane/rich-markdown-editor/private/rich-markdown-editor-toolbar-dom.ts`
-  - Private toolbar DOM helper: creates toolbar-specific controls and enforces the explicit current toolbar order behind the Quill toolbar seam.
-  - Owns the diskette save button element (`.ql-save-changes`) in the right-side toolbar control cluster.
-- `src/features/project-editor/components/rich-markdown-editor-commands.ts`
-  - Handles workspace context-menu commands (`paste-markdown`, `copy-as-markdown`) and clipboard serialization/paste flow for the rich editor.
-- `src/features/project-editor/components/rich-markdown-editor-find.tsx`
-  - In-document find hook: Ctrl/Cmd+F (find) and Ctrl/Cmd+H (find+replace) activation, query/match state, replace actions, and integration between floating UI and editor selection.
-- `src/features/project-editor/components/rich-markdown-editor-find-state.ts`
-  - Shared find/replace state helpers: search state hook (`useSearchState`), replace actions hook (`useReplaceActions`), Quill text helpers, and keyboard modifier detection.
-- `src/features/project-editor/components/rich-markdown-editor-find-overlay.tsx`
-  - Floating find bar UI (find input, replace input, counter, prev/next, replace, replace all, close, toggle-replace) plus active-match overlay rendering.
-- `src/features/project-editor/components/rich-markdown-editor-find-visual.ts`
-  - Active-match visual sync helpers: computes Quill bounds and keeps highlighted match visible while preserving input focus.
-  - Includes focus-mode-aware centering via `handleFocusModeMatch()`.
-- `src/features/project-editor/components/rich-markdown-editor-typography.ts`
+- `src/features/project-editor/pane/rich-markdown-editor/rich-markdown-editor-quill.ts`
+  - Quill adapter: creates the editor instance, applies markdown, syncs spellcheck, and exposes serialization helpers.
+- `src/features/project-editor/pane/rich-markdown-editor/rich-markdown-editor-commands.ts`
+  - Handles workspace commands and blocks markdown paste while revision preview is read-only.
+- `src/features/project-editor/pane/rich-markdown-editor/rich-markdown-editor-typography.ts`
   - Smart typography auto-replacement on user input: `--` → `—`, `<<` → `«`, `>>` → `»`. Each substitution is isolated as its own Ctrl+Z undo entry via `history.cutoff()`.
-- `src/features/project-editor/components/rich-markdown-editor-focus-scope.ts`
-  - Focus-mode hook orchestration: applies emphasis classes and wires scroll centering, selection tracking, and listener setup.
-  - Coordinates between focus scope helpers and centered scroll updates.
-- `src/features/project-editor/components/rich-markdown-editor-focus-scope-helpers.ts`
-  - Focus scope helper functions: applies/clears CSS class emphasis, manages CSS Highlights API, handles fallback text emphasis.
-  - Contains `getSelectionViewportRect()` for real DOM viewport geometry of the current selection.
-- `src/features/project-editor/components/rich-markdown-editor-focus-scope-scroll.ts`
-  - Centered scroll logic: computes target scroll position to keep active line centered vertically.
-  - Uses requestAnimationFrame phases to recalculate after padding changes; expands top/bottom edge space dynamically.
-- `src/features/project-editor/components/rich-markdown-editor-focus-scope-geometry.ts`
-  - Geometry helpers for focus-mode (text offset resolution, visual line/sentence boundary calculations).
-- `src/features/project-editor/pane/rich-markdown-editor/rich-markdown-editor-toolbar.ts`
-  - Thin public toolbar hook. Delegates toolbar DOM ownership to the private controller/DOM Modules while preserving Quill as the seam.
+- `src/features/project-editor/pane/rich-markdown-editor/rich-markdown-editor-value-sync.ts`
+  - Canonical editor-value helpers: normalize image-bearing markdown into placeholder form and compare equivalent external/editor values without triggering destructive re-renders.
 
 ### Sidebar components
 
@@ -545,134 +554,110 @@ Mandatory doc navigation for new chats: start with `mds/START-HERE.md` — it pr
 - `src/features/project-editor/components/sidebar/sidebar-explorer-body/index.ts`
   - Deep module public facade for the sidebar explorer body component.
 - `src/features/project-editor/components/sidebar/sidebar-explorer-body/sidebar-explorer-body-private/sidebar-explorer-body.tsx`
-  - Explorer body (path, filter, tree, state hints, menus/dialogs).
+  - Explorer body (path, filter, tree, menus/dialogs).
 - `src/features/project-editor/components/sidebar/sidebar-explorer-body/sidebar-explorer-body-private/sidebar-tree-area.tsx`
   - Helper rendering component for tree structure area and empty state placeholder hints.
 - `src/features/project-editor/components/sidebar/sidebar-tree.tsx`
   - Interactive tree rows, keyboard nav, right-click file hook, and drag-and-drop reorder state. Measures row geometry once at drag start and delegates position calculation to `sidebar-drop-logic`.
 - `src/features/project-editor/components/sidebar/sidebar-tree-logic.ts`
-  - Pure tree build/flatten helpers.
-- `src/features/project-editor/components/sidebar/sidebar-tree-sort.ts`
-  - `sortTreeRowsByOrder()` — reorders sidebar tree rows by `corkboardOrder` from index. Re-exported via `sidebar-tree-logic.ts`.
-- `mds/architecture/sidebar-drag-drop-architecture.md`
-  - Comprehensive reference for sidebar drag-and-drop architecture: drop position model, data flow for reorder vs move, path scoping rules, IPC contracts, component hierarchy, and Slice 1 implementation details.
-- `src/features/project-editor/components/sidebar/sidebar-tree-row-button.tsx`
-  - Individual tree row with drag handle, drag event handlers, and drop-indicator CSS classes (`is-drop-before`, `is-drop-after`, `is-drop-onFolder`).
-- `src/features/project-editor/components/sidebar/drop-indicator.tsx`
-  - Drop indicator position type model (`before` | `after` | `onFolder` | `onSection`). Visual rendering is handled by CSS classes on `SidebarTreeRowButton`.
-- `src/features/project-editor/components/sidebar/use-sidebar-tree-expanded-folders.ts`
-  - Expanded folder state management, including rename remap consumption via sidebar folder-rename events.
-- `src/features/project-editor/components/sidebar/sidebar-drop-logic/index.ts`
-  - Public facade for drag-and-drop position calculation and execution. Do not import from `private/` directly.
-- `src/features/project-editor/components/sidebar/sidebar-drop-logic/private/drop-position.ts`
-  - Pure `calculateDropPosition(rows, draggingPath, hoveredPath, clientY, rowGeometries)` — no DOM queries.
-- `src/features/project-editor/components/sidebar/sidebar-drop-logic/private/drop-execution.ts`
-  - `executeDrop()` — routes folder drops and file drops (move vs reorder) behind a single interface.
-- `src/features/project-editor/components/sidebar/sidebar-drop-logic/private/file-reorder.ts`
-  - Pure helpers for cross-folder move + reorder (`handleFileCrossFolderDrop`) and same-folder reorder (`handleFileSameFolderReorder`).
-- `src/features/project-editor/components/sidebar/sidebar-drop-logic/private/container-handlers.ts`
-  - Container-level `onDragOver` / `onDrop` handlers that detect background drops geometrically via `e.target !== e.currentTarget`.
-- `src/features/project-editor/components/sidebar/use-sidebar-tree-rows-drag.ts`
-  - Adapter hook: builds `RowGeometry[]` once at drag start via `buildRowGeometries()`, then delegates position math and execution to `sidebar-drop-logic`.
-- `src/features/project-editor/components/sidebar/sidebar-folder-rename-events.ts`
-  - One-shot folder rename event bridge used to remap expanded folder state after refresh.
+  - Pure helpers for the tree rows (selection, expansion, drag-over classification, keyboard navigation, path helpers).
+- `src/features/project-editor/components/sidebar/sidebar-tree-drop-logic.ts`
+  - Drag-over geometry and drop target classification (before/after/inside) for sidebar drag-drop reorder.
 - `src/features/project-editor/components/sidebar/sidebar-filter.tsx`
-  - Filter input UI.
-- `src/features/project-editor/components/sidebar/sidebar-explorer-hooks.ts`
-  - Consolidated explorer hooks: filter shortcut, responsive collapse, file context menu, folder context menu. `useSidebarResponsiveCollapse()` is the viewport-only breakpoint seam consumed by `use-sidebar-layout.ts`.
-- `src/features/project-editor/components/sidebar/sidebar-dialog-hooks.ts`
-  - Consolidated dialog hooks: create dialog state (article/map/category, including native map-image picker), folder actions dialog state.
-- `src/features/project-editor/components/sidebar/sidebar-create-dialog.tsx`
-  - Shared create modal dialog for article/map/category; map mode adds a browse-backed image field. Article mode supports optional template picker.
-- `src/features/project-editor/components/template-picker-combobox/index.ts`
-  - Deep module public facade for the template picker combobox component.
-- `src/features/project-editor/components/template-picker-combobox/template-picker-combobox-private/template-picker-combobox.tsx`
-  - Searchable combobox for selecting a template from `templates/` when creating an article.
-- `src/features/project-editor/components/template-picker-combobox/template-picker-combobox-private/template-picker-dropdown.tsx`
-  - Dropdown menu options component for template list navigation.
-- `src/features/project-editor/components/template-picker-combobox/template-picker-combobox-private/use-template-picker-combobox.ts`
-  - Combobox logic hook (keyboard navigation, selection, and click closures).
-- `src/features/project-editor/templates/index.ts`
-  - Deep module public facade for templates logic (TemplatesCatalog, SidebarCreateController, React bridge).
-- `src/features/project-editor/templates/templates-catalog.ts`
-  - `TemplatesCatalog` class: owns template path filtering, search query, selection state, and subscribe/notify pattern.
-- `src/features/project-editor/templates/templates-catalog-private/filter-template-paths.ts`
-  - Pure functions for extracting and filtering `templates/**/*.md` paths by search query.
-- `src/features/project-editor/templates/sidebar-create-controller.ts`
-  - `SidebarCreateController` class: owns create dialog mode, input state, template selection, and submit payload building.
-- `src/features/project-editor/templates/use-sidebar-create-controller-bridge.ts`
-  - Thin React bridge: `useRef` singleton + `useEffect` subscribe into `SidebarCreateController`.
-- `electron/services/template-service.ts`
-  - `TemplateService`: `ensureTemplatesDirectory()` (silent creation on project open) and `createFromTemplate()` (raw file copy preserving frontmatter).
-- `electron/ipc/handlers/project-handlers/template-handlers.ts`
-  - IPC handler for `createFromTemplate` channel.
+  - Sidebar filter input and clear button.
+- `src/features/project-editor/components/sidebar/sidebar-explorer-header.tsx`
+  - Explorer header with filter, collapse, and create-folder/file actions.
+- `src/features/project-editor/components/sidebar/sidebar-explorer-empty-state.tsx`
+  - Empty-state placeholder when no files match the filter.
 - `src/features/project-editor/components/sidebar/sidebar-file-context-menu.tsx`
-  - Right-click file action menu.
+  - Right-click context menu for file rows.
 - `src/features/project-editor/components/sidebar/sidebar-folder-context-menu.tsx`
-  - Right-click folder action menu (rename in V1).
-- `src/features/project-editor/components/sidebar/sidebar-file-actions-dialog.tsx`
-  - Rename/delete confirmation/input dialog.
-  - File delete dialog optionally offers deleting linked `res/*.png` images.
-- `src/features/project-editor/components/sidebar/use-sidebar-file-actions-dialog.ts`
-  - Rename/delete dialog state.
-  - Loads linked image info before file delete confirmation so the user can choose whether associated images are removed.
-- `src/features/project-editor/components/sidebar/sidebar-folder-actions-dialog.tsx`
-  - Folder rename input dialog.
-- `src/features/project-editor/components/sidebar/use-sidebar-folder-actions-dialog.ts`
-  - Folder rename dialog state.
-- `src/features/project-editor/components/sidebar/sidebar-footer-actions.tsx`
-  - Footer create controls: split `+Article` button with chevron menu for `Create map`, plus `+Category`.
+  - Right-click context menu for folder rows.
+- `src/features/project-editor/components/sidebar/sidebar-create-actions.tsx`
+  - Create file/folder action chips and keyboard accessibility.
+- `src/features/project-editor/components/sidebar/sidebar-create-modal.tsx`
+  - Create file/folder modal dialog.
+- `src/features/project-editor/components/sidebar/sidebar-rename-modal.tsx`
+  - Rename file/folder modal dialog.
+- `src/features/project-editor/components/sidebar/sidebar-delete-modal.tsx`
+  - Delete file/folder confirmation modal.
+- `src/features/project-editor/components/sidebar/sidebar-tags-panel.tsx`
+  - Tags panel: lists tags from index, filters tree by tag, and supports editing a file's tags.
+- `src/features/project-editor/components/sidebar/sidebar-search.tsx`
+  - Global project search modal.
+- `src/features/project-editor/components/sidebar/sidebar-search-results.tsx`
+  - Search result rows with path, context preview, and click-to-open behavior.
 - `src/features/project-editor/components/sidebar/sidebar-settings.tsx`
-  - Sidebar settings panel with `SettingsField` layout component and all control subcomponents (theme preference buttons, focus scope select, spellcheck controls, spellcheck language select, panel width control).
-- `src/features/project-editor/components/sidebar/sidebar-transfer-content.tsx`
-  - Transfer section composition: separate `Project interchange` (AI import/export) and `Book export` blocks with format selector + export trigger.
+  - Sidebar settings panel (theme, spellcheck language, etc.).
+- `src/features/project-editor/components/sidebar/sidebar-templates-panel.tsx`
+  - Templates panel for creating documents from templates.
+- `src/features/project-editor/components/sidebar/sidebar-transfer-panel.tsx`
+  - Transfer panel for AI import/export staging and execution.
+- `src/features/project-editor/components/sidebar/sidebar-lore-panel.tsx`
+  - Lore panel: tag-based lore article browser.
+- `src/features/project-editor/components/sidebar/sidebar-outline-panel.tsx`
+  - Outline panel: corkboard-ordered document outline.
+- `src/features/project-editor/components/sidebar/sidebar-revisions-panel.tsx`
+  - Revisions panel: project-level snapshot/revision list.
+- `src/features/project-editor/components/sidebar/sidebar-corkboard.tsx`
+  - Corkboard view for visual document ordering.
+- `src/features/project-editor/components/sidebar/sidebar-corkboard-card.tsx`
+  - Corkboard card component.
+- `src/features/project-editor/components/sidebar/sidebar-corkboard-drag-layer.tsx`
+  - Drag layer for corkboard reorder.
+- `src/features/project-editor/components/conflict/compare-conflict-dialog.tsx`
+  - Conflict compare dialog: shows local vs external versions side by side.
+- `src/features/project-editor/components/conflict/compare-conflict-dialog-body.tsx`
+  - Conflict compare dialog body with editor/read-only viewers.
+- `src/features/project-editor/components/conflict/conflict-compare-state.ts`
+  - Pure helpers for conflict comparison state.
+- `src/features/project-editor/components/conflict/external-conflict-banner.tsx`
+  - External conflict banner with reload/keep/save-as-copy actions.
+- `src/features/project-editor/components/conflict/save-as-copy-dialog.tsx`
+  - Save-as-copy dialog for conflict resolution.
+- `src/features/project-editor/components/conflict/save-as-copy-dialog-body.tsx`
+  - Save-as-copy dialog body.
+- `src/features/project-editor/components/zulu-import-preview-section.tsx`
+  - ZuluPad import preview list with file metadata.
+- `src/features/project-editor/components/zulu-import-preview-item.tsx`
+  - ZuluPad import preview item row.
+- `src/features/project-editor/components/zulu-import-preview-actions.tsx`
+  - ZuluPad import preview action buttons.
+- `src/features/project-editor/components/zulu-import-preview-empty-state.tsx`
+  - ZuluPad import empty-state placeholder.
+- `src/features/project-editor/components/zulu-import-preview-loading-state.tsx`
+  - ZuluPad import loading-state placeholder.
+- `src/features/project-editor/components/zulu-import-preview-error-state.tsx`
+  - ZuluPad import error-state placeholder.
+- `src/features/project-editor/components/zulu-import-preview-success-state.tsx`
+  - ZuluPad import success-state placeholder.
+- `src/features/project-editor/components/zulu-import-preview-warning-state.tsx`
+  - ZuluPad import warning-state placeholder.
+- `src/features/project-editor/components/zulu-import-preview-info-state.tsx`
+  - ZuluPad import info-state placeholder.
+- `src/features/project-editor/components/zulu-import-preview-help-state.tsx`
+  - ZuluPad import help-state placeholder.
+- `src/features/project-editor/components/zulu-import-preview-tip-state.tsx`
+  - ZuluPad import tip-state placeholder.
+- `src/features/project-editor/components/zulu-import-preview-note-state.tsx`
+  - ZuluPad import note-state placeholder.
+- `src/features/project-editor/components/zulu-import-preview-step-state.tsx`
+  - ZuluPad import step-state placeholder.
+- `src/features/project-editor/components/zulu-import-preview-feature-state.tsx`
+  - ZuluPad import feature-state placeholder.
+- `src/features/project-editor/components/zulu-import-preview-route-state.tsx`
+  - ZuluPad import route-state placeholder.
 
-## Shared contracts
+### Tests
 
-- `src/shared/ipc.ts`
-  - IPC channel constants, Zod schemas, shared envelope/types.
-  - Zulu schemas and types re-exported from `ipc-zulu.ts`.
-- `src/shared/ipc-git-history.ts`
-  - Shared Git history IPC schemas/types for status, snapshot, revisions, preview, and load-revision calls.
-- `src/shared/ipc-zulu.ts`
-  - ZuluPad import schemas (`zuluTagModeSchema`, `zuluSelectFileResponseSchema`, etc.) and their inferred types, extracted from `ipc.ts`.
-- `src/shared/project-sections/index.ts`
-  - Deep module public interface for relevant sections plus Git-managed roots (`book`, `outline`, `lore`, `res`, `.trama.index.json`).
-  - Exports `RELEVANT_SECTION_NAMES`, `RELEVANT_SECTION_ROOTS`, `TRAMA_INDEX_FILE_NAME`, `isRelevantPath()`, and `isManagedPath()`.
-  - Implementation: `private/constants.ts` (section names, managed directory names, derived root arrays), `private/path-matching.ts` (`isRelevantPath`, `isManagedPath`).
-- `src/shared/workspace-context-menu.ts`
-  - Event bridge contract between Electron context menu and the renderer: `WORKSPACE_CONTEXT_MENU_EVENT` constant and `WorkspaceContextCommand` union type.
-  - The `WorkspaceContextCommand` includes the `{ type: 'paste-markdown' }` case used by the native menu and editor listeners.
-  - Also carries renderer-published `WorkspaceContextMenuState` plus `{ type: 'see-revisions', pane, path }` for pane-targeted revision rail opening.
-- `src/shared/markdown-layout-directives.ts`
-  - Shared parser/serializer helpers for invisible markdown layout directives (`center`, `spacer`, `pagebreak`) and editor artifact mapping.
-- `src/shared/markdown-layout-directives-artifact-node.ts`
-  - Artifact-node serializer for converting directive blot/artifact DOM nodes back into canonical markdown comments.
-- `src/shared/markdown-layout-directives-spacing.ts`
-  - Markdown post-serialization normalization that converts repeated blank-line runs into canonical `trama:spacer` directives.
-- `src/shared/markdown-image-placeholder.ts`
-  - Shared image placeholder helpers: embedded-image cache, placeholder hydration, and editor-only broken-image placeholder encode/render/rehydrate helpers.
-- `src/shared/zulu-parser.ts`
-  - `.zulu` XML parser: extracts page titles and content from ZuluPad document format.
-- `src/types/trama-api.d.ts`
-  - Global declaration for `window.tramaApi`.
-
-## Tests
-
-Core and regression suites:
-
-- `tests/ipc-contract.test.ts`
-- `tests/map-editor-helpers.test.ts`
-  - Pure coverage for map config parsing/normalization and destination tag resolution.
-- `tests/git-history-service.test.ts`
-  - Focused backend coverage for Git history: parent-repo scoping, unrelated staged abort, ignored-file noop, rename-follow listing, preview fallback, restore behavior.
-- `tests/fullscreen-ipc.test.ts`
 - `tests/use-project-editor.test.ts`
 - `tests/workspace-layout-persistence.test.ts`
 - `tests/project-editor-conflict-flow.test.ts`
 - `tests/project-editor-logic.test.ts`
 - `tests/project-folder-dialog-handler.test.ts`
 - `tests/rich-markdown-editor.test.ts`
+- `tests/editor-session.test.ts`
+  - Session-level tests: init/flush/canonical value, external force-apply, flush return contract, cleanup timer cancel, per-pane closure capture.
 - `tests/rich-markdown-editor-tag-overlay.test.ts`
 - `tests/paste-markdown.test.ts`
 - `tests/focus-mode-scope.test.ts`
@@ -680,6 +665,10 @@ Core and regression suites:
   - CSS Highlights API priority, fallback overlay, scope change marker behavior.
 - `tests/rich-markdown-editor-focus-split-pane.test.ts`
   - Split pane focus regression: active/inactive pane behavior, `isActive` strict equality (`=== false`), CSS class application for `.is-focus-mode-inactive` dimming.
+- `tests/rich-markdown-editor-find-regression.test.ts`
+  - Find bar activation, replace flow, and active-match bounds scroll regression.
+- `tests/rich-markdown-editor-toolbar-zoom.test.ts`
+  - Zoom select factory, zoom normalization, toolbar render, and `onZoomChange` callback.
 - `tests/sidebar-tree.test.ts`
 - `tests/sidebar-path-scoping-types.test.ts`
   - Runtime smoke coverage for the new path-scoping seam plus compile-time brand assertions enforced through `tests/typescript-compile.test.ts`.

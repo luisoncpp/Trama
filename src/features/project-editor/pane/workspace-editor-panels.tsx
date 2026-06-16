@@ -21,7 +21,7 @@ interface ActiveEditorPanelProps {
 }
 
 function ActiveEditorPanel({ model, spellcheckEnabled, tagIndex, onTagClick, zoomRef, zoomLevel, onZoomChange }: ActiveEditorPanelProps) {
-  const { state, actions, serializationRefs } = model
+  const { state, actions, editorSessionRefs } = model
   const activePaneState = state.workspaceLayout.activePane === 'secondary' ? state.secondaryPane : state.primaryPane
 
   const onMarkDirty = () => {
@@ -62,7 +62,7 @@ function ActiveEditorPanel({ model, spellcheckEnabled, tagIndex, onTagClick, zoo
         tagIndex={tagIndex}
         onTagClick={onTagClick}
         onMapMarkerNavigate={(filePath, pane) => { actions.openFileInPane(filePath, pane) }}
-        editorSerializationRef={serializationRefs.primary}
+        onSessionReady={(session) => { editorSessionRefs.primary.current = session }}
       onMarkDirty={onMarkDirty}
       zoomRef={zoomRef}
       zoomLevel={zoomLevel}

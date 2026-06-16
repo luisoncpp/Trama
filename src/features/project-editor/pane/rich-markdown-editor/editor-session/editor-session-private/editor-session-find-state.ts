@@ -1,6 +1,6 @@
 import { useCallback, useRef, useState } from 'preact/hooks'
 import type Quill from 'quill'
-import { mapPlainTextIndexToQuillIndex } from './rich-markdown-editor-tag-overlay'
+import { mapPlainTextIndexToQuillIndex } from './editor-session-tag-math'
 
 export interface SearchState {
   query: string

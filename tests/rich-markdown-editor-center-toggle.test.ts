@@ -7,11 +7,8 @@ import {
   findCenterSegmentAtIndex,
   getCenterSegments,
   normalizeSelectionToLineRange,
-} from '../src/features/project-editor/pane/rich-markdown-editor/rich-markdown-editor-layout-center-ranges'
-import {
-  insertCenterDirectives,
-  toggleCenterDirectives,
-} from '../src/features/project-editor/pane/rich-markdown-editor/rich-markdown-editor-layout-actions'
+  LayoutDirectiveController,
+} from '../src/features/project-editor/pane/rich-markdown-editor/editor-session/editor-session-private/layout-directive-controller'
 
 interface StubLine {
   length: () => number
@@ -310,7 +307,7 @@ describe('rich-markdown-editor-layout-center-ranges', () => {
       selection: { index: 3, length: 0 },
     })
 
-    toggleCenterDirectives(editor)
+    LayoutDirectiveController.toggleCenter(editor)
 
     expect(serializeOps(editor.getContents().ops)).toEqual([
       '[center:start]',
@@ -340,7 +337,7 @@ describe('rich-markdown-editor-layout-center-ranges', () => {
       selection: { index: 3, length: 0 },
     })
 
-    toggleCenterDirectives(editor)
+    LayoutDirectiveController.toggleCenter(editor)
 
     expect(serializeOps(editor.getContents().ops)).toEqual([
       '[center:start]',
@@ -361,7 +358,7 @@ describe('rich-markdown-editor-layout-center-ranges', () => {
       selection: { index: 2, length: 0 },
     })
 
-    toggleCenterDirectives(editor)
+    LayoutDirectiveController.toggleCenter(editor)
 
     expect(serializeOps(editor.getContents().ops)).toEqual([
       'A\n',
@@ -383,7 +380,7 @@ describe('rich-markdown-editor-layout-center-ranges', () => {
       selection: { index: 4, length: 0 },
     })
 
-    toggleCenterDirectives(editor)
+    LayoutDirectiveController.toggleCenter(editor)
 
     expect(serializeOps(editor.getContents().ops)).toEqual([
       '[center:start]',
@@ -403,11 +400,11 @@ describe('rich-markdown-editor-layout-center-ranges', () => {
       selection: { index: 0, length: 0 },
     })
 
-    insertCenterDirectives(editor)
+    LayoutDirectiveController.insertCenter(editor)
     editor.setSelection(1, 0)
-    toggleCenterDirectives(editor)
+    LayoutDirectiveController.toggleCenter(editor)
     editor.setSelection(1, 0)
-    toggleCenterDirectives(editor)
+    LayoutDirectiveController.toggleCenter(editor)
 
     const serialized = serializeOps(editor.getContents().ops)
     expect(serialized).toEqual([
@@ -432,7 +429,7 @@ describe('rich-markdown-editor-layout-center-ranges', () => {
       selection: { index: 0, length: 0 },
     })
 
-    toggleCenterDirectives(editor)
+    LayoutDirectiveController.toggleCenter(editor)
 
     expect(serializeOps(editor.getContents().ops)).toEqual([
       '[center:start]',
@@ -453,7 +450,7 @@ describe('rich-markdown-editor-layout-center-ranges', () => {
       selection: { index: 2, length: 0 },
     })
 
-    toggleCenterDirectives(editor)
+    LayoutDirectiveController.toggleCenter(editor)
 
     const cursor = editor.getSelection()
     expect(cursor).toBeDefined()

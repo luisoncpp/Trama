@@ -4,6 +4,17 @@ import type { OpenProjectOptions } from './open-project-types.js'
 
 export type { GitHistoryState, RevisionRailState } from './project-editor-revision-types.js'
 
+export interface TagMatch {
+  tag: string
+  start: number
+  end: number
+  filePath: string
+}
+
+export interface EditorSession {
+  flush(): string | null
+}
+
 export type SidebarSection = 'explorer' | 'outline' | 'lore' | 'templates' | 'transfer' | 'settings'
 export type WorkspaceLayoutMode = 'single' | 'split'
 export type WorkspacePane = 'primary' | 'secondary'
@@ -162,12 +173,6 @@ export interface ProjectEditorActions {
   closeConflictCompare: () => void
 }
 
-export interface EditorSerializationRefs {
-  flush: () => string | null
-  tagOverlayRecalcRef: { current: boolean }
-  tagOverlayMatchesRef: { current: Array<{ tag: string; start: number; end: number; filePath: string }> }
-}
-
 export interface EditorZoomRef {
   current: number
 }
@@ -185,9 +190,9 @@ export interface PaneNavigationHistoryStore {
 export interface ProjectEditorModel {
   state: ProjectEditorState
   actions: ProjectEditorActions
-  serializationRefs: {
-    primary: { current: EditorSerializationRefs }
-    secondary: { current: EditorSerializationRefs }
+  editorSessionRefs: {
+    primary: { current: EditorSession | null }
+    secondary: { current: EditorSession | null }
   }
   zoomRef: EditorZoomRef
 }

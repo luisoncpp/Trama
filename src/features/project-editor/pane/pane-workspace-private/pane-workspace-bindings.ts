@@ -1,12 +1,12 @@
-import type { EditorSerializationRefs, PaneDocumentState, WorkspacePane } from '../../project-editor-types'
+import type { EditorSession, PaneDocumentState, WorkspacePane } from '../../project-editor-types'
 import type { PaneBindings } from '../pane-workspace-types'
 
-export type PaneSerializationRefs = {
-  primary: { current: EditorSerializationRefs }
-  secondary: { current: EditorSerializationRefs }
+export type PaneEditorSessionRefs = {
+  primary: { current: EditorSession | null }
+  secondary: { current: EditorSession | null }
 }
 
-export function getSerializationRefForPane(pane: WorkspacePane, refs: PaneSerializationRefs) {
+export function getEditorSessionRefForPane(pane: WorkspacePane, refs: PaneEditorSessionRefs) {
   return pane === 'secondary' ? refs.secondary : refs.primary
 }
 

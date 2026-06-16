@@ -1,7 +1,7 @@
 import { useRef } from 'preact/hooks'
 import type { DocumentMeta } from '../../shared/ipc'
 import type {
-  EditorSerializationRefs,
+  EditorSession,
   EditorZoomRef,
   ProjectEditorModel,
 } from './project-editor-types'
@@ -16,7 +16,6 @@ import {
   useZoomRefSync,
 } from './use-project-editor-effects'
 import {
-  createEditorSerializationRefs,
   createNavigationHistoryStore,
   createSaveDocumentProxy,
 } from './project-editor-private/use-project-editor-model'
@@ -27,8 +26,8 @@ function useProjectEditorWorkspace(
   layoutState: ReturnType<typeof useProjectEditorState>['layoutState'],
   paneBindings: ReturnType<typeof useProjectEditorState>['paneBindings'],
 ) {
-  const primarySerializationRef = useRef<EditorSerializationRefs>(createEditorSerializationRefs())
-  const secondarySerializationRef = useRef<EditorSerializationRefs>(createEditorSerializationRefs())
+  const primaryEditorSessionRef = useRef<EditorSession | null>(null)
+  const secondaryEditorSessionRef = useRef<EditorSession | null>(null)
   const saveDocumentNowRef = useRef<((path: string, content: string, meta: DocumentMeta) => Promise<void>) | null>(null)
   const lastSavedContentMapRef = useRef(new Map<string, string>())
   const navigationHistoryRef = useRef(createNavigationHistoryStore())
@@ -36,7 +35,7 @@ function useProjectEditorWorkspace(
   const paneWorkspace = usePaneWorkspace(
     layoutState.workspaceLayout,
     paneBindings,
-    { primary: primarySerializationRef, secondary: secondarySerializationRef },
+    { primary: primaryEditorSessionRef, secondary: secondaryEditorSessionRef },
     createSaveDocumentProxy(saveDocumentNowRef),
     navigationHistoryRef.current,
     lastSavedContentMapRef.current,
@@ -47,9 +46,9 @@ function useProjectEditorWorkspace(
     zoomRef,
     saveDocumentNowRef,
     lastSavedContentMapRef,
-    serializationRefs: {
-      primary: primarySerializationRef,
-      secondary: secondarySerializationRef,
+    editorSessionRefs: {
+      primary: primaryEditorSessionRef,
+      secondary: secondaryEditorSessionRef,
     },
   }
 }
@@ -98,7 +97,7 @@ export function useProjectEditor(): ProjectEditorModel {
   return {
     state: (({ editorMeta, ...stateValue }) => stateValue)(values),
     actions,
-    serializationRefs: workspace.serializationRefs,
+    editorSessionRefs: workspace.editorSessionRefs,
     zoomRef: workspace.zoomRef,
   }
 }

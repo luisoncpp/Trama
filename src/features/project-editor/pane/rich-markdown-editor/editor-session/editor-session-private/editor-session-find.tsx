@@ -1,14 +1,14 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'preact/hooks'
 import type Quill from 'quill'
-import { FindOverlay, type FindMatchBounds } from './rich-markdown-editor-find-overlay'
-import { getActiveMatchBounds, useActiveMatchOverlayEffect } from './rich-markdown-editor-find-visual'
+import { FindOverlay, type FindMatchBounds } from './editor-session-find-overlay'
+import { getActiveMatchBounds, useActiveMatchOverlayEffect } from './editor-session-find-visual'
 import {
   isModF,
   isModH,
   formatMatchLabel,
   useSearchState,
   useReplaceActions,
-} from './rich-markdown-editor-find-state'
+} from './editor-session-find-state'
 
 interface UseRichEditorFindParams {
   documentId: string | null

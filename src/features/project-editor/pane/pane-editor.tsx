@@ -16,9 +16,10 @@ interface PaneEditorProps {
 
 function buildPaneEditorPanelProps(props: PaneEditorProps) {
   const { model, spellcheckEnabled, pane, tagIndex, onTagClick, zoomRef, zoomLevel, onZoomChange } = props
-  const { state, actions, serializationRefs } = model
+  const { state, actions, editorSessionRefs } = model
   const paneState = pane === 'secondary' ? state.secondaryPane : state.primaryPane
   const isActive = state.workspaceLayout.activePane === pane
+  const sessionRef = pane === 'primary' ? editorSessionRefs.primary : editorSessionRefs.secondary
   return {
     paneState,
     isActive,
@@ -57,7 +58,7 @@ function buildPaneEditorPanelProps(props: PaneEditorProps) {
       onTagClick,
       onMapMarkerNavigate: (filePath: string, targetPane: WorkspacePane) => { actions.openFileInPane(filePath, targetPane) },
       isActive,
-      editorSerializationRef: pane === 'primary' ? serializationRefs.primary : serializationRefs.secondary,
+      onSessionReady: (session: import('../project-editor-types').EditorSession | null) => { sessionRef.current = session },
       onMarkDirty: () => { actions.markEditorDirty(pane) },
       zoomRef,
       zoomLevel,

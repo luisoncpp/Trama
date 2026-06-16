@@ -1,40 +1,19 @@
 import type Quill from 'quill'
 import Delta from 'quill-delta'
 import {
-  type CenterDeleteDirection,
-  type CenterSegment,
-  type SelectionRange,
-  getCenterSegments,
-  getLineStartIndex,
-  getLineEndIndexExclusive,
   buildSegmentWithShiftedEndBoundary,
   buildSegmentWithShiftedStartBoundary,
+  getCenterSegments,
+  getLineEndIndexExclusive,
+  getLineStartIndex,
   startsWithTextInsert,
-} from './rich-markdown-editor-layout-center-ranges'
-
-export type { CenterDeleteDirection, CenterSegment, SelectionRange }
-
-export function buildBoundarySafeDeleteContents(
-  editor: Quill,
-  selection: SelectionRange | null,
-  direction: CenterDeleteDirection,
-): Delta | null {
-  if (!selection || selection.length !== 0) return null
-
-  const segments = getCenterSegments(editor)
-  const contents = editor.getContents() as Delta
-
-  if (direction === 'backspace') {
-    return handleBackspaceDelete(editor, selection, segments, contents)
-  }
-
-  return handleDeleteForward(editor, selection, segments, contents)
-}
+} from './layout-directive-center-ranges'
+import type { CenterDeleteDirection, SelectionRange } from './layout-directive-types'
 
 function handleBackspaceDelete(
   editor: Quill,
   selection: SelectionRange,
-  segments: CenterSegment[],
+  segments: ReturnType<typeof getCenterSegments>,
   contents: Delta,
 ): Delta | null {
   if (selection.index <= 0) return null
@@ -61,7 +40,7 @@ function handleBackspaceDelete(
 function handleDeleteForward(
   editor: Quill,
   selection: SelectionRange,
-  segments: CenterSegment[],
+  segments: ReturnType<typeof getCenterSegments>,
   contents: Delta,
 ): Delta | null {
   const startSegment = segments.find((c) => selection.index === c.startBoundaryIndex)
@@ -83,4 +62,21 @@ function handleDeleteForward(
   if (!startsWithTextInsert(shiftedContent)) return null
 
   return buildSegmentWithShiftedEndBoundary(contents, segment, shiftedStart, shiftedEnd)
+}
+
+export function buildBoundarySafeDeleteContents(
+  editor: Quill,
+  selection: SelectionRange | null,
+  direction: CenterDeleteDirection,
+): Delta | null {
+  if (!selection || selection.length !== 0) return null
+
+  const segments = getCenterSegments(editor)
+  const contents = editor.getContents() as Delta
+
+  if (direction === 'backspace') {
+    return handleBackspaceDelete(editor, selection, segments, contents)
+  }
+
+  return handleDeleteForward(editor, selection, segments, contents)
 }

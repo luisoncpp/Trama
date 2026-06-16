@@ -1,12 +1,12 @@
 /* eslint-disable max-lines-per-function */
 import { PROJECT_EDITOR_STRINGS } from '../project-editor-strings'
-import type { EditorSerializationRefs, FocusScope, EditorZoomRef, WorkspaceLayoutMode } from '../project-editor-types'
+import type { EditorSession, FocusScope, EditorZoomRef, WorkspaceLayoutMode } from '../project-editor-types'
 import { WORKSPACE_CONTEXT_MENU_STATE_GLOBAL, type WorkspaceContextMenuState } from '../../../shared/workspace-context-menu'
 import { RichMarkdownEditor } from './rich-markdown-editor/rich-markdown-editor'
 import { MapEditor } from './map-editor/map-editor'
 import { RelationshipsEditor } from './relationships-editor/relationships-editor'
 import { RevisionsRail } from './revisions/revisions-rail'
-import type { RichEditorSyncState } from './rich-markdown-editor/rich-markdown-editor-toolbar'
+import type { RichEditorSyncState } from './rich-markdown-editor/editor-session/editor-session-private/editor-session-toolbar'
 import type { DocumentMeta } from '../../../shared/ipc'
 
 interface EditorPanelProps {
@@ -44,7 +44,7 @@ interface EditorPanelProps {
   onTagClick?: (filePath: string) => void
   onMapMarkerNavigate?: (filePath: string, pane: 'primary' | 'secondary') => void
   isActive?: boolean
-  editorSerializationRef?: { current: EditorSerializationRefs }
+  onSessionReady?: (session: EditorSession | null) => void
   onMarkDirty?: () => void
   zoomRef?: EditorZoomRef
   zoomLevel?: number
@@ -177,7 +177,7 @@ function renderEditorPanelBody(
               syncState={state.syncState} syncStateLabel={state.syncStateLabel}
               focusModeEnabled={props.focusModeEnabled} focusScope={props.focusScope}
               tagIndex={props.tagIndex} onTagClick={props.onTagClick} isActive={props.isActive}
-              editorSerializationRef={props.editorSerializationRef}
+              onSessionReady={props.onSessionReady}
               onMarkDirty={props.onMarkDirty}
               zoomRef={props.zoomRef}
               zoomLevel={props.zoomLevel}

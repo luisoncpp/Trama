@@ -27,13 +27,13 @@ This is not the canonical full architecture guide. For the full subsystem design
 
 | Hotspot | Symptom | Open these first |
 |---------|---------|------------------|
-| Debounced serialization | Last typed text disappears, save misses final keystrokes, revert ignores the latest keystroke, images vanish after typing | `mds/architecture/editor-serialization-debounce-architecture.md` -> `src/features/project-editor/pane/rich-markdown-editor/rich-markdown-editor-serialization.ts` |
-| Canonical external-value sync | Images blink or vanish after first edit, equivalent content gets re-applied | `src/features/project-editor/pane/rich-markdown-editor/rich-markdown-editor-external-sync.ts` -> `src/features/project-editor/pane/rich-markdown-editor/rich-markdown-editor-value-sync.ts` -> `mds/flows/rich-editor-external-sync-flow.md` |
+| Debounced serialization | Last typed text disappears, save misses final keystrokes, revert ignores the latest keystroke, images vanish after typing | `mds/architecture/editor-serialization-debounce-architecture.md` -> `src/features/project-editor/pane/rich-markdown-editor/editor-session/editor-session-private/editor-session-serialization.ts` |
+| Canonical external-value sync | Images blink or vanish after first edit, equivalent content gets re-applied | `src/features/project-editor/pane/rich-markdown-editor/editor-session/editor-session-private/editor-session-external-sync.ts` -> `src/features/project-editor/pane/rich-markdown-editor/rich-markdown-editor-value-sync.ts` -> `mds/flows/rich-editor-external-sync-flow.md` |
 | Pane-targeted persistence | Save, switch, close, or revert hits the wrong pane | `src/features/project-editor/pane/pane-workspace.ts` -> `src/features/project-editor/workspace-actions.ts` |
 | Layout path vs loaded pane path | Sidebar highlights wrong file or goes blank after pane changes | `mds/architecture/split-pane-coordination.md` -> `src/features/project-editor/project-editor-private/state.ts` |
-| Quill lifecycle / re-init | Cursor jumps, editor remounts unexpectedly, runtime toggle acts like full re-create | `src/features/project-editor/components/rich-markdown-editor-core.ts` -> `mds/lessons-learned/rich-editor-effect-deps-remount.md` |
-| Focus-mode geometry / scroll | Active line is miscentered, EOF spacing behaves strangely, selection desync after scroll | `src/features/project-editor/components/rich-markdown-editor-focus-scope-scroll.ts` -> `src/features/project-editor/components/rich-markdown-editor-focus-scope-geometry.ts` |
-| Workspace command bridge | Context-menu command or editor command does nothing | `src/shared/workspace-context-menu.ts` -> `src/features/project-editor/components/rich-markdown-editor-commands.ts` |
+| Quill lifecycle / re-init | Cursor jumps, editor remounts unexpectedly, runtime toggle acts like full re-create | `src/features/project-editor/pane/rich-markdown-editor/editor-session/editor-session-private/editor-session-lifecycle.ts` -> `mds/lessons-learned/rich-editor-effect-deps-remount.md` |
+| Focus-mode geometry / scroll | Active line is miscentered, EOF spacing behaves strangely, selection desync after scroll | `src/features/project-editor/pane/rich-markdown-editor/editor-session/editor-session-private/editor-session-focus-scroll.ts` -> `src/features/project-editor/pane/rich-markdown-editor/editor-session/editor-session-private/editor-session-focus-geometry.ts` |
+| Workspace command bridge | Context-menu command or editor command does nothing | `src/shared/workspace-context-menu.ts` -> `src/features/project-editor/pane/rich-markdown-editor/rich-markdown-editor-commands.ts` |
 
 ## 1. Debounced serialization
 
@@ -43,7 +43,7 @@ The timer must serialize the exact editor/document captured at registration time
 
 ### Main files
 
-- `src/features/project-editor/pane/rich-markdown-editor/rich-markdown-editor-serialization.ts`
+- `src/features/project-editor/pane/rich-markdown-editor/editor-session/editor-session-private/editor-session-serialization.ts`
 - `mds/architecture/editor-serialization-debounce-architecture.md`
 - `mds/lessons-learned/editor-debounce-closure-capture.md`
 - `mds/lessons-learned/editor-onchange-image-hydration.md`
@@ -69,9 +69,9 @@ The same document can appear as hydrated base64 markdown or placeholder markdown
 
 ### Main files
 
-- `src/features/project-editor/pane/rich-markdown-editor/rich-markdown-editor-external-sync.ts`
+- `src/features/project-editor/pane/rich-markdown-editor/editor-session/editor-session-private/editor-session-external-sync.ts`
 - `src/features/project-editor/pane/rich-markdown-editor/rich-markdown-editor-value-sync.ts`
-- `src/features/project-editor/pane/rich-markdown-editor/rich-markdown-editor-core.ts`
+- `src/features/project-editor/pane/rich-markdown-editor/editor-session/editor-session-private/editor-session-lifecycle.ts`
 - `src/shared/markdown-image-placeholder.ts`
 - `mds/architecture/image-handling-architecture.md`
 
@@ -146,7 +146,7 @@ Changing initialization dependencies or mixing runtime toggles into init effects
 
 ### Main files
 
-- `src/features/project-editor/components/rich-markdown-editor-core.ts`
+- `src/features/project-editor/pane/rich-markdown-editor/editor-session/editor-session-private/editor-session-lifecycle.ts`
 - `mds/lessons-learned/rich-editor-effect-deps-remount.md`
 
 ### Invariants
@@ -162,10 +162,10 @@ This area mixes DOM geometry, selection behavior, Quill offsets, scroll updates,
 
 ### Main files
 
-- `src/features/project-editor/components/rich-markdown-editor-focus-scope-scroll.ts`
-- `src/features/project-editor/components/rich-markdown-editor-focus-scope-geometry.ts`
-- `src/features/project-editor/components/rich-markdown-editor-focus-scope.ts`
-- `src/features/project-editor/components/rich-markdown-editor-focus-scope-helpers.ts`
+- `src/features/project-editor/pane/rich-markdown-editor/editor-session/editor-session-private/editor-session-focus-scroll.ts`
+- `src/features/project-editor/pane/rich-markdown-editor/editor-session/editor-session-private/editor-session-focus-geometry.ts`
+- `src/features/project-editor/pane/rich-markdown-editor/editor-session/editor-session-private/editor-session-focus.ts`
+- `src/features/project-editor/pane/rich-markdown-editor/editor-session/editor-session-private/editor-session-focus-helpers.ts`
 
 ### Invariants
 
@@ -184,7 +184,7 @@ Commands may be wired correctly in the native menu but not in the renderer, or v
 - `src/shared/workspace-context-menu.ts`
 - `electron/main-process/context-menu.ts`
 - `src/features/project-editor/use-project-editor-context-menu-effect.ts`
-- `src/features/project-editor/components/rich-markdown-editor-commands.ts`
+- `src/features/project-editor/pane/rich-markdown-editor/rich-markdown-editor-commands.ts`
 
 ### Invariants
 
@@ -201,11 +201,12 @@ Commands may be wired correctly in the native menu but not in the renderer, or v
 | "Sidebar shows wrong file after pane change" | Layout path vs loaded pane path |
 | "Spellcheck or some toggle remounted Quill" | Quill lifecycle and remount boundaries |
 | "Focus mode scroll feels haunted" | Focus-mode geometry and scroll |
-| "Tag underlines distort on typing" | Tag overlay positions → `useTagOverlay` memoization bug → remove `useMemo` |
+| "Tag underlines distort on typing" | Tag overlay positions → `editor-session-tag-overlay.ts` recalc via `subscribeContentMutated()` |
 | "Context menu command does nothing" | Workspace command bridge |
 
 ## Related docs
 
 - `mds/flows/README.md`
-- `mds/plan/rich-editor-refactor-plan.md`
+- `mds/plan/done/rich-editor-refactor-plan.md`
+- `mds/plan/done/rich-editor-session-deepening-plan.md`
 - `mds/lessons-learned/README.md`

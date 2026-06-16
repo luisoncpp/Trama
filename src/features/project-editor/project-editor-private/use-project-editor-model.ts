@@ -1,19 +1,8 @@
 import type { DocumentMeta } from '../../../shared/ipc'
 import type {
-  EditorSerializationRefs,
   PaneNavigationHistoryStore,
   WorkspaceLayoutState,
 } from '../project-editor-types'
-
-export function createEditorSerializationRefs(): EditorSerializationRefs {
-  return {
-    flush: () => null,
-    tagOverlayRecalcRef: { current: false },
-    tagOverlayMatchesRef: {
-      current: [] as Array<{ tag: string; start: number; end: number; filePath: string }>,
-    },
-  }
-}
 
 export function createNavigationHistoryStore(): PaneNavigationHistoryStore {
   return {

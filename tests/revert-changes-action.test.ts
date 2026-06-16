@@ -3,7 +3,7 @@ import { h, render } from 'preact'
 import { act } from 'preact/test-utils'
 import { revertChanges } from '../src/features/project-editor/workspace-actions'
 import { usePaneWorkspace, type PaneBindings } from '../src/features/project-editor/pane'
-import type { EditorSerializationRefs, PaneDocumentState, WorkspaceLayoutState, ProjectEditorUiState } from '../src/features/project-editor/project-editor-types'
+import type { EditorSession, PaneDocumentState, WorkspaceLayoutState, ProjectEditorUiState } from '../src/features/project-editor/project-editor-types'
 
 interface TestSetters {
   setExternalConflictPath: (value: string | null) => void
@@ -41,10 +41,10 @@ function makePane(path: string | null, content: string, isDirty: boolean): PaneD
   return { path, content, meta: {}, isDirty, reloadVersion: 0, revisionRail: {} as any }
 }
 
-function makeSerializationRefs(): { primary: { current: EditorSerializationRefs }; secondary: { current: EditorSerializationRefs } } {
+function makeEditorSessionRefs(): { primary: { current: EditorSession | null }; secondary: { current: EditorSession | null } } {
   return {
-    primary: { current: { flush: () => null, tagOverlayRecalcRef: { current: false }, tagOverlayMatchesRef: { current: [] } } },
-    secondary: { current: { flush: () => null, tagOverlayRecalcRef: { current: false }, tagOverlayMatchesRef: { current: [] } } },
+    primary: { current: null },
+    secondary: { current: null },
   }
 }
 
@@ -69,7 +69,7 @@ describe('revertChanges', () => {
     const primary = makePane('docs/a.md', '# dirty content', true)
     const secondary = makePane('docs/b.md', '# B', false)
     const paneBindings = makePaneBindings(primary, secondary)
-    const serializationRefs = makeSerializationRefs()
+    const editorSessionRefs = makeEditorSessionRefs()
     const setters: TestSetters = {
       setExternalConflictPath: vi.fn(),
       setConflictComparisonContent: vi.fn(),
@@ -80,7 +80,7 @@ describe('revertChanges', () => {
     let wsRef: ReturnType<typeof usePaneWorkspace> | null = null
 
     function Harness() {
-      wsRef = usePaneWorkspace(layout, paneBindings, serializationRefs, noopSaveDocumentFn, navigationHistory)
+      wsRef = usePaneWorkspace(layout, paneBindings, editorSessionRefs, noopSaveDocumentFn, navigationHistory)
       return null
     }
 
@@ -106,7 +106,7 @@ describe('revertChanges', () => {
     const primary = makePane('docs/a.md', '# clean content', false)
     const secondary = makePane('docs/b.md', '# B', false)
     const paneBindings = makePaneBindings(primary, secondary)
-    const serializationRefs = makeSerializationRefs()
+    const editorSessionRefs = makeEditorSessionRefs()
     const setters: TestSetters = {
       setExternalConflictPath: vi.fn(),
       setConflictComparisonContent: vi.fn(),
@@ -117,7 +117,7 @@ describe('revertChanges', () => {
     let wsRef: ReturnType<typeof usePaneWorkspace> | null = null
 
     function Harness() {
-      wsRef = usePaneWorkspace(layout, paneBindings, serializationRefs, noopSaveDocumentFn, navigationHistory)
+      wsRef = usePaneWorkspace(layout, paneBindings, editorSessionRefs, noopSaveDocumentFn, navigationHistory)
       return null
     }
 
@@ -142,7 +142,7 @@ describe('revertChanges', () => {
     const primary = makePane(null, '# no path', true)
     const secondary = makePane('docs/b.md', '# B', false)
     const paneBindings = makePaneBindings(primary, secondary)
-    const serializationRefs = makeSerializationRefs()
+    const editorSessionRefs = makeEditorSessionRefs()
     const setters: TestSetters = {
       setExternalConflictPath: vi.fn(),
       setConflictComparisonContent: vi.fn(),
@@ -153,7 +153,7 @@ describe('revertChanges', () => {
     let wsRef: ReturnType<typeof usePaneWorkspace> | null = null
 
     function Harness() {
-      wsRef = usePaneWorkspace(layout, paneBindings, serializationRefs, noopSaveDocumentFn, navigationHistory)
+      wsRef = usePaneWorkspace(layout, paneBindings, editorSessionRefs, noopSaveDocumentFn, navigationHistory)
       return null
     }
 
@@ -178,7 +178,7 @@ describe('revertChanges', () => {
     const primary = makePane('docs/a.md', '# A clean', false)
     const secondary = makePane('docs/b.md', '# B dirty', true)
     const paneBindings = makePaneBindings(primary, secondary)
-    const serializationRefs = makeSerializationRefs()
+    const editorSessionRefs = makeEditorSessionRefs()
     const setters: TestSetters = {
       setExternalConflictPath: vi.fn(),
       setConflictComparisonContent: vi.fn(),
@@ -189,7 +189,7 @@ describe('revertChanges', () => {
     let wsRef: ReturnType<typeof usePaneWorkspace> | null = null
 
     function Harness() {
-      wsRef = usePaneWorkspace(layout, paneBindings, serializationRefs, noopSaveDocumentFn, navigationHistory)
+      wsRef = usePaneWorkspace(layout, paneBindings, editorSessionRefs, noopSaveDocumentFn, navigationHistory)
       return null
     }
 
@@ -215,9 +215,15 @@ describe('revertChanges', () => {
     const primary = makePane('docs/a.md', '# clean content', true)
     const secondary = makePane('docs/b.md', '# B', false)
     const paneBindings = makePaneBindings(primary, secondary)
-    const serializationRefs = makeSerializationRefs()
+    const editorSessionRefs = makeEditorSessionRefs()
     const flushSpy = vi.fn(() => '# unsaved content')
-    serializationRefs.primary.current.flush = flushSpy
+    editorSessionRefs.primary.current = {
+      flush: flushSpy,
+      getEditor: () => null,
+      getCanonicalValue: () => '',
+      subscribeContentMutated: () => () => {},
+      dispose: () => {},
+    } as EditorSession
     const setters: TestSetters = {
       setExternalConflictPath: vi.fn(),
       setConflictComparisonContent: vi.fn(),
@@ -228,7 +234,7 @@ describe('revertChanges', () => {
     let wsRef: ReturnType<typeof usePaneWorkspace> | null = null
 
     function Harness() {
-      wsRef = usePaneWorkspace(layout, paneBindings, serializationRefs, noopSaveDocumentFn, navigationHistory)
+      wsRef = usePaneWorkspace(layout, paneBindings, editorSessionRefs, noopSaveDocumentFn, navigationHistory)
       return null
     }
 

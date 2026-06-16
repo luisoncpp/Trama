@@ -8,12 +8,6 @@ If the hard part of the task is following behavior end-to-end rather than unders
 
 If work touches AI import/export, also read `mds/architecture/ai-import-export-architecture.md`.
 
-## Current phase
-
-Phase 4 planning is documented in `mds/plan/phase-4-detailed-plan.md`. The recommended execution sequence is: WS1 (Wiki Tag Links) → WS2 (Folder Operations) → WS3 (Templates) → WS4 (Corkboard) → WS5 (AI Import/Export) → Phase 4 closure.
-
-For WS1 execution details, see `mds/spec/wiki-tag-links-spec.md` and `mds/plan/done/wiki-tag-links-implementation-plan.md`.
-
 ## Main commands
 
 - `npm run dev`
@@ -58,7 +52,7 @@ For WS1 execution details, see `mds/spec/wiki-tag-links-spec.md` and `mds/plan/d
 3. Validate core flow for touched area (editor/sidebar/IPC).
 4. If the behavior path is hard to follow, open the matching doc in `mds/flows/` before changing code.
 5. Run `npm run lint` and focused tests while iterating.
-6. Run tests with `npm run test` before finishing.
+6. Run tests with `npm run test` before finishing (mandatory unless you only modified mds).
 7. Run `npm run build` for final compile confidence.
 8. Run `npm run test:smoke` when touching preload/window/IPC startup paths.
 9. Update the documentation (see mandatory checklist below)

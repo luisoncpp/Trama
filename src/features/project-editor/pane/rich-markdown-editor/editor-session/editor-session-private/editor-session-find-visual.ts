@@ -1,7 +1,7 @@
 import { useEffect } from 'preact/hooks'
 import type Quill from 'quill'
-import type { FindMatchBounds } from './rich-markdown-editor-find-overlay'
-import { mapPlainTextIndexToQuillIndex } from './rich-markdown-editor-tag-overlay'
+import type { FindMatchBounds } from './editor-session-find-overlay'
+import { mapPlainTextIndexToQuillIndex } from './editor-session-tag-math'
 
 interface SearchLikeState {
   query: string

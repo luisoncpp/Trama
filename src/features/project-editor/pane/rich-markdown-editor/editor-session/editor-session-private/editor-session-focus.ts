@@ -1,13 +1,13 @@
 import { useEffect } from 'preact/hooks'
 import Quill from 'quill'
-import { createUpdateCenteredScroll } from './rich-markdown-editor-focus-scope-scroll'
+import { createUpdateCenteredScroll } from './editor-session-focus-scroll'
 import {
 	clearFocusScope,
 	updateFocusScopeClasses,
 	applyFocusScope,
 	getSelectionViewportRect,
-} from './rich-markdown-editor-focus-scope-helpers'
-import type { FocusScope } from '../../project-editor-types'
+} from './editor-session-focus-helpers'
+import type { FocusScope } from '../../../../project-editor-types.js'
 
 function getEditorElements(host: HTMLDivElement): { editorRoot: HTMLElement; container: HTMLElement } | null {
 	const editorRoot = host.querySelector('.ql-editor')
@@ -127,14 +127,14 @@ function activateFocusMode(
 }
 
 export function useFocusModeScopeEffect(
-	editorRef: { current: Quill | null },
+	editor: Quill | null,
 	hostRef: { current: HTMLDivElement | null },
 	focusModeEnabled: boolean,
 	focusScope: FocusScope,
 	isActive: boolean,
 ): void {
 	useEffect(() => {
-		const quill = editorRef.current
+		const quill = editor
 		const host = hostRef.current
 		if (!quill || !host) {
 			return
@@ -166,5 +166,5 @@ export function useFocusModeScopeEffect(
 		active.scheduleRefresh()
 
 		return active.cleanup
-	}, [editorRef, hostRef, focusModeEnabled, focusScope, isActive])
+	}, [editor, hostRef, focusModeEnabled, focusScope, isActive])
 }

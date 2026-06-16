@@ -57,6 +57,10 @@ _Avoid_: GitHub available
 The opened **Project** is either inside an existing local Git repository or can be initialized as one after explicit user confirmation.
 _Avoid_: GitHub available
 
+**Editor session**:
+The per-pane rich editor module that owns Quill lifecycle, debounced serialization, external value sync, and editing-surface features (find, focus scope, wiki tag overlay, zoom). Callers cross the seam via typed methods such as `flush()`, not ref mutation.
+_Avoid_: Serialization ref, editor refs bag
+
 ## Book export
 
 **Author page break**:

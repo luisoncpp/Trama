@@ -6,7 +6,7 @@ import {
   createRevertIconButton,
   createSaveIconButton,
   createZoomSelect,
-} from './rich-markdown-editor-toolbar-helpers'
+} from './editor-session-toolbar-helpers'
 
 interface ToolbarBaseGroups {
   header: HTMLElement

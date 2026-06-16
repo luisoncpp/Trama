@@ -13,78 +13,37 @@ If you need the shortest path to the editor's risky seams instead of the full su
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │                    RichMarkdownEditor.tsx                   │
-│                      (React Component)                      │
+│              (Thin shell: props → session → view)           │
 ├─────────────────────────────────────────────────────────────┤
-│  useRichEditorRefs() ───► refs: hostRef, editorRef, etc.  │
-│  useRichEditorLifecycle() ──► Quill initialization + sync  │
-│  useSyncToolbarControls() ──► toolbar + layout buttons + save │
-│  useFocusModeScopeEffect() ──► focus mode (CSS Highlights)  │
-│  useRichEditorFind() ─────► Ctrl+F find bar               │
-│  useTagOverlay() ─────────► wiki tag overlays              │
+│  const session = useEditorSession(props)                    │
+│  return <RichMarkdownEditorView session={session} />        │
 └─────────────────────────────────────────────────────────────┘
-                               │
-                               ▼
+                                │
+                                ▼
 ┌─────────────────────────────────────────────────────────────┐
-│               rich-markdown-editor-core.ts                  │
-│                   (Lifecycle Orchestration)                 │
+│                    EditorSession                            │
+│          (Per-pane rich editing surface module)             │
 ├─────────────────────────────────────────────────────────────┤
-│  useInitializeEditor()    → createQuillEditor()             │
-│  useSyncExternalValue()   → (delegated to external-sync)    │
-│  useToggleDisabled()      → editor.enable()                │
-│  useSyncSpellcheckEnabled() → spellcheck attr              │
-│  registerTypographyHandler() → ──► ──► ──► ──►             │
-│  registerWorkspaceCommandListener() → CustomEvent bridge    │
-└─────────────────────────────────────────────────────────────┘
-                               │
-                               ▼
-┌─────────────────────────────────────────────────────────────┐
-│         rich-markdown-editor-external-sync.ts               │
-│              (External Value Sync Hook)                     │
+│  Public seam:                                                │
+│    flush(): string | null                                    │
+│    getEditor(): Quill | null                                 │
+│    getCanonicalValue(): string                               │
+│    subscribeContentMutated(cb): () => void                   │
+│    dispose(): void                                           │
 ├─────────────────────────────────────────────────────────────┤
-│  useSyncExternalValue()                                     │
-│    • canonical comparison via normalizeEditorDocumentValue   │
-│    • applyMarkdownToEditor on real changes                  │
-│    • selection preservation                                │
-│    • isApplyingExternalValueRef management                  │
+│  editor-session-private/                                     │
+│    editor-session-lifecycle.ts        → Quill init, dispose  │
+│    editor-session-serialization.ts    → debounce + flush     │
+│    editor-session-external-sync.ts    → canonical apply      │
+│    layout-directive-controller.ts     → center/pagebreak     │
+│    editor-session-focus.ts            → focus scope          │
+│    editor-session-find.ts             → find/replace         │
+│    editor-session-tag-overlay.ts      → wiki tag underlines  │
+│    editor-session-zoom.ts             → shared zoom          │
+│    editor-session-toolbar.ts          → toolbar controls     │
 └─────────────────────────────────────────────────────────────┘
-                               │
-                               ▼
-┌─────────────────────────────────────────────────────────────┐
-│          rich-markdown-editor-serialization.ts               │
-│              (Debounced serialization session)              │
-├─────────────────────────────────────────────────────────────┤
-│  registerEditorTextChangeHandler()                           │
-│    • text-change listener + immediate dirty mark             │
-│    • 1-second debounce timer lifecycle                       │
-│    • flush() → serialize + hydrate images for parent         │
-│    • serializationRef.current.flush = flush (in-place)       │
-└─────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────┐
-│               rich-markdown-editor-core.ts                  │
-│                   (Lifecycle Hooks)                        │
-├─────────────────────────────────────────────────────────────┤
-│  useSyncExternalValue()   → applyMarkdownToEditor()        │
-│  useToggleDisabled()       → editor.enable()                │
-│  useSyncSpellcheckEnabled() → spellcheck attr               │
-│  registerTypographyHandler() → ──► ──► ──► ──►            │
-│  registerWorkspaceCommandListener() → CustomEvent bridge    │
-└─────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────┐
-│          rich-markdown-editor-serialization.ts               │
-│              (Debounced serialization session)              │
-├─────────────────────────────────────────────────────────────┤
-│  registerEditorTextChangeHandler()                           │
-│    • text-change listener + immediate dirty mark             │
-│    • 1-second debounce timer lifecycle                       │
-│    • flush() → serialize + hydrate images for parent         │
-│    • serializationRef.current.flush = flush (in-place)       │
-└─────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
+                                │
+                                ▼
 ┌─────────────────────────────────────────────────────────────┐
 │                rich-markdown-editor-quill.ts                │
 │                 (Quill init + parse/serialize)              │
@@ -118,34 +77,44 @@ If you need the shortest path to the editor's risky seams instead of the full su
 
 | File | Responsibility |
 |------|----------------|
-| `rich-markdown-editor.tsx` | Main React component, hook orchestration |
-| `rich-markdown-editor-core.ts` | Editor lifecycle orchestration (init, sync delegation, disable, spellcheck) |
-| `rich-markdown-editor-external-sync.ts` | External-value sync: canonical comparison, Quill re-apply, selection preservation |
-| `rich-markdown-editor-serialization.ts` | Debounced serialization session: text-change listener, debounce timer, flush with image hydration for parent |
+| `rich-markdown-editor.tsx` | Thin React shell: `useEditorSession(props)` → `<RichMarkdownEditorView session={session} />` |
+| `rich-markdown-editor-view.tsx` | Render shell: attaches DOM refs, renders find bar, tag highlights, and delegates to session effects |
+| `editor-session/editor-session.ts` | Public `EditorSession` interface + `useEditorSession` hook + facade re-exports |
+| `editor-session/editor-session-types.ts` | Full `EditorSession` interface and supporting types |
+| `editor-session/editor-session-private/editor-session-lifecycle.ts` | Quill init, disposal, disabled/spellcheck/read-only sync |
+| `editor-session/editor-session-private/editor-session-serialization.ts` | Debounced serialization: text-change listener, timer, `flush()` with image hydration |
+| `editor-session/editor-session-private/editor-session-external-sync.ts` | Canonical comparison, `forceApplyVersion`, `isApplyingExternalValue` guard |
+| `editor-session/editor-session-private/editor-session-hooks.ts` | Render-orchestration hooks consumed by `RichMarkdownEditorView` |
+| `editor-session/editor-session-private/editor-session-facade.ts` | Builds the typed `EditorSession` facade over private modules |
+| `editor-session/editor-session-private/layout-directive-controller.ts` | Layout directive orchestrator: center toggle, pagebreak/spacer, clipboard, keyboard |
+| `editor-session/editor-session-private/layout-directive-blots.ts` | Custom blots for layout directives |
+| `editor-session/editor-session-private/layout-directive-clipboard.ts` | Clipboard matchers for layout directives |
+| `editor-session/editor-session-private/layout-directive-keyboard.ts` | Keyboard bindings for atomic pagebreak traversal and symmetric center-boundary seam-safe Backspace/Delete transforms |
+| `editor-session/editor-session-private/layout-directive-actions.ts` | Insert pagebreak/spacer and center toggle/extension behavior |
+| `editor-session/editor-session-private/layout-directive-centering.ts` | Centered content CSS sync |
+| `editor-session/editor-session-private/editor-session-focus.ts` | Focus mode effect (CSS Highlights API + overlay fallback) |
+| `editor-session/editor-session-private/editor-session-focus-helpers.ts` | Focus mode class management and selection rect helpers |
+| `editor-session/editor-session-private/editor-session-focus-scroll.ts` | Focus mode centered scroll positioning |
+| `editor-session/editor-session-private/editor-session-focus-geometry.ts` | Focus mode viewport geometry calculations |
+| `editor-session/editor-session-private/editor-session-find.ts` | Find/replace state + logic |
+| `editor-session/editor-session-private/editor-session-find-state.ts` | Find query/replace/case-regexp state |
+| `editor-session/editor-session-private/editor-session-find-overlay.tsx` | Floating find input UI |
+| `editor-session/editor-session-private/editor-session-find-visual.ts` | Active match overlay effect |
+| `editor-session/editor-session-private/editor-session-tag-overlay.ts` | Wiki tag click detection |
+| `editor-session/editor-session-private/editor-session-tag-helpers.ts` | Tag match search and filtering utilities |
+| `editor-session/editor-session-private/editor-session-tag-math.ts` | Tag match index mapping (plain-text ↔ Quill) |
+| `editor-session/editor-session-private/editor-session-tag-highlights.tsx` | Tag overlay visual highlights (CSS Highlights API) |
+| `editor-session/editor-session-private/editor-session-ctrl-key.ts` | Ctrl/Meta key state for tag overlay activation |
+| `editor-session/editor-session-private/editor-session-zoom.ts` | Shared zoom state across twin panes |
+| `editor-session/editor-session-private/editor-session-toolbar.ts` | Thin public toolbar hook |
+| `editor-session/editor-session-private/editor-session-toolbar-private/editor-session-toolbar-controller.ts` | Toolbar controller class: syncs explicit order, layout buttons, zoom, history-back, save/revert, and sync state |
+| `editor-session/editor-session-private/editor-session-toolbar-private/editor-session-toolbar-dom.ts` | Toolbar DOM owner: creates Trama controls and applies the explicit current toolbar order behind the Quill seam |
+| `editor-session/editor-session-private/editor-session-toolbar-private/editor-session-toolbar-helpers.ts` | Toolbar helper utilities |
 | `rich-markdown-editor-value-sync.ts` | Canonical editor-value normalization/equality for image-bearing markdown |
 | `rich-markdown-editor-quill.ts` | Quill creation, markdown parse/serialize (see `image-handling-architecture.md`) |
-| `rich-markdown-editor-toolbar.ts` | Thin public toolbar hook; delegates to the private toolbar Modules |
-| `private/rich-markdown-editor-toolbar-controller.ts` | Toolbar controller class: syncs explicit order, layout buttons, zoom, history-back, save/revert, and sync state |
-| `private/rich-markdown-editor-toolbar-dom.ts` | Toolbar DOM owner: creates Trama controls and applies the explicit current toolbar order behind the Quill seam |
-| `../../shared/markdown-image-placeholder.ts` | Image extraction, placeholder generation, hydration, in-memory cache |
 | `rich-markdown-editor-commands.ts` | Command bridge via CustomEvent (`paste-markdown`, `copy-as-markdown`) |
 | `rich-markdown-editor-typography.ts` | Typography replacements (`--` → `—`) |
-| `rich-markdown-editor-ctrl-key.ts` | Ctrl/Meta key state for tag overlay activation |
-| `rich-markdown-editor-layout-blots.ts` | Custom blots for layout directives |
-| `rich-markdown-editor-layout-clipboard.ts` | Clipboard matchers for layout directives |
-| `rich-markdown-editor-layout-keyboard.ts` | Keyboard bindings for atomic pagebreak traversal and symmetric center-boundary seam-safe Backspace/Delete transforms |
-| `rich-markdown-editor-layout-actions.ts` | Insert pagebreak/spacer and center toggle/extension behavior |
-| `rich-markdown-editor-layout-centering.ts` | Centered content CSS sync |
-| `rich-markdown-editor-tag-overlay.ts` | Wiki tag click detection |
-| `rich-markdown-editor-tag-helpers.ts` | Tag match search and filtering utilities |
-| `rich-markdown-editor-tag-highlights.tsx` | Tag overlay visual highlights (CSS Highlights API) |
-| `rich-markdown-editor-find.tsx` | Find/replace bar with Ctrl+F |
-| `rich-markdown-editor-find-overlay.tsx` | Floating find input UI |
-| `rich-markdown-editor-find-visual.ts` | Active match overlay effect |
-| `rich-markdown-editor-focus-scope.ts` | Focus mode effect (CSS Highlights API + overlay fallback) |
-| `rich-markdown-editor-focus-scope-helpers.ts` | Focus mode class management and selection rect helpers |
-| `rich-markdown-editor-focus-scope-scroll.ts` | Focus mode centered scroll positioning |
-| `rich-markdown-editor-focus-scope-geometry.ts` | Focus mode viewport geometry calculations |
+| `../../shared/markdown-image-placeholder.ts` | Image extraction, placeholder generation, hydration, in-memory cache |
 
 ---
 
@@ -244,7 +213,7 @@ onChange(markdown)                     // Parent state receives hydrated markdow
 
 ### Serialization (`serializeEditorMarkdown`)
 
-`serializeEditorMarkdown` lives in `rich-markdown-editor-quill.ts` and produces lightweight placeholder-markdown for internal use. The debounced flush wrapper, which hydrates images before forwarding to the parent, lives in `rich-markdown-editor-serialization.ts`. A `serializeEditorMarkdownFromRef` variant accepts `{ current: TurndownService }` (the ref pattern used across hooks). The serialization module owns the full lifecycle: text-change listener, debounce timer, immediate dirty mark, and `serializationRef` mutation.
+`serializeEditorMarkdown` lives in `rich-markdown-editor-quill.ts` and produces lightweight placeholder-markdown for internal use. The debounced flush wrapper, which hydrates images before forwarding to the parent, lives in `editor-session-private/editor-session-serialization.ts`. The serialization module owns the full lifecycle: text-change listener, debounce timer, and immediate dirty mark. Callers cross the typed seam via `session.flush()` instead of mutating a ref.
 
 ### Turndown Custom Rules (via factory)
 
@@ -268,7 +237,7 @@ The `turndownRef` in `rich-markdown-editor.tsx` is initialized once with `create
 
 ## Custom Blots (Layout Directives)
 
-### Structure (`rich-markdown-editor-layout-blots.ts`)
+### Structure (`editor-session-private/layout-directive-blots.ts`)
 
 ```typescript
 class LayoutDirectiveBlot extends QuillBlockEmbed {
@@ -393,7 +362,7 @@ mapPlainTextIndexToQuillIndex()  // Convert indices (Quill counts embeds)
 editor.getBounds()              // Get pixel position
 ```
 
-Click handler (`rich-markdown-editor.tsx:56-80`):
+Click handler (`editor-session-private/editor-session-tag-overlay.ts`):
 - Verifies `ctrlKey` or `metaKey`
 - Searches for match at mouse position
 - If hit: `preventDefault()` + calls `onTagClick(filePath)`
@@ -402,16 +371,18 @@ Click handler (`rich-markdown-editor.tsx:56-80`):
 
 ## Editor State Management
 
-### Main Refs (`useRichEditorRefs`)
+### Session internals
+
+The `EditorSession` facade hides the refs that previously crossed multiple hooks:
 
 ```typescript
-const shellRef       // Outer container
-const hostRef        // Where Quill mounts
-const editorRef      // Quill instance
-const onChangeRef    // onChange callback (refs for closures)
-const lastEditorValueRef    // Last serialized value (avoids loops)
-const isApplyingExternalValueRef  // Flag: ignore external text-change
-const turndownRef    // Persistent TurndownService
+// editor-session-private/editor-session-facade.ts (conceptual)
+hostRef                  // Where Quill mounts
+editorRef                // Quill instance
+onChangeRef              // onChange callback (stable closure)
+lastEditorValueRef       // Last serialized value (avoids loops)
+isApplyingExternalValueRef  // Flag: ignore external text-change
+turndownRef              // Persistent TurndownService
 ```
 
 ### Preventing Sync Loops
@@ -420,7 +391,7 @@ const turndownRef    // Persistent TurndownService
 value prop changes
      │
      ▼
-useSyncExternalValue() in rich-markdown-editor-external-sync.ts
+editor-session-external-sync.ts applyExternalValue()
      │
      ▼
 normalizeEditorDocumentValue(value, documentId) + areEquivalentEditorValues()
@@ -446,11 +417,11 @@ Image-bearing documents have three representations:
 - **In parent state** (hydrated): same as on disk — `onChange` delivers fully-hydrated markdown
 - **In-memory editing** (placeholders): `<!-- IMAGE_PLACEHOLDER:img_0 -->` — stored in `lastEditorValueRef` for lightweight comparison
 
-`rich-markdown-editor-value-sync.ts` and `rich-markdown-editor-serialization.ts` make that distinction explicit:
+`rich-markdown-editor-value-sync.ts` and `editor-session-private/editor-session-serialization.ts` make that distinction explicit:
 
 - `normalizeEditorDocumentValue(value, documentId)` strips base64 markdown images into placeholder markdown for equivalence checks.
 - `areEquivalentEditorValues(a, b, documentId)` compares two values using canonical placeholder form.
-- The `flush()` function in `rich-markdown-editor-serialization.ts` stores placeholder-markdown in `lastEditorValueRef` but hydrates before calling `onChangeRef.current` so the parent always receives full embedded images.
+- The `flush()` function in `editor-session-private/editor-session-serialization.ts` stores placeholder-markdown in `lastEditorValueRef` but hydrates before calling `onChangeRef.current` so the parent always receives full embedded images.
 
 ---
 
@@ -493,8 +464,8 @@ The editor doesn't know about IPC directly; it only exposes `syncState` (clean/d
 
 ## Debugging Notes
 
-### Cursor jumping
-Check re-init dependencies in `useInitializeEditor`. If the editor re-creates unexpectedly, review `hostRef` stability.
+### Cursor jumping / unexpected remount
+Check re-init dependencies in `editor-session-private/editor-session-lifecycle.ts`. The Quill init effect must depend on `documentId` only; runtime toggles (disabled, spellcheck, read-only) live in separate effects. If the editor re-creates unexpectedly, review `hostRef` stability.
 
 ### Split-pane dirty badge wrong
 Verify that `updateEditorValue(value, pane)` targets the correct pane. `syncState` flows from `useProjectEditorUiActions`.
@@ -511,4 +482,5 @@ Verify that `updateEditorValue(value, pane)` targets the correct pane. `syncStat
 - Wiki tags system guide: `mds/plan/done/wiki-tag-links-system-guide.md`
 - Image handling architecture: `mds/architecture/image-handling-architecture.md`
 - Editor hotspots map: `mds/architecture/rich-editor-hotspots.md`
+- Rich editor session deepening plan: `mds/plan/done/rich-editor-session-deepening-plan.md`
 - Turndown performance lesson: `mds/lessons-learned/turndown-base64-replacement-performance.md`

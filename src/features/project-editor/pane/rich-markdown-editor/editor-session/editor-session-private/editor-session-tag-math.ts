@@ -1,34 +1,8 @@
 import type Quill from 'quill'
-import { findTagMatchesInText, filterMatchesOutsideCode, type TagMatch } from './rich-markdown-editor-tag-helpers'
+import { findTagMatchesInText, filterMatchesOutsideCode, type TagMatch } from './editor-session-tag-helpers'
 
 export interface TagOverlayMatch extends TagMatch {
   rects: Array<{ top: number; left: number; width: number; height: number }>
-}
-
-export interface UseTagOverlayParams {
-  editorRef: { current: Quill | null }
-  tagIndex: Record<string, string> | null
-  ctrlPressed: boolean
-  tagOverlayRecalcRef: { current: boolean }
-  tagOverlayMatchesRef: { current: TagMatch[] }
-}
-
-export function useTagOverlay({ editorRef, tagIndex, ctrlPressed, tagOverlayRecalcRef, tagOverlayMatchesRef }: UseTagOverlayParams): TagMatch[] {
-  const editor = editorRef.current
-  if (!editor || !tagIndex || Object.keys(tagIndex).length === 0) {
-    return []
-  }
-
-  if (ctrlPressed) {
-    if (tagOverlayRecalcRef.current || tagOverlayMatchesRef.current.length === 0) {
-      const text = editor.getText()
-      const allMatches = findTagMatchesInText(text, tagIndex)
-      tagOverlayMatchesRef.current = filterMatchesOutsideCode(text, allMatches)
-      tagOverlayRecalcRef.current = false
-    }
-  }
-
-  return tagOverlayMatchesRef.current
 }
 
 interface DeltaOp {

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import type Quill from 'quill'
 import Delta from 'quill-delta'
-import { handleCenterBoundaryDelete } from '../src/features/project-editor/pane/rich-markdown-editor/rich-markdown-editor-layout-keyboard'
+import { LayoutDirectiveController } from '../src/features/project-editor/pane/rich-markdown-editor/editor-session/editor-session-private/layout-directive-controller'
 
 interface StubLine {
   length: () => number
@@ -150,7 +150,7 @@ describe('center boundary-safe deletion', () => {
       { insert: { 'trama-directive': { directive: 'center', role: 'end' } } },
     ])
 
-    const handled = handleCenterBoundaryDelete(editor, { index: 3, length: 0 }, 'backspace')
+    const handled = LayoutDirectiveController.handleCenterBoundaryDelete(editor, { index: 3, length: 0 }, 'backspace')
 
     expect(handled).toBe(false)
     expect(serializeOps(editor.getContents().ops)).toEqual([
@@ -169,7 +169,7 @@ describe('center boundary-safe deletion', () => {
       { insert: 'B\nC\n' },
     ])
 
-    const handled = handleCenterBoundaryDelete(editor, { index: 4, length: 0 }, 'backspace')
+    const handled = LayoutDirectiveController.handleCenterBoundaryDelete(editor, { index: 4, length: 0 }, 'backspace')
 
     expect(handled).toBe(false)
     expect(serializeOps(editor.getContents().ops)).toEqual([
@@ -189,7 +189,7 @@ describe('center boundary-safe deletion', () => {
       { insert: 'B\nC\nD\n' },
     ])
 
-    const handled = handleCenterBoundaryDelete(editor, { index: 3, length: 0 }, 'delete')
+    const handled = LayoutDirectiveController.handleCenterBoundaryDelete(editor, { index: 3, length: 0 }, 'delete')
 
     expect(handled).toBe(false)
     expect(serializeOps(editor.getContents().ops)).toEqual([
@@ -209,7 +209,7 @@ describe('center boundary-safe deletion', () => {
       { insert: 'C\n' },
     ])
 
-    const handled = handleCenterBoundaryDelete(editor, { index: 2, length: 0 }, 'backspace')
+    const handled = LayoutDirectiveController.handleCenterBoundaryDelete(editor, { index: 2, length: 0 }, 'backspace')
 
     expect(handled).toBe(true)
     expect(serializeOps(editor.getContents().ops)).toEqual([

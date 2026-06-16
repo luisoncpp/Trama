@@ -1,6 +1,7 @@
 import type Quill from 'quill'
 import Delta from 'quill-delta'
-import { LAYOUT_DIRECTIVE_BLOT_NAME } from './rich-markdown-editor-layout-blots'
+import { LAYOUT_DIRECTIVE_BLOT_NAME } from './layout-directive-types'
+import type { CenterBoundary, CenterSegment, LineRange, SelectionRange } from './layout-directive-types'
 
 type DeltaInsert = string | Record<string, unknown>
 
@@ -8,39 +9,13 @@ interface DeltaOp {
   insert?: DeltaInsert
 }
 
-export interface SelectionRange {
-  index: number
-  length: number
-}
-
-export type CenterDeleteDirection = 'backspace' | 'delete'
-
-export interface CenterBoundary {
-  index: number
-  role: 'start' | 'end'
-}
-
-export interface CenterSegment {
-  startBoundaryIndex: number
-  endBoundaryIndex: number
-  contentStartIndex: number
-  contentEndIndexExclusive: number
-}
-
-export interface LineRange {
-  startIndex: number
-  endIndexExclusive: number
-}
-
 function getOpLength(insert: DeltaInsert | undefined): number {
   if (typeof insert === 'string') {
     return insert.length
   }
-
   if (insert && typeof insert === 'object') {
     return 1
   }
-
   return 0
 }
 
@@ -63,66 +38,6 @@ function readCenterBoundaryFromInsert(insert: DeltaInsert | undefined, index: nu
     index,
     role: directive.role === 'end' ? 'end' : 'start',
   }
-}
-
-export function getLineStartIndex(editor: Quill, index: number): number {
-  const [line, offset] = editor.getLine(index)
-  if (!line) {
-    return Math.max(0, index)
-  }
-
-  return index - offset
-}
-
-export function getLineEndIndexExclusive(editor: Quill, index: number): number {
-  const [line] = editor.getLine(index)
-  if (!line) {
-    return Math.max(0, index)
-  }
-
-  const lineStart = getLineStartIndex(editor, index)
-  return lineStart + line.length()
-}
-
-export function startsWithTextInsert(delta: Delta): boolean {
-  return typeof delta.ops[0]?.insert === 'string'
-}
-
-export function buildSegmentWithShiftedEndBoundary(
-  contents: Delta,
-  segment: CenterSegment,
-  movedContentStartIndex: number,
-  movedContentEndIndexExclusive: number,
-): Delta {
-  const prefix = contents.slice(0, segment.endBoundaryIndex)
-  const shiftedContent = contents.slice(movedContentStartIndex, movedContentEndIndexExclusive)
-  const endBoundary = contents.slice(segment.endBoundaryIndex, segment.endBoundaryIndex + 1)
-  const suffix = contents.slice(movedContentEndIndexExclusive)
-
-  return new Delta()
-    .concat(prefix)
-    .concat(shiftedContent)
-    .concat(endBoundary)
-    .concat(suffix)
-}
-
-export function buildSegmentWithShiftedStartBoundary(
-  contents: Delta,
-  segment: CenterSegment,
-  movedContentStartIndex: number,
-): Delta {
-  const prefix = contents.slice(0, movedContentStartIndex)
-  const startBoundary = contents.slice(segment.startBoundaryIndex, segment.startBoundaryIndex + 1)
-  const shiftedContent = contents.slice(movedContentStartIndex, segment.startBoundaryIndex)
-  const centeredContent = contents.slice(segment.contentStartIndex, segment.endBoundaryIndex + 1)
-  const suffix = contents.slice(segment.endBoundaryIndex + 1)
-
-  return new Delta()
-    .concat(prefix)
-    .concat(startBoundary)
-    .concat(shiftedContent)
-    .concat(centeredContent)
-    .concat(suffix)
 }
 
 export function extractCenterBoundariesFromOps(ops: readonly DeltaOp[]): CenterBoundary[] {
@@ -172,24 +87,77 @@ export function deriveCenterSegments(boundaries: readonly CenterBoundary[]): Cen
   return segments
 }
 
+export function getLineStartIndex(editor: Quill, index: number): number {
+  const [line, offset] = editor.getLine(index)
+  if (!line) {
+    return Math.max(0, index)
+  }
+  return index - offset
+}
+
+export function getLineEndIndexExclusive(editor: Quill, index: number): number {
+  const [line] = editor.getLine(index)
+  if (!line) {
+    return Math.max(0, index)
+  }
+  const lineStart = getLineStartIndex(editor, index)
+  return lineStart + line.length()
+}
+
+export function startsWithTextInsert(delta: Delta): boolean {
+  return typeof delta.ops[0]?.insert === 'string'
+}
+
+export function buildSegmentWithShiftedEndBoundary(
+  contents: Delta,
+  segment: CenterSegment,
+  movedContentStartIndex: number,
+  movedContentEndIndexExclusive: number,
+): Delta {
+  const prefix = contents.slice(0, segment.endBoundaryIndex)
+  const shiftedContent = contents.slice(movedContentStartIndex, movedContentEndIndexExclusive)
+  const endBoundary = contents.slice(segment.endBoundaryIndex, segment.endBoundaryIndex + 1)
+  const suffix = contents.slice(movedContentEndIndexExclusive)
+
+  return new Delta()
+    .concat(prefix)
+    .concat(shiftedContent)
+    .concat(endBoundary)
+    .concat(suffix)
+}
+
+export function buildSegmentWithShiftedStartBoundary(
+  contents: Delta,
+  segment: CenterSegment,
+  movedContentStartIndex: number,
+): Delta {
+  const prefix = contents.slice(0, movedContentStartIndex)
+  const startBoundary = contents.slice(segment.startBoundaryIndex, segment.startBoundaryIndex + 1)
+  const shiftedContent = contents.slice(movedContentStartIndex, segment.startBoundaryIndex)
+  const centeredContent = contents.slice(segment.contentStartIndex, segment.endBoundaryIndex + 1)
+  const suffix = contents.slice(segment.endBoundaryIndex + 1)
+
+  return new Delta()
+    .concat(prefix)
+    .concat(startBoundary)
+    .concat(shiftedContent)
+    .concat(centeredContent)
+    .concat(suffix)
+}
+
 export function getCenterSegments(editor: Quill): CenterSegment[] {
   const ops = (editor.getContents().ops ?? []) as DeltaOp[]
   const boundaries = extractCenterBoundariesFromOps(ops)
   return deriveCenterSegments(boundaries)
 }
 
-function isIndexInCenterSegment(index: number, segment: CenterSegment): boolean {
-  return index >= segment.contentStartIndex && index < segment.contentEndIndexExclusive
-}
-
 export function findCenterSegmentAtIndex(editor: Quill, index: number): CenterSegment | null {
   const segments = getCenterSegments(editor)
   for (const segment of segments) {
-    if (isIndexInCenterSegment(index, segment)) {
+    if (index >= segment.contentStartIndex && index < segment.contentEndIndexExclusive) {
       return segment
     }
   }
-
   return null
 }
 

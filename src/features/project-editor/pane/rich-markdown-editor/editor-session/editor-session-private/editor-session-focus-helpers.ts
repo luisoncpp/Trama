@@ -3,8 +3,8 @@ import {
 	findVisualLineBoundaries,
 	findSentenceBoundaries,
 	resolveTextOffsetToDomPosition,
-} from './rich-markdown-editor-focus-scope-geometry'
-import type { FocusScope } from '../../project-editor-types'
+} from './editor-session-focus-geometry'
+import type { FocusScope } from '../../../../project-editor-types.js'
 
 const FOCUS_TEXT_HIGHLIGHT_NAME = 'trama-focus-scope'
 

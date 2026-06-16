@@ -1,6 +1,6 @@
 import type Quill from 'quill'
 import Delta from 'quill-delta'
-import { LAYOUT_DIRECTIVE_BLOT_NAME, type LayoutDirectiveEmbedValue } from './rich-markdown-editor-layout-blots'
+import { LAYOUT_DIRECTIVE_BLOT_NAME, type LayoutDirectiveEmbedValue } from './layout-directive-types'
 
 function getSpacerLinesFromClassList(classList: DOMTokenList): number {
   const linesClass = Array.from(classList).find((className) => /^trama-spacer-(\d+)$/.test(className))

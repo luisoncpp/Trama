@@ -1,13 +1,13 @@
 import { useEffect, useRef } from 'preact/hooks'
-import { RichEditorToolbarController, type SyncToolbarControlsParams } from './toolbar-private/rich-markdown-editor-toolbar-controller'
+import { RichEditorToolbarController, type SyncToolbarControlsParams } from './editor-session-toolbar-private/editor-session-toolbar-controller'
 
-export type { RichEditorSyncState } from './toolbar-private/rich-markdown-editor-toolbar-helpers'
-export { createZoomSelect, normalizeZoomValue } from './toolbar-private/rich-markdown-editor-toolbar-helpers'
+export type { RichEditorSyncState } from './editor-session-toolbar-private/editor-session-toolbar-helpers'
+export { createZoomSelect, normalizeZoomValue } from './editor-session-toolbar-private/editor-session-toolbar-helpers'
 
 export function useSyncToolbarControls({
   documentId,
   hostRef,
-  editorRef,
+  session,
   historyBackDisabled,
   onHistoryBack,
   saveDisabled,
@@ -31,7 +31,7 @@ export function useSyncToolbarControls({
     controllerRef.current.sync({
       documentId,
       hostRef,
-      editorRef,
+      session,
       historyBackDisabled,
       onHistoryBack,
       saveDisabled,
@@ -48,7 +48,7 @@ export function useSyncToolbarControls({
       zoomLevel,
       onZoomChange,
     })
-  }, [documentId, editorRef, hostRef, historyBackDisabled, onHistoryBack, saveDisabled, saveLabel, onSaveNow,
+  }, [documentId, session, hostRef, historyBackDisabled, onHistoryBack, saveDisabled, saveLabel, onSaveNow,
       revertDisabled, revertLabel, onRevertNow, previewRestoreDisabled, previewRestoreLabel,
       onPreviewRestore, syncState, syncStateLabel, zoomLevel,
       onZoomChange] /*Inputs for syncToolbarController*/)

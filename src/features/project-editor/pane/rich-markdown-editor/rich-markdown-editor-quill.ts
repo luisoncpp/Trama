@@ -2,10 +2,7 @@ import Quill from 'quill'
 import TurndownService from 'turndown'
 import { marked } from 'marked'
 import { renderDirectiveArtifactsToMarkdown } from '../../../../shared/markdown-layout-directives'
-import { registerLayoutDirectiveBlots } from './rich-markdown-editor-layout-blots'
-import { registerLayoutDirectiveClipboardMatchers } from './rich-markdown-editor-layout-clipboard'
-import { createLayoutDirectiveKeyboardBindings } from './rich-markdown-editor-layout-keyboard'
-import { syncCenteredLayoutArtifacts } from './rich-markdown-editor-layout-centering'
+import { LayoutDirectiveController } from './editor-session/editor-session-private/layout-directive-controller'
 import {
   hydrateBrokenImageComments,
   hydrateMarkdownImages,
@@ -22,7 +19,7 @@ export function normalizeMarkdown(input: string): string {
 }
 
 export function createQuillEditor(host: HTMLDivElement): Quill {
-  registerLayoutDirectiveBlots()
+  LayoutDirectiveController.register()
   host.innerHTML = ''
   const toolbar = document.createElement('div')
   const editorHost = document.createElement('div')
@@ -41,11 +38,11 @@ export function createQuillEditor(host: HTMLDivElement): Quill {
         userOnly: true,
       },
       keyboard: {
-        bindings: createLayoutDirectiveKeyboardBindings(),
+        bindings: LayoutDirectiveController.getKeyboardBindings(),
       },
     },
   })
-  registerLayoutDirectiveClipboardMatchers(editor)
+  LayoutDirectiveController.addClipboardMatchers(editor)
   return editor
 }
 
@@ -77,7 +74,7 @@ export function applyMarkdownToEditor(
     const parsed = marked.parse(markdownWithArtifacts) as string
     const withImages = restoreImagesAfterMarkedparsing(parsed, new Map())
     editor.clipboard.dangerouslyPasteHTML(withImages, source)
-    syncCenteredLayoutArtifacts(editor)
+    LayoutDirectiveController.syncOnTextChange(editor)
   } finally {
     root.contentEditable = previousEditable
   }

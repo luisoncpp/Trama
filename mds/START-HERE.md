@@ -1,6 +1,6 @@
 # START HERE - Documentation Entry Point
 
-> **Last updated:** 2026-06-04. If this file drifts from reality, update it before doing anything else.
+> **Last updated:** 2026-06-15. If this file drifts from reality, update it before doing anything else.
 
 This file is the required first stop for new conversations.
 
@@ -53,7 +53,8 @@ Trama is a file-first desktop writing tool (Electron + Preact + TypeScript). The
 | Plan pane exit / pane persistence refactor | `mds/architecture/split-pane-coordination.md` → `mds/architecture/editor-serialization-debounce-architecture.md` → `mds/flows/rich-editor-revert-changes-flow.md` → `mds/plan/pane-exit-deepening-tech-design.md` → `mds/plan/pane-exit-deepening-implementation-plan.md` → `src/features/project-editor/pane/pane-workspace.ts` → `src/features/project-editor/workspace-actions.ts` |
 | Debug editor debounce / flush-before-switch | `mds/architecture/editor-serialization-debounce-architecture.md` → `src/features/project-editor/components/rich-markdown-editor-core.ts` → `tests/project-editor-debounce-regression.test.ts` |
 | Investigate `useProjectEditor()` reruns on typing | `mds/plan/done/use-project-editor-keystroke-churn-plan.md` → `src/features/project-editor/pane/rich-markdown-editor/rich-markdown-editor-serialization.ts` → `src/features/project-editor/pane/pane-workspace.ts` → `src/features/project-editor/use-project-editor.ts` |
-| Plan rich editor cleanup/refactor | `mds/plan/rich-editor-refactor-plan.md` → `mds/architecture/rich-markdown-editor-core-architecture.md` → `mds/architecture/image-handling-architecture.md` → `mds/architecture/split-pane-coordination.md` |
+| Plan rich editor cleanup/refactor | `mds/plan/done/rich-editor-refactor-plan.md` → `mds/architecture/rich-markdown-editor-core-architecture.md` → `mds/architecture/image-handling-architecture.md` → `mds/architecture/split-pane-coordination.md` |
+| Plan rich editor session deepening | `mds/plan/done/rich-editor-session-deepening-plan.md` → `mds/architecture/rich-editor-hotspots.md` → `mds/architecture/editor-serialization-debounce-architecture.md` → `src/features/project-editor/pane/rich-markdown-editor/` |
 | Follow editor typing behavior step-by-step | `mds/flows/rich-editor-typing-flow.md` → `src/features/project-editor/components/rich-markdown-editor-core.ts` → `src/features/project-editor/components/rich-markdown-editor-quill.ts` |
 | Follow split-pane activation behavior step-by-step | `mds/flows/switch-pane-flow.md` → `src/features/project-editor/workspace-actions.ts` → `src/features/project-editor/project-editor-private/state.ts` |
 | Change pane document history behavior | `mds/flows/pane-history-navigation-flow.md` → `src/features/project-editor/pane/pane-workspace.ts` → `src/features/project-editor/workspace-actions.ts` → `src/features/project-editor/use-project-editor.ts` |

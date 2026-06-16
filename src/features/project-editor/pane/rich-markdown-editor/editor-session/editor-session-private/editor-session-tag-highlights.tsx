@@ -1,6 +1,6 @@
 import type Quill from 'quill'
-import type { TagMatch } from './rich-markdown-editor-tag-helpers'
-import { mapPlainTextIndexToQuillIndex, getTagMatchRects } from './rich-markdown-editor-tag-overlay'
+import type { TagMatch } from './editor-session-tag-helpers'
+import { mapPlainTextIndexToQuillIndex, getTagMatchRects } from './editor-session-tag-math'
 
 interface TagHighlightsProps {
   matches: TagMatch[]

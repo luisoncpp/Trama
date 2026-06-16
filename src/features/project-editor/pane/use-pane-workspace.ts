@@ -1,7 +1,7 @@
 import { useRef } from 'preact/hooks'
 import type { DocumentMeta } from '../../../shared/ipc'
 import type {
-  EditorSerializationRefs,
+  EditorSession,
   PaneDocumentState,
   PaneNavigationHistoryStore,
   WorkspaceLayoutState,
@@ -16,9 +16,9 @@ export function usePaneWorkspace(
     setPrimaryPane: (value: PaneDocumentState | ((prev: PaneDocumentState) => PaneDocumentState)) => void
     setSecondaryPane: (value: PaneDocumentState | ((prev: PaneDocumentState) => PaneDocumentState)) => void
   },
-  serializationRefs: {
-    primary: { current: EditorSerializationRefs }
-    secondary: { current: EditorSerializationRefs }
+  editorSessionRefs: {
+    primary: { current: EditorSession | null }
+    secondary: { current: EditorSession | null }
   },
   saveDocumentFn: (
     path: string,
@@ -34,13 +34,13 @@ export function usePaneWorkspace(
     workspaceRef.current = new PaneWorkspace(
       layoutState,
       paneBindings,
-      serializationRefs,
+      editorSessionRefs,
       saveDocumentFn,
       navigationHistory,
       savedContentMap,
     )
   } else {
-    workspaceRef.current.updateDependencies(layoutState, paneBindings, serializationRefs, saveDocumentFn)
+    workspaceRef.current.updateDependencies(layoutState, paneBindings, editorSessionRefs, saveDocumentFn)
   }
 
   return workspaceRef.current
