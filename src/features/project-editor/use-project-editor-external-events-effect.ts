@@ -68,9 +68,29 @@ function handleSelectedPath(
     }
     return
   }
-  setConflictComparisonContent(null)
-  void loadDocument(event.path, activePane)
-  setStatusMessage(`Automatically reloaded after external change: ${event.path}`)
+  if (!isDirty) {
+    if (event.event === 'change') {
+      void (async () => {
+        const response = await window.tramaApi.readDocument({ path: event.path })
+        if (response.ok) {
+          const matches = await checkSnapshot(event.path, response.data.content)
+          if (matches) {
+            setStatusMessage(`External change matched last save; keeping editor content: ${event.path}`)
+            return
+          }
+        }
+        setConflictComparisonContent(null)
+        void loadDocument(event.path, activePane)
+        setStatusMessage(`Automatically reloaded after external change: ${event.path}`)
+      })()
+      return
+    }
+
+    setConflictComparisonContent(null)
+    void loadDocument(event.path, activePane)
+    setStatusMessage(`Automatically reloaded after external change: ${event.path}`)
+    return
+  }
 }
 
 function handleExternalEvent(params: HandleExternalEventParams): void {

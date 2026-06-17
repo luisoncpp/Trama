@@ -79,7 +79,7 @@ File: `src/features/project-editor/use-project-editor-external-events-effect.ts`
     - `unlink` with clean state → clears editor, calls `openProject(snapshotRootPath)` to refresh
     - `unlink` with dirty state → sets external conflict (user must resolve)
     - `add` or `change` with dirty state → sets external conflict
-    - `add` or `change` with clean state → reloads the file from disk
+    - `add` or `change` with clean state → reloads the file from disk **only when disk content differs from the last saved snapshot** (equivalence check via `areEquivalentEditorValues`). Matching content is ignored so duplicate watcher events after save do not force-apply markdown back into the editor.
 
     **If the event path doesn't match the selected file:**
     - Checks `shouldRefreshTreeOnExternalEvent(event.event)` — true for `add` and `unlink`

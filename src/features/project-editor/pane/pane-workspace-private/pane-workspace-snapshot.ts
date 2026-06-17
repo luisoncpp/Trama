@@ -1,4 +1,5 @@
 import { logSnapshotComparison } from '../snapshot-compare-logger'
+import { areEquivalentEditorValues } from '../rich-markdown-editor/rich-markdown-editor-value-sync'
 
 export class PaneSnapshotTracker {
   private map: Map<string, string>
@@ -22,7 +23,7 @@ export class PaneSnapshotTracker {
     externalContent: string,
   ): Promise<boolean> {
     const savedContent = this.get(path)
-    const matches = savedContent !== null && savedContent === externalContent
+    const matches = savedContent !== null && areEquivalentEditorValues(savedContent, externalContent, path)
     logSnapshotComparison(path, savedContent, externalContent, matches)
     return matches
   }

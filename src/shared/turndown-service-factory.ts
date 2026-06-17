@@ -63,6 +63,16 @@ export function createTramaTurndownService(flags : number): TurndownService {
   return service
 }
 
+/** Quill empty `<p><br></p>` blocks turndown to `\n\n  \n\n`, which over-counts blank lines. */
+export function collapseTurndownEmptyParagraphArtifacts(markdown: string): string {
+  let result = markdown
+  while (/\n\n[ \t]+\n\n/.test(result)) {
+    result = result.replace(/\n\n[ \t]+\n\n/, '\n\n\n')
+  }
+  return result
+}
+
 export function normalizeMarkdownOutput(markdown: string): string {
-  return normalizeBlankLinesToSpacerDirectives(markdown.replace(/\r\n/g, '\n').trimEnd())
+  const lineNormalized = markdown.replace(/\r\n/g, '\n').trimEnd()
+  return normalizeBlankLinesToSpacerDirectives(collapseTurndownEmptyParagraphArtifacts(lineNormalized))
 }

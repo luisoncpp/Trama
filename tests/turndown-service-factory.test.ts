@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { createTramaTurndownService, normalizeMarkdownOutput, TurndownServiceFlags } from '../src/shared/turndown-service-factory'
+import { createTramaTurndownService, collapseTurndownEmptyParagraphArtifacts, normalizeMarkdownOutput, TurndownServiceFlags } from '../src/shared/turndown-service-factory'
 
 describe('turndown-service-factory', () => {
   describe('createTramaTurndownService', () => {
@@ -65,6 +65,13 @@ describe('turndown-service-factory', () => {
       expect(result).toContain('<!-- IMAGE_PLACEHOLDER:img_x -->')
     })
 
+  })
+
+  describe('collapseTurndownEmptyParagraphArtifacts', () => {
+    it('collapses Quill empty paragraph turndown artifacts', () => {
+      expect(collapseTurndownEmptyParagraphArtifacts('A\n\n  \n\nB')).toBe('A\n\n\nB')
+      expect(collapseTurndownEmptyParagraphArtifacts('A\n\n  \n\n  \n\nB')).toBe('A\n\n\n\nB')
+    })
   })
 
   describe('normalizeMarkdownOutput', () => {

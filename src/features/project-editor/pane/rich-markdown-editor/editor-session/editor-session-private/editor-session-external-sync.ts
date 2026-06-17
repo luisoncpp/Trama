@@ -19,10 +19,14 @@ export function applyExternalValueToEditor(
   isApplyingExternalValueRef.current = true
   const selection = editor.getSelection()
   const scrollTop = editor.root.scrollTop
+  const hadEditorFocus = editor.root === document.activeElement || editor.root.contains(document.activeElement)
   applyMarkdownToEditor(editor, value, 'silent', documentId ?? undefined)
   notifyContentMutated()
   if (selection) {
-    editor.setSelection(selection)
+    editor.setSelection(selection.index, selection.length, 'silent')
+  }
+  if (hadEditorFocus) {
+    editor.focus()
   }
   editor.root.scrollTop = scrollTop
 
