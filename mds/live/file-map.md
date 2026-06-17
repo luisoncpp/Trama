@@ -438,19 +438,15 @@ Mandatory doc navigation for new chats: start with `mds/START-HERE.md` — it pr
   - Presentational rich editor shell: host element, find bar mount point, and tag highlight overlay positioning.
 - `src/features/project-editor/pane/rich-markdown-editor/editor-session/editor-session.ts`
   - Public `EditorSession` hook (`useEditorSession`) and `UseEditorSessionProps` type.
-  - Orchestrates lifecycle effects, find, focus, tag overlay, zoom, and toolbar hooks into a single session facade.
+  - Orchestrates lifecycle via `editor-session-orchestration.ts` into a single session facade.
 - `src/features/project-editor/pane/rich-markdown-editor/editor-session/editor-session-types.ts`
   - Full `EditorSession` interface exported for rich-editor consumers; extends the minimal `EditorSession` in `project-editor-types.ts`.
 - `src/features/project-editor/pane/rich-markdown-editor/editor-session/editor-session-private/editor-session-lifecycle.ts`
-  - Core Quill lifecycle class (`EditorSessionImpl`): initialize Quill, apply markdown, enable/disable, spellcheck, typography, workspace commands, external sync, and serialization.
-- `src/features/project-editor/pane/rich-markdown-editor/editor-session/editor-session-private/editor-session-serialization.ts`
-  - Editor debounced serialization session: registers text-change listener, manages debounce timer and flush lifecycle, and hydrates image placeholders before forwarding to parent state via `onChange`.
-- `src/features/project-editor/pane/rich-markdown-editor/editor-session/editor-session-private/editor-session-external-sync.ts`
-  - External-value sync helper: compares canonical values, force-applies text-identical disk reloads via `forceApplyVersion`, preserves Quill selection and scroll, manages `isApplyingExternalValueRef` flag.
-- `src/features/project-editor/pane/rich-markdown-editor/editor-session/editor-session-private/editor-session-hooks.ts`
-  - Private lifecycle and render orchestration hooks extracted from `useEditorSession` for lint compliance.
-- `src/features/project-editor/pane/rich-markdown-editor/editor-session/editor-session-private/editor-session-facade.ts`
-  - Builds the public `EditorSession` facade object from the lifecycle session and render-state accessors.
+  - Core Quill lifecycle class (`EditorSessionImpl`): initialize Quill, apply markdown, enable/disable, spellcheck, typography, workspace commands; delegates inbound/outbound value to `EditorContentLoop`.
+- `src/features/project-editor/pane/rich-markdown-editor/editor-session/editor-session-private/editor-session-content.ts`
+  - **Editor content loop**: debounced flush, canonical value tracking, external apply with equivalence skip and `forceApplyVersion`, and the `isApplyingExternalValue` apply-lock. Calls shared equivalence helpers in `rich-markdown-editor-value-sync.ts`.
+- `src/features/project-editor/pane/rich-markdown-editor/editor-session/editor-session-private/editor-session-orchestration.ts`
+  - Lifecycle effects, feature hooks (find, focus, tags, zoom, toolbar), and public `EditorSession` facade assembly for `useEditorSession`.
 - `src/features/project-editor/pane/rich-markdown-editor/editor-session/editor-session-private/editor-session-find.tsx`
   - In-document find controller; suppresses replace affordances during read-only revision preview.
 - `src/features/project-editor/pane/rich-markdown-editor/editor-session/editor-session-private/editor-session-find-overlay.tsx`

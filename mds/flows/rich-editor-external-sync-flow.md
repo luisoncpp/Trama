@@ -6,7 +6,7 @@ Renderer state provides a new `value` prop to `RichMarkdownEditor` after a docum
 
 ## Entry point
 
-`useSyncExternalValue()` in `src/features/project-editor/components/rich-markdown-editor-external-sync.ts`.
+`useEditorSessionOrchestration()` in `src/features/project-editor/pane/rich-markdown-editor/editor-session/editor-session-private/editor-session-orchestration.ts` — a Preact effect calls `EditorSessionImpl.applyExternalValue(value, forceApplyVersion)`.
 
 ## Why this flow matters
 
@@ -21,25 +21,24 @@ That distinction is what prevents image-bearing documents from re-rendering dest
 
 1. Some renderer action updates the active pane value.
 2. `RichMarkdownEditor` re-renders with a new `value` prop.
-3. `useSyncExternalValue()` runs.
-4. It reads the current Quill instance from `editorRef.current`.
-5. It computes `nextNormalized = normalizeEditorDocumentValue(value, documentId)`.
-6. It compares `lastEditorValueRef.current` and the incoming `value` through `areEquivalentEditorValues(...)`.
-7. If the two values are canonically equivalent:
+3. The orchestration effect runs `lifecycleSession.applyExternalValue(props.value, props.forceApplyVersion ?? 0)`.
+4. `EditorContentLoop.applyExternalValue()` computes `nextNormalized = normalizeEditorDocumentValue(value, documentId)`.
+5. It compares `lastEditorValueRef.current` and the incoming `value` through `areEquivalentEditorValues(...)`.
+6. If the two values are canonically equivalent:
    - stop immediately
    - do not touch Quill
    - preserve in-flight typing and current rendered images
-8. If the two values are not equivalent:
+7. If the two values are not equivalent (or `forceApplyVersion` advanced):
    - set `isApplyingExternalValueRef.current = true`
-   - capture the current Quill selection
+   - capture the current Quill selection and scroll position
    - call `applyMarkdownToEditor(editor, value, 'silent', documentId)`
-   - restore the selection if one existed
+   - restore selection, focus, and scroll
    - set `lastEditorValueRef.current = nextNormalized`
    - clear `isApplyingExternalValueRef.current` on `setTimeout(..., 0)`
 
 ## Canonicalization rule
 
-`rich-markdown-editor-value-sync.ts` is the single source of truth for editor-value equivalence:
+`rich-markdown-editor-value-sync.ts` is the single source of truth for editor-value equivalence (shared with pane snapshot and Git history callers):
 
 - `normalizeEditorDocumentValue(value, documentId)` converts base64 markdown images into placeholder markdown and normalizes line endings.
 - `areEquivalentEditorValues(a, b, documentId)` compares two values using that canonical placeholder-based form.
@@ -55,19 +54,19 @@ These must be treated as the same editor document value.
 
 | Kind | Source | Why |
 |------|--------|-----|
-| Quill instance | `editorRef.current` | Required to apply or skip the incoming value |
-| Current canonical editor value | `lastEditorValueRef.current` | Baseline for equivalence comparison |
-| Incoming prop value | `value` | Candidate external document state |
+| Quill instance | `EditorSessionImpl` private editor | Required to apply or skip the incoming value |
+| Current canonical editor value | `EditorContentLoop.lastEditorValueRef` | Baseline for equivalence comparison |
+| Incoming prop value | `value` prop | Candidate external document state |
 | Document identity | `documentId` | Needed for placeholder cache and canonical normalization |
-| Apply-lock flag | `isApplyingExternalValueRef.current` | Prevents outbound serialization from reacting to the re-apply |
+| Apply-lock flag | `EditorContentLoop.isApplyingExternalValueRef` | Prevents outbound serialization from reacting to the re-apply |
 
 ## State writes
 
 | Target | File / layer | What changes |
 |--------|--------------|--------------|
 | Quill DOM | `rich-markdown-editor-quill.ts` | Replaced only when the incoming value is a real change |
-| `isApplyingExternalValueRef.current` | editor component refs | Temporarily locks outbound `text-change` handling |
-| `lastEditorValueRef.current` | editor component refs | Updated to canonical incoming value after a real re-apply |
+| `isApplyingExternalValueRef` | `editor-session-content.ts` | Temporarily locks outbound `text-change` handling |
+| `lastEditorValueRef` | `editor-session-content.ts` | Updated to canonical incoming value after a real re-apply |
 
 ## Side effects
 
@@ -75,16 +74,17 @@ These must be treated as the same editor document value.
 |-------------|------|
 | Canonical normalization and equality check | `rich-markdown-editor-value-sync.ts` |
 | Markdown -> Quill re-apply | `rich-markdown-editor-quill.ts` |
-| Selection preservation | `rich-markdown-editor-external-sync.ts` |
+| Selection preservation | `editor-session-content.ts` |
 
 ## Files to inspect
 
 | File | Why inspect it |
 |------|----------------|
-| `src/features/project-editor/components/rich-markdown-editor-external-sync.ts` | External sync effect and apply/skip decision |
-| `src/features/project-editor/components/rich-markdown-editor-value-sync.ts` | Canonical normalization and equivalence API |
-| `src/features/project-editor/components/rich-markdown-editor-quill.ts` | Real document re-apply into Quill |
-| `src/features/project-editor/components/rich-markdown-editor-core.ts` | Lifecycle orchestration and selection preservation |
+| `editor-session/editor-session-private/editor-session-orchestration.ts` | Preact effect that triggers external apply |
+| `editor-session/editor-session-private/editor-session-content.ts` | **Editor content loop**: apply/skip decision, apply-lock, flush |
+| `editor-session/editor-session-private/editor-session-lifecycle.ts` | Delegates to content loop; owns Quill instance |
+| `rich-markdown-editor-value-sync.ts` | Canonical normalization and equivalence API |
+| `rich-markdown-editor-quill.ts` | Real document re-apply into Quill |
 | `src/shared/markdown-image-placeholder.ts` | Base64 <-> placeholder conversion and image cache |
 | `mds/architecture/image-handling-architecture.md` | Canonical image representation and hydration model |
 | `mds/lessons-learned/quill-render-keypress-image-loss.md` | Root cause behind the equivalence rule |
@@ -94,9 +94,9 @@ These must be treated as the same editor document value.
 
 | Symptom | Usual cause | First file to inspect |
 |---------|-------------|-----------------------|
-| Typed text disappears after state update | External sync re-applied an equivalent value or debounce flushed placeholder-markdown to parent state | `rich-markdown-editor-serialization.ts` and `rich-markdown-editor-external-sync.ts` |
-| Images blink or disappear after first keystroke | Placeholder-markdown corrupted parent state, cascading re-render destroyed images | `rich-markdown-editor-serialization.ts` → `mds/lessons-learned/editor-onchange-image-hydration.md` |
-| Cursor jumps on reload | Selection was not preserved around a real re-apply | `rich-markdown-editor-external-sync.ts` |
+| Typed text disappears after state update | External sync re-applied an equivalent value or debounce flushed placeholder-markdown to parent state | `editor-session-content.ts` |
+| Images blink or disappear after first keystroke | Placeholder-markdown corrupted parent state, cascading re-render destroyed images | `editor-session-content.ts` → `mds/lessons-learned/editor-onchange-image-hydration.md` |
+| Cursor jumps on reload | Selection was not preserved around a real re-apply | `editor-session-content.ts` |
 | Placeholder comments become visible content | Hydration/re-apply boundary drifted | `rich-markdown-editor-quill.ts` and `markdown-image-placeholder.ts` |
 
 ## High-value notes
@@ -104,6 +104,15 @@ These must be treated as the same editor document value.
 - `lastEditorValueRef.current` is an editor-canonical value, not a guaranteed copy of on-disk markdown.
 - External sync should compare through the named API, never by raw string equality.
 - A real apply uses `'silent'` so Quill history does not treat external reloads as user edits.
+- Outbound flush updates `lastEditorValueRef` **before** calling parent `onChange` so the subsequent inbound prop is recognized as equivalent (round-trip immunity).
+
+## Focused tests
+
+```bash
+npm run test -- tests/editor-session.test.ts
+npm run test -- tests/rich-markdown-editor-value-sync.test.ts
+npm run test -- tests/blank-line-spacer-bug.test.ts
+```
 
 ## Related hotspot
 

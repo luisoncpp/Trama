@@ -33,8 +33,8 @@ If you need the shortest path to the editor's risky seams instead of the full su
 ├─────────────────────────────────────────────────────────────┤
 │  editor-session-private/                                     │
 │    editor-session-lifecycle.ts        → Quill init, dispose  │
-│    editor-session-serialization.ts    → debounce + flush     │
-│    editor-session-external-sync.ts    → canonical apply      │
+│    editor-session-content.ts          → content loop          │
+│    editor-session-orchestration.ts    → effects + facade      │
 │    layout-directive-controller.ts     → center/pagebreak     │
 │    editor-session-focus.ts            → focus scope          │
 │    editor-session-find.ts             → find/replace         │
@@ -79,13 +79,11 @@ If you need the shortest path to the editor's risky seams instead of the full su
 |------|----------------|
 | `rich-markdown-editor.tsx` | Thin React shell: `useEditorSession(props)` → `<RichMarkdownEditorView session={session} />` |
 | `rich-markdown-editor-view.tsx` | Render shell: attaches DOM refs, renders find bar, tag highlights, and delegates to session effects |
-| `editor-session/editor-session.ts` | Public `EditorSession` interface + `useEditorSession` hook + facade re-exports |
+| `editor-session/editor-session.ts` | Public `EditorSession` interface + `useEditorSession` hook |
 | `editor-session/editor-session-types.ts` | Full `EditorSession` interface and supporting types |
-| `editor-session/editor-session-private/editor-session-lifecycle.ts` | Quill init, disposal, disabled/spellcheck/read-only sync |
-| `editor-session/editor-session-private/editor-session-serialization.ts` | Debounced serialization: text-change listener, timer, `flush()` with image hydration |
-| `editor-session/editor-session-private/editor-session-external-sync.ts` | Canonical comparison, `forceApplyVersion`, `isApplyingExternalValue` guard |
-| `editor-session/editor-session-private/editor-session-hooks.ts` | Render-orchestration hooks consumed by `RichMarkdownEditorView` |
-| `editor-session/editor-session-private/editor-session-facade.ts` | Builds the typed `EditorSession` facade over private modules |
+| `editor-session/editor-session-private/editor-session-lifecycle.ts` | Quill init, disposal, disabled/spellcheck/read-only sync; delegates to content loop |
+| `editor-session/editor-session-private/editor-session-content.ts` | **Editor content loop**: debounced flush, canonical tracking, external apply, apply-lock |
+| `editor-session/editor-session-private/editor-session-orchestration.ts` | Lifecycle effects, feature hooks, and public facade assembly |
 | `editor-session/editor-session-private/layout-directive-controller.ts` | Layout directive orchestrator: center toggle, pagebreak/spacer, clipboard, keyboard |
 | `editor-session/editor-session-private/layout-directive-blots.ts` | Custom blots for layout directives |
 | `editor-session/editor-session-private/layout-directive-clipboard.ts` | Clipboard matchers for layout directives |
@@ -213,7 +211,7 @@ onChange(markdown)                     // Parent state receives hydrated markdow
 
 ### Serialization (`serializeEditorMarkdown`)
 
-`serializeEditorMarkdown` lives in `rich-markdown-editor-quill.ts` and produces lightweight placeholder-markdown for internal use. The debounced flush wrapper, which hydrates images before forwarding to the parent, lives in `editor-session-private/editor-session-serialization.ts`. The serialization module owns the full lifecycle: text-change listener, debounce timer, and immediate dirty mark. Callers cross the typed seam via `session.flush()` instead of mutating a ref.
+`serializeEditorMarkdown` lives in `rich-markdown-editor-quill.ts` and produces lightweight placeholder-markdown for internal use. The **Editor content loop** in `editor-session-content.ts` owns debounced flush (hydrates images before forwarding to the parent), text-change listener, immediate dirty mark, and inbound external apply. Callers cross the typed seam via `session.flush()` instead of mutating a ref.
 
 ### Turndown Custom Rules (via factory)
 
@@ -376,7 +374,7 @@ Click handler (`editor-session-private/editor-session-tag-overlay.ts`):
 The `EditorSession` facade hides the refs that previously crossed multiple hooks:
 
 ```typescript
-// editor-session-private/editor-session-facade.ts (conceptual)
+// editor-session-orchestration.ts buildEditorSessionFacade (conceptual)
 hostRef                  // Where Quill mounts
 editorRef                // Quill instance
 onChangeRef              // onChange callback (stable closure)
@@ -391,7 +389,7 @@ turndownRef              // Persistent TurndownService
 value prop changes
      │
      ▼
-editor-session-external-sync.ts applyExternalValue()
+editor-session-content.ts applyExternalValue()
      │
      ▼
 normalizeEditorDocumentValue(value, documentId) + areEquivalentEditorValues()
@@ -417,11 +415,11 @@ Image-bearing documents have three representations:
 - **In parent state** (hydrated): same as on disk — `onChange` delivers fully-hydrated markdown
 - **In-memory editing** (placeholders): `<!-- IMAGE_PLACEHOLDER:img_0 -->` — stored in `lastEditorValueRef` for lightweight comparison
 
-`rich-markdown-editor-value-sync.ts` and `editor-session-private/editor-session-serialization.ts` make that distinction explicit:
+`rich-markdown-editor-value-sync.ts` and `editor-session-content.ts` make that distinction explicit:
 
 - `normalizeEditorDocumentValue(value, documentId)` strips base64 markdown images into placeholder markdown for equivalence checks.
 - `areEquivalentEditorValues(a, b, documentId)` compares two values using canonical placeholder form.
-- The `flush()` function in `editor-session-private/editor-session-serialization.ts` stores placeholder-markdown in `lastEditorValueRef` but hydrates before calling `onChangeRef.current` so the parent always receives full embedded images.
+- The content loop in `editor-session-content.ts` stores placeholder-markdown in `lastEditorValueRef` but hydrates before calling `onChangeRef.current` so the parent always receives full embedded images.
 
 ---
 

@@ -3,11 +3,7 @@ import type Quill from 'quill'
 import type { EditorZoomRef, FocusScope, TagMatch } from '../../../project-editor-types.js'
 import type { EditorSessionImpl } from './editor-session-private/editor-session-lifecycle.js'
 import type { RichEditorSyncState } from './editor-session-private/editor-session-toolbar.js'
-import {
-  useEditorSessionLifecycleEffects,
-  useEditorSessionRenderHooks,
-} from './editor-session-private/editor-session-hooks.js'
-import { buildEditorSessionFacade } from './editor-session-private/editor-session-facade.js'
+import { useEditorSessionOrchestration } from './editor-session-private/editor-session-orchestration.js'
 
 export type { EditorSession } from './editor-session-types.js'
 export type { TagMatch }
@@ -58,30 +54,18 @@ export function useEditorSession(props: UseEditorSessionProps): import('./editor
   const triggerTagOverlayRender = useCallback(() => { setTagOverlayTick((c) => c + 1) }, [])
   const [lifecycleSession, setLifecycleSession] = useState<EditorSessionImpl | null>(null)
 
-  useEditorSessionLifecycleEffects({
+  const editorRef = useRef<Quill | null>(lifecycleSession?.getEditor() ?? null)
+  editorRef.current = lifecycleSession?.getEditor() ?? null
+
+  return useEditorSessionOrchestration({
     props,
     hostRef,
+    shellRef,
     onChangeRef,
     onDirtyRef,
     lifecycleSession,
     setLifecycleSession,
-  })
-
-  const editorRef = useRef<Quill | null>(lifecycleSession?.getEditor() ?? null)
-  editorRef.current = lifecycleSession?.getEditor() ?? null
-
-  const { findBar, ctrlPressed, tagMatches, handleEditorMouseDown } = useEditorSessionRenderHooks({
-    props,
-    lifecycleSession,
-    hostRef,
     editorRef,
     triggerTagOverlayRender,
-  })
-
-  return buildEditorSessionFacade(lifecycleSession, hostRef, shellRef, {
-    findBar,
-    ctrlPressed,
-    tagMatches,
-    handleEditorMouseDown,
   })
 }

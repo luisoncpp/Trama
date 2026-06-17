@@ -6,22 +6,17 @@ import { createTramaTurndownService, TurndownServiceFlags } from '../../../../..
 import { createQuillEditor, syncEditorSpellcheck, applyMarkdownToEditor } from '../../rich-markdown-editor-quill.js'
 import { registerWorkspaceCommandListener } from '../../rich-markdown-editor-commands.js'
 import { registerTypographyHandler } from '../../rich-markdown-editor-typography.js'
-import { normalizeEditorDocumentValue } from '../../rich-markdown-editor-value-sync.js'
-import { createFlush, registerTextChangeHandler } from './editor-session-serialization.js'
-import { applyExternalValueToEditor } from './editor-session-external-sync.js'
+import { EditorContentLoop } from './editor-session-content.js'
 
 export class EditorSessionImpl implements EditorSessionCore {
   private editor: Quill
   private documentId: string
-  private lastEditorValueRef: { current: string }
-  private isApplyingExternalValueRef: { current: boolean }
   private turndownRef: { current: TurndownService }
-  private lastAppliedForceApplyVersionRef: { current: number }
-  private cleanupTextChangeHandler: () => void
+  private contentLoop: EditorContentLoop
+  private onChangeRef: { current: (value: string) => void }
   private workspaceHandler: (event: Event) => void
   private contentMutatedSubscribers = new Set<() => void>()
   private disposed = false
-  private flushFn: () => string | null
 
   constructor(params: {
     host: HTMLDivElement
@@ -33,31 +28,21 @@ export class EditorSessionImpl implements EditorSessionCore {
   }) {
     this.editor = createQuillEditor(params.host)
     this.documentId = params.documentId
-    this.lastEditorValueRef = { current: normalizeEditorDocumentValue(params.value, params.documentId) }
-    this.isApplyingExternalValueRef = { current: false }
     this.turndownRef = { current: createTramaTurndownService(TurndownServiceFlags.None) }
-    this.lastAppliedForceApplyVersionRef = { current: 0 }
+    this.onChangeRef = params.onChangeRef
 
     syncEditorSpellcheck(this.editor, params.spellcheckEnabled)
     applyMarkdownToEditor(this.editor, params.value, 'silent', params.documentId)
 
-    this.flushFn = createFlush(
-      this.editor,
-      this.documentId,
-      this.turndownRef,
-      this.lastEditorValueRef,
-      this.isApplyingExternalValueRef,
-      params.onChangeRef,
-    )
-
-    this.cleanupTextChangeHandler = registerTextChangeHandler(
-      this.editor,
-      this.documentId,
-      this.isApplyingExternalValueRef,
-      params.onDirtyRef,
-      () => this.notifyContentMutated(),
-      () => this.flush(),
-    )
+    this.contentLoop = new EditorContentLoop({
+      editor: this.editor,
+      documentId: params.documentId,
+      initialValue: params.value,
+      turndownRef: this.turndownRef,
+      onChangeRef: params.onChangeRef,
+      onDirtyRef: params.onDirtyRef,
+      notifyContentMutated: () => this.notifyContentMutated(),
+    })
 
     this.workspaceHandler = registerWorkspaceCommandListener(this.editor, this.turndownRef)
     registerTypographyHandler(this.editor)
@@ -65,7 +50,7 @@ export class EditorSessionImpl implements EditorSessionCore {
 
   flush(): string | null {
     if (this.disposed) return null
-    return this.flushFn()
+    return this.contentLoop.flush(this.editor, this.documentId, this.turndownRef, this.onChangeRef)
   }
 
   getEditor(): Quill | null {
@@ -73,7 +58,7 @@ export class EditorSessionImpl implements EditorSessionCore {
   }
 
   getCanonicalValue(): string {
-    return this.lastEditorValueRef.current
+    return this.contentLoop.getCanonicalValue()
   }
 
   subscribeContentMutated(cb: () => void): () => void {
@@ -83,14 +68,11 @@ export class EditorSessionImpl implements EditorSessionCore {
 
   applyExternalValue(value: string, forceApplyVersion: number): void {
     if (this.disposed) return
-    applyExternalValueToEditor(
+    this.contentLoop.applyExternalValue(
       this.editor,
       this.documentId,
       value,
       forceApplyVersion,
-      this.lastEditorValueRef,
-      this.isApplyingExternalValueRef,
-      this.lastAppliedForceApplyVersionRef,
       () => this.notifyContentMutated(),
     )
   }
@@ -119,7 +101,7 @@ export class EditorSessionImpl implements EditorSessionCore {
   dispose(): void {
     if (this.disposed) return
     this.disposed = true
-    this.cleanupTextChangeHandler()
+    this.contentLoop.dispose()
     window.removeEventListener(WORKSPACE_CONTEXT_MENU_EVENT, this.workspaceHandler as EventListener)
   }
 

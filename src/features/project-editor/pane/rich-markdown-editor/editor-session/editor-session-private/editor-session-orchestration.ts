@@ -1,31 +1,43 @@
 import { useEffect } from 'preact/hooks'
 import type Quill from 'quill'
 import type { EditorZoomRef } from '../../../../project-editor-types.js'
-import { EditorSessionImpl } from './editor-session-lifecycle.js'
+import type { EditorSession } from '../editor-session-types.js'
 import type { UseEditorSessionProps } from '../editor-session.js'
+import { EditorSessionImpl } from './editor-session-lifecycle.js'
 import { useRichEditorFind } from './editor-session-find.js'
 import { useFocusModeScopeEffect } from './editor-session-focus.js'
 import { useRichEditorOverlay } from './editor-session-tag-overlay.js'
 import { useEditorZoom } from './editor-session-zoom.js'
 import { useSyncToolbarControls } from './editor-session-toolbar.js'
 
-interface UseEditorSessionLifecycleEffectsParams {
+const DEFAULT_ZOOM_REF: EditorZoomRef = { current: 1.0 }
+
+interface OrchestrationContext {
   props: UseEditorSessionProps
   hostRef: { current: HTMLDivElement | null }
+  shellRef: { current: HTMLDivElement | null }
   onChangeRef: { current: (value: string) => void }
   onDirtyRef: { current: () => void }
   lifecycleSession: EditorSessionImpl | null
   setLifecycleSession: (session: EditorSessionImpl | null) => void
+  editorRef: { current: Quill | null }
+  triggerTagOverlayRender: () => void
 }
 
-export function useEditorSessionLifecycleEffects({
+export function useEditorSessionOrchestration(ctx: OrchestrationContext): EditorSession | null {
+  useEditorSessionLifecycleEffects(ctx)
+  const renderState = useEditorSessionFeatureHooks(ctx)
+  return buildEditorSessionFacade(ctx.lifecycleSession, ctx.hostRef, ctx.shellRef, renderState)
+}
+
+function useEditorSessionLifecycleEffects({
   props,
   hostRef,
   onChangeRef,
   onDirtyRef,
   lifecycleSession,
   setLifecycleSession,
-}: UseEditorSessionLifecycleEffectsParams) {
+}: OrchestrationContext): void {
   useEffect(() => { onChangeRef.current = props.onChange }, [props.onChange, onChangeRef])
   useEffect(() => { onDirtyRef.current = props.onMarkDirty ?? (() => {}) }, [props.onMarkDirty, onDirtyRef])
 
@@ -65,23 +77,8 @@ export function useEditorSessionLifecycleEffects({
   }, [lifecycleSession, props.spellcheckEnabled])
 }
 
-interface UseEditorSessionRenderHooksParams {
-  props: UseEditorSessionProps
-  lifecycleSession: EditorSessionImpl | null
-  hostRef: { current: HTMLDivElement | null }
-  editorRef: { current: Quill | null }
-  triggerTagOverlayRender: () => void
-}
-
-const DEFAULT_ZOOM_REF: EditorZoomRef = { current: 1.0 }
-
-export function useEditorSessionRenderHooks({
-  props,
-  lifecycleSession,
-  hostRef,
-  editorRef,
-  triggerTagOverlayRender,
-}: UseEditorSessionRenderHooksParams) {
+function useEditorSessionFeatureHooks(ctx: OrchestrationContext) {
+  const { props, hostRef, lifecycleSession, editorRef, triggerTagOverlayRender } = ctx
   const findBar = useRichEditorFind({
     documentId: props.documentId,
     hostRef,
@@ -116,7 +113,7 @@ function useEditorSessionToolbarSync(
   props: UseEditorSessionProps,
   hostRef: { current: HTMLDivElement | null },
   lifecycleSession: EditorSessionImpl | null,
-) {
+): void {
   useSyncToolbarControls({
     documentId: props.documentId,
     hostRef,
@@ -137,4 +134,31 @@ function useEditorSessionToolbarSync(
     zoomLevel: props.zoomLevel ?? 1.0,
     onZoomChange: props.onZoomChange,
   })
+}
+
+function buildEditorSessionFacade(
+  lifecycleSession: EditorSessionImpl | null,
+  hostRef: { current: HTMLDivElement | null },
+  shellRef: { current: HTMLDivElement | null },
+  renderState: {
+    findBar: preact.JSX.Element | null
+    ctrlPressed: boolean
+    tagMatches: import('../../../../project-editor-types.js').TagMatch[]
+    handleEditorMouseDown: (e: MouseEvent) => void
+  },
+): EditorSession | null {
+  if (!lifecycleSession) return null
+  return {
+    flush: () => lifecycleSession.flush(),
+    getEditor: () => lifecycleSession.getEditor(),
+    getCanonicalValue: () => lifecycleSession.getCanonicalValue(),
+    subscribeContentMutated: (cb) => lifecycleSession.subscribeContentMutated(cb),
+    dispose: () => lifecycleSession.dispose(),
+    getHostRef: () => hostRef,
+    getShellRef: () => shellRef,
+    getFindBar: () => renderState.findBar,
+    getTagMatches: () => renderState.tagMatches,
+    isCtrlPressed: () => renderState.ctrlPressed,
+    getHandleEditorMouseDown: () => renderState.handleEditorMouseDown,
+  }
 }

@@ -116,4 +116,34 @@ describe('EditorSession', () => {
     hostA.remove()
     hostB.remove()
   })
+
+  it('round-trip immunity: equivalent external value after flush is skipped', () => {
+    const onChange = vi.fn()
+    const session = createSession('round-trip-doc', 'hello', onChange)
+
+    session.getEditor()!.insertText(5, ' world', 'user')
+    session.flush()
+
+    expect(onChange).toHaveBeenCalledTimes(1)
+    const hydratedFromParent = onChange.mock.calls[0][0] as string
+    onChange.mockClear()
+
+    session.applyExternalValue(hydratedFromParent, 0)
+    expect(onChange).not.toHaveBeenCalled()
+
+    session.dispose()
+  })
+
+  it('flush returns null while external value is applying', () => {
+    vi.useFakeTimers()
+    const onChange = vi.fn()
+    const session = createSession('apply-lock-doc', 'initial', onChange)
+
+    session.applyExternalValue('updated content', 1)
+    expect(session.flush()).toBeNull()
+
+    vi.runAllTimers()
+    vi.useRealTimers()
+    session.dispose()
+  })
 })

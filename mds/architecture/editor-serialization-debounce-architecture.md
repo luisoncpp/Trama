@@ -15,7 +15,7 @@ user keystroke
     → onDirtyRef.current()                       [immediate, sets isDirty]
     → setTimeout(flush, 1000)                  [debounced]
 
-flush()                                         [in rich-markdown-editor-serialization.ts]
+flush()                                         [EditorContentLoop in editor-session-content.ts]
   → serializeEditorMarkdown(turndownRef, editor.root.innerHTML, documentId)
   → lastEditorValueRef.current = markdown       [placeholder form, lightweight]
   → hydration = hydrateMarkdownImages(markdown, documentId)
@@ -23,7 +23,7 @@ flush()                                         [in rich-markdown-editor-seriali
   → return markdown                             [caller uses placeholder return value]
 
 saveNow / selectFile / setWorkspaceActivePane
-  → ref.current.flush() → uses return value     [bypasses stale React state]
+  → editorSessionRefs[pane].current?.flush() → uses return value
   → saveDocumentNow(path, latestContent, meta)  [re-hydrates for safety via useSaveDocumentNow]
 
 revertChanges
@@ -118,51 +118,41 @@ That module is now the only place that should know how base64 markdown images an
 
 ```typescript
 // project-editor-types.ts
-export interface EditorSerializationRefs {
-  flush: () => string | null
+export interface EditorSession {
+  flush(): string | null
 }
 
 export interface ProjectEditorModel {
-  state: ProjectEditorState
-  actions: ProjectEditorActions
-  serializationRefs: {
-    primary: { current: EditorSerializationRefs }
-    secondary: { current: EditorSerializationRefs }
+  editorSessionRefs: {
+    primary: { current: EditorSession | null }
+    secondary: { current: EditorSession | null }
   }
 }
 ```
 
 ```typescript
-// rich-markdown-editor-core.ts
-interface EditorTextChangeHandlerParams {
-  editor: Quill
-  documentId: string
-  isApplyingExternalValueRef: { current: boolean }
-  turndownRef: { current: TurndownService }
-  lastEditorValueRef: { current: string }
-  onChangeRef: { current: (value: string) => void }
-  onDirtyRef: { current: () => void }
-  serializationRef: { current: EditorSerializationRefs }
+// editor-session-content.ts — Editor content loop
+class EditorContentLoop {
+  flush(...): string | null          // placeholder return; hydrates for onChange
+  applyExternalValue(...): void      // canonical compare + forceApplyVersion
+  getCanonicalValue(): string
 }
-// Returns cleanup: () => void (only clears timer, no flush)
+// text-change handler: immediate dirty + layout sync + setTimeout(flush, 1000)
+// cleanup: cancel timer only, never flush
 ```
 
 ## Where flush is called
 
-Slice 1 of the rich-editor refactor centralized pane-targeted persistence in:
-
-- `src/features/project-editor/use-project-editor-pane-persistence.ts`
-
-That helper owns serialization-ref lookup, pane-state lookup, `flushPaneContent(pane)`, Pane exit intent methods, and `saveAllDirtyPanes()`.
+Pane-targeted persistence lives in `PaneWorkspace`:
 
 | Action | File | Target |
 |--------|------|--------|
 | `saveNow` | `workspace-actions.ts` | Active pane via `savePaneNow()` |
-| `selectFile` | `sidebar-file-actions/private/file-select.ts` | Active pane via `preparePaneExit()` |
+| `selectFile` | sidebar file actions | Active pane via `preparePaneExit()` |
 | `setWorkspaceActivePane` | `workspace-actions.ts` | Outgoing pane via `preparePaneExit()` |
-| Autosave effect | `use-project-editor-autosave-effect.ts` | Active pane via internal `savePaneIfDirty()` |
-| Close effect (`__tramaSaveAll`) | `use-project-editor-close-effect.ts` | Both panes via `saveAllDirtyPanes()` |
-| `revertChanges` | `workspace-actions.ts` | Target pane via `preparePaneRevert()` before caller `loadDocument()` |
+| Autosave | `pane-workspace.ts` | Active pane via internal timer |
+| Close (`__tramaSaveAll`) | close effect | Both panes via `saveAllDirtyPanes()` |
+| `revertChanges` | `workspace-actions.ts` | Target pane via `preparePaneRevert()` before `loadDocument()` |
 
 ## Force-apply rule for revert and disk reload
 
@@ -173,7 +163,7 @@ The fix is explicit pane state, not a special-case string comparison override:
 - `PaneDocumentState` carries `reloadVersion`
 - `PaneWorkspace.loadPaneDocument()` increments `reloadVersion` on every disk load/revert
 - `EditorPanel` forwards `reloadVersion` as `forceApplyVersion`
-- `useSyncExternalValue()` force-applies the next external value when `forceApplyVersion` advances, then preserves selection and `editor.root.scrollTop`
+- `editor-session-orchestration.ts` effect calls `applyExternalValue()` when `forceApplyVersion` advances
 
 This makes true disk reloads/removals of unsaved DOM state deterministic and independent from markdown string equality without remounting Quill, which avoids the revert flicker and scroll-jump regressions.
 
@@ -181,21 +171,13 @@ This makes true disk reloads/removals of unsaved DOM state deterministic and ind
 
 | File | Role |
 |------|------|
-| `src/features/project-editor/components/rich-markdown-editor-core.ts` | Lifecycle hooks: `useInitializeEditor`, `useSyncExternalValue`, enable/disable, spellcheck |
-| `src/features/project-editor/components/rich-markdown-editor-serialization.ts` | Handler registration, debounce logic, `flush()` closure with image hydration |
-| `src/features/project-editor/components/rich-markdown-editor.tsx` | Props `editorSerializationRef` + `onMarkDirty`, ref mutation sync |
-| `src/features/project-editor/components/rich-markdown-editor-value-sync.ts` | Canonical editor-value normalization/equality used by `lastEditorValueRef` and external sync |
-| `src/features/project-editor/components/editor-panel.tsx` | Passes props through |
-| `src/features/project-editor/pane/workspace-editor-panels.tsx` | Reads `serializationRefs` from model, routes per pane |
-| `src/features/project-editor/project-editor-types.ts` | `EditorSerializationRefs` type, `serializationRefs` in model |
-| `src/features/project-editor/use-project-editor.ts` | Creates refs, wires into actions and effects |
-| `src/features/project-editor/project-editor-private/actions.ts` | Private action assembly that owns `loadDocument`/`saveDocumentNow` alongside serialization-aware editor flows |
-| `src/features/project-editor/use-project-editor-pane-persistence.ts` | Centralized pane-targeted `flush/save` helper used by actions and effects |
-| `src/features/project-editor/use-project-editor-ui-actions.ts` | Passes refs to `usePrimaryProjectEditorActions` |
-| `src/features/project-editor/use-project-editor-ui-actions-helpers.ts` | `saveNow`, `selectFile`, `editorViewActions` routed through pane persistence |
-| `src/features/project-editor/use-project-editor-layout-actions.ts` | `setWorkspaceActivePane`, `openFileInPane`, switch-time save via pane persistence |
-| `src/features/project-editor/use-project-editor-autosave-effect.ts` | Autosave routed through pane persistence |
-| `src/features/project-editor/use-project-editor-close-effect.ts` | Close-time save-all routed through pane persistence |
+| `editor-session/editor-session-private/editor-session-content.ts` | **Editor content loop**: debounce, flush, external apply, apply-lock |
+| `editor-session/editor-session-private/editor-session-lifecycle.ts` | Quill init/dispose; delegates to content loop |
+| `editor-session/editor-session-private/editor-session-orchestration.ts` | Preact effects including external-value apply |
+| `rich-markdown-editor-value-sync.ts` | Shared canonical normalization/equality |
+| `pane/pane-workspace.ts` | `flushPaneContent(pane)` via `editorSessionRefs` |
+| `project-editor-types.ts` | `EditorSession` type, `editorSessionRefs` in model |
+| `tests/editor-session.test.ts` | Content loop integration tests |
 
 ## Related docs
 

@@ -61,6 +61,10 @@ _Avoid_: GitHub available
 The per-pane rich editor module that owns Quill lifecycle, debounced serialization, external value sync, and editing-surface features (find, focus scope, wiki tag overlay, zoom). Callers cross the seam via typed methods such as `flush()`, not ref mutation.
 _Avoid_: Serialization ref, editor refs bag
 
+**Editor content loop**:
+The inbound/outbound document value orchestration inside an **Editor session**: debounced flush, canonical value tracking, external apply with equivalence skip and `forceApplyVersion`, and the `isApplyingExternalValue` apply-lock. Equivalence helpers shared with pane and Git callers live in `rich-markdown-editor-value-sync.ts`.
+_Avoid_: Serialization module, external sync module (as separate architectural concepts)
+
 ## Book export
 
 **Author page break**:
