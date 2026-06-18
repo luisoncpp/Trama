@@ -1,15 +1,17 @@
-import type { DocumentMeta } from '../../../../shared/ipc'
+import type { DocumentMeta } from '../../../../../shared/ipc'
 import type {
   RelationshipEdge,
   RelationshipEdgeDirection,
   RelationshipEdgePreset,
   RelationshipEdgeStyle,
   RelationshipNode,
+  RelationshipRegion,
   RelationshipsConfig,
 } from './relationships-editor-types'
 
 export const DEFAULT_NODE_COLOR = '#6ea6ff'
 export const DEFAULT_EDGE_COLOR = '#e74c3c'
+export const DEFAULT_REGION_COLOR = '#6b7b8c'
 
 const EDGE_STYLES: readonly RelationshipEdgeStyle[] = ['solid', 'dashed', 'dotted']
 const EDGE_DIRECTIONS: readonly RelationshipEdgeDirection[] = ['forward', 'both', 'none']
@@ -58,6 +60,27 @@ function normalizeEdge(value: unknown, nodeIds: Set<string>): RelationshipEdge |
   }
 }
 
+function normalizeRegion(value: unknown): RelationshipRegion | null {
+  if (!isRecord(value)) return null
+  const id = typeof value.id === 'string' ? value.id.trim() : ''
+  const x = typeof value.x === 'number' ? value.x : Number(value.x)
+  const y = typeof value.y === 'number' ? value.y : Number(value.y)
+  const width = typeof value.width === 'number' ? value.width : Number(value.width)
+  const height = typeof value.height === 'number' ? value.height : Number(value.height)
+  const label = typeof value.label === 'string' ? value.label.trim() : ''
+  if (!id || !Number.isFinite(x) || !Number.isFinite(y) || !Number.isFinite(width) || !Number.isFinite(height)) return null
+  if (width < 40 || height < 32) return null
+  return {
+    id,
+    x,
+    y,
+    width,
+    height,
+    label: label || 'Region',
+    color: normalizeColor(value.color, DEFAULT_REGION_COLOR),
+  }
+}
+
 function normalizeEdgePreset(value: unknown): RelationshipEdgePreset | null {
   if (!isRecord(value)) return null
   const name = typeof value.name === 'string' ? value.name.trim() : ''
@@ -73,7 +96,7 @@ function normalizeEdgePreset(value: unknown): RelationshipEdgePreset | null {
 export function getRelationshipsConfig(meta: DocumentMeta): RelationshipsConfig {
   const rawConfig = meta.relationshipsConfig
   if (!isRecord(rawConfig)) {
-    return { nodes: [], edges: [], edgePresets: [] }
+    return { nodes: [], edges: [], edgePresets: [], regions: [] }
   }
   const nodes = Array.isArray(rawConfig.nodes)
     ? rawConfig.nodes.map(normalizeNode).filter((node): node is RelationshipNode => node !== null)
@@ -85,7 +108,10 @@ export function getRelationshipsConfig(meta: DocumentMeta): RelationshipsConfig 
   const edgePresets = Array.isArray(rawConfig.edgePresets)
     ? rawConfig.edgePresets.map(normalizeEdgePreset).filter((preset): preset is RelationshipEdgePreset => preset !== null)
     : []
-  return { nodes, edges, edgePresets }
+  const regions = Array.isArray(rawConfig.regions)
+    ? rawConfig.regions.map(normalizeRegion).filter((region): region is RelationshipRegion => region !== null)
+    : []
+  return { nodes, edges, edgePresets, regions }
 }
 
 export function withRelationshipsConfig(meta: DocumentMeta, config: RelationshipsConfig): DocumentMeta {
@@ -115,6 +141,15 @@ export function withRelationshipsConfig(meta: DocumentMeta, config: Relationship
         color: preset.color,
         style: preset.style,
         direction: preset.direction,
+      })),
+      regions: config.regions.map((region) => ({
+        id: region.id,
+        x: region.x,
+        y: region.y,
+        width: region.width,
+        height: region.height,
+        label: region.label,
+        color: region.color,
       })),
     },
   }

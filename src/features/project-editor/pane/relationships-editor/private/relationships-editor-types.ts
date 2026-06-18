@@ -35,10 +35,21 @@ export interface RelationshipLinkTemplate {
   direction: RelationshipEdgeDirection
 }
 
-export type RelationshipsEditorTool = 'select' | 'add-relationship' | 'remove-relationship'
+export interface RelationshipRegion {
+  id: string
+  x: number
+  y: number
+  width: number
+  height: number
+  label: string
+  color: string
+}
+
+export type RelationshipsEditorTool = 'select' | 'add-relationship' | 'remove-relationship' | 'add-region'
 
 export interface RelationshipsConfig {
   nodes: RelationshipNode[]
   edges: RelationshipEdge[]
   edgePresets: RelationshipEdgePreset[]
+  regions: RelationshipRegion[]
 }

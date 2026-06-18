@@ -56,6 +56,15 @@ function ToolIconRemoveLink() {
   )
 }
 
+function ToolIconRegion() {
+  return (
+    <svg class="relationships-editor__tool-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <rect x="4" y="6" width="16" height="14" rx="2" />
+      <path d="M4 10h16" />
+    </svg>
+  )
+}
+
 function PresetDirectionGlyph({ direction }: { direction: RelationshipEdgeDirection }) {
   const glyph = direction === 'forward' ? '→' : direction === 'both' ? '↔' : '—'
   return <span class="relationships-editor__preset-direction" aria-hidden="true">{glyph}</span>
@@ -111,6 +120,7 @@ function RelationshipsEditorSubtoolbar({ presets, linkTemplate, onPresetSelect, 
 
 const TOOL_ITEMS: Array<{ id: RelationshipsEditorTool; label: string; icon: () => JSX.Element; modifier?: string }> = [
   { id: 'select', label: 'Select', icon: ToolIconSelect },
+  { id: 'add-region', label: 'Region', icon: ToolIconRegion },
   { id: 'add-relationship', label: 'Connect', icon: ToolIconAddLink },
   { id: 'remove-relationship', label: 'Remove', icon: ToolIconRemoveLink, modifier: 'remove' },
 ]

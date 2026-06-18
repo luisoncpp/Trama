@@ -1707,6 +1707,14 @@
   cursor: pointer;
 }
 
+.relationships-editor__viewport.is-drawing-region {
+  cursor: crosshair;
+}
+
+.relationships-editor__viewport.is-drawing-region:active {
+  cursor: crosshair;
+}
+
 .relationships-editor__viewport:active {
   cursor: grabbing;
 }
@@ -1736,6 +1744,153 @@
   left: 0;
   top: 0;
   overflow: visible;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.relationships-regions-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.relationships-region {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid color-mix(in oklab, var(--region-color, var(--border-strong)) 72%, white 28%);
+  border-radius: 6px;
+  overflow: visible;
+  box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--region-color, var(--border-strong)) 18%, transparent);
+  pointer-events: auto;
+  touch-action: none;
+}
+
+.relationships-region__resize-handle {
+  position: absolute;
+  z-index: 2;
+  touch-action: none;
+}
+
+.relationships-region__resize-handle--n {
+  top: -4px;
+  left: 10px;
+  right: 10px;
+  height: 8px;
+  cursor: n-resize;
+}
+
+.relationships-region__resize-handle--s {
+  bottom: -4px;
+  left: 10px;
+  right: 10px;
+  height: 8px;
+  cursor: s-resize;
+}
+
+.relationships-region__resize-handle--e {
+  top: 10px;
+  right: -4px;
+  bottom: 10px;
+  width: 8px;
+  cursor: e-resize;
+}
+
+.relationships-region__resize-handle--w {
+  top: 10px;
+  left: -4px;
+  bottom: 10px;
+  width: 8px;
+  cursor: w-resize;
+}
+
+.relationships-region__resize-handle--ne {
+  top: -4px;
+  right: -4px;
+  width: 12px;
+  height: 12px;
+  cursor: ne-resize;
+}
+
+.relationships-region__resize-handle--nw {
+  top: -4px;
+  left: -4px;
+  width: 12px;
+  height: 12px;
+  cursor: nw-resize;
+}
+
+.relationships-region__resize-handle--se {
+  right: -4px;
+  bottom: -4px;
+  width: 12px;
+  height: 12px;
+  cursor: se-resize;
+}
+
+.relationships-region__resize-handle--sw {
+  left: -4px;
+  bottom: -4px;
+  width: 12px;
+  height: 12px;
+  cursor: sw-resize;
+}
+
+.relationships-region--preview {
+  opacity: 0.72;
+  pointer-events: none;
+}
+
+.relationships-region__header {
+  position: relative;
+  z-index: 1;
+  flex-shrink: 0;
+  padding: 5px 10px;
+  background: color-mix(in oklab, var(--region-color, var(--border-strong)) 78%, black 22%);
+  color: color-mix(in oklab, white 92%, var(--region-color, white) 8%);
+  font-size: 0.72rem;
+  font-weight: 700;
+  line-height: 1.2;
+  cursor: move;
+  user-select: none;
+  border-radius: 5px 5px 0 0;
+  overflow: hidden;
+}
+
+.relationships-region__label {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.relationships-region__body {
+  position: relative;
+  z-index: 1;
+  flex: 1 1 auto;
+  min-height: 0;
+  background: color-mix(in oklab, var(--region-color, var(--border-strong)) 16%, transparent);
+  border-radius: 0 0 5px 5px;
+  overflow: hidden;
+}
+
+.sidebar-context-menu__item--color {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  cursor: default;
+}
+
+.sidebar-context-menu__item--color input[type='color'] {
+  width: 28px;
+  height: 24px;
+  padding: 0;
+  border: 1px solid var(--border-strong);
+  border-radius: 4px;
+  background: transparent;
+  cursor: pointer;
 }
 
 .relationships-edges-markers-layer {

@@ -360,15 +360,22 @@ Mandatory doc navigation for new chats: start with `mds/START-HERE.md` — it pr
   - `pane/pane-workspace-snapshot.ts` — `PaneSnapshotTracker` class extracted from `PaneWorkspace`: owns the last-saved-content map, provides `get`/`set`, exact-match snapshot comparison against external content, and a `destroy` lifecycle for externally-owned maps.
   - `pane/map-editor/map-editor-types.ts` — Shared types extracted from `map-editor-helpers.ts`: `MapMarker`, `MapConfig`, `MapAssetResult`.
   - `pane/map-editor/map-config-serialization.ts` — Config serialization extracted from `map-editor-helpers.ts`: `getMapConfig`, `withMapConfig`, plus private `normalizeMarker` and `isRecord`.
-  - `pane/relationships-editor/relationships-editor.tsx` — Relationships chart editor: pan/zoom, toolbar tool modes (select, add, remove), node drag, linking, context menus, dialog orchestration.
-  - `pane/relationships-editor/relationships-editor-toolbar.tsx` — Toolbar with Select/Move, Add relationship (preset sub-toolbar + custom type), and Remove relationship tools.
-  - `pane/relationships-editor/relationships-editor-types.ts` — Node/edge/preset/config interfaces plus editor tool types.
-  - `pane/relationships-editor/relationships-config-serialization.ts` — `relationshipsConfig` normalization and meta write-back.
-  - `pane/relationships-editor/relationships-editor-helpers.ts` — Node id slugs, `resolveAutoNodeTag`, edge geometry, dash arrays, stage constants; re-exports map tag/clamp helpers.
-  - `pane/relationships-editor/relationships-nodes-layer.tsx` — Node pill overlay and tooltips.
-  - `pane/relationships-editor/relationships-edges-layer.tsx` — SVG edge rendering with arrow markers and click-to-remove hit targets.
-  - `pane/relationships-editor/relationships-node-dialog.tsx` — Character create/edit modal; add-mode **Auto** tag checkbox with live preview against `tagIndex`.
-  - `pane/relationships-editor/relationships-edge-dialog.tsx` — Relationship create/edit modal with preset apply/save; template mode for custom toolbar types.
+  - `pane/relationships-editor/` — Deep module for the relationships-chart pane surface. `index.ts` is the thin public facade (exports only `RelationshipsEditor`); `private/` holds the implementation. Do not import from `private/` outside this module (tests white-box it, matching the `editor-session-private` precedent).
+  - `pane/relationships-editor/index.ts` — Public facade re-exporting `RelationshipsEditor` as the sole external seam consumed by `editor-panel.tsx`.
+  - `pane/relationships-editor/private/relationships-editor.tsx` — Relationships chart editor: pan/zoom, toolbar tool modes (select, region, add, remove), node/region drag, linking, context menus, dialog orchestration.
+  - `pane/relationships-editor/private/relationships-editor-toolbar.tsx` — Toolbar with Select/Move, Region draw, Add relationship (preset sub-toolbar + custom type), and Remove relationship tools.
+  - `pane/relationships-editor/private/relationships-editor-types.ts` — Node/edge/preset/region/config interfaces plus editor tool types.
+  - `pane/relationships-editor/private/relationships-config-serialization.ts` — `relationshipsConfig` normalization and meta write-back.
+  - `pane/relationships-editor/private/relationships-editor-helpers.ts` — Node/region id slugs, `resolveAutoNodeTag`, edge/region geometry, dash arrays, stage constants; re-exports map tag/clamp helpers.
+  - `pane/relationships-editor/private/relationships-regions-layer.tsx` — Labeled region rectangles with edge/corner resize handles, header drag-to-move, and separate label/body context targets.
+  - `pane/relationships-editor/private/relationships-region-dialog.tsx` — Region create/rename modal (label + color).
+  - `pane/relationships-editor/private/use-relationships-region-editing.ts` — Region draw/move/resize interaction state and config mutation helpers.
+  - `pane/relationships-editor/private/relationships-region-editing-helpers.ts` — Pure region save/move/resize/draw geometry helpers for the editing hook.
+  - `pane/relationships-editor/private/relationships-region-pointer-handlers.ts` — Region move/resize/draw pointer handlers wired by the editing hook.
+  - `pane/relationships-editor/private/relationships-nodes-layer.tsx` — Node pill overlay and tooltips.
+  - `pane/relationships-editor/private/relationships-edges-layer.tsx` — SVG edge rendering with arrow markers and click-to-remove hit targets.
+  - `pane/relationships-editor/private/relationships-node-dialog.tsx` — Character create/edit modal; add-mode **Auto** tag checkbox with live preview against `tagIndex`.
+  - `pane/relationships-editor/private/relationships-edge-dialog.tsx` — Relationship create/edit modal with preset apply/save; template mode for custom toolbar types.
   - `pane/pane-navigation.ts` — `PaneNavigation` class extracted from `PaneWorkspace`: owns per-pane session history stack helpers (`recordPaneNavigation`, `getPreviousPathInPaneHistory`, `getNextPathInPaneHistory`, `stepPaneNavigationHistory`, `clearNavigationHistory`).
   - `pane/pane-navigation-state.ts` — pure helpers for navigation history state: `getEmptyNavigationHistory`, `getHistoryForPane`, `createNavigationHistoryStore`.
   - `pane/pane-editor.tsx` — `PaneEditor` component extracted from `workspace-editor-panels.tsx`.

@@ -4,7 +4,7 @@ import type { EditorSession, FocusScope, EditorZoomRef, WorkspaceLayoutMode } fr
 import { WORKSPACE_CONTEXT_MENU_STATE_GLOBAL, type WorkspaceContextMenuState } from '../../../shared/workspace-context-menu'
 import { RichMarkdownEditor } from './rich-markdown-editor/rich-markdown-editor'
 import { MapEditor } from './map-editor/map-editor'
-import { RelationshipsEditor } from './relationships-editor/relationships-editor'
+import { RelationshipsEditor } from './relationships-editor'
 import { RevisionsRail } from './revisions/revisions-rail'
 import type { RichEditorSyncState } from './rich-markdown-editor/editor-session/editor-session-private/editor-session-toolbar'
 import type { DocumentMeta } from '../../../shared/ipc'

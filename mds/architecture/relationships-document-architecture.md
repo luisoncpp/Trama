@@ -32,11 +32,20 @@ relationshipsConfig:
       color: "#2ecc71"
       style: solid
       direction: both
+  regions:                    # optional labeled rectangles for grouping (UE5-style comment boxes)
+    - id: royal-court
+      x: 400                  # top-left corner in stage coordinates
+      y: 200
+      width: 480
+      height: 320
+      label: "Royal court"
+      color: "#9b59b6"
 ```
 
 - Edges reference nodes by `id`, not by tag, so a node can exist without a tag and tags can change freely.
 - `destinationTag` is optional on nodes. When set, plain click in Select mode navigates to the tagged lore file (same contract as map markers).
-- `getRelationshipsConfig()` drops edges whose endpoints are missing or identical, and normalizes unknown styles/directions/colors to defaults.
+- `regions` are optional labeled rectangles rendered behind edges/nodes. They are organizational only — they do not move contained characters automatically.
+- `getRelationshipsConfig()` drops edges whose endpoints are missing or identical, drops regions smaller than 40×32px, and normalizes unknown styles/directions/colors to defaults.
 - New documents are seeded with four default presets (Family, Allies, Enemies, Romance).
 
 ## End-to-End Data Flow
@@ -85,16 +94,18 @@ withRelationshipsConfig(meta, config) → pane save/revert persists frontmatter
 
 ## Editor Interactions
 
-- **Toolbar** (`relationships-editor-toolbar.tsx`): three tools — **Select / Move** (default), **Add relationship**, **Remove relationship**. Hidden in read-only preview.
-- **Select / Move**: pan/zoom (drag background, wheel zoom 0.25x–4x, never marks dirty); left-drag a node (4px threshold) commits position on pointer-up; plain click navigates via `destinationTag` like map markers.
+- **Toolbar** (`relationships-editor-toolbar.tsx`): four tools — **Select / Move** (default), **Region** (drag to draw labeled rectangles), **Add relationship**, **Remove relationship**. Hidden in read-only preview.
+- **Select / Move**: pan/zoom (drag background, wheel zoom 0.25x–4x, never marks dirty); left-drag a node (4px threshold) commits position on pointer-up; left-drag a region **header label** moves the region; drag region **edges or corners** resizes; plain click navigates via `destinationTag` like map markers.
+- **Region**: drag on the stage to draw a rectangle; on release opens the region dialog for label and color. Right-click stage → **Add region** creates a default 320×200 box at the click point. Right-click region **label** → rename or delete; right-click region **body** (empty area behind nodes/edges) → change color or delete. Regions render behind edges and nodes with a solid header strip and semi-transparent body tinted by the chosen color.
 - **Add relationship**: sub-toolbar lists `edgePresets` plus **Custom…** (opens the edge dialog in template mode to define color/style/direction/label and optionally save a new preset). After a type is chosen, two node clicks create an edge immediately (no dialog); the tool stays active for repeated additions. Escape or background click cancels a pending first node only.
 - **Remove relationship**: click an edge line/arrow to delete it; characters remain.
-- **Context menu**: right-click stage → add character; node → add relationship (legacy two-click flow opens edge dialog if no toolbar template), edit/delete; edge → edit/delete.
+- **Context menu**: right-click stage → add character / add region; node → add relationship (legacy two-click flow opens edge dialog if no toolbar template), edit/delete; edge → edit/delete; region label → rename/delete; region body → change color/delete.
 - **Add character dialog** (`relationships-node-dialog.tsx`): **Auto** checkbox (on by default, add mode only). When on, `resolveAutoNodeTag` matches the typed name against `tagIndex`; existing tag → stored as `destinationTag`, no match → empty tag. Tag field is read-only while Auto is on. Uncheck **Auto** to type a tag manually. Edit mode always uses manual tag entry.
 - **Presets**: edge dialog still offers preset apply/save for context-menu and edit flows; toolbar preset buttons mirror `edgePresets` styling.
 
 ## Rendering
 
+- Regions are absolutely-positioned HTML boxes (`relationships-regions-layer.tsx`) behind the SVG edge layer. The edges SVG root uses `pointer-events: none` so empty canvas areas pass clicks through to regions; only `.relationships-edge__hit` strokes receive edge pointer events.
 - Nodes are absolutely-positioned HTML pill buttons (`relationships-nodes-layer.tsx`), so labels are always visible.
 - Edges are an SVG layer under the nodes (`relationships-edges-layer.tsx`): quadratic paths with dash arrays for styles, a wide transparent hit path for right-click targeting, and the label at the curve midpoint.
 - Arrowheads render in a second SVG layer above the node pills (`RelationshipsEdgeMarkersLayer` in `relationships-edges-layer.tsx`) so bidirectional markers stay visible when nodes overlap the line ends.
@@ -103,24 +114,32 @@ withRelationshipsConfig(meta, config) → pane save/revert persists frontmatter
 
 ## File Map By Responsibility
 
+The `relationships-editor/` folder is a **deep module** (see `mds/dev-workflow.md` § Deep Modules): `index.ts` is the thin public facade exporting only `RelationshipsEditor` — the sole seam consumed by `editor-panel.tsx`. Everything under `relationships-editor/private/` is implementation and must not be imported from outside the module. Tests white-box `private/` for unit coverage, matching the `editor-session-private` precedent.
+
 | File | Role |
 |------|------|
-| `src/features/project-editor/pane/editor-panel.tsx` | Document-type switch including `relationships` |
-| `src/features/project-editor/pane/relationships-editor/relationships-editor.tsx` | Pan/zoom, node drag, toolbar tool modes, linking mode, context menus, dialog orchestration |
-| `src/features/project-editor/pane/relationships-editor/relationships-editor-toolbar.tsx` | Select/Move, Add relationship (preset sub-toolbar), Remove relationship tool buttons |
-| `src/features/project-editor/pane/relationships-editor/relationships-editor-types.ts` | Node/edge/preset/config interfaces |
-| `src/features/project-editor/pane/relationships-editor/relationships-config-serialization.ts` | `relationshipsConfig` normalization and meta write-back |
-| `src/features/project-editor/pane/relationships-editor/relationships-editor-helpers.ts` | Node id slugs, `resolveAutoNodeTag`, edge geometry, dash arrays, stage constants; re-exports map clamping/tag helpers |
-| `src/features/project-editor/pane/relationships-editor/relationships-nodes-layer.tsx` | Node pill overlay and tooltips |
-| `src/features/project-editor/pane/relationships-editor/relationships-edges-layer.tsx` | SVG edge rendering with arrow markers |
-| `src/features/project-editor/pane/relationships-editor/relationships-node-dialog.tsx` | Character create/edit modal; add-mode **Auto** tag checkbox and live tag preview |
-| `src/features/project-editor/pane/relationships-editor/relationships-edge-dialog.tsx` | Relationship create/edit modal with preset apply/save |
+| `src/features/project-editor/pane/relationships-editor/index.ts` | Public facade — exports `RelationshipsEditor` only |
+| `src/features/project-editor/pane/editor-panel.tsx` | Document-type switch including `relationships`; imports `RelationshipsEditor` from the facade |
+| `src/features/project-editor/pane/relationships-editor/private/relationships-editor.tsx` | Pan/zoom, node/region drag, toolbar tool modes, linking mode, context menus, dialog orchestration |
+| `src/features/project-editor/pane/relationships-editor/private/relationships-editor-toolbar.tsx` | Select/Move, Region draw, Add relationship (preset sub-toolbar), Remove relationship tool buttons |
+| `src/features/project-editor/pane/relationships-editor/private/relationships-editor-types.ts` | Node/edge/preset/region/config interfaces plus editor tool types |
+| `src/features/project-editor/pane/relationships-editor/private/relationships-config-serialization.ts` | `relationshipsConfig` normalization and meta write-back |
+| `src/features/project-editor/pane/relationships-editor/private/relationships-editor-helpers.ts` | Node/region id slugs, `resolveAutoNodeTag`, edge/region geometry, dash arrays, stage constants; re-exports map clamping/tag helpers |
+| `src/features/project-editor/pane/relationships-editor/private/relationships-regions-layer.tsx` | Labeled region rectangles with resize handles, header drag-to-move, and body/label context targets |
+| `src/features/project-editor/pane/relationships-editor/private/relationships-region-dialog.tsx` | Region create/rename modal (label + color) |
+| `src/features/project-editor/pane/relationships-editor/private/use-relationships-region-editing.ts` | Region draw/move/resize interaction state and config updates |
+| `src/features/project-editor/pane/relationships-editor/private/relationships-region-editing-helpers.ts` | Pure region save/move/resize/draw geometry helpers for the editing hook |
+| `src/features/project-editor/pane/relationships-editor/private/relationships-region-pointer-handlers.ts` | Region move/resize/draw pointer handlers wired by the editing hook |
+| `src/features/project-editor/pane/relationships-editor/private/relationships-nodes-layer.tsx` | Node pill overlay and tooltips |
+| `src/features/project-editor/pane/relationships-editor/private/relationships-edges-layer.tsx` | SVG edge rendering with arrow markers |
+| `src/features/project-editor/pane/relationships-editor/private/relationships-node-dialog.tsx` | Character create/edit modal; add-mode **Auto** tag checkbox and live tag preview |
+| `src/features/project-editor/pane/relationships-editor/private/relationships-edge-dialog.tsx` | Relationship create/edit modal with preset apply/save |
 | `src/features/project-editor/components/sidebar/sidebar-footer-actions.tsx` | Split-button menu entry |
 | `src/features/project-editor/sidebar-file-actions/private/file-create.ts` | `createRelationships` action |
 | `electron/ipc/handlers/project-handlers/relationships-document-handler.ts` | `createRelationshipsDocument` IPC handler |
 | `electron/services/document-repository.ts` | Writes the initial relationships markdown with default presets |
 | `src/shared/ipc.ts` | `'relationships'` meta type plus create-request schema |
-| `tests/relationships-editor-helpers.test.ts` | Config parsing/normalization, slug ids, `resolveAutoNodeTag`, edge geometry indexes |
+| `tests/relationships-editor-helpers.test.ts` | Config parsing/normalization, slug ids, `resolveAutoNodeTag`, edge/region geometry indexes |
 | `tests/relationships-document-create-repository.test.ts` | Repository coverage for initial chart frontmatter |
 | `example-fantasy/lore/relationships.md` | Working example chart |
 

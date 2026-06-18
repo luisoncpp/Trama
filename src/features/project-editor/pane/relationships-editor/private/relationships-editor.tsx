@@ -1,7 +1,7 @@
 /* eslint-disable max-lines-per-function, max-lines */
 import { useCallback, useEffect, useRef, useState } from 'preact/hooks'
-import type { DocumentMeta } from '../../../../shared/ipc'
-import type { WorkspaceLayoutMode, WorkspacePane } from '../../project-editor-types'
+import type { DocumentMeta } from '../../../../../shared/ipc'
+import type { WorkspaceLayoutMode, WorkspacePane } from '../../../project-editor-types'
 import {
   buildNodeId,
   clampChartValue,
@@ -21,8 +21,11 @@ import {
 import { RelationshipsEdgeDialog } from './relationships-edge-dialog'
 import { RelationshipsEdgeMarkersLayer, RelationshipsEdgesLayer } from './relationships-edges-layer'
 import { RelationshipsNodeDialog } from './relationships-node-dialog'
+import { RelationshipsRegionDialog } from './relationships-region-dialog'
+import { RelationshipsRegionsLayer } from './relationships-regions-layer'
 import { RelationshipsNodesLayer } from './relationships-nodes-layer'
 import { RelationshipsEditorToolbar } from './relationships-editor-toolbar'
+import { useRelationshipsRegionEditing } from './use-relationships-region-editing'
 import type { RelationshipLinkTemplate, RelationshipsEditorTool } from './relationships-editor-types'
 
 interface RelationshipsEditorProps {
@@ -35,7 +38,7 @@ interface RelationshipsEditorProps {
   onNavigate: (filePath: string, pane: WorkspacePane) => void
 }
 
-interface ContextMenuState { clientX: number; clientY: number; target: { kind: 'stage'; x: number; y: number } | { kind: 'node'; index: number } | { kind: 'edge'; index: number } }
+interface ContextMenuState { clientX: number; clientY: number; target: { kind: 'stage'; x: number; y: number } | { kind: 'node'; index: number } | { kind: 'edge'; index: number } | { kind: 'region'; index: number; area: 'label' | 'body' } }
 
 interface NodeDialogState { mode: 'add' | 'edit'; nodeIndex: number | null; node: RelationshipNode }
 
@@ -55,6 +58,7 @@ function presetToTemplate(preset: RelationshipEdgePreset): RelationshipLinkTempl
 
 function getHudSecondaryText(scale: number, activeTool: RelationshipsEditorTool, linkSourceId: string | null, linkTemplate: RelationshipLinkTemplate | null): string {
   if (linkSourceId) return 'Click a character to link · Esc to cancel'
+  if (activeTool === 'add-region') return 'Drag to draw a region'
   if (activeTool === 'add-relationship' && !linkTemplate) return 'Select a relationship type'
   if (activeTool === 'add-relationship') return 'Click two characters to link'
   if (activeTool === 'remove-relationship') return 'Click a relationship to remove'
@@ -101,6 +105,8 @@ export function RelationshipsEditor({ meta, pane, layoutMode, readOnlyPreview = 
     onMetaChange(withRelationshipsConfig(meta, nextConfig))
   }, [meta, onMetaChange] /*Inputs for updateRelationshipsConfig*/)
 
+  const regionEditing = useRelationshipsRegionEditing({ config, activeTool, readOnlyPreview, scale, updateConfig })
+
   const toStagePoint = useCallback(/* toRelationshipsStagePoint */ (clientX: number, clientY: number) => {
     const bounds = viewportRef.current?.getBoundingClientRect()
     if (!bounds) return { x: 0, y: 0 }
@@ -129,12 +135,18 @@ export function RelationshipsEditor({ meta, pane, layoutMode, readOnlyPreview = 
   const handlePointerDown = useCallback(/* handleRelationshipsPointerDown */ (event: PointerEvent) => {
     if (event.button !== 0 && event.button !== 1) return
     if ((event.target as HTMLElement | null)?.closest('[data-relationships-node="true"]')) return
+    if ((event.target as HTMLElement | null)?.closest('[data-relationships-region="true"]')) return
     if (event.button === 0 && linkSourceId) {
       setLinkSourceId(null)
       return
     }
+    if (event.button === 0 && activeTool === 'add-region' && !readOnlyPreview) {
+      const point = toStagePoint(event.clientX, event.clientY)
+      regionEditing.startRegionDraw(event.pointerId, point.x, point.y)
+      return
+    }
     panRef.current = { pointerId: event.pointerId, x: event.clientX, y: event.clientY, offsetX: offset.x, offsetY: offset.y }
-  }, [linkSourceId, offset.x, offset.y] /*Inputs for handleRelationshipsPointerDown*/)
+  }, [activeTool, linkSourceId, offset.x, offset.y, readOnlyPreview, regionEditing, toStagePoint] /*Inputs for handleRelationshipsPointerDown*/)
 
   const handleNodePointerDown = useCallback(/* handleRelationshipsNodePointerDown */ (index: number, event: PointerEvent) => {
     if (event.button !== 0) return
@@ -145,6 +157,8 @@ export function RelationshipsEditor({ meta, pane, layoutMode, readOnlyPreview = 
   }, [activeTool, config.nodes] /*Inputs for handleRelationshipsNodePointerDown*/)
 
   const handlePointerMove = useCallback(/* handleRelationshipsPointerMove */ (event: PointerEvent) => {
+    const point = toStagePoint(event.clientX, event.clientY)
+    if (regionEditing.handleRegionPointerMoveAt(event, point.x, point.y)) return
     const nodeDrag = nodeDragRef.current
     if (nodeDrag && nodeDrag.pointerId === event.pointerId) {
       if (readOnlyPreview || activeTool !== 'select') return
@@ -160,7 +174,7 @@ export function RelationshipsEditor({ meta, pane, layoutMode, readOnlyPreview = 
     }
     if (!panRef.current || panRef.current.pointerId !== event.pointerId) return
     setOffset({ x: panRef.current.offsetX + event.clientX - panRef.current.x, y: panRef.current.offsetY + event.clientY - panRef.current.y })
-  }, [activeTool, config.nodes, readOnlyPreview, scale] /*Inputs for handleRelationshipsPointerMove*/)
+  }, [activeTool, config.nodes, readOnlyPreview, regionEditing, scale, toStagePoint] /*Inputs for handleRelationshipsPointerMove*/)
 
   const handleNodeClick = useCallback(/* handleRelationshipsNodeClick */ (index: number) => {
     const node = config.nodes[index]
@@ -201,6 +215,7 @@ export function RelationshipsEditor({ meta, pane, layoutMode, readOnlyPreview = 
   }, [activeTool, config, layoutMode, linkSourceId, linkTemplate, onNavigate, pane, tagIndex, updateConfig] /*Inputs for handleRelationshipsNodeClick*/)
 
   const handlePointerUp = useCallback(/* handleRelationshipsPointerUp */ (event: PointerEvent) => {
+    if (regionEditing.handleRegionPointerUp(event)) return
     const nodeDrag = nodeDragRef.current
     if (nodeDrag && nodeDrag.pointerId === event.pointerId) {
       nodeDragRef.current = null
@@ -220,7 +235,20 @@ export function RelationshipsEditor({ meta, pane, layoutMode, readOnlyPreview = 
       return
     }
     if (panRef.current?.pointerId === event.pointerId) panRef.current = null
-  }, [activeTool, config, handleNodeClick, readOnlyPreview, scale, updateConfig] /*Inputs for handleRelationshipsPointerUp*/)
+  }, [activeTool, config, handleNodeClick, readOnlyPreview, regionEditing, scale, updateConfig] /*Inputs for handleRelationshipsPointerUp*/)
+
+  useEffect(/* trackRelationshipsPointerDragOnWindow */ () => {
+    const handleWindowPointerMove = (event: PointerEvent) => handlePointerMove(event)
+    const handleWindowPointerEnd = (event: PointerEvent) => handlePointerUp(event)
+    window.addEventListener('pointermove', handleWindowPointerMove)
+    window.addEventListener('pointerup', handleWindowPointerEnd)
+    window.addEventListener('pointercancel', handleWindowPointerEnd)
+    return () => {
+      window.removeEventListener('pointermove', handleWindowPointerMove)
+      window.removeEventListener('pointerup', handleWindowPointerEnd)
+      window.removeEventListener('pointercancel', handleWindowPointerEnd)
+    }
+  }, [handlePointerMove, handlePointerUp] /*Inputs for trackRelationshipsPointerDragOnWindow*/)
 
   const saveNodeFromDialog = useCallback(/* saveRelationshipsNodeFromDialog */ (nextNode: RelationshipNode) => {
     if (nodeDialog?.mode === 'add') {
@@ -254,7 +282,8 @@ export function RelationshipsEditor({ meta, pane, layoutMode, readOnlyPreview = 
   const handleToolChange = useCallback(/* handleRelationshipsToolChange */ (tool: RelationshipsEditorTool) => {
     setActiveTool(tool)
     setLinkSourceId(null)
-  }, [] /*Inputs for handleRelationshipsToolChange - stable*/)
+    regionEditing.cancelRegionDraw()
+  }, [regionEditing] /*Inputs for handleRelationshipsToolChange*/)
 
   const handlePresetSelect = useCallback(/* handleRelationshipsPresetSelect */ (preset: RelationshipEdgePreset) => {
     setLinkTemplate(presetToTemplate(preset))
@@ -289,11 +318,38 @@ export function RelationshipsEditor({ meta, pane, layoutMode, readOnlyPreview = 
     if (!contextMenu) return null
     if (contextMenu.target.kind === 'stage') {
       const { x, y } = contextMenu.target
-      return (
-        <button type="button" class="sidebar-context-menu__item" onClick={() => { setNodeDialog({ mode: 'add', nodeIndex: null, node: { id: '', x, y, label: '', destinationTag: '', color: DEFAULT_NODE_COLOR, description: '' } }); setContextMenu(null) }}>
+      return [
+        <button key="character" type="button" class="sidebar-context-menu__item" onClick={() => { setNodeDialog({ mode: 'add', nodeIndex: null, node: { id: '', x, y, label: '', destinationTag: '', color: DEFAULT_NODE_COLOR, description: '' } }); setContextMenu(null) }}>
           Add a character
-        </button>
-      )
+        </button>,
+        <button key="region" type="button" class="sidebar-context-menu__item" onClick={() => { regionEditing.openAddRegionDialog(x, y); setContextMenu(null) }}>
+          Add region
+        </button>,
+      ]
+    }
+    if (contextMenu.target.kind === 'region') {
+      const { index, area } = contextMenu.target
+      const region = config.regions[index]
+      if (area === 'label') {
+        return [
+          <button key="rename" type="button" class="sidebar-context-menu__item" onClick={() => { regionEditing.setRegionDialog({ mode: 'edit', regionIndex: index, region }); setContextMenu(null) }}>Rename</button>,
+          <button key="delete" type="button" class="sidebar-context-menu__item sidebar-context-menu__item--danger" onClick={() => { regionEditing.deleteRegion(index); setContextMenu(null) }}>Delete region</button>,
+        ]
+      }
+      return [
+        <label key="color" class="sidebar-context-menu__item sidebar-context-menu__item--color">
+          <span>Change color</span>
+          <input
+            type="color"
+            value={region.color}
+            onInput={(event) => {
+              regionEditing.updateRegionColor(index, event.currentTarget.value)
+              setContextMenu(null)
+            }}
+          />
+        </label>,
+        <button key="delete" type="button" class="sidebar-context-menu__item sidebar-context-menu__item--danger" onClick={() => { regionEditing.deleteRegion(index); setContextMenu(null) }}>Delete region</button>,
+      ]
     }
     if (contextMenu.target.kind === 'node') {
       const nodeIndex = contextMenu.target.index
@@ -328,20 +384,33 @@ export function RelationshipsEditor({ meta, pane, layoutMode, readOnlyPreview = 
       </div>
       <div
         ref={viewportRef}
-        class={`relationships-editor__viewport${readOnlyPreview ? ' is-readonly' : ''}${linkSourceId || (activeTool === 'add-relationship' && linkTemplate) ? ' is-linking' : ''}${activeTool === 'remove-relationship' ? ' is-removing' : ''}`}
+        class={`relationships-editor__viewport${readOnlyPreview ? ' is-readonly' : ''}${linkSourceId || (activeTool === 'add-relationship' && linkTemplate) ? ' is-linking' : ''}${activeTool === 'remove-relationship' ? ' is-removing' : ''}${activeTool === 'add-region' ? ' is-drawing-region' : ''}`}
         onWheel={(event) => handleWheel(event as WheelEvent)}
         onPointerDown={(event) => handlePointerDown(event as PointerEvent)}
-        onPointerMove={(event) => handlePointerMove(event as PointerEvent)}
-        onPointerUp={(event) => handlePointerUp(event as PointerEvent)}
-        onPointerCancel={(event) => handlePointerUp(event as PointerEvent)}
         onContextMenu={(event) => {
           event.preventDefault()
           if (readOnlyPreview) return
+          if ((event.target as HTMLElement | null)?.closest('[data-relationships-region="true"]')) return
           const point = toStagePoint(event.clientX, event.clientY)
           setContextMenu({ clientX: event.clientX, clientY: event.clientY, target: { kind: 'stage', x: point.x, y: point.y } })
         }}
       >
         <div class="relationships-editor__stage" style={{ width: `${RELATIONSHIPS_STAGE_WIDTH}px`, height: `${RELATIONSHIPS_STAGE_HEIGHT}px`, transform: `translate(${offset.x}px, ${offset.y}px) scale(${scale})` }}>
+          <RelationshipsRegionsLayer
+            regions={config.regions}
+            preview={regionEditing.regionDrawPreview}
+            geometryOverride={regionEditing.regionGeometryOverride}
+            onRegionMovePointerDown={regionEditing.handleRegionMovePointerDown}
+            onRegionResizePointerDown={regionEditing.handleRegionResizePointerDown}
+            onRegionLabelContextMenu={(index, event) => {
+              if (readOnlyPreview) return
+              setContextMenu({ clientX: event.clientX, clientY: event.clientY, target: { kind: 'region', index, area: 'label' } })
+            }}
+            onRegionBodyContextMenu={(index, event) => {
+              if (readOnlyPreview) return
+              setContextMenu({ clientX: event.clientX, clientY: event.clientY, target: { kind: 'region', index, area: 'body' } })
+            }}
+          />
           <RelationshipsEdgesLayer
             nodes={config.nodes.map((node) => draggedOverride?.id === node.id ? { ...node, x: draggedOverride.x, y: draggedOverride.y } : node)}
             edges={config.edges}
@@ -397,6 +466,15 @@ export function RelationshipsEditor({ meta, pane, layoutMode, readOnlyPreview = 
         readOnly={readOnlyPreview}
         onClose={() => { setEdgeDialog(null); setContextMenu(null) }}
         onSave={saveEdgeFromDialog}
+      />
+      <RelationshipsRegionDialog
+        open={regionEditing.regionDialog !== null}
+        mode={regionEditing.regionDialog?.mode ?? 'add'}
+        region={regionEditing.regionDialog?.region ?? null}
+        title={regionEditing.regionDialog?.mode === 'edit' ? 'Rename region' : 'Add region'}
+        readOnly={readOnlyPreview}
+        onClose={() => regionEditing.setRegionDialog(null)}
+        onSave={regionEditing.saveRegionFromDialog}
       />
     </div>
   )

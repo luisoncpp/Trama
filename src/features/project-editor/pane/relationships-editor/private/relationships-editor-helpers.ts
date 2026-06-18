@@ -1,10 +1,10 @@
-import type { RelationshipEdge, RelationshipNode } from './relationships-editor-types'
+import type { RelationshipEdge, RelationshipNode, RelationshipRegion } from './relationships-editor-types'
 
-export type { RelationshipEdge, RelationshipEdgePreset, RelationshipNode, RelationshipsConfig, RelationshipEdgeStyle, RelationshipEdgeDirection } from './relationships-editor-types'
-export { getRelationshipsConfig, withRelationshipsConfig, DEFAULT_NODE_COLOR, DEFAULT_EDGE_COLOR } from './relationships-config-serialization'
-import { clampMapValue } from '../map-editor/map-editor-helpers'
+export type { RelationshipEdge, RelationshipEdgePreset, RelationshipNode, RelationshipRegion, RelationshipsConfig, RelationshipEdgeStyle, RelationshipEdgeDirection } from './relationships-editor-types'
+export { getRelationshipsConfig, withRelationshipsConfig, DEFAULT_NODE_COLOR, DEFAULT_EDGE_COLOR, DEFAULT_REGION_COLOR } from './relationships-config-serialization'
+import { clampMapValue } from '../../map-editor/map-editor-helpers'
 
-export { clampMapValue as clampChartValue, resolveMarkerDestination as resolveNodeDestination } from '../map-editor/map-editor-helpers'
+export { clampMapValue as clampChartValue, resolveMarkerDestination as resolveNodeDestination } from '../../map-editor/map-editor-helpers'
 
 export const RELATIONSHIPS_STAGE_MIN_X = -2400
 export const RELATIONSHIPS_STAGE_MIN_Y = -1600
@@ -28,6 +28,45 @@ export function resolveAutoNodeTag(label: string, tagIndex: Record<string, strin
   if (!tagIndex) return ''
   const normalizedTag = label.trim().toLowerCase().replace(/^#/, '')
   return normalizedTag && tagIndex[normalizedTag] !== undefined ? normalizedTag : ''
+}
+
+export const RELATIONSHIPS_REGION_MIN_WIDTH = 80
+export const RELATIONSHIPS_REGION_MIN_HEIGHT = 60
+export const RELATIONSHIPS_DEFAULT_REGION_WIDTH = 320
+export const RELATIONSHIPS_DEFAULT_REGION_HEIGHT = 200
+
+export function buildRegionId(label: string, existingIds: Iterable<string>): string {
+  return buildNodeId(label || 'region', existingIds)
+}
+
+export function rectFromDragCorners(x1: number, y1: number, x2: number, y2: number): { x: number; y: number; width: number; height: number } {
+  const left = Math.min(x1, x2)
+  const top = Math.min(y1, y2)
+  const width = Math.abs(x2 - x1)
+  const height = Math.abs(y2 - y1)
+  return clampRegionRect(left, top, width, height)
+}
+
+export function clampRegionRect(x: number, y: number, width: number, height: number): { x: number; y: number; width: number; height: number } {
+  const clampedWidth = Math.max(RELATIONSHIPS_REGION_MIN_WIDTH, width)
+  const clampedHeight = Math.max(RELATIONSHIPS_REGION_MIN_HEIGHT, height)
+  const maxX = RELATIONSHIPS_STAGE_MAX_X - clampedWidth
+  const maxY = RELATIONSHIPS_STAGE_MAX_Y - clampedHeight
+  return {
+    x: clampMapValue(x, RELATIONSHIPS_STAGE_MIN_X, maxX),
+    y: clampMapValue(y, RELATIONSHIPS_STAGE_MIN_Y, maxY),
+    width: clampedWidth,
+    height: clampedHeight,
+  }
+}
+
+export function clampRegionPosition(region: Pick<RelationshipRegion, 'x' | 'y' | 'width' | 'height'>): { x: number; y: number } {
+  const maxX = RELATIONSHIPS_STAGE_MAX_X - region.width
+  const maxY = RELATIONSHIPS_STAGE_MAX_Y - region.height
+  return {
+    x: clampMapValue(region.x, RELATIONSHIPS_STAGE_MIN_X, maxX),
+    y: clampMapValue(region.y, RELATIONSHIPS_STAGE_MIN_Y, maxY),
+  }
 }
 
 export function buildNodeId(label: string, existingIds: Iterable<string>): string {

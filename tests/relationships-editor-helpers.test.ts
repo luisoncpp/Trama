@@ -2,15 +2,20 @@ import { describe, expect, it } from 'vitest'
 import {
   buildEdgeGeometry,
   buildNodeId,
-  resolveAutoNodeTag,
+  buildRegionId,
   clampNodePosition,
+  clampRegionPosition,
+  clampRegionRect,
   estimateNodeHalfExtents,
   getEdgeDashArray,
   getParallelEdgeIndex,
   getRelationshipsConfig,
+  rectFromDragCorners,
+  resolveAutoNodeTag,
   withRelationshipsConfig,
-} from '../src/features/project-editor/pane/relationships-editor/relationships-editor-helpers'
-import type { RelationshipEdge } from '../src/features/project-editor/pane/relationships-editor/relationships-editor-types'
+} from '../src/features/project-editor/pane/relationships-editor/private/relationships-editor-helpers'
+import { resizeRegionFromEdge } from '../src/features/project-editor/pane/relationships-editor/private/relationships-region-editing-helpers'
+import type { RelationshipEdge } from '../src/features/project-editor/pane/relationships-editor/private/relationships-editor-types'
 
 describe('relationships-editor-helpers', () => {
   it('reads valid relationships config from meta', () => {
@@ -34,7 +39,7 @@ describe('relationships-editor-helpers', () => {
   })
 
   it('returns an empty config when meta has no relationshipsConfig', () => {
-    expect(getRelationshipsConfig({})).toEqual({ nodes: [], edges: [], edgePresets: [] })
+    expect(getRelationshipsConfig({})).toEqual({ nodes: [], edges: [], edgePresets: [], regions: [] })
   })
 
   it('drops invalid nodes and edges that reference missing or identical nodes', () => {
@@ -78,6 +83,7 @@ describe('relationships-editor-helpers', () => {
       nodes: [{ id: 'a', x: 10, y: 20, label: 'A', destinationTag: 'a', color: '#ff0000' }],
       edges: [{ from: 'a', to: 'b', label: '', color: '#00ff00', style: 'dashed', direction: 'both' }],
       edgePresets: [{ name: 'Enemies', color: '#e74c3c', style: 'dashed', direction: 'both' }],
+      regions: [],
     })
 
     expect(meta.type).toBe('relationships')
@@ -85,6 +91,7 @@ describe('relationships-editor-helpers', () => {
       nodes: [{ id: 'a', x: 10, y: 20, label: 'A', destinationTag: 'a', color: '#ff0000' }],
       edges: [{ from: 'a', to: 'b', color: '#00ff00', style: 'dashed', direction: 'both' }],
       edgePresets: [{ name: 'Enemies', color: '#e74c3c', style: 'dashed', direction: 'both' }],
+      regions: [],
     })
   })
 
@@ -96,6 +103,7 @@ describe('relationships-editor-helpers', () => {
       ],
       edges: [{ from: 'aldren', to: 'cael', label: 'mentor', color: '#0000aa', style: 'dotted' as const, direction: 'none' as const }],
       edgePresets: [{ name: 'Mentor', color: '#0000aa', style: 'dotted' as const, direction: 'none' as const }],
+      regions: [],
     }
 
     expect(getRelationshipsConfig(withRelationshipsConfig({}, original))).toEqual(original)
@@ -158,6 +166,58 @@ describe('relationships-editor-helpers', () => {
 
   it('estimates wider node pills for longer labels', () => {
     expect(estimateNodeHalfExtents('A').halfWidth).toBeLessThan(estimateNodeHalfExtents('Morokha').halfWidth)
+  })
+
+  it('reads valid region config from meta', () => {
+    const config = getRelationshipsConfig({
+      type: 'relationships',
+      relationshipsConfig: {
+        nodes: [],
+        edges: [],
+        regions: [
+          { id: 'faction-a', x: 100, y: 120, width: 320, height: 200, label: 'Faction A', color: '#3498db' },
+          { id: 'tiny', x: 0, y: 0, width: 10, height: 10, label: 'Too small', color: '#ffffff' },
+        ],
+      },
+    })
+
+    expect(config.regions).toHaveLength(1)
+    expect(config.regions[0]).toMatchObject({ id: 'faction-a', label: 'Faction A', color: '#3498db' })
+  })
+
+  it('normalizes region geometry and defaults missing labels', () => {
+    const config = getRelationshipsConfig({
+      relationshipsConfig: {
+        regions: [{ id: 'r1', x: -100, y: 50, width: 120, height: 90, label: '  ', color: 'bad' }],
+      },
+    })
+
+    expect(config.regions[0]).toMatchObject({
+      x: -100,
+      y: 50,
+      width: 120,
+      height: 90,
+      label: 'Region',
+      color: '#6b7b8c',
+    })
+  })
+
+  it('builds rectangles from drag corners and clamps them to the stage', () => {
+    expect(rectFromDragCorners(100, 200, 500, 420)).toEqual({ x: 100, y: 200, width: 400, height: 220 })
+    expect(rectFromDragCorners(500, 420, 100, 200)).toEqual({ x: 100, y: 200, width: 400, height: 220 })
+    expect(clampRegionRect(3000, 3000, 400, 300)).toEqual({ x: 2000, y: 1300, width: 400, height: 300 })
+    expect(clampRegionPosition({ x: -3000, y: 100, width: 200, height: 150 })).toEqual({ x: -2400, y: 100 })
+    expect(buildRegionId('Faction A', ['faction-a'])).toBe('faction-a-2')
+  })
+
+  it('resizes regions from edges and corners while enforcing minimum size', () => {
+    const start = { x: 100, y: 200, width: 320, height: 200 }
+    expect(resizeRegionFromEdge(start, 'e', 80, 0)).toEqual({ x: 100, y: 200, width: 400, height: 200 })
+    expect(resizeRegionFromEdge(start, 's', 0, 40)).toEqual({ x: 100, y: 200, width: 320, height: 240 })
+    expect(resizeRegionFromEdge(start, 'w', -20, 0)).toEqual({ x: 80, y: 200, width: 340, height: 200 })
+    expect(resizeRegionFromEdge(start, 'n', 0, -30)).toEqual({ x: 100, y: 170, width: 320, height: 230 })
+    expect(resizeRegionFromEdge(start, 'nw', -200, -200)).toEqual({ x: -100, y: 0, width: 520, height: 400 })
+    expect(resizeRegionFromEdge(start, 'se', -300, -180)).toMatchObject({ width: 80, height: 60 })
   })
 
   it('anchors horizontal edge endpoints on the pill border, not a fixed inset', () => {
