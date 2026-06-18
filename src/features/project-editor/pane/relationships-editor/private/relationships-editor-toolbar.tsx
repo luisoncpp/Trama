@@ -120,9 +120,9 @@ function RelationshipsEditorSubtoolbar({ presets, linkTemplate, onPresetSelect, 
 
 const TOOL_ITEMS: Array<{ id: RelationshipsEditorTool; label: string; icon: () => JSX.Element; modifier?: string }> = [
   { id: 'select', label: 'Select', icon: ToolIconSelect },
-  { id: 'add-region', label: 'Region', icon: ToolIconRegion },
   { id: 'add-relationship', label: 'Connect', icon: ToolIconAddLink },
   { id: 'remove-relationship', label: 'Remove', icon: ToolIconRemoveLink, modifier: 'remove' },
+  { id: 'add-region', label: 'Region', icon: ToolIconRegion },
 ]
 
 export function RelationshipsEditorToolbar({
