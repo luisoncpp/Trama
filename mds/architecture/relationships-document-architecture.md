@@ -20,6 +20,7 @@ relationshipsConfig:
       destinationTag: "aldren"   # optional wiki tag; click navigates like map markers
       color: "#e74c3c"
       description: "The King."   # optional hover tooltip
+      emojis: ["👑", "⚔️"]       # optional decoration chips (no counts); max 12, deduped
   edges:
     - from: aldren          # node id
       to: cael              # node id
@@ -44,6 +45,7 @@ relationshipsConfig:
 
 - Edges reference nodes by `id`, not by tag, so a node can exist without a tag and tags can change freely.
 - `destinationTag` is optional on nodes. When set, plain click in Select mode navigates to the tagged lore file (same contract as map markers).
+- `emojis` is an optional `string[]` on each node — decoration chips rendered below the pill (Discord/Slack-style badges, **no counts**). `normalizeEmojis` dedupes, trims, drops non-strings and overlong glyphs (>31 code points), and caps at `MAX_NODE_EMOJIS` (12). Empty arrays are stripped on write (`withRelationshipsConfig`); missing arrays default to `[]` on read.
 - `regions` are optional labeled rectangles rendered behind edges/nodes. They are organizational only — they do not move contained characters automatically.
 - `getRelationshipsConfig()` drops edges whose endpoints are missing or identical, drops regions smaller than 40×32px, and normalizes unknown styles/directions/colors to defaults.
 - New documents are seeded with four default presets (Family, Allies, Enemies, Romance).
@@ -99,14 +101,15 @@ withRelationshipsConfig(meta, config) → pane save/revert persists frontmatter
 - **Region**: drag on the stage to draw a rectangle; on release opens the region dialog for label and color. Right-click stage → **Add region** creates a default 320×200 box at the click point. Right-click region **label** → rename or delete; right-click region **body** (empty area behind nodes/edges) → change color or delete. Regions render behind edges and nodes with a solid header strip and semi-transparent body tinted by the chosen color.
 - **Add relationship**: sub-toolbar lists `edgePresets` plus **Custom…** (opens the edge dialog in template mode to define color/style/direction/label and optionally save a new preset). After a type is chosen, two node clicks create an edge immediately (no dialog); the tool stays active for repeated additions. Escape or background click cancels a pending first node only.
 - **Remove relationship**: click an edge line/arrow to delete it; characters remain.
-- **Context menu**: right-click stage → add character / add region; node → add relationship (legacy two-click flow opens edge dialog if no toolbar template), edit/delete; edge → edit/delete; region label → rename/delete; region body → change color/delete.
+- **Context menu**: right-click stage → add character / add region; node → add emoji / add relationship (legacy two-click flow opens edge dialog if no toolbar template), edit/delete; edge → edit/delete; region label → rename/delete; region body → change color/delete.
 - **Add character dialog** (`relationships-node-dialog.tsx`): **Auto** checkbox (on by default, add mode only). When on, `resolveAutoNodeTag` matches the typed name against `tagIndex`; existing tag → stored as `destinationTag`, no match → empty tag. Tag field is read-only while Auto is on. Uncheck **Auto** to type a tag manually. Edit mode always uses manual tag entry.
+- **Emojis** (Discord/Slack-style decoration badges, no counts): hover a node → a `+` button appears below the pill; click it (or right-click node → **Add emoji**) to open `RelationshipsEmojiPicker` — a portaled popover with curated category sections + search. Clicking an emoji toggles it on that node via `toggleNodeEmoji` (add if absent, remove if present, deduped, capped at 12). Existing emoji chips below a node are clickable to remove. Read-only preview hides the `+` and disables chip removal. Emojis are pure decoration — they do not affect edge geometry (chips are absolutely positioned below the pill so the pill center stays at `(x, y)`).
 - **Presets**: edge dialog still offers preset apply/save for context-menu and edit flows; toolbar preset buttons mirror `edgePresets` styling.
 
 ## Rendering
 
 - Regions are absolutely-positioned HTML boxes (`relationships-regions-layer.tsx`) behind the SVG edge layer. The edges SVG root uses `pointer-events: none` so empty canvas areas pass clicks through to regions; only `.relationships-edge__hit` strokes receive edge pointer events.
-- Nodes are absolutely-positioned HTML pill buttons (`relationships-nodes-layer.tsx`), so labels are always visible.
+- Nodes are absolutely-positioned HTML pill buttons (`relationships-nodes-layer.tsx`), so labels are always visible. Each node is wrapped in a `.relationships-node-anchor` positioned at `(x, y)` via `translate(-50%, -50%)`; the pill sits inside it and an absolutely-positioned emoji chip row floats below the pill so it never affects edge geometry (`estimateNodeHalfExtents` still keys off the label only).
 - Edges are an SVG layer under the nodes (`relationships-edges-layer.tsx`): quadratic paths with dash arrays for styles, a wide transparent hit path for right-click targeting, and the label at the curve midpoint.
 - Arrowheads render in a second SVG layer above the node pills (`RelationshipsEdgeMarkersLayer` in `relationships-edges-layer.tsx`) so bidirectional markers stay visible when nodes overlap the line ends.
 - Parallel edges between the same pair bow out on alternating sides (`getParallelEdgeIndex` + `buildEdgeGeometry`).
@@ -130,8 +133,11 @@ The `relationships-editor/` folder is a **deep module** (see `mds/dev-workflow.m
 | `src/features/project-editor/pane/relationships-editor/private/use-relationships-region-editing.ts` | Region draw/move/resize interaction state and config updates |
 | `src/features/project-editor/pane/relationships-editor/private/relationships-region-editing-helpers.ts` | Pure region save/move/resize/draw geometry helpers for the editing hook |
 | `src/features/project-editor/pane/relationships-editor/private/relationships-region-pointer-handlers.ts` | Region move/resize/draw pointer handlers wired by the editing hook |
-| `src/features/project-editor/pane/relationships-editor/private/relationships-nodes-layer.tsx` | Node pill overlay and tooltips |
+| `src/features/project-editor/pane/relationships-editor/private/relationships-nodes-layer.tsx` | Node pill overlay, tooltips, and emoji decoration chips with hover "+" add |
 | `src/features/project-editor/pane/relationships-editor/private/relationships-edges-layer.tsx` | SVG edge rendering with arrow markers |
+| `src/features/project-editor/pane/relationships-editor/private/relationships-emoji-data.ts` | Curated static emoji category grid backing the picker |
+| `src/features/project-editor/pane/relationships-editor/private/relationships-emoji-helpers.ts` | Pure emoji helpers: `toggleNodeEmoji`, `filterEmojiCategories` |
+| `src/features/project-editor/pane/relationships-editor/private/relationships-emoji-picker.tsx` | Portaled emoji picker popover (categories + search + toggle) |
 | `src/features/project-editor/pane/relationships-editor/private/relationships-node-dialog.tsx` | Character create/edit modal; add-mode **Auto** tag checkbox and live tag preview |
 | `src/features/project-editor/pane/relationships-editor/private/relationships-edge-dialog.tsx` | Relationship create/edit modal with preset apply/save |
 | `src/features/project-editor/components/sidebar/sidebar-footer-actions.tsx` | Split-button menu entry |

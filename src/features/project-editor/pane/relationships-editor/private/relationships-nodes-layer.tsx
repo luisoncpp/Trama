@@ -5,46 +5,102 @@ interface RelationshipsNodesLayerProps {
   nodes: RelationshipNode[]
   linkSourceId: string | null
   draggedOverride: { id: string; x: number; y: number } | null
+  readOnly?: boolean
   onNodePointerDown: (index: number, event: PointerEvent) => void
   onNodeContextMenu: (index: number, event: MouseEvent) => void
+  onEmojiAddClick: (nodeId: string, anchorRect: DOMRect) => void
+  onEmojiRemove: (nodeId: string, emoji: string) => void
 }
 
-function buildNodeStyle(node: RelationshipNode, draggedOverride: { id: string; x: number; y: number } | null): JSX.CSSProperties {
+function buildAnchorStyle(node: RelationshipNode, draggedOverride: { id: string; x: number; y: number } | null): JSX.CSSProperties {
   const position = draggedOverride?.id === node.id ? draggedOverride : node
-  return {
-    left: `${position.x}px`,
-    top: `${position.y}px`,
-    borderColor: node.color,
-  }
+  return { left: `${position.x}px`, top: `${position.y}px` }
 }
 
-export function RelationshipsNodesLayer({ nodes, linkSourceId, draggedOverride, onNodePointerDown, onNodeContextMenu }: RelationshipsNodesLayerProps) {
+function RelationshipsNodeEmojis({ nodeId, emojis, readOnly, onAddClick, onRemove }: {
+  nodeId: string
+  emojis: string[]
+  readOnly: boolean
+  onAddClick: (nodeId: string, anchorRect: DOMRect) => void
+  onRemove: (nodeId: string, emoji: string) => void
+}) {
+  return (
+    <div class={`relationships-node__emojis${emojis.length === 0 ? ' relationships-node__emojis--empty' : ''}`}>
+      {emojis.map((emoji) => (
+        <button
+          key={emoji}
+          type="button"
+          class="relationships-node__emoji"
+          title={readOnly ? emoji : `${emoji} — click to remove`}
+          disabled={readOnly}
+          onPointerDown={(event) => event.stopPropagation()}
+          onClick={(event) => { event.stopPropagation(); onRemove(nodeId, emoji) }}
+        >
+          {emoji}
+        </button>
+      ))}
+      {readOnly ? null : (
+        <button
+          type="button"
+          class="relationships-node__emoji-add"
+          title="Add emoji"
+          onPointerDown={(event) => event.stopPropagation()}
+          onClick={(event) => { event.stopPropagation(); onAddClick(nodeId, event.currentTarget.getBoundingClientRect()) }}
+        >
+          +
+        </button>
+      )}
+    </div>
+  )
+}
+
+function RelationshipsNodeAnchor({ node, index, linkSourceId, draggedOverride, readOnly, onNodePointerDown, onNodeContextMenu, onEmojiAddClick, onEmojiRemove }: {
+  node: RelationshipNode
+  index: number
+  linkSourceId: string | null
+  draggedOverride: { id: string; x: number; y: number } | null
+  readOnly: boolean
+  onNodePointerDown: (index: number, event: PointerEvent) => void
+  onNodeContextMenu: (index: number, event: MouseEvent) => void
+  onEmojiAddClick: (nodeId: string, anchorRect: DOMRect) => void
+  onEmojiRemove: (nodeId: string, emoji: string) => void
+}) {
+  return (
+    <div class="relationships-node-anchor" data-relationships-node="true" style={buildAnchorStyle(node, draggedOverride)}>
+      <button
+        type="button"
+        class={`relationships-node${linkSourceId === node.id ? ' is-link-source' : ''}`}
+        style={{ borderColor: node.color }}
+        aria-label={node.label}
+        onPointerDown={(event) => { event.stopPropagation(); onNodePointerDown(index, event as PointerEvent) }}
+        onContextMenu={(event) => { event.preventDefault(); event.stopPropagation(); onNodeContextMenu(index, event as MouseEvent) }}
+      >
+        <span class="relationships-node__dot" style={{ backgroundColor: node.color }} />
+        <span class="relationships-node__label">{node.label}</span>
+        {node.description ? <span class="relationships-node__tooltip">{node.description}</span> : null}
+      </button>
+      <RelationshipsNodeEmojis nodeId={node.id} emojis={node.emojis} readOnly={readOnly} onAddClick={onEmojiAddClick} onRemove={onEmojiRemove} />
+    </div>
+  )
+}
+
+export function RelationshipsNodesLayer(props: RelationshipsNodesLayerProps) {
+  const { nodes, linkSourceId, draggedOverride, readOnly = false, onNodePointerDown, onNodeContextMenu, onEmojiAddClick, onEmojiRemove } = props
   return (
     <div class="relationships-nodes-layer">
       {nodes.map((node, index) => (
-        <button
+        <RelationshipsNodeAnchor
           key={node.id}
-          type="button"
-          class={`relationships-node${linkSourceId === node.id ? ' is-link-source' : ''}`}
-          data-relationships-node="true"
-          style={buildNodeStyle(node, draggedOverride)}
-          aria-label={node.label}
-          onPointerDown={(event) => {
-            event.stopPropagation()
-            onNodePointerDown(index, event as PointerEvent)
-          }}
-          onContextMenu={(event) => {
-            event.preventDefault()
-            event.stopPropagation()
-            onNodeContextMenu(index, event as MouseEvent)
-          }}
-        >
-          <span class="relationships-node__dot" style={{ backgroundColor: node.color }} />
-          <span class="relationships-node__label">{node.label}</span>
-          {node.description ? (
-            <span class="relationships-node__tooltip">{node.description}</span>
-          ) : null}
-        </button>
+          node={node}
+          index={index}
+          linkSourceId={linkSourceId}
+          draggedOverride={draggedOverride}
+          readOnly={readOnly}
+          onNodePointerDown={onNodePointerDown}
+          onNodeContextMenu={onNodeContextMenu}
+          onEmojiAddClick={onEmojiAddClick}
+          onEmojiRemove={onEmojiRemove}
+        />
       ))}
     </div>
   )

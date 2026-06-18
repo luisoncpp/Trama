@@ -10,18 +10,21 @@ relationshipsConfig:
       destinationTag: "aldren"
       color: "#e74c3c"
       description: "The King."
+      emojis: ["👑", "⚔️"]
     - id: cael
       x: 980
       y: 520
       label: "Cael"
       destinationTag: "cael"
       color: "#3498db"
+      emojis: ["🏹"]
     - id: maren
       x: 320
       y: 560
       label: "Maren"
       destinationTag: "maren"
       color: "#2ecc71"
+      emojis: ["🌿"]
     - id: oswin
       x: 660
       y: 760
@@ -34,6 +37,7 @@ relationshipsConfig:
       label: "Corvin"
       destinationTag: "corvin"
       color: "#9b59b6"
+      emojis: ["🐉", "🗡️"]
   edges:
     - from: aldren
       to: cael

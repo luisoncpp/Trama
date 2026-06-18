@@ -13,6 +13,9 @@ export const DEFAULT_NODE_COLOR = '#6ea6ff'
 export const DEFAULT_EDGE_COLOR = '#e74c3c'
 export const DEFAULT_REGION_COLOR = '#6b7b8c'
 
+export const MAX_NODE_EMOJIS = 12
+export const MAX_EMOJI_CODE_POINTS = 31
+
 const EDGE_STYLES: readonly RelationshipEdgeStyle[] = ['solid', 'dashed', 'dotted']
 const EDGE_DIRECTIONS: readonly RelationshipEdgeDirection[] = ['forward', 'both', 'none']
 
@@ -22,6 +25,23 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 
 function normalizeColor(value: unknown, fallback: string): string {
   return typeof value === 'string' && /^#[0-9a-f]{6}$/i.test(value.trim()) ? value.trim() : fallback
+}
+
+export function normalizeEmojis(value: unknown): string[] {
+  if (!Array.isArray(value)) return []
+  const seen = new Set<string>()
+  const out: string[] = []
+  for (const item of value) {
+    if (typeof item !== 'string') continue
+    const trimmed = item.trim()
+    if (!trimmed) continue
+    if (Array.from(trimmed).length > MAX_EMOJI_CODE_POINTS) continue
+    if (seen.has(trimmed)) continue
+    seen.add(trimmed)
+    out.push(trimmed)
+    if (out.length >= MAX_NODE_EMOJIS) break
+  }
+  return out
 }
 
 function normalizeEdgeStyle(value: unknown): RelationshipEdgeStyle {
@@ -41,7 +61,16 @@ function normalizeNode(value: unknown): RelationshipNode | null {
   const destinationTag = typeof value.destinationTag === 'string' ? value.destinationTag.trim() : ''
   const description = typeof value.description === 'string' ? value.description.trim() : ''
   if (!id || !Number.isFinite(x) || !Number.isFinite(y) || !label) return null
-  return { id, x, y, label, destinationTag, color: normalizeColor(value.color, DEFAULT_NODE_COLOR), description: description || undefined }
+  return {
+    id,
+    x,
+    y,
+    label,
+    destinationTag,
+    color: normalizeColor(value.color, DEFAULT_NODE_COLOR),
+    description: description || undefined,
+    emojis: normalizeEmojis(value.emojis),
+  }
 }
 
 function normalizeEdge(value: unknown, nodeIds: Set<string>): RelationshipEdge | null {
@@ -127,6 +156,7 @@ export function withRelationshipsConfig(meta: DocumentMeta, config: Relationship
         destinationTag: node.destinationTag,
         color: node.color,
         ...(node.description ? { description: node.description } : {}),
+        ...(node.emojis && node.emojis.length ? { emojis: node.emojis } : {}),
       })),
       edges: config.edges.map((edge) => ({
         from: edge.from,

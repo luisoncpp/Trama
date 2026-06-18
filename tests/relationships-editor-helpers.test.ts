@@ -10,11 +10,14 @@ import {
   getEdgeDashArray,
   getParallelEdgeIndex,
   getRelationshipsConfig,
+  MAX_NODE_EMOJIS,
+  normalizeEmojis,
   rectFromDragCorners,
   resolveAutoNodeTag,
   withRelationshipsConfig,
 } from '../src/features/project-editor/pane/relationships-editor/private/relationships-editor-helpers'
 import { resizeRegionFromEdge } from '../src/features/project-editor/pane/relationships-editor/private/relationships-region-editing-helpers'
+import { filterEmojiCategories, toggleNodeEmoji } from '../src/features/project-editor/pane/relationships-editor/private/relationships-emoji-helpers'
 import type { RelationshipEdge } from '../src/features/project-editor/pane/relationships-editor/private/relationships-editor-types'
 
 describe('relationships-editor-helpers', () => {
@@ -80,7 +83,7 @@ describe('relationships-editor-helpers', () => {
 
   it('writes normalized relationships config back into meta', () => {
     const meta = withRelationshipsConfig({}, {
-      nodes: [{ id: 'a', x: 10, y: 20, label: 'A', destinationTag: 'a', color: '#ff0000' }],
+      nodes: [{ id: 'a', x: 10, y: 20, label: 'A', destinationTag: 'a', color: '#ff0000', emojis: [] }],
       edges: [{ from: 'a', to: 'b', label: '', color: '#00ff00', style: 'dashed', direction: 'both' }],
       edgePresets: [{ name: 'Enemies', color: '#e74c3c', style: 'dashed', direction: 'both' }],
       regions: [],
@@ -98,8 +101,8 @@ describe('relationships-editor-helpers', () => {
   it('round-trips config through meta serialization', () => {
     const original = {
       nodes: [
-        { id: 'aldren', x: 1, y: 2, label: 'Aldren', destinationTag: 'aldren', color: '#aa0000', description: 'King' },
-        { id: 'cael', x: 3, y: 4, label: 'Cael', destinationTag: 'cael', color: '#00aa00' },
+        { id: 'aldren', x: 1, y: 2, label: 'Aldren', destinationTag: 'aldren', color: '#aa0000', description: 'King', emojis: ['👑', '⚔️'] },
+        { id: 'cael', x: 3, y: 4, label: 'Cael', destinationTag: 'cael', color: '#00aa00', emojis: [] },
       ],
       edges: [{ from: 'aldren', to: 'cael', label: 'mentor', color: '#0000aa', style: 'dotted' as const, direction: 'none' as const }],
       edgePresets: [{ name: 'Mentor', color: '#0000aa', style: 'dotted' as const, direction: 'none' as const }],
@@ -221,13 +224,78 @@ describe('relationships-editor-helpers', () => {
   })
 
   it('anchors horizontal edge endpoints on the pill border, not a fixed inset', () => {
-    const from = { id: 'morokha', x: 200, y: 300, label: 'Morokha', destinationTag: '', color: '#ffffff' }
-    const to = { id: 'areki', x: 500, y: 300, label: 'Areki', destinationTag: '', color: '#ffffff' }
+    const from = { id: 'morokha', x: 200, y: 300, label: 'Morokha', destinationTag: '', color: '#ffffff', emojis: [] }
+    const to = { id: 'areki', x: 500, y: 300, label: 'Areki', destinationTag: '', color: '#ffffff', emojis: [] }
     const geometry = buildEdgeGeometry(from, to, 0)
     const startX = Number(geometry.path.match(/^M ([\d.]+)/)?.[1])
     const endX = Number(geometry.path.match(/([\d.]+) ([\d.]+)$/)?.[1])
 
     expect(startX).toBeGreaterThan(240)
     expect(endX).toBeLessThan(460)
+  })
+
+  it('normalizes node emojis: dedupes, trims, drops non-strings and overlong glyphs', () => {
+    expect(normalizeEmojis(['👑', '👑', ' ⚔️ ', '', 5 as unknown])).toEqual(['👑', '⚔️'])
+    expect(normalizeEmojis(undefined)).toEqual([])
+    expect(normalizeEmojis('👑')).toEqual([])
+  })
+
+  it('caps node emojis at MAX_NODE_EMOJIS', () => {
+    const many = Array.from({ length: MAX_NODE_EMOJIS + 5 }, (_, i) => `${i}`)
+    expect(normalizeEmojis(many)).toHaveLength(MAX_NODE_EMOJIS)
+  })
+
+  it('reads emojis from persisted config and defaults missing to empty', () => {
+    const config = getRelationshipsConfig({
+      type: 'relationships',
+      relationshipsConfig: {
+        nodes: [
+          { id: 'aldren', x: 0, y: 0, label: 'Aldren', destinationTag: '', color: '#ffffff', emojis: ['👑', '⚔️'] },
+          { id: 'cael', x: 10, y: 10, label: 'Cael', destinationTag: '', color: '#ffffff' },
+        ],
+        edges: [],
+      },
+    })
+
+    expect(config.nodes[0].emojis).toEqual(['👑', '⚔️'])
+    expect(config.nodes[1].emojis).toEqual([])
+  })
+
+  it('strips empty emoji arrays on write but keeps non-empty ones', () => {
+    const meta = withRelationshipsConfig({}, {
+      nodes: [
+        { id: 'a', x: 0, y: 0, label: 'A', destinationTag: '', color: '#ffffff', emojis: ['👑'] },
+        { id: 'b', x: 10, y: 10, label: 'B', destinationTag: '', color: '#ffffff', emojis: [] },
+      ],
+      edges: [],
+      edgePresets: [],
+      regions: [],
+    })
+
+    const nodes = (meta.relationshipsConfig as { nodes: Record<string, unknown>[] }).nodes
+    expect(nodes[0].emojis).toEqual(['👑'])
+    expect(nodes[1].emojis).toBeUndefined()
+  })
+
+  it('toggles emojis on a node: adds, removes, and dedupes', () => {
+    expect(toggleNodeEmoji([], '👑')).toEqual(['👑'])
+    expect(toggleNodeEmoji(['👑'], '👑')).toEqual([])
+    expect(toggleNodeEmoji(['👑'], '⚔️')).toEqual(['👑', '⚔️'])
+    expect(toggleNodeEmoji(['👑', '⚔️'], '👑')).toEqual(['⚔️'])
+  })
+
+  it('caps toggled emojis at MAX_NODE_EMOJIS', () => {
+    const full = Array.from({ length: MAX_NODE_EMOJIS }, (_, i) => `${i}`)
+    expect(toggleNodeEmoji(full, '👑')).toHaveLength(MAX_NODE_EMOJIS)
+  })
+
+  it('filters emoji categories by search query and returns all when empty', () => {
+    expect(filterEmojiCategories('')).toHaveLength(8)
+    const facesOnly = filterEmojiCategories('faces')
+    expect(facesOnly.map((c) => c.name)).toEqual(['Faces'])
+    const dragon = filterEmojiCategories('🐲')
+    expect(dragon.length).toBeGreaterThan(0)
+    expect(dragon[0].emojis).toContain('🐲')
+    expect(filterEmojiCategories('zzz-not-an-emoji')).toHaveLength(0)
   })
 })

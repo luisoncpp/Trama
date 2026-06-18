@@ -17,7 +17,7 @@ interface RelationshipsNodeDialogProps {
 }
 
 function createDraft(node: RelationshipNode | null): RelationshipNode {
-  return node ?? { id: '', x: 0, y: 0, label: '', destinationTag: '', color: DEFAULT_NODE_COLOR, description: '' }
+  return node ?? { id: '', x: 0, y: 0, label: '', destinationTag: '', color: DEFAULT_NODE_COLOR, description: '', emojis: [] }
 }
 
 export function RelationshipsNodeDialog({ open, mode, node, title, tagIndex = null, readOnly = false, onClose, onSave }: RelationshipsNodeDialogProps) {

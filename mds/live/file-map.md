@@ -365,14 +365,17 @@ Mandatory doc navigation for new chats: start with `mds/START-HERE.md` — it pr
   - `pane/relationships-editor/private/relationships-editor.tsx` — Relationships chart editor: pan/zoom, toolbar tool modes (select, region, add, remove), node/region drag, linking, context menus, dialog orchestration.
   - `pane/relationships-editor/private/relationships-editor-toolbar.tsx` — Toolbar with Select/Move, Region draw, Add relationship (preset sub-toolbar + custom type), and Remove relationship tools.
   - `pane/relationships-editor/private/relationships-editor-types.ts` — Node/edge/preset/region/config interfaces plus editor tool types.
-  - `pane/relationships-editor/private/relationships-config-serialization.ts` — `relationshipsConfig` normalization and meta write-back.
-  - `pane/relationships-editor/private/relationships-editor-helpers.ts` — Node/region id slugs, `resolveAutoNodeTag`, edge/region geometry, dash arrays, stage constants; re-exports map tag/clamp helpers.
+  - `pane/relationships-editor/private/relationships-config-serialization.ts` — `relationshipsConfig` normalization and meta write-back; owns `normalizeEmojis` and the `MAX_NODE_EMOJIS` / `MAX_EMOJI_CODE_POINTS` caps.
+  - `pane/relationships-editor/private/relationships-editor-helpers.ts` — Node/region id slugs, `resolveAutoNodeTag`, edge/region geometry, dash arrays, stage constants; re-exports map tag/clamp helpers and emoji normalization constants.
+  - `pane/relationships-editor/private/relationships-emoji-data.ts` — Curated static emoji category grid (faces, hands, hearts, people, animals, food, objects, places) backing the picker; no runtime deps.
+  - `pane/relationships-editor/private/relationships-emoji-helpers.ts` — Pure emoji helpers: `toggleNodeEmoji` (add/remove dedupe + cap) and `filterEmojiCategories` (search).
+  - `pane/relationships-editor/private/relationships-emoji-picker.tsx` — Portaled emoji picker popover (category sections + search, toggle-on-click, viewport-aware positioning, ESC close).
   - `pane/relationships-editor/private/relationships-regions-layer.tsx` — Labeled region rectangles with edge/corner resize handles, header drag-to-move, and separate label/body context targets.
   - `pane/relationships-editor/private/relationships-region-dialog.tsx` — Region create/rename modal (label + color).
   - `pane/relationships-editor/private/use-relationships-region-editing.ts` — Region draw/move/resize interaction state and config mutation helpers.
   - `pane/relationships-editor/private/relationships-region-editing-helpers.ts` — Pure region save/move/resize/draw geometry helpers for the editing hook.
   - `pane/relationships-editor/private/relationships-region-pointer-handlers.ts` — Region move/resize/draw pointer handlers wired by the editing hook.
-  - `pane/relationships-editor/private/relationships-nodes-layer.tsx` — Node pill overlay and tooltips.
+  - `pane/relationships-editor/private/relationships-nodes-layer.tsx` — Node pill overlay, tooltips, and emoji decoration chips with a hover "+" add button.
   - `pane/relationships-editor/private/relationships-edges-layer.tsx` — SVG edge rendering with arrow markers and click-to-remove hit targets.
   - `pane/relationships-editor/private/relationships-node-dialog.tsx` — Character create/edit modal; add-mode **Auto** tag checkbox with live preview against `tagIndex`.
   - `pane/relationships-editor/private/relationships-edge-dialog.tsx` — Relationship create/edit modal with preset apply/save; template mode for custom toolbar types.

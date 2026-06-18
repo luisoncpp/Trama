@@ -20,6 +20,8 @@ import {
 } from './relationships-editor-helpers'
 import { RelationshipsEdgeDialog } from './relationships-edge-dialog'
 import { RelationshipsEdgeMarkersLayer, RelationshipsEdgesLayer } from './relationships-edges-layer'
+import { RelationshipsEmojiPicker } from './relationships-emoji-picker'
+import { toggleNodeEmoji } from './relationships-emoji-helpers'
 import { RelationshipsNodeDialog } from './relationships-node-dialog'
 import { RelationshipsRegionDialog } from './relationships-region-dialog'
 import { RelationshipsRegionsLayer } from './relationships-regions-layer'
@@ -43,6 +45,8 @@ interface ContextMenuState { clientX: number; clientY: number; target: { kind: '
 interface NodeDialogState { mode: 'add' | 'edit'; nodeIndex: number | null; node: RelationshipNode }
 
 interface EdgeDialogState { mode: 'add' | 'edit' | 'template'; edgeIndex: number | null; edge: RelationshipEdge }
+
+interface EmojiPickerState { nodeId: string; anchorRect: DOMRect }
 
 interface NodeDragState { pointerId: number; nodeIndex: number; clientX: number; clientY: number; nodeX: number; nodeY: number; moved: boolean }
 
@@ -85,6 +89,7 @@ export function RelationshipsEditor({ meta, pane, layoutMode, readOnlyPreview = 
   const [activeTool, setActiveTool] = useState<RelationshipsEditorTool>('select')
   const [linkTemplate, setLinkTemplate] = useState<RelationshipLinkTemplate | null>(null)
   const [draggedOverride, setDraggedOverride] = useState<{ id: string; x: number; y: number } | null>(null)
+  const [emojiPicker, setEmojiPicker] = useState<EmojiPickerState | null>(null)
 
   useEffect(/* clearRelationshipsNoticeAfterDelay */ () => {
     if (!notice) return
@@ -314,12 +319,33 @@ export function RelationshipsEditor({ meta, pane, layoutMode, readOnlyPreview = 
     setContextMenu(null)
   }, [config, updateConfig] /*Inputs for deleteRelationshipsNode*/)
 
+  const openEmojiPicker = useCallback(/* openRelationshipsEmojiPicker */ (nodeId: string, anchorRect: DOMRect) => {
+    if (readOnlyPreview) return
+    setEmojiPicker({ nodeId, anchorRect })
+    setContextMenu(null)
+  }, [readOnlyPreview] /*Inputs for openRelationshipsEmojiPicker*/)
+
+  const handleEmojiRemove = useCallback(/* removeRelationshipsNodeEmoji */ (nodeId: string, emoji: string) => {
+    if (readOnlyPreview) return
+    updateConfig({ ...config, nodes: config.nodes.map((node) => node.id === nodeId ? { ...node, emojis: node.emojis.filter((value) => value !== emoji) } : node) })
+  }, [config, readOnlyPreview, updateConfig] /*Inputs for removeRelationshipsNodeEmoji*/)
+
+  const handleEmojiToggle = useCallback(/* toggleRelationshipsNodeEmoji */ (emoji: string) => {
+    if (!emojiPicker || readOnlyPreview) return
+    const nodeId = emojiPicker.nodeId
+    updateConfig({ ...config, nodes: config.nodes.map((node) => node.id === nodeId ? { ...node, emojis: toggleNodeEmoji(node.emojis, emoji) } : node) })
+  }, [config, emojiPicker, readOnlyPreview, updateConfig] /*Inputs for toggleRelationshipsNodeEmoji*/)
+
+  const closeEmojiPicker = useCallback(/* closeRelationshipsEmojiPicker */ () => setEmojiPicker(null), [] /*Inputs for closeRelationshipsEmojiPicker - stable*/)
+
+  const emojiPickerNode = emojiPicker ? config.nodes.find((node) => node.id === emojiPicker.nodeId) ?? null : null
+
   const renderContextMenuItems = () => {
     if (!contextMenu) return null
     if (contextMenu.target.kind === 'stage') {
       const { x, y } = contextMenu.target
       return [
-        <button key="character" type="button" class="sidebar-context-menu__item" onClick={() => { setNodeDialog({ mode: 'add', nodeIndex: null, node: { id: '', x, y, label: '', destinationTag: '', color: DEFAULT_NODE_COLOR, description: '' } }); setContextMenu(null) }}>
+          <button key="character" type="button" class="sidebar-context-menu__item" onClick={() => { setNodeDialog({ mode: 'add', nodeIndex: null, node: { id: '', x, y, label: '', destinationTag: '', color: DEFAULT_NODE_COLOR, description: '', emojis: [] } }); setContextMenu(null) }}>
           Add a character
         </button>,
         <button key="region" type="button" class="sidebar-context-menu__item" onClick={() => { regionEditing.openAddRegionDialog(x, y); setContextMenu(null) }}>
@@ -355,6 +381,7 @@ export function RelationshipsEditor({ meta, pane, layoutMode, readOnlyPreview = 
       const nodeIndex = contextMenu.target.index
       const node = config.nodes[nodeIndex]
       return [
+        <button key="emoji" type="button" class="sidebar-context-menu__item" onClick={() => { openEmojiPicker(node.id, new DOMRect(contextMenu.clientX, contextMenu.clientY, 0, 0)) }}>Add emoji</button>,
         <button key="link" type="button" class="sidebar-context-menu__item" onClick={() => { setLinkSourceId(node.id); setNotice(`Linking from ${node.label}: click another character.`); setContextMenu(null) }}>Add relationship</button>,
         <button key="edit" type="button" class="sidebar-context-menu__item" onClick={() => { setNodeDialog({ mode: 'edit', nodeIndex, node }); setContextMenu(null) }}>Edit character</button>,
         <button key="delete" type="button" class="sidebar-context-menu__item sidebar-context-menu__item--danger" onClick={() => deleteNode(nodeIndex)}>Delete character</button>,
@@ -424,7 +451,10 @@ export function RelationshipsEditor({ meta, pane, layoutMode, readOnlyPreview = 
             nodes={config.nodes}
             linkSourceId={linkSourceId}
             draggedOverride={draggedOverride}
+            readOnly={readOnlyPreview}
             onNodePointerDown={handleNodePointerDown}
+            onEmojiAddClick={openEmojiPicker}
+            onEmojiRemove={handleEmojiRemove}
             onNodeContextMenu={(index, event) => {
               if (readOnlyPreview) return
               setContextMenu({ clientX: event.clientX, clientY: event.clientY, target: { kind: 'node', index } })
@@ -476,6 +506,14 @@ export function RelationshipsEditor({ meta, pane, layoutMode, readOnlyPreview = 
         onClose={() => regionEditing.setRegionDialog(null)}
         onSave={regionEditing.saveRegionFromDialog}
       />
+      {emojiPicker && emojiPickerNode ? (
+        <RelationshipsEmojiPicker
+          anchorRect={emojiPicker.anchorRect}
+          selectedEmojis={emojiPickerNode.emojis}
+          onToggle={handleEmojiToggle}
+          onClose={closeEmojiPicker}
+        />
+      ) : null}
     </div>
   )
 }

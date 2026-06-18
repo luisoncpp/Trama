@@ -10,6 +10,7 @@ export interface RelationshipNode {
   destinationTag: string
   color: string
   description?: string
+  emojis: string[]
 }
 
 export interface RelationshipEdge {

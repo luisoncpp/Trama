@@ -1,7 +1,7 @@
 import type { RelationshipEdge, RelationshipNode, RelationshipRegion } from './relationships-editor-types'
 
 export type { RelationshipEdge, RelationshipEdgePreset, RelationshipNode, RelationshipRegion, RelationshipsConfig, RelationshipEdgeStyle, RelationshipEdgeDirection } from './relationships-editor-types'
-export { getRelationshipsConfig, withRelationshipsConfig, DEFAULT_NODE_COLOR, DEFAULT_EDGE_COLOR, DEFAULT_REGION_COLOR } from './relationships-config-serialization'
+export { getRelationshipsConfig, withRelationshipsConfig, DEFAULT_NODE_COLOR, DEFAULT_EDGE_COLOR, DEFAULT_REGION_COLOR, normalizeEmojis, MAX_NODE_EMOJIS, MAX_EMOJI_CODE_POINTS } from './relationships-config-serialization'
 import { clampMapValue } from '../../map-editor/map-editor-helpers'
 
 export { clampMapValue as clampChartValue, resolveMarkerDestination as resolveNodeDestination } from '../../map-editor/map-editor-helpers'

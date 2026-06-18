@@ -157,7 +157,6 @@ export function resizeRegionInConfig(
   deltaX: number,
   deltaY: number,
 ): RelationshipsConfig {
-  const region = config.regions[regionIndex]
   const nextRect = resizeRegionFromEdge(startRect, edge, deltaX, deltaY)
   return {
     ...config,
