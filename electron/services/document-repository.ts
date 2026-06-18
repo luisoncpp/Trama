@@ -2,11 +2,8 @@
 import path from 'node:path'
 import { copyFile, mkdir, readFile, rename, rm, stat, writeFile } from 'node:fs/promises'
 import { parseMarkdownWithFrontmatter, serializeMarkdownWithFrontmatter } from './frontmatter.js'
-import {
-  collectLinkedImagePaths,
-  materializeMarkdownImages,
-  resolveMarkdownImageSources,
-} from './document-image-persistence.js'
+import { collectLinkedImagePaths } from './document-image-persistence.js'
+import { fromDiskRead, toDiskWrite } from './disk-content-adapter.js'
 
 export interface DocumentRecord {
   path: string
@@ -133,7 +130,7 @@ export class DocumentRepository {
     const fullPath = resolveProjectPath(projectRoot, relativePath)
     const markdown = await readFile(fullPath, 'utf8')
     const parsed = parseMarkdownWithFrontmatter(markdown)
-    const resolved = await resolveMarkdownImageSources(projectRoot, parsed.content)
+    const resolved = await fromDiskRead(projectRoot, parsed.content)
     return {
       path: normalizeRelative(relativePath),
       content: resolved.markdown,
@@ -153,7 +150,7 @@ export class DocumentRepository {
       if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error
     }
 
-    const materialized = await materializeMarkdownImages(projectRoot, relativePath, content, existingContent)
+    const materialized = await toDiskWrite(projectRoot, relativePath, content, existingContent)
     await writeFile(fullPath, serializeMarkdownWithFrontmatter(meta, materialized.markdown), 'utf8')
     return {
       path: normalizeRelative(relativePath),

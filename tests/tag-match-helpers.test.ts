@@ -5,7 +5,7 @@ import {
   isInsideCodeBlock,
   removeAccents,
   escapeRegExp,
-} from '../src/features/project-editor/pane/rich-markdown-editor/rich-markdown-editor-tag-helpers'
+} from '../src/features/project-editor/pane/rich-markdown-editor/editor-session/editor-session-private/editor-session-tag-helpers'
 
 describe('removeAccents', () => {
   it('removes combining diacritical marks (NFD normalization)', () => {

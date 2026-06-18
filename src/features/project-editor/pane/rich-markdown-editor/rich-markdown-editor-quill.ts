@@ -4,12 +4,11 @@ import { marked } from 'marked'
 import { renderDirectiveArtifactsToMarkdown } from '../../../../shared/markdown-layout-directives'
 import { LayoutDirectiveController } from './editor-session/editor-session-private/layout-directive-controller'
 import {
-  hydrateBrokenImageComments,
   hydrateMarkdownImages,
   renderBrokenImageCommentsAsHtml,
-  storeImageMap,
   stripBase64ImagesFromHtml,
 } from '../../../../shared/markdown-image-placeholder'
+import { getDocumentContentSession } from '../../document-content/document-content-session'
 import { createTramaTurndownService, normalizeMarkdownOutput, TurndownServiceFlags } from '../../../../shared/turndown-service-factory'
 
 type QuillChangeSource = 'api' | 'user' | 'silent'
@@ -87,14 +86,15 @@ function serializeEditorMarkdown(
 ): string {
   const { htmlWithoutImages, imageMap } = stripBase64ImagesFromHtml(html)
 
-  if (documentId && imageMap.size > 0) {
-    storeImageMap(documentId, imageMap)
+  if (documentId) {
+    const session = getDocumentContentSession(documentId)
+    session.recordSerializedImageMap(imageMap)
   }
 
   const serviceFlags = imageMap.size > 0 ? TurndownServiceFlags.HasImages : TurndownServiceFlags.None
   const service = createTramaTurndownService(serviceFlags)
 
-  return hydrateBrokenImageComments(normalizeMarkdownOutput(service.turndown(htmlWithoutImages)))
+  return normalizeMarkdownOutput(service.turndown(htmlWithoutImages))
 }
 
 export function serializeEditorMarkdownFromRef(

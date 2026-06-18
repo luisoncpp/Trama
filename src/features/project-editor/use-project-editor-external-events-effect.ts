@@ -23,6 +23,80 @@ interface HandleExternalEventParams extends ExternalEventsEffectParams {
   event: ExternalFileEvent
 }
 
+function handleUnlinkSelected(
+  event: ExternalFileEvent,
+  isDirty: boolean,
+  snapshotRootPath: string,
+  clearEditor: () => void,
+  openProject: (projectRoot: string, options?: OpenProjectOptions) => Promise<void>,
+  setExternalConflictPath: (path: string | null) => void,
+  setConflictComparisonContent: (value: string | null) => void,
+  setStatusMessage: (message: string) => void,
+): void {
+  if (isDirty) {
+    setExternalConflictPath(event.path)
+    setConflictComparisonContent(null)
+    setStatusMessage(`The active file was removed externally: ${event.path}.`)
+    return
+  }
+  clearEditor()
+  setConflictComparisonContent(null)
+  void openProject(snapshotRootPath)
+  setStatusMessage(`The active file was removed externally: ${event.path}`)
+}
+
+function handleDirtySelectedEvent(
+  event: ExternalFileEvent,
+  checkSnapshot: (path: string, content: string) => Promise<boolean>,
+  setExternalConflictPath: (path: string | null) => void,
+  setConflictComparisonContent: (value: string | null) => void,
+  setStatusMessage: (message: string) => void,
+): void {
+  setExternalConflictPath(event.path)
+  setConflictComparisonContent(null)
+  setStatusMessage(`External change detected in ${event.path}.`)
+  if (event.event !== 'change') return
+  void (async () => {
+    const response = await window.tramaApi.readDocument({ path: event.path })
+    if (!response.ok) return
+    const matches = await checkSnapshot(event.path, response.data.content)
+    if (!matches) return
+    setExternalConflictPath(null)
+    setConflictComparisonContent(null)
+    setStatusMessage(`External change matched last save; keeping your edits: ${event.path}`)
+  })()
+}
+
+function handleCleanSelectedEvent(
+  event: ExternalFileEvent,
+  activePane: WorkspacePane,
+  checkSnapshot: (path: string, content: string) => Promise<boolean>,
+  loadDocument: (path: string, pane: WorkspacePane) => Promise<void>,
+  setConflictComparisonContent: (value: string | null) => void,
+  setStatusMessage: (message: string) => void,
+): void {
+  if (event.event === 'change') {
+    void (async () => {
+      const response = await window.tramaApi.readDocument({ path: event.path })
+      if (response.ok) {
+        const matches = await checkSnapshot(event.path, response.data.content)
+        if (matches) {
+          setStatusMessage(`External change matched last save; keeping editor content: ${event.path}`)
+          return
+        }
+      }
+      setConflictComparisonContent(null)
+      void loadDocument(event.path, activePane)
+      setStatusMessage(`Automatically reloaded after external change: ${event.path}`)
+    })()
+    return
+  }
+
+  setConflictComparisonContent(null)
+  void loadDocument(event.path, activePane)
+  setStatusMessage(`Automatically reloaded after external change: ${event.path}`)
+}
+
 function handleSelectedPath(
   event: ExternalFileEvent,
   isDirty: boolean,
@@ -37,60 +111,21 @@ function handleSelectedPath(
   setStatusMessage: (message: string) => void,
 ): void {
   if (event.event === 'unlink') {
-    if (isDirty) {
-      setExternalConflictPath(event.path)
-      setConflictComparisonContent(null)
-      setStatusMessage(`The active file was removed externally: ${event.path}.`)
-      return
-    }
-    clearEditor()
-    setConflictComparisonContent(null)
-    void openProject(snapshotRootPath)
-    setStatusMessage(`The active file was removed externally: ${event.path}`)
+    handleUnlinkSelected(
+      event, isDirty, snapshotRootPath, clearEditor, openProject,
+      setExternalConflictPath, setConflictComparisonContent, setStatusMessage,
+    )
     return
   }
   if (isDirty) {
-    setExternalConflictPath(event.path)
-    setConflictComparisonContent(null)
-    setStatusMessage(`External change detected in ${event.path}.`)
-    if (event.event === 'change') {
-      void (async () => {
-        const response = await window.tramaApi.readDocument({ path: event.path })
-        if (response.ok) {
-          const matches = await checkSnapshot(event.path, response.data.content)
-          if (matches) {
-            setExternalConflictPath(null)
-            setConflictComparisonContent(null)
-            setStatusMessage(`External change matched last save; keeping your edits: ${event.path}`)
-          }
-        }
-      })()
-    }
+    handleDirtySelectedEvent(
+      event, checkSnapshot, setExternalConflictPath, setConflictComparisonContent, setStatusMessage,
+    )
     return
   }
-  if (!isDirty) {
-    if (event.event === 'change') {
-      void (async () => {
-        const response = await window.tramaApi.readDocument({ path: event.path })
-        if (response.ok) {
-          const matches = await checkSnapshot(event.path, response.data.content)
-          if (matches) {
-            setStatusMessage(`External change matched last save; keeping editor content: ${event.path}`)
-            return
-          }
-        }
-        setConflictComparisonContent(null)
-        void loadDocument(event.path, activePane)
-        setStatusMessage(`Automatically reloaded after external change: ${event.path}`)
-      })()
-      return
-    }
-
-    setConflictComparisonContent(null)
-    void loadDocument(event.path, activePane)
-    setStatusMessage(`Automatically reloaded after external change: ${event.path}`)
-    return
-  }
+  handleCleanSelectedEvent(
+    event, activePane, checkSnapshot, loadDocument, setConflictComparisonContent, setStatusMessage,
+  )
 }
 
 function handleExternalEvent(params: HandleExternalEventParams): void {

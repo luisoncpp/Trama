@@ -1,7 +1,7 @@
 import { PROJECT_EDITOR_STRINGS } from '../../project-editor-strings'
 import { notifyTagIndexRefresh } from '../../tag-index-events'
 import { normalizeName, isInvalidRenameInput, deduplicateTags } from '../../../../shared/sidebar-utils'
-import { ensureMarkdownEmbeddedImagesArePng } from '../../project-editor-image-save'
+import { getDocumentContentSession } from '../../document-content/document-content-session'
 import type { SidebarRenameInput, ProjectEditorProjectState } from '../../project-editor-types'
 import type { OpenProjectOptions } from '../../open-project-types'
 import type { PaneWorkspace } from '../../pane'
@@ -105,10 +105,11 @@ export async function editFileTags(
     nextMeta.tags = normalizedTags
   }
 
-  const pngNormalizedContent = await ensureMarkdownEmbeddedImagesArePng(readResponse.data.content)
+  const session = getDocumentContentSession(path)
+  const portableContent = await session.forIpcSave(readResponse.data.content)
   const saveResponse = await window.tramaApi.saveDocument({
     path,
-    content: pngNormalizedContent,
+    content: portableContent,
     meta: nextMeta,
   })
   if (!saveResponse.ok) {

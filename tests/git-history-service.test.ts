@@ -21,12 +21,28 @@ async function commitAll(root: string, message: string): Promise<string> {
   return String(await runGit(['rev-parse', 'HEAD'], root)).trim()
 }
 
+async function removeTempRoot(root: string): Promise<void> {
+  for (let attempt = 0; attempt < 5; attempt += 1) {
+    try {
+      await rm(root, { recursive: true, force: true })
+      return
+    } catch (error) {
+      const code = (error as NodeJS.ErrnoException).code
+      if (code !== 'EBUSY' && code !== 'EPERM' && code !== 'ENOTEMPTY') {
+        throw error
+      }
+      await new Promise((resolve) => setTimeout(resolve, 100 * (attempt + 1)))
+    }
+  }
+  await rm(root, { recursive: true, force: true })
+}
+
 describe.runIf(gitAvailable)('git history service', () => {
   let tempRoot: string | null = null
 
   afterEach(async () => {
     if (tempRoot) {
-      await rm(tempRoot, { recursive: true, force: true })
+      await removeTempRoot(tempRoot)
       tempRoot = null
     }
   })
@@ -65,7 +81,7 @@ describe.runIf(gitAvailable)('git history service', () => {
     expect(result.kind).toBe('saved')
     expect(path.resolve(result.repositoryRoot ?? '')).toBe(path.resolve(tempRoot))
     expect(committedFiles).toEqual(['project/book/chapter.md'])
-  })
+  }, 15000)
 
   it('returns no-op when only ignored managed files changed', async () => {
     tempRoot = await mkdtemp(path.join(os.tmpdir(), 'trama-git-history-'))

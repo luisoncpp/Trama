@@ -5,12 +5,22 @@ import { useState } from 'preact/hooks'
 import Quill from 'quill'
 import { RichMarkdownEditor } from '../src/features/project-editor/pane/rich-markdown-editor/rich-markdown-editor'
 import { hydrateMarkdownImages, getImageMap } from '../src/shared/markdown-image-placeholder'
-import type { EditorSession } from '../src/features/project-editor/pane/rich-markdown-editor/editor-session/editor-session'
+import type { EditorSession } from '../src/features/project-editor/project-editor-types'
 
 describe('RichMarkdownEditor', () => {
   let container: HTMLDivElement
   const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
   const noop = () => {}
+
+  function createSessionCapture() {
+    const holder = { current: null as EditorSession | null }
+    return {
+      onSessionReady: (session: EditorSession | null) => {
+        holder.current = session
+      },
+      flush: () => holder.current?.flush() ?? null,
+    }
+  }
 
   const buildEditorProps = (
     overrides: Partial<Parameters<typeof RichMarkdownEditor>[0]> = {},
@@ -596,7 +606,7 @@ describe('RichMarkdownEditor', () => {
 
   it('trata pagebreak como embed atomico de longitud 1 y lo elimina en un solo paso', async () => {
     let lastMarkdown = ''
-    let session: EditorSession | null = null
+    const sessionCapture = createSessionCapture()
     const source = [
       '# Capitulo',
       '<!-- trama:spacer lines=2 -->',
@@ -612,7 +622,7 @@ describe('RichMarkdownEditor', () => {
           onChange: (markdown) => {
             lastMarkdown = markdown
           },
-          onSessionReady: (s) => { session = s },
+          onSessionReady: sessionCapture.onSessionReady,
         })),
         container,
       )
@@ -632,7 +642,7 @@ describe('RichMarkdownEditor', () => {
     })
 
     await sleep(40)
-    session?.flush() ?? null
+    sessionCapture.flush()
 
     const afterLength = editor.getLength()
     expect(afterLength).toBe(beforeLength - 1)
@@ -706,7 +716,7 @@ describe('RichMarkdownEditor', () => {
 
   it('preserva directivas en round-trip source-editor-source tras edicion de usuario', async () => {
     let lastMarkdown = ''
-    let session: EditorSession | null = null
+    const sessionCapture = createSessionCapture()
     const source = [
       '# Titulo',
       '<!-- trama:center:start -->',
@@ -725,7 +735,7 @@ describe('RichMarkdownEditor', () => {
           onChange: (markdown) => {
             lastMarkdown = markdown
           },
-          onSessionReady: (s) => { session = s },
+          onSessionReady: sessionCapture.onSessionReady,
         })),
         container,
       )
@@ -740,7 +750,7 @@ describe('RichMarkdownEditor', () => {
     })
 
     await sleep(40)
-    session?.flush() ?? null
+    sessionCapture.flush()
 
     expect(lastMarkdown).toContain('Texto agregado')
     expect(lastMarkdown).toContain('<!-- trama:center:start -->')
@@ -752,7 +762,7 @@ describe('RichMarkdownEditor', () => {
 
   it('mantiene orden de directivas tras inserciones y borrados de varios parrafos', async () => {
     let lastMarkdown = ''
-    let session: EditorSession | null = null
+    const sessionCapture = createSessionCapture()
     const source = [
       '# Capitulo',
       'Bloque inicial',
@@ -771,7 +781,7 @@ describe('RichMarkdownEditor', () => {
           onChange: (markdown) => {
             lastMarkdown = markdown
           },
-          onSessionReady: (s) => { session = s },
+          onSessionReady: sessionCapture.onSessionReady,
         })),
         container,
       )
@@ -812,7 +822,7 @@ describe('RichMarkdownEditor', () => {
     })
 
     await sleep(30)
-    session?.flush() ?? null
+    sessionCapture.flush()
 
     expect(lastMarkdown).toContain('Nuevo bloque A')
     expect(lastMarkdown).toContain('Nuevo bloque B')
@@ -855,7 +865,7 @@ describe('RichMarkdownEditor', () => {
 
   it('inserta directivas center desde boton de toolbar', async () => {
     let lastMarkdown = ''
-    let session: EditorSession | null = null
+    const sessionCapture = createSessionCapture()
 
     act(() => {
       render(
@@ -865,7 +875,7 @@ describe('RichMarkdownEditor', () => {
           onChange: (markdown) => {
             lastMarkdown = markdown
           },
-          onSessionReady: (s) => { session = s },
+          onSessionReady: sessionCapture.onSessionReady,
         })),
         container,
       )
@@ -882,7 +892,7 @@ describe('RichMarkdownEditor', () => {
     })
 
     await sleep(40)
-    session?.flush() ?? null
+    sessionCapture.flush()
 
     expect(lastMarkdown).toContain('<!-- trama:center:start -->')
     expect(lastMarkdown).toContain('<!-- trama:center:end -->')
@@ -890,7 +900,7 @@ describe('RichMarkdownEditor', () => {
 
   it('togglea una linea centrada y mantiene serializacion canonica con clases visuales correctas', async () => {
     let lastMarkdown = ''
-    let session: EditorSession | null = null
+    const sessionCapture = createSessionCapture()
     const source = [
       '<!-- trama:center:start -->',
       'A',
@@ -911,7 +921,7 @@ describe('RichMarkdownEditor', () => {
           onChange: (markdown) => {
             lastMarkdown = markdown
           },
-          onSessionReady: (s) => { session = s },
+          onSessionReady: sessionCapture.onSessionReady,
         })),
         container,
       )
@@ -931,7 +941,7 @@ describe('RichMarkdownEditor', () => {
     })
 
     await sleep(40)
-    session?.flush() ?? null
+    sessionCapture.flush()
 
     const centeredParagraphs = Array.from(container.querySelectorAll('.ql-editor .trama-centered-content')).map((node) => node.textContent?.trim())
     expect(centeredParagraphs).toEqual(expect.arrayContaining(['A', 'C']))
@@ -963,7 +973,7 @@ describe('RichMarkdownEditor', () => {
 
   it('mueve center:end una linea hacia abajo al hacer Backspace en la primera linea no centrada', async () => {
     let lastMarkdown = ''
-    let session: EditorSession | null = null
+    const sessionCapture = createSessionCapture()
     const source = [
       '<!-- trama:center:start -->',
       'A',
@@ -982,7 +992,7 @@ describe('RichMarkdownEditor', () => {
           onChange: (markdown) => {
             lastMarkdown = markdown
           },
-          onSessionReady: (s) => { session = s },
+          onSessionReady: sessionCapture.onSessionReady,
         })),
         container,
       )
@@ -1001,7 +1011,7 @@ describe('RichMarkdownEditor', () => {
     })
 
     await sleep(40)
-    session?.flush() ?? null
+    sessionCapture.flush()
 
     const centeredParagraphs = Array.from(container.querySelectorAll('.ql-editor p.trama-centered-content')).map((node) => node.textContent?.trim())
     expect(centeredParagraphs).toEqual(expect.arrayContaining(['A', 'B']))
@@ -1016,7 +1026,7 @@ describe('RichMarkdownEditor', () => {
 
   it('mueve center:end una linea hacia abajo al hacer Delete sobre la costura', async () => {
     let lastMarkdown = ''
-    let session: EditorSession | null = null
+    const sessionCapture = createSessionCapture()
     const source = [
       '<!-- trama:center:start -->',
       'A',
@@ -1035,7 +1045,7 @@ describe('RichMarkdownEditor', () => {
           onChange: (markdown) => {
             lastMarkdown = markdown
           },
-          onSessionReady: (s) => { session = s },
+          onSessionReady: sessionCapture.onSessionReady,
         })),
         container,
       )
@@ -1054,7 +1064,7 @@ describe('RichMarkdownEditor', () => {
     })
 
     await sleep(40)
-    session?.flush() ?? null
+    sessionCapture.flush()
 
     const centeredParagraphs = Array.from(container.querySelectorAll('.ql-editor p.trama-centered-content')).map((node) => node.textContent?.trim())
     expect(centeredParagraphs).toEqual(expect.arrayContaining(['A', 'B']))
@@ -1069,7 +1079,7 @@ describe('RichMarkdownEditor', () => {
 
   it('inserta directiva pagebreak desde toolbar', async () => {
     let lastMarkdown = ''
-    let session: EditorSession | null = null
+    const sessionCapture = createSessionCapture()
 
     act(() => {
       render(
@@ -1079,7 +1089,7 @@ describe('RichMarkdownEditor', () => {
           onChange: (markdown) => {
             lastMarkdown = markdown
           },
-          onSessionReady: (s) => { session = s },
+          onSessionReady: sessionCapture.onSessionReady,
         })),
         container,
       )
@@ -1096,14 +1106,14 @@ describe('RichMarkdownEditor', () => {
     })
 
     await sleep(40)
-    session?.flush() ?? null
+    sessionCapture.flush()
 
     expect(lastMarkdown).toContain('<!-- trama:pagebreak -->')
   })
 
   it('permite centrar e insertar pagebreak aunque saveDisabled sea true', async () => {
     let lastMarkdown = ''
-    let session: EditorSession | null = null
+    const sessionCapture = createSessionCapture()
 
     act(() => {
       render(
@@ -1114,7 +1124,7 @@ describe('RichMarkdownEditor', () => {
           onChange: (markdown) => {
             lastMarkdown = markdown
           },
-          onSessionReady: (s) => { session = s },
+          onSessionReady: sessionCapture.onSessionReady,
         })),
         container,
       )
@@ -1137,7 +1147,7 @@ describe('RichMarkdownEditor', () => {
     })
 
     await sleep(50)
-    session?.flush() ?? null
+    sessionCapture.flush()
 
     expect(lastMarkdown).toContain('<!-- trama:center:start -->')
     expect(lastMarkdown).toContain('<!-- trama:center:end -->')
@@ -1146,7 +1156,7 @@ describe('RichMarkdownEditor', () => {
 
   it('inserta pagebreak exactamente en el indice del cursor', async () => {
     let lastMarkdown = ''
-    let session: EditorSession | null = null
+    const sessionCapture = createSessionCapture()
 
     act(() => {
       render(
@@ -1156,7 +1166,7 @@ describe('RichMarkdownEditor', () => {
           onChange: (markdown) => {
             lastMarkdown = markdown
           },
-          onSessionReady: (s) => { session = s },
+          onSessionReady: sessionCapture.onSessionReady,
         })),
         container,
       )
@@ -1174,7 +1184,7 @@ describe('RichMarkdownEditor', () => {
     })
 
     await sleep(40)
-    session?.flush() ?? null
+    sessionCapture.flush()
 
     const prefixPos = lastMarkdown.indexOf('afda')
     const pagebreakPos = lastMarkdown.indexOf('<!-- trama:pagebreak -->')
@@ -1188,7 +1198,7 @@ describe('RichMarkdownEditor', () => {
 
   it('serializa saltos de linea repetidos como directiva spacer', async () => {
     let lastMarkdown = ''
-    let session: EditorSession | null = null
+    const sessionCapture = createSessionCapture()
 
     act(() => {
       render(
@@ -1198,7 +1208,7 @@ describe('RichMarkdownEditor', () => {
           onChange: (markdown) => {
             lastMarkdown = markdown
           },
-          onSessionReady: (s) => { session = s },
+          onSessionReady: sessionCapture.onSessionReady,
         })),
         container,
       )
@@ -1213,7 +1223,7 @@ describe('RichMarkdownEditor', () => {
     })
 
     await sleep(40)
-    session?.flush() ?? null
+    sessionCapture.flush()
 
     expect(lastMarkdown).toMatch(/<!-- trama:spacer lines=\d+ -->/)
   })
@@ -1225,7 +1235,7 @@ describe('RichMarkdownEditor', () => {
 
     it('preserva imagen en markdown tras pegar imagen base64', async () => {
       let lastMarkdown = ''
-      let session: EditorSession | null = null
+      const sessionCapture = createSessionCapture()
       const docId = 'img-roundtrip-doc'
 
       act(() => {
@@ -1236,7 +1246,7 @@ describe('RichMarkdownEditor', () => {
             onChange: (markdown) => {
               lastMarkdown = markdown
             },
-            onSessionReady: (s) => { session = s },
+            onSessionReady: sessionCapture.onSessionReady,
           })),
           container,
         )
@@ -1256,11 +1266,11 @@ describe('RichMarkdownEditor', () => {
       editor.clipboard.dangerouslyPasteHTML(imgHTML, 'user')
 
       await sleep(80)
-      session?.flush() ?? null
+      sessionCapture.flush()
 
-      // onChange receives hydrated markdown with embedded images
-      expect(lastMarkdown).toContain('![img_0](data:image/png')
-      expect(lastMarkdown).not.toContain('<!-- IMAGE_PLACEHOLDER:')
+      // onChange receives editor-internal placeholder markdown
+      expect(lastMarkdown).toContain('<!-- IMAGE_PLACEHOLDER:img_0 -->')
+      expect(lastMarkdown).not.toContain(TINY_PNG_1X1.substring(0, 20))
 
       // Image data is cached and can be hydrated before save
       const imageMap = getImageMap(docId)
@@ -1326,7 +1336,7 @@ describe('RichMarkdownEditor', () => {
 
     it('vuelve a editar documento con imagen y preserva la imagen en output', async () => {
       let lastMarkdown = ''
-      let session: EditorSession | null = null
+      const sessionCapture = createSessionCapture()
       const docId = 'img-edit-doc'
 
       act(() => {
@@ -1337,7 +1347,7 @@ describe('RichMarkdownEditor', () => {
             onChange: (markdown) => {
               lastMarkdown = markdown
             },
-            onSessionReady: (s) => { session = s },
+            onSessionReady: sessionCapture.onSessionReady,
           })),
           container,
         )
@@ -1351,11 +1361,11 @@ describe('RichMarkdownEditor', () => {
       })
 
       await sleep(60)
-      session?.flush() ?? null
+      sessionCapture.flush()
 
-      // onChange receives hydrated markdown with embedded images
-      expect(lastMarkdown).toContain('![img_0](data:image/png')
-      expect(lastMarkdown).not.toContain('<!-- IMAGE_PLACEHOLDER:')
+      // onChange receives editor-internal placeholder markdown
+      expect(lastMarkdown).toContain('<!-- IMAGE_PLACEHOLDER:img_0 -->')
+      expect(lastMarkdown).not.toContain(TINY_PNG_1X1.substring(0, 20))
 
       // Image data is cached and can be hydrated before save
       const imageMap = getImageMap(docId)
@@ -1397,7 +1407,7 @@ describe('RichMarkdownEditor', () => {
 
     it('renderiza imagen rota como emoji y preserva su markdown original al serializar', async () => {
       let lastMarkdown = ''
-      let session: EditorSession | null = null
+      const sessionCapture = createSessionCapture()
 
       act(() => {
         render(
@@ -1407,7 +1417,7 @@ describe('RichMarkdownEditor', () => {
             onChange: (markdown) => {
               lastMarkdown = markdown
             },
-            onSessionReady: (s) => { session = s },
+            onSessionReady: sessionCapture.onSessionReady,
           })),
           container,
         )
@@ -1423,10 +1433,10 @@ describe('RichMarkdownEditor', () => {
       })
 
       await sleep(60)
-      session?.flush() ?? null
+      sessionCapture.flush()
 
-      expect(lastMarkdown).toContain('![cover](res/missing-image.png)')
-      expect(lastMarkdown).not.toContain('TRAMA_BROKEN_IMAGE:')
+      expect(lastMarkdown).toContain('TRAMA_BROKEN_IMAGE:')
+      expect(lastMarkdown).not.toContain('![cover](res/missing-image.png)')
     })
   })
 

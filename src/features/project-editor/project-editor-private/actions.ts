@@ -1,11 +1,6 @@
 import { useCallback, useMemo } from 'preact/hooks'
 import type { DocumentMeta } from '../../../shared/ipc'
-import {
-  hydrateBrokenImageComments,
-  hydrateMarkdownImages,
-  stripBase64ImagesFromMarkdown,
-} from '../../../shared/markdown-image-placeholder'
-import { ensureMarkdownEmbeddedImagesArePng } from '../project-editor-image-save'
+import { getDocumentContentSession } from '../document-content/document-content-session'
 import type {
   ProjectEditorActions,
   ProjectEditorLayoutState,
@@ -65,14 +60,12 @@ function useLoadDocument(
           setters.setStatusMessage(`Could not read ${filePath}: ${response.error.message}`)
           return
         }
-        const { markdownWithoutImages } = stripBase64ImagesFromMarkdown(
-          response.data.content,
-          response.data.path,
-        )
+        const session = getDocumentContentSession(response.data.path)
+        const editorInternalContent = session.forEditorLoad(response.data.content)
         paneWorkspace.loadPaneDocument(
           targetPane,
           response.data.path,
-          markdownWithoutImages,
+          editorInternalContent,
           response.data.meta,
         )
         setters.setStatusMessage(`Loaded document: ${response.data.path}`)
@@ -91,9 +84,9 @@ function useSaveDocumentNow(
     /* saveDocumentNow */ async (path: string, content: string, meta: DocumentMeta): Promise<void> => {
       setters.setSaving(true)
       try {
-        const hydratedContent = hydrateBrokenImageComments(hydrateMarkdownImages(content, path))
-        const pngNormalizedContent = await ensureMarkdownEmbeddedImagesArePng(hydratedContent)
-        const response = await window.tramaApi.saveDocument({ path, content: pngNormalizedContent, meta })
+        const session = getDocumentContentSession(path)
+        const portableContent = await session.forIpcSave(content)
+        const response = await window.tramaApi.saveDocument({ path, content: portableContent, meta })
         setters.setStatusMessage(
           response.ok
             ? `Saved: ${response.data.path} (${response.data.version})`

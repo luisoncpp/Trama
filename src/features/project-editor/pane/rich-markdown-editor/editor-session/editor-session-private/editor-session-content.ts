@@ -1,6 +1,5 @@
 import type Quill from 'quill'
 import type TurndownService from 'turndown'
-import { hydrateMarkdownImages } from '../../../../../../shared/markdown-image-placeholder'
 import { applyMarkdownToEditor, serializeEditorMarkdownFromRef } from '../../rich-markdown-editor-quill'
 import {
   areEquivalentEditorValues,
@@ -49,7 +48,7 @@ export class EditorContentLoop {
     if (this.isApplyingExternalValueRef.current) return null
     const markdown = serializeEditorMarkdownFromRef(turndownRef, editor.root.innerHTML, documentId)
     this.lastEditorValueRef.current = markdown
-    onChangeRef.current(hydrateMarkdownImages(markdown, documentId))
+    onChangeRef.current(markdown)
     return markdown
   }
 

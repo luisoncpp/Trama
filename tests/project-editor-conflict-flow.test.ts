@@ -5,6 +5,12 @@ import { useProjectEditor } from '../src/features/project-editor/use-project-edi
 import type { ProjectEditorModel } from '../src/features/project-editor/project-editor-types'
 import type { ExternalFileEvent } from '../src/shared/ipc'
 
+async function flushPromises(): Promise<void> {
+  for (let i = 0; i < 10; i += 1) {
+    await Promise.resolve()
+  }
+}
+
 type TramaApiMock = {
   ping: () => Promise<{ ok: true; data: { echo: string; timestamp: string } }>
   openProject: (payload: { rootPath: string }) => Promise<{
@@ -221,8 +227,7 @@ describe('project editor conflict flow', () => {
 
     await act(async () => {
       model?.actions.resolveConflictSaveAsCopy()
-      await Promise.resolve()
-      await Promise.resolve()
+      await flushPromises()
     })
 
     expect(saveDocumentMock).toHaveBeenCalled()
@@ -563,9 +568,7 @@ describe('project editor conflict flow', () => {
 
     await act(async () => {
       model?.actions.resolveConflictSaveAsCopy()
-      await Promise.resolve()
-      await Promise.resolve()
-      await Promise.resolve()
+      await flushPromises()
     })
 
     const copyPath = 'docs/b.conflict-copy.md'

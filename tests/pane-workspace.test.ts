@@ -488,14 +488,14 @@ describe('PaneWorkspace', () => {
       expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('first difference at index'))
     })
 
-    it('uses exact string comparison', async () => {
+    it('uses canonical markdown comparison (trimEnd, not byte-identical)', async () => {
       const ws = makeWs('primary', primaryDirty, secondaryClean)
 
       await ws.savePaneIfDirty('primary')
 
       expect(await ws.checkExternalChangeMatchesSavedSnapshot('docs/a.md', '#flushed')).toBe(false)
-      expect(await ws.checkExternalChangeMatchesSavedSnapshot('docs/a.md', '# flushed ')).toBe(false)
-      expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('match: false'))
+      expect(await ws.checkExternalChangeMatchesSavedSnapshot('docs/a.md', '# flushed ')).toBe(true)
+      expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('match: true'))
     })
   })
 

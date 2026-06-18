@@ -1,6 +1,6 @@
 import { useCallback, useRef, useState } from 'preact/hooks'
 import type Quill from 'quill'
-import type { EditorZoomRef, FocusScope, TagMatch } from '../../../project-editor-types.js'
+import type { EditorSession as EditorSessionCore, EditorZoomRef, FocusScope, TagMatch } from '../../../project-editor-types.js'
 import type { EditorSessionImpl } from './editor-session-private/editor-session-lifecycle.js'
 import type { RichEditorSyncState } from './editor-session-private/editor-session-toolbar.js'
 import { useEditorSessionOrchestration } from './editor-session-private/editor-session-orchestration.js'
@@ -35,7 +35,7 @@ export interface UseEditorSessionProps {
   onTagClick?: (filePath: string) => void
   isActive?: boolean
   onMarkDirty?: () => void
-  onSessionReady?: (session: import('./editor-session-types.js').EditorSession | null) => void
+  onSessionReady?: (session: EditorSessionCore | null) => void
   hostRef?: { current: HTMLDivElement | null }
   shellRef?: { current: HTMLDivElement | null }
   zoomRef?: EditorZoomRef

@@ -28,7 +28,7 @@ This is not the canonical full architecture guide. For the full subsystem design
 | Hotspot | Symptom | Open these first |
 |---------|---------|------------------|
 | Debounced serialization | Last typed text disappears, save misses final keystrokes, revert ignores the latest keystroke, images vanish after typing | `mds/architecture/editor-serialization-debounce-architecture.md` -> `src/features/project-editor/pane/rich-markdown-editor/editor-session/editor-session-private/editor-session-content.ts` |
-| Canonical external-value sync | Images blink or vanish after first edit, equivalent content gets re-applied | `src/features/project-editor/pane/rich-markdown-editor/editor-session/editor-session-private/editor-session-content.ts` -> `src/features/project-editor/pane/rich-markdown-editor/rich-markdown-editor-value-sync.ts` -> `mds/flows/rich-editor-external-sync-flow.md` |
+| Canonical external-value sync | Images blink or vanish after first edit, equivalent content gets re-applied | `src/features/project-editor/pane/rich-markdown-editor/editor-session/editor-session-private/editor-session-content.ts` -> `src/features/project-editor/pane/rich-markdown-editor/rich-markdown-editor-value-sync.ts` -> `src/features/project-editor/document-content/document-content-session.ts` -> `mds/flows/rich-editor-external-sync-flow.md` |
 | Pane-targeted persistence | Save, switch, close, or revert hits the wrong pane | `src/features/project-editor/pane/pane-workspace.ts` -> `src/features/project-editor/workspace-actions.ts` |
 | Layout path vs loaded pane path | Sidebar highlights wrong file or goes blank after pane changes | `mds/architecture/split-pane-coordination.md` -> `src/features/project-editor/project-editor-private/state.ts` |
 | Quill lifecycle / re-init | Cursor jumps, editor remounts unexpectedly, runtime toggle acts like full re-create | `src/features/project-editor/pane/rich-markdown-editor/editor-session/editor-session-private/editor-session-lifecycle.ts` -> `mds/lessons-learned/rich-editor-effect-deps-remount.md` |
@@ -77,8 +77,8 @@ The same document can appear as hydrated base64 markdown or placeholder markdown
 
 ### Invariants
 
-- compare editor values through canonical placeholder normalization
-- `lastEditorValueRef` is editor-canonical, not necessarily disk-canonical
+- compare editor values through `DocumentContentSession.forCanonicalCompare`
+- `lastEditorValueRef` is editor-canonical (placeholder markdown), not disk-canonical
 - re-apply uses `'silent'`
 - selection must be preserved around real re-apply
 
@@ -202,6 +202,7 @@ Commands may be wired correctly in the native menu but not in the renderer, or v
 | "Spellcheck or some toggle remounted Quill" | Quill lifecycle and remount boundaries |
 | "Focus mode scroll feels haunted" | Focus-mode geometry and scroll |
 | "Tag underlines distort on typing" | Tag overlay positions → `editor-session-tag-overlay.ts` recalc via `subscribeContentMutated()` |
+| "Images disappear after edit / placeholder leaks into parent state" | Image pipeline → `mds/architecture/image-handling-architecture.md` → `src/features/project-editor/document-content/document-content-session.ts` |
 | "Context menu command does nothing" | Workspace command bridge |
 
 ## Related docs

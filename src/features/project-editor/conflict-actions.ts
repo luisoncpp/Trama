@@ -1,6 +1,6 @@
 import { buildConflictCopyPath } from './project-editor-logic'
 import { PROJECT_EDITOR_STRINGS } from './project-editor-strings'
-import { ensureMarkdownEmbeddedImagesArePng } from './project-editor-image-save'
+import { getDocumentContentSession } from './document-content/document-content-session'
 import type { ProjectEditorDocumentState, ProjectEditorProjectState, ProjectEditorUiState } from './project-editor-types'
 import type { OpenProjectOptions } from './open-project-types'
 import type { PaneWorkspace } from './pane'
@@ -51,12 +51,14 @@ export function resolveConflictSaveAsCopy(
     return
   }
 
-  const copyPath = buildConflictCopyPath(deps.documentState.selectedPath, deps.projectState.visibleFiles)
+  const selectedPath = deps.documentState.selectedPath
+  const copyPath = buildConflictCopyPath(selectedPath, deps.projectState.visibleFiles)
   void (async () => {
-    const pngNormalizedContent = await ensureMarkdownEmbeddedImagesArePng(deps.documentState.editorValue)
+    const session = getDocumentContentSession(selectedPath)
+    const portableContent = await session.forIpcSave(deps.documentState.editorValue)
     const response = await window.tramaApi.saveDocument({
       path: copyPath,
-      content: pngNormalizedContent,
+      content: portableContent,
       meta: deps.documentState.editorMeta,
     })
 

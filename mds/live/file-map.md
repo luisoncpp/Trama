@@ -104,7 +104,9 @@ Mandatory doc navigation for new chats: start with `mds/START-HERE.md` — it pr
   - Persists markdown images to project-local `res/*.png` files on save and resolves them back to embedded data URLs on read.
   - Also copies chosen map base images into `res/` and writes initial map-document frontmatter with empty markers.
 - `electron/services/document-image-persistence.ts`
-  - Repository helper for markdown image persistence: rewrites embedded images to `res/*.png`, rehydrates local image links back to embedded PNG data URLs, degrades missing linked images to editor-only placeholders, and collects associated image paths for delete flows.
+  - Repository helper for markdown image persistence: rewrites embedded images to `res/*.png`, rehydrates local image links back to embedded PNG data URLs, degrades missing linked images to editor-only placeholders without failing document reads, and collects associated image paths for delete flows.
+- `electron/services/disk-content-adapter.ts`
+  - Main-process phase vocabulary for markdown images: `fromDiskRead` (disk → portable) and `toDiskWrite` (portable → disk + file writes). Thin rename/group over `document-image-persistence.ts`.
 - `electron/services/frontmatter.ts`
   - YAML frontmatter parse/serialize.
 - `electron/services/index-service.ts`
@@ -339,7 +341,7 @@ Mandatory doc navigation for new chats: start with `mds/START-HERE.md` — it pr
 - `src/features/project-editor/project-editor-private/actions.ts`
   - Private action assembly behind `use-project-editor.ts`.
   - Keeps core operations (clear, load, save, open) and builds the flat `ProjectEditorActions` surface directly over the deep Modules (`workspace-actions`, `sidebar-file-actions`, `conflict-actions`).
-  - Save path hydrates both image placeholders and broken-image placeholders before IPC persistence.
+  - Load path converts portable markdown to editor-internal placeholders via `DocumentContentSession.forEditorLoad`; save path hydrates via `DocumentContentSession.forIpcSave`.
 - `src/features/project-editor/use-project-editor-autosave-effect.ts`
   - Minimal Preact adapter: detects dirty → calls `paneWorkspace.scheduleAutosave`, detects clean/unmount → calls `paneWorkspace.cancelAutosave`. Timer logic lives in `PaneWorkspace`.
 - `src/features/project-editor/pane/`
@@ -444,7 +446,7 @@ Mandatory doc navigation for new chats: start with `mds/START-HERE.md` — it pr
 - `src/features/project-editor/pane/rich-markdown-editor/editor-session/editor-session-private/editor-session-lifecycle.ts`
   - Core Quill lifecycle class (`EditorSessionImpl`): initialize Quill, apply markdown, enable/disable, spellcheck, typography, workspace commands; delegates inbound/outbound value to `EditorContentLoop`.
 - `src/features/project-editor/pane/rich-markdown-editor/editor-session/editor-session-private/editor-session-content.ts`
-  - **Editor content loop**: debounced flush, canonical value tracking, external apply with equivalence skip and `forceApplyVersion`, and the `isApplyingExternalValue` apply-lock. Calls shared equivalence helpers in `rich-markdown-editor-value-sync.ts`.
+  - **Editor content loop**: debounced flush, canonical value tracking, external apply with equivalence skip and `forceApplyVersion`, and the `isApplyingExternalValue` apply-lock. Pane `content` stays editor-internal (placeholder markdown); hydration only happens at the `forIpcSave` boundary.
 - `src/features/project-editor/pane/rich-markdown-editor/editor-session/editor-session-private/editor-session-orchestration.ts`
   - Lifecycle effects, feature hooks (find, focus, tags, zoom, toolbar), and public `EditorSession` facade assembly for `useEditorSession`.
 - `src/features/project-editor/pane/rich-markdown-editor/editor-session/editor-session-private/editor-session-find.tsx`
@@ -510,6 +512,12 @@ Mandatory doc navigation for new chats: start with `mds/START-HERE.md` — it pr
   - Smart typography auto-replacement on user input: `--` → `—`, `<<` → `«`, `>>` → `»`. Each substitution is isolated as its own Ctrl+Z undo entry via `history.cutoff()`.
 - `src/features/project-editor/pane/rich-markdown-editor/rich-markdown-editor-value-sync.ts`
   - Canonical editor-value helpers: normalize image-bearing markdown into placeholder form and compare equivalent external/editor values without triggering destructive re-renders.
+- `src/features/project-editor/document-content/document-content-session.ts`
+  - Per-document-path renderer module that owns phase transitions between editor-internal and portable markdown (`forEditorLoad`, `forCanonicalCompare`, `forIpcSave`) and registers the serialize-time image map.
+- `src/features/project-editor/document-content/document-content-session-private/document-content-phases.ts`
+  - Pure phase implementations used by `DocumentContentSession`.
+- `src/features/project-editor/document-content/document-content-session-private/document-content-broken-track.ts`
+  - Broken-image phase wrappers: preserve broken comments on serialize, expand them for save, render them for the editor.
 
 ### Sidebar components
 

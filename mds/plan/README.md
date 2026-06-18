@@ -16,6 +16,7 @@ Active implementation plans — work that is in progress or planned but not yet 
 | `drag-drop-file-reorder-plan.md` | Drag-and-drop file reorder Slice 1 and Slice 2 |
 | `sidebar-drag-drop-reorder-folder-move-plan.md` | Item A: integrate corkboardOrder into sidebar tree; Item B: folder drag-and-drop move/reparent |
 | `sidebar-editor-actions-context-plan.md` | Eliminate sidebar action prop drilling with a stable Preact actions context |
+| `document-content-session-plan.md` | Deepen markdown image / broken-image orchestration into `DocumentContentSession` (renderer) + `DiskContentAdapter` (main) |
 | `incremental-project-update-plan.md` | Avoid full project rescans on file/folder create, delete, rename, move |
 | `book-export-implementation-plan.md` | Book export Phase C multi-format backend |
 | `done/book-export-pdf-print-segments-implementation-plan.md` | PDF export: HTML segments + Electron printToPDF + linear merge (ADR 0004) — complete |

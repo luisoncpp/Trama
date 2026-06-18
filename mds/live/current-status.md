@@ -22,6 +22,8 @@ Template MVP is now implemented: `templates/` rail section for browsing/editing 
 
 **Next step:** Folder move/reparent reintroduced in dedicated slice after merge.
 
+- Document content session refactor implemented: image/broken-image phase orchestration now lives in `DocumentContentSession` (renderer) and `DiskContentAdapter` (main process); pane state is editor-internal end-to-end and `forIpcSave` is the single save-time hydration point.
+
 ## Reliability
 
 - `npm run build` ✅ on the current branch after MapEditor background rendering layout fixes.

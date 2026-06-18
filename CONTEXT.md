@@ -19,6 +19,22 @@ An opened folder that Trama treats as a writing workspace. A **Project** contain
 A version of a document as seen through project history. A saved **Revision** comes from a Git commit; the current document state is shown alongside saved revisions but is not itself a commit.
 _Avoid_: Version, history item
 
+**Editor-internal markdown**:
+In-memory markdown using `<!-- IMAGE_PLACEHOLDER:uuid -->` and `<!-- TRAMA_BROKEN_IMAGE:… -->`; image bytes live in `imageMapCache`. Not portable across processes without hydration.
+_Avoid_: Internal markdown (without specifying editor-internal), placeholder-only markdown
+
+**Portable markdown**:
+Standard markdown safe at IPC and save boundaries: `![alt](data:image/…)` and/or `![alt](res/….png)`.
+_Avoid_: Hydrated markdown, save-ready markdown
+
+**Document content session**:
+Per-document-path renderer module that owns phase transitions between editor-internal and portable markdown, including broken-image round-trip.
+_Avoid_: Image session, content adapter (when referring to the renderer module)
+
+**Disk content adapter**:
+Main-process module owning disk ↔ portable transitions (`fromDiskRead`, `toDiskWrite`).
+_Avoid_: Repository image helper, persistence wrapper
+
 **Current document state**:
 The active document content Trama should show at the top of the revision list. It may include unsaved editor changes, saved-but-uncommitted disk changes, or content identical to the latest listed **Revision**.
 _Avoid_: Unsaved changes when referring to all uncommitted content

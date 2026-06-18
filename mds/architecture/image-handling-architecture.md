@@ -20,28 +20,35 @@ The solution is to keep two representations:
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
 │  LOAD                                                                   │
-│  File: ![img_0](data:image/...)                                         │
-│  → marked.parse() → <img src="data:image/..."> in Quill                 │
+│  Disk: ![img_0](data:image/...)                                          │
+│  → DocumentContentSession.forEditorLoad()                               │
+│  → <!-- IMAGE_PLACEHOLDER:img_0 --> + imageMapCache populated           │
+│  → applyMarkdownToEditor() hydrates for display only                    │
+│  → Quill DOM: <img src="data:image/...">                                │
 └─────────────────────────────────────────────────────────────────────────┘
-                                    ↓
+                                     ↓
 ┌─────────────────────────────────────────────────────────────────────────┐
 │  EDIT (every keystroke)                                                 │
 │  Quill DOM: <img src="data:image/...">                                  │
 │  → stripBase64ImagesFromHtml() replaces with                            │
 │    <img src="trama-image-placeholder:img_0">                            │
-│  → storeImageMap() stores base64 in imageMapCache[documentId]           │
+│  → DocumentContentSession.recordSerializedImageMap() stores base64      │
 │  → createTramaTurndownService(flags) with HasImages when needed         │
 │  → Turndown emits <!-- IMAGE_PLACEHOLDER:img_0 -->                      │
 │  → lastEditorValueRef = placeholder-markdown (lightweight internal)     │
-│  → hydrateMarkdownImages() before onChangeRef → parent gets full images │
+│  → onChangeRef receives placeholder-markdown (pane stays editor-internal)│
 └─────────────────────────────────────────────────────────────────────────┘
-                                    ↓
+                                     ↓
 ┌─────────────────────────────────────────────────────────────────────────┐
 │  SAVE                                                                   │
-│  In-memory markdown: <!-- IMAGE_PLACEHOLDER:img_0 -->                   │
-│  → hydrateMarkdownImages() expands to                                   │
-│    ![img_0](data:image/png;base64,...)                                  │
-│  → IPC saveDocument writes .md file                                     │
+│  Pane content: <!-- IMAGE_PLACEHOLDER:img_0 -->                         │
+│  → DocumentContentSession.forIpcSave()                                  │
+│    → hydrateMarkdownImages() expands to                                 │
+│      ![img_0](data:image/png;base64,...)                                │
+│    → hydrateBrokenImageComments() expands broken placeholders           │
+│    → ensureMarkdownEmbeddedImagesArePng() normalizes to PNG             │
+│  → IPC saveDocument → DiskContentAdapter.toDiskWrite()                  │
+│  → disk writes .md file + res/*.png files                               │
 └─────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -51,14 +58,19 @@ The solution is to keep two representations:
 
 | File | Responsibility |
 |------|----------------|
-| `src/shared/markdown-image-placeholder.ts` | Image extraction, placeholder generation, hydration, in-memory cache |
+| `src/shared/markdown-image-placeholder.ts` | Image extraction, placeholder generation, hydration, broken-image comment helpers, in-memory cache |
 | `src/shared/turndown-service-factory.ts` | Centralized `createTramaTurndownService()` — encapsulates all Turndown rules (layout directives, image placeholders, broken-image placeholders) and `normalizeMarkdownOutput()` |
-| `src/features/project-editor/components/rich-markdown-editor-serialization.ts` | Debounced flush: holds `lastEditorValueRef` as placeholder-markdown, hydrates to `![...](data:...)` only before `onChangeRef.current` so parent state always receives portable markdown |
-| `src/features/project-editor/components/rich-markdown-editor-value-sync.ts` | Canonical editor-value normalization/equality for placeholder-vs-base64 comparisons |
-| `src/features/project-editor/components/rich-markdown-editor-quill.ts` | `serializeEditorMarkdown()` (HTML → placeholder-markdown via factory), `applyMarkdownToEditor()` (markdown → Quill with image hydration + broken-image placeholder rendering + contentEditable guard), `restoreImagesAfterMarkedparsing()` |
-| `src/features/project-editor/components/rich-markdown-editor-core.ts` | Passes `documentId` through lifecycle hooks; no longer owns debounce serialization |
-| `src/features/project-editor/project-editor-private/actions.ts` | `saveDocumentNow` hydrates image placeholders and broken-image placeholders before calling IPC `saveDocument` |
-| `electron/services/document-image-persistence.ts` | Rehydrates `res/*.png` links back to embedded PNG data; degrades missing files to editor-only broken-image placeholders instead of throwing |
+| `src/features/project-editor/document-content/document-content-session.ts` | Per-document-path façade that owns phase transitions: `forEditorLoad`, `forCanonicalCompare`, `forIpcSave`, and serialize-time image-map registration |
+| `src/features/project-editor/document-content/document-content-session-private/document-content-phases.ts` | Pure phase implementations used by `DocumentContentSession` |
+| `src/features/project-editor/document-content/document-content-session-private/document-content-broken-track.ts` | Broken-image phase wrappers (`preserveBrokenOnSerialize`, `expandBrokenForSave`, `renderBrokenForEditor`) |
+| `src/features/project-editor/pane/rich-markdown-editor/editor-session/editor-session-private/editor-session-content.ts` | Editor content loop: debounced flush keeps `lastEditorValueRef` and pane `content` as editor-internal placeholder-markdown |
+| `src/features/project-editor/pane/rich-markdown-editor/rich-markdown-editor-value-sync.ts` | Canonical editor-value normalization/equality; delegates to `DocumentContentSession.forCanonicalCompare` |
+| `src/features/project-editor/pane/rich-markdown-editor/rich-markdown-editor-quill.ts` | `serializeEditorMarkdown()` (HTML → placeholder-markdown via factory, registers image map with session), `applyMarkdownToEditor()` (markdown → Quill with **display-only** image hydration + broken-image placeholder rendering + contentEditable guard), `restoreImagesAfterMarkedparsing()` |
+| `src/features/project-editor/project-editor-private/actions.ts` | `loadDocument` uses `forEditorLoad`; `saveDocumentNow` uses `session.forIpcSave` |
+| `src/features/project-editor/conflict-actions.ts` | `resolveConflictSaveAsCopy` hydrates via `session.forIpcSave` before IPC save |
+| `src/features/project-editor/sidebar-file-actions/private/file-crud.ts` | Tag updates hydrate disk-read content via `session.forIpcSave` before IPC save |
+| `electron/services/disk-content-adapter.ts` | Main-process phase vocabulary: `fromDiskRead` (disk → portable) and `toDiskWrite` (portable → disk + file writes) |
+| `electron/services/document-image-persistence.ts` | Low-level image persistence: rewrites embedded images to `res/*.png`, rehydrates local image links back to embedded PNG data URLs, degrades missing linked images to editor-only placeholders, and collects associated image paths for delete flows |
 
 ---
 
@@ -196,37 +208,36 @@ The editor must also compare incoming values in the same placeholder-based repre
 
 ### Path
 
-`saveDocumentNow` in `project-editor-private/actions.ts`
+`DocumentContentSession.forIpcSave()` is the single renderer hydration point. All production save paths (`saveDocumentNow`, `resolveConflictSaveAsCopy`, `editFileTags`) call it before IPC `saveDocument`.
 
 ```typescript
-async (path: string, content: string, meta: DocumentMeta): Promise<void> => {
-  const hydratedContent = hydrateMarkdownImages(content, path)
-  const response = await window.tramaApi.saveDocument({
-    path,
-    content: hydratedContent,
-    meta,
-  })
-  // ...
+async forIpcSave(editorInternalMarkdown: string): Promise<string> {
+  const hydrated = hydrateImagePlaceholdersForSave(editorInternalMarkdown, this.documentPath)
+  const withBrokenRestored = expandBrokenForSave(hydrated)
+  return ensureMarkdownEmbeddedImagesArePng(withBrokenRestored)
 }
 ```
 
 ### Hydration
 
-`hydrateMarkdownImages` scans the markdown for `<!-- IMAGE_PLACEHOLDER:uuid -->` comments, looks up the uuid in the cache, and replaces the comment with standard markdown image syntax. `hydrateBrokenImageComments` then restores any editor-only broken-image placeholders back to their original markdown image links before save.
+1. `hydrateMarkdownImages` scans the markdown for `<!-- IMAGE_PLACEHOLDER:uuid -->` comments, looks up the uuid in the cache, and replaces the comment with standard markdown image syntax.
+2. `hydrateBrokenImageComments` restores any editor-only broken-image placeholders back to their original markdown image links.
+3. `ensureMarkdownEmbeddedImagesArePng` converts any non-PNG embedded images to PNG so the disk adapter can materialize them reliably.
 
-```typescript
-export function hydrateMarkdownImages(markdown: string, documentId: string): string {
-  const imageMap = getImageMap(documentId)
-  if (!imageMap || imageMap.size === 0) return markdown
-
-  return markdown.replace(/<!--\s*IMAGE_PLACEHOLDER:([^\s:]+)\s*-->/gi, (_match, uuid) => {
-    const dataUrl = imageMap.get(uuid)
-    return dataUrl ? `![${uuid}](${dataUrl})` : _match
-  })
-}
-```
+The IPC payload is now portable markdown. The main-process `DiskContentAdapter.toDiskWrite()` receives it and materializes embedded images to `res/*.png` files while rewriting the markdown to `![alt](res/….png)` links.
 
 The file on disk is standard markdown. Any markdown viewer (VS Code, Typora, GitHub) will render the image.
+
+---
+
+## Pane-state invariant
+
+After the document-content session refactor:
+
+- `PaneDocumentState.content` is **always editor-internal markdown** (placeholders for inline images, broken-image comments for missing `res/*.png` links).
+- `EditorContentLoop.flush()` returns placeholder-markdown and emits placeholder-markdown to `onChange`.
+- `forIpcSave` is the **only** renderer path that calls `hydrateMarkdownImages` and `hydrateBrokenImageComments`.
+- `applyMarkdownToEditor()` still calls `hydrateMarkdownImages` for **display only** so Quill can render images from placeholder comments; that hydration does not leak into pane state.
 
 ---
 

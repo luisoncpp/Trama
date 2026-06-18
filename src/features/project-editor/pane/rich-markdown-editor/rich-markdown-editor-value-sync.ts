@@ -1,9 +1,14 @@
-import { stripBase64ImagesFromMarkdown } from '../../../../shared/markdown-image-placeholder'
-import { normalizeMarkdown } from './rich-markdown-editor-quill'
+import { getDocumentContentSession } from '../../document-content/document-content-session'
+
+function normalizeMarkdown(value: string): string {
+  return value.replace(/\r\n/g, '\n').trimEnd()
+}
 
 export function normalizeEditorDocumentValue(value: string, documentId: string | null): string {
-  const { markdownWithoutImages } = stripBase64ImagesFromMarkdown(value, documentId ?? undefined)
-  return normalizeMarkdown(markdownWithoutImages)
+  if (!documentId) {
+    return normalizeMarkdown(value)
+  }
+  return getDocumentContentSession(documentId).forCanonicalCompare(value)
 }
 
 export function areEquivalentEditorValues(
