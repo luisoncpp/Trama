@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Wiki-tag screenshot scenarios: context menu and edit-tags modal")
 import type { CaptureRegion, HelpScreenshotHarnessDeps } from '../../help-screenshot-harness-types'
 import {
   waitForSelector,

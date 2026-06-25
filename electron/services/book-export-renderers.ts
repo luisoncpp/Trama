@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Shared `BookExportChapter` model; HTML/Markdown renderers; PDF chapter HTML via")
 import path from 'node:path'
 import { marked } from 'marked'
 import {

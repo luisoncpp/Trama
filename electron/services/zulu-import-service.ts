@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="ZuluPad import service: parses `.zulu` XML content into pages, generates frontmatter")
 import path from 'node:path'
 import { existsSync } from 'node:fs'
 import { writeFile, mkdir } from 'node:fs/promises'

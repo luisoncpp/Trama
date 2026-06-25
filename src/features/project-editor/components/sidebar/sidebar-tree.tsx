@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Interactive tree rows, keyboard nav, right-click file hook, and drag-and-drop reorder")
 import { useMemo, useRef, useState } from 'preact/hooks'
 import { PROJECT_EDITOR_STRINGS } from '../../project-editor-strings'
 import { filterSidebarTree } from './sidebar-filter-logic'

@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Orchestrates ai export backend operations on disk")
 import path from 'node:path'
 import { existsSync, readFileSync } from 'node:fs'
 import type { AiExportResponse } from '../../src/shared/ipc.js'

@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Implements book export docx renderer for the writing workspace")
 import path from 'node:path'
 import { AlignmentType, Document, HeadingLevel, ImageRun, Packer, Paragraph, TextRun } from 'docx'
 import { type BookExportDirective } from './book-export-directives.js'

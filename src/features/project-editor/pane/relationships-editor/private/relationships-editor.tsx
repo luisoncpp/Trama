@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Relationships chart pan/zoom, tools, and dialogs")
 /* eslint-disable max-lines-per-function, max-lines */
 import { useCallback, useEffect, useRef, useState } from 'preact/hooks'
 import type { DocumentMeta } from '../../../../../shared/ipc'

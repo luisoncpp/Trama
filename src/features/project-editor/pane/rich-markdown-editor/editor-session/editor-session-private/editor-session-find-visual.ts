@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Active-match visual sync helpers: computes Quill bounds and keeps highlighted match")
 import { useEffect } from 'preact/hooks'
 import type Quill from 'quill'
 import type { FindMatchBounds } from './editor-session-find-overlay'

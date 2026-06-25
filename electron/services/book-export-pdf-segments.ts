@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Pure segment builder for PDF export: corkboard-ordered `BookExportChapter[]` →")
 import { parseDirectiveLine, stripLeadingPagebreakAndBlankLines } from './book-export-directives.js'
 import type { BookExportChapter } from './book-export-renderers.js'
 

@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Context menu UI for the project-root breadcrumb")
 import { PROJECT_EDITOR_STRINGS } from '../../project-editor-strings'
 
 function getRevealProjectMenuLabel(): string {

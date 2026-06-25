@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Main feature hook and public seam for the project editor Module")
 import { useRef } from 'preact/hooks'
 import type { DocumentMeta } from '../../shared/ipc'
 import type {

@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Window close handler: intercepts `close` event, checks cached dirty state, shows")
 import type { BrowserWindow } from 'electron'
 import { dialog } from 'electron'
 import { getMainWindowHasUnsavedChanges } from '../ipc.js'

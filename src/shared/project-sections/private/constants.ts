@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Private implementation detail for parent module")
 export const RELEVANT_SECTION_NAMES = ['book', 'outline', 'lore'] as const
 
 export const TEMPLATES_DIRECTORY_NAME = 'templates' as const

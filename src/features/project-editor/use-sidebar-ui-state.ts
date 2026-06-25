@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Persist sidebar UI (`trama.sidebar.ui.v1`)")
 import { useCallback, useEffect, useMemo, useState } from 'preact/hooks'
 import { SIDEBAR_DEFAULT_WIDTH_PX, clampSidebarWidth } from './layout/layout-metrics'
 import type { SidebarSection } from './project-editor-types'

@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Implements main for the writing workspace")
 import { render } from 'preact'
 import 'quill/dist/quill.snow.css'
 import './index.css'

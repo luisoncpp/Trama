@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Native editor context menu: flat workspace commands (toggle split, toggle fullscreen,")
 import { BrowserWindow, Menu } from 'electron'
 import type { ContextMenuParams, MenuItemConstructorOptions } from 'electron'
 import {

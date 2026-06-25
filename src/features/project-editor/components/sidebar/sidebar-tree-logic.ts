@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Pure helpers for the tree rows (selection, expansion, drag-over classification,")
 export type SidebarTreeNodeType = 'folder' | 'file'
 
 export interface SidebarTreeNode {

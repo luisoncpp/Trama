@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Hook for ZuluPad import dialog state: file selection, preview, and execution via IPC")
 import { useState, useCallback, useEffect, useMemo } from 'preact/hooks'
 import type { ZuluTagMode, ZuluImportPreviewResponse } from '../../shared/ipc.js'
 

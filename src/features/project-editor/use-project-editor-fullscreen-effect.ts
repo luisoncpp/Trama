@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Renderer subscription to native fullscreen state changes")
 import { useEffect } from 'preact/hooks'
 
 interface UseProjectEditorFullscreenEffectParams {

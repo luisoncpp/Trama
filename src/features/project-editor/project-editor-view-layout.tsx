@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Extracted shell/layout composition for the memoized sidebar boundary and main")
 import { useRef } from 'preact/hooks'
 import type { ProjectEditorModel } from './project-editor-types'
 import { ProjectEditorSidebarShell } from './project-editor-shell'

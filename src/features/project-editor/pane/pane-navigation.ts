@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Implements pane navigation for the writing workspace")
 import {
   getEmptyNavigationHistory,
   getHistoryForPane,

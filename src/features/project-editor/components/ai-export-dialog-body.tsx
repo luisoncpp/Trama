@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Export dialog UI body: frontmatter option, staging basket mount, export/cancel actions")
 import { AiExportStagingBasket } from './ai-export-staging-basket'
 
 interface AiExportDialogBodyProps {

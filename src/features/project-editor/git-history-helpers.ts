@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Shared renderer helpers for Git status sync, pane resolution, and revision-rail refresh")
 import type { RevisionRailState, WorkspacePane } from './project-editor-types'
 import { createEmptyGitHistoryState, mapGitHistoryStatusToState } from './project-editor-git-history-state'
 import type { ActionGroupParams } from './project-editor-private/action-group-types'

@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Typed `window.tramaApi` bridge")
 /* eslint-disable max-lines */
 import { contextBridge, ipcRenderer } from 'electron'
 import {

@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Pure helper functions for adjacent UI or domain logic")
 import type { RelationshipEdge, RelationshipNode, RelationshipRegion } from './relationships-editor-types'
 
 export type { RelationshipEdge, RelationshipEdgePreset, RelationshipNode, RelationshipRegion, RelationshipsConfig, RelationshipEdgeStyle, RelationshipEdgeDirection } from './relationships-editor-types'

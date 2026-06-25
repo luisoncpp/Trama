@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Implements window appearance for the writing workspace")
 import type { BrowserWindow, IpcMain } from 'electron'
 import { IPC_CHANNELS, setWindowAppearanceRequestSchema } from '../../src/shared/ipc.js'
 import { applyWindowChrome } from '../window-chrome.js'

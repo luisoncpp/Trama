@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Dialog view-model hook: stabilizes AI import/export, book export, and Zulu import")
 import { useCallback, useMemo } from 'preact/hooks'
 import type { ProjectSnapshot } from '../../shared/ipc'
 import type { ProjectEditorDialogsProps } from './project-editor-dialogs'

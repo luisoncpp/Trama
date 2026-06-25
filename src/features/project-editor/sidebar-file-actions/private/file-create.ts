@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Private implementation detail for parent module")
 import { PROJECT_EDITOR_STRINGS } from '../../project-editor-strings'
 import { normalizeName } from '../../../../shared/sidebar-utils'
 import type { SidebarCreateInput, ProjectEditorProjectState, ProjectEditorSidebarState } from '../../project-editor-types'

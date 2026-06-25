@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Private implementation detail for parent module")
 import type { FilteredTemplate } from '../../../templates/templates-catalog-private/filter-template-paths'
 
 interface TemplatePickerDropdownProps {

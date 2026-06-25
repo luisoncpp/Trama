@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Sidebar shell/orchestrator")
 import { SidebarPanelBody } from './sidebar-panel-body.tsx'
 import { SidebarRail } from './sidebar-rail'
 import { useSidebarContentSection } from './sidebar-panel-logic'

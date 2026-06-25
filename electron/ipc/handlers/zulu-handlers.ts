@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="ZuluPad import handlers: opens native file picker for `.zulu` files, previews parsed")
 import { dialog } from 'electron'
 import { readFileSync } from 'node:fs'
 

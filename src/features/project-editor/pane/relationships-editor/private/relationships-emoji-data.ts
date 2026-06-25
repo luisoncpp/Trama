@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Private implementation detail for parent module")
 export interface EmojiCategory {
   name: string
   emojis: string[]
@@ -91,3 +92,8 @@ export const EMOJI_CATEGORIES: readonly EmojiCategory[] = [
 ]
 
 export const EMOJI_CATEGORY_NAMES: readonly string[] = EMOJI_CATEGORIES.map((category) => category.name)
+
+/** Lowercase search terms keyed by emoji glyph (category-name search is separate). */
+export const EMOJI_SEARCH_ALIASES: Readonly<Record<string, readonly string[]>> = {
+  '🥷': ['ninja'],
+}

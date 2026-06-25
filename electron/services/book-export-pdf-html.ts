@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Renders a `PdfExportSegment` to a print HTML document (`renderSegmentPrintHtml`):")
 import { readFile } from 'node:fs/promises'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'

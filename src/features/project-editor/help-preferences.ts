@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Retrieves/saves help page auto-open preferences in renderer local storage")
 import { GETTING_STARTED_DISMISSED_STORAGE_KEY } from '../../shared/help-storage-key.js'
 
 export { GETTING_STARTED_DISMISSED_STORAGE_KEY }

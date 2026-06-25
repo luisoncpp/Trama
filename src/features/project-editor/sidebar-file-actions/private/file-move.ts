@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Private implementation detail for parent module")
 import type { ProjectEditorProjectState } from '../../project-editor-types'
 import type { OpenProjectOptions } from '../../open-project-types'
 import type { PaneWorkspace } from '../../pane'

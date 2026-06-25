@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Hook orchestrating project editor effects state and effects")
 import { useEffect, useMemo, useRef } from 'preact/hooks'
 import { useProjectEditorActions } from './project-editor-private/actions'
 import type { ProjectEditorActionSetters } from './project-editor-private/action-group-types'

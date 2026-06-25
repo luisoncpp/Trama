@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Sidebar UI component for project explorer workflow")
 import { useState } from 'preact/hooks'
 import { useEditorActions } from '../../project-editor-actions-context.tsx'
 import type { BookExportFormat } from '../../../../shared/ipc'

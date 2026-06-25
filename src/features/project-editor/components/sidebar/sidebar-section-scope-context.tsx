@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Tiny Preact context providing `sectionConfig.root` to scoped action consumers inside")
 import { createContext } from 'preact'
 import { useContext } from 'preact/hooks'
 

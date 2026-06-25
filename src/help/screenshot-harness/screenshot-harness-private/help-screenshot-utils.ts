@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Shared utilities for help screenshot scenarios (`sleep`, `waitForCondition`,")
 const EDITOR_POLL_INTERVAL_MS = 100
 const EDITOR_POLL_TIMEOUT_MS = 20_000
 

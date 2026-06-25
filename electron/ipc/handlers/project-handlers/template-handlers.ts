@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Handles template IPC requests with envelope responses")
 import {
   createFromTemplateRequestSchema,
   type CreateFromTemplateResponse,

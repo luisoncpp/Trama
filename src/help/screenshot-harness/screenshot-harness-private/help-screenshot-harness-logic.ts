@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Orchestrates individual screenshot scenario functions")
 import { WORKSPACE_CONTEXT_MENU_EVENT } from '../../../shared/workspace-context-menu'
 import type { ResolvedTheme } from '../../../theme/theme-types'
 import type { CaptureRegion, HelpScreenshotHarnessDeps } from '../../help-screenshot-harness-types'

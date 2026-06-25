@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Hook for AI import dialog state and calls to preview/execute import IPC actions")
 import { useState, useCallback, useEffect, useMemo } from 'preact/hooks'
 import type { AiImportMode, AiImportPreview } from '../../shared/ipc.js'
 

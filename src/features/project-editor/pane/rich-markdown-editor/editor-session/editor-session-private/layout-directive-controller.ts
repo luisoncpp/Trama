@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Single controller for layout directive blots: registers blots, handles keyboard")
 import type Quill from 'quill'
 import { registerLayoutDirectiveBlots } from './layout-directive-blots'
 import { createLayoutDirectiveKeyboardBindings, handleCenterBoundaryDelete } from './layout-directive-keyboard'

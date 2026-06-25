@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Single/split editor rendering and pane interactions")
 import { useRef } from 'preact/hooks'
 import type { ProjectEditorModel, EditorZoomRef } from '../project-editor-types'
 import { EditorPanel } from './editor-panel'

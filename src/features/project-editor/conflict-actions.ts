@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Deep module for external-edit conflict resolution (reload, keep, save-as-copy,")
 import { buildConflictCopyPath } from './project-editor-logic'
 import { PROJECT_EDITOR_STRINGS } from './project-editor-strings'
 import { getDocumentContentSession } from './document-content/document-content-session'

@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Private implementation detail for parent module")
 export type BasketKeyDownResult = {
   focusedIndex: number | null
   removeIndex: number | null

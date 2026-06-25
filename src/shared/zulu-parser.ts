@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Shared contract or utility used across processes")
 export interface ZuluPage {
   title: string
   content: string

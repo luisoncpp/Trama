@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Renderer hook that triggers auto-opening the Getting Started page after a project is")
 import { useEffect, useRef } from 'preact/hooks'
 import { isGettingStartedDismissed } from './help-preferences.js'
 

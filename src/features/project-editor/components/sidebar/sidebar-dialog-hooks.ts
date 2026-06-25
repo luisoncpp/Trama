@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Sidebar UI component for project explorer workflow")
 /* eslint-disable max-lines-per-function */
 import { useState } from 'preact/hooks'
 import { useEditorActions } from '../../project-editor-actions-context.tsx'

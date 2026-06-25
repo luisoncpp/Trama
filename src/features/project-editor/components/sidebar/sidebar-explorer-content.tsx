@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Explorer container and dialog orchestration")
 import { useRef } from 'preact/hooks'
 import { useEditorActions } from '../../project-editor-actions-context.tsx'
 import { SidebarExplorerBody } from './sidebar-explorer-body/index.ts'

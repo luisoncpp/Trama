@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Private implementation detail for parent module")
 import { PROJECT_EDITOR_STRINGS } from '../../project-editor-strings'
 import { notifyTagIndexRefresh } from '../../tag-index-events'
 import { normalizeName, isInvalidRenameInput, deduplicateTags } from '../../../../shared/sidebar-utils'

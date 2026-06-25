@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Hook orchestrating sidebar file actions dialog state and effects")
 import { useMemo, useState } from 'preact/hooks'
 import { getBaseName, parseStringAsTags, serializeTags } from '../../../../shared/sidebar-utils'
 import { useScopedSidebarActions } from './use-scoped-sidebar-actions'

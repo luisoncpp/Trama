@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Registers Quill `BlockEmbed`-based layout directive blots (`center`, `spacer`,")
 import Quill from 'quill'
 import { LAYOUT_DIRECTIVE_BLOT_NAME, type LayoutDirectiveEmbedValue } from './layout-directive-types'
 

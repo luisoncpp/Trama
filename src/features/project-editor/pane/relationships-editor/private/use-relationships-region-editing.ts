@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Hook orchestrating relationships region editing state and effects")
 import { useCallback, useMemo, useRef, useState } from 'preact/hooks'
 import { createRegionPointerHandlers } from './relationships-region-pointer-handlers'
 import {

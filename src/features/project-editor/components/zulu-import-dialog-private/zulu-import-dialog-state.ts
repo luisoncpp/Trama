@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="ZuluPad import dialog state hook: `useZuluImportDialogState`")
 import { useState } from 'preact/hooks'
 import type { ZuluTagMode, ZuluImportPreviewResponse, ZuluSelectFileResponse } from '../../../../shared/ipc'
 

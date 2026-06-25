@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Thin IPC registration/orchestration")
 import type { BrowserWindow, IpcMain } from 'electron'
 import {
   debugLogRequestSchema,

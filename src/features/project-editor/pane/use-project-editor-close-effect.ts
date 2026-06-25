@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Hook orchestrating project editor close effect state and effects")
 import { useEffect } from 'preact/hooks'
 import type { PaneWorkspace } from './pane-workspace'
 

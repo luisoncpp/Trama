@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Shared types for the help screenshot harness: `CaptureRegion`,")
 import type { HelpScreenshotScenarioId } from './help-screenshot-scenarios'
 import type { ProjectEditorActions } from '../features/project-editor/project-editor-types'
 

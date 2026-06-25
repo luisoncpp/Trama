@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Preview summary/list for parsed import files (new vs existing)")
 import type { AiImportMode, AiImportPreview } from '../../../shared/ipc'
 
 interface AiImportPreviewSectionProps {

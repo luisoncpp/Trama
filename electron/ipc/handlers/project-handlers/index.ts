@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Public facade re-exporting module surface")
 export { handleGetIndex } from './index-handler.js'
 export {
 	handleCreateDocument,

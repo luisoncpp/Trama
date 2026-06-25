@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Shared find/replace state helpers: search state hook (`useSearchState`), replace")
 import { useCallback, useRef, useState } from 'preact/hooks'
 import type Quill from 'quill'
 import { mapPlainTextIndexToQuillIndex } from './editor-session-tag-math'

@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Focus-mode hook orchestration: applies emphasis classes and wires scroll centering,")
 import { useEffect } from 'preact/hooks'
 import Quill from 'quill'
 import { createUpdateCenteredScroll } from './editor-session-focus-scroll'

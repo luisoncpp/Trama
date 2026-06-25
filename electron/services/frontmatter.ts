@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="YAML frontmatter parse/serialize")
 import { parse as parseYaml, stringify as stringifyYaml } from 'yaml'
 
 export interface ParsedFrontmatter {

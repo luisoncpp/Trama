@@ -8,7 +8,7 @@ Adding Discord/Slack-style emoji decoration chips to relationship-chart characte
 
 ## What I learned
 
-Keep the emoji chip row **absolutely positioned below the pill** (`position: absolute; top: 100%`) inside `.relationships-node-anchor`, never in normal flow. The anchor keeps `translate(-50%, -50%)` centered on `(x, y)` and its layout height stays equal to the pill alone, so:
+Keep the emoji chip row **absolutely positioned** inside `.relationships-node` (out of normal flow), straddling the pill's bottom edge (`bottom: 0; transform: translate(-50%, ~58%)`) in a **horizontal** row — WhatsApp-style overlap with the bubble, not a separate row below. The anchor keeps `translate(-50%, -50%)` centered on `(x, y)` and its layout height stays equal to the pill alone, so:
 
 - `estimateNodeHalfExtents(label)` continues to match the real pill border.
 - Edge endpoints (`anchorOnNodeBoundary`) still land on the pill, not floating in the chip row.

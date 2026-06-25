@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Shared contract or utility used across processes")
 export { serializeDirectiveArtifactNode } from './markdown-layout-directives-artifact-node.js'
 
 export type LayoutDirectiveType = 'center-start' | 'center-end' | 'spacer' | 'pagebreak' | 'unknown'

@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Repository helper for markdown image persistence: rewrites embedded images to")
 import path from 'node:path'
 import { mkdir, readdir, readFile, rm, writeFile } from 'node:fs/promises'
 import { brokenImagePlaceholderToComment } from '../../src/shared/markdown-image-placeholder.js'

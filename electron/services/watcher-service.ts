@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Chokidar wrapper + internal/external write classification")
 import path from 'node:path'
 import chokidar, { type FSWatcher } from 'chokidar'
 import type { ExternalFileEvent } from '../../src/shared/ipc.js'

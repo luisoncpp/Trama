@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="In-memory cache for `tree`, `markdownFiles`, and `metaByPath` scoped to a project root")
 import type { TreeItem, DocumentMeta } from '../../src/shared/ipc.js'
 
 interface CachedState {

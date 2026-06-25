@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Sidebar UI component for project explorer workflow")
 import { SidebarFileContextMenu } from './sidebar-file-context-menu.tsx'
 import { SidebarFolderContextMenu } from './sidebar-folder-context-menu.tsx'
 import { useSidebarFileContextMenu, useSidebarFolderContextMenu } from './sidebar-dialogs-context-menus'

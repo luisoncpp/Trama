@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Active section body composition")
 import type { SidebarSection } from '../../project-editor-types'
 import { SidebarExplorerContent } from './sidebar-explorer-content.tsx'
 import { SidebarSectionScopeProvider } from './sidebar-section-scope-context'

@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="`")
 import path from 'node:path'
 import { readFile, writeFile } from 'node:fs/promises'
 import type { DocumentMeta, ProjectIndex } from '../../src/shared/ipc.js'

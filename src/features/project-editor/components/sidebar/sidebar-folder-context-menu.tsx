@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Right-click context menu for folder rows")
 function getRevealMenuLabel(): string {
   if (typeof navigator !== 'undefined' && /Mac|iPhone|iPad|iPod/.test(navigator.platform)) {
     return 'Reveal in Finder'

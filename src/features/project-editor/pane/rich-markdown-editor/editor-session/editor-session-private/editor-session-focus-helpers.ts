@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Focus scope helper functions: applies/clears CSS class emphasis, manages CSS")
 import Quill from 'quill'
 import {
 	findVisualLineBoundaries,

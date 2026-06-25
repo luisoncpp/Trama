@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Canonical IPC channel names and Zod schemas")
 /* eslint-disable max-lines */
 import { z } from 'zod'
 export { IPC_CHANNELS } from './ipc-channels.js'

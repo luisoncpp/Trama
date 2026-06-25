@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Registry module that registers specialized feature-level IPC handlers")
 import type { BrowserWindow, IpcMain } from 'electron'
 import {
   IPC_CHANNELS,

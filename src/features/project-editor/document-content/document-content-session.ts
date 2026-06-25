@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Per-document-path renderer module that owns phase transitions between editor-internal")
 import { storeImageMap } from '../../../shared/markdown-image-placeholder'
 import { ensureMarkdownEmbeddedImagesArePng } from '../project-editor-image-save'
 import { expandBrokenForSave } from './document-content-session-private/document-content-broken-track'

@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Tracks Ctrl/Cmd pressed state for tag modifier-click navigation")
 import { useState, useEffect } from 'preact/hooks'
 
 export function useCtrlKeyState(): boolean {

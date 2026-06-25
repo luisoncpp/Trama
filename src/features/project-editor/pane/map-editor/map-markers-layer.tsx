@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Implements map markers layer for the writing workspace")
 import type { JSX } from 'preact'
 import type { MapMarker } from './map-editor-helpers'
 

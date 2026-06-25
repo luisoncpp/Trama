@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Orchestrates template backend operations on disk")
 import path from 'node:path'
 import { mkdir, readFile, readdir, stat, writeFile } from 'node:fs/promises'
 import { RELEVANT_SECTION_NAMES, TEMPLATES_DIRECTORY_NAME } from '../../src/shared/project-sections/index.js'

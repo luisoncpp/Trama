@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Presentational UI component for editor shell area")
 import { PROJECT_EDITOR_STRINGS } from '../project-editor-strings'
 
 interface ConflictComparePanelProps {

@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Private implementation detail for parent module")
 import { useCallback } from 'preact/hooks'
 import type { ProjectSnapshot } from '../../../shared/ipc'
 import { reconcileWorkspaceLayout, resolvePreferredFile } from '../project-editor-logic'

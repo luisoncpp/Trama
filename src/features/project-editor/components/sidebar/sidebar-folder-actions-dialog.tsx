@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Modal dialog UI for editor workflow step")
 export type SidebarFolderActionMode = 'rename' | 'delete'
 
 interface SidebarFolderActionsDialogProps {

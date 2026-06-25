@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Unwraps `{ ok, data }` IPC envelopes from help dismissal handlers so the Getting")
 import type {
   GetGettingStartedDismissedResponse,
   IpcEnvelope,

@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Modal dialog for ZuluPad file import: file selection trigger, target folder input, tag")
 import { useCallback } from 'preact/hooks'
 import { createPortal } from 'preact/compat'
 import type { ZuluTagMode, ZuluImportPreviewResponse, ZuluSelectFileResponse } from '../../../shared/ipc'

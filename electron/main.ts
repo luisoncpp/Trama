@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="App lifecycle and BrowserWindow creation")
 import { app, BrowserWindow, ipcMain } from 'electron'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'

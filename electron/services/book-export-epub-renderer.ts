@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Implements book export epub renderer for the writing workspace")
 import { mkdtemp, rm } from 'node:fs/promises'
 import os from 'node:os'
 import path from 'node:path'

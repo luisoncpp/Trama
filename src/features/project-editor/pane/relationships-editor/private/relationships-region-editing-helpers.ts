@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Pure helper functions for adjacent UI or domain logic")
 import {
   buildRegionId,
   clampRegionPosition,

@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Implements book export line processor for the writing workspace")
 import path from 'node:path'
 import { parseDirectiveLine, type BookExportDirective } from './book-export-directives.js'
 import {

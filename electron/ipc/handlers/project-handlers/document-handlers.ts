@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Read/save/create/rename/delete document + create folder handlers")
 import { dialog } from 'electron'
 import {
   createDocumentRequestSchema,

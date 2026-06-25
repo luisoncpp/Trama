@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Modal dialog for AI import text input, mode selector (`replace` / `append`), preview")
 import { useCallback, useEffect, useRef, useState } from 'preact/hooks'
 import { createPortal } from 'preact/compat'
 import type { AiImportMode, AiImportPreview } from '../../../shared/ipc'

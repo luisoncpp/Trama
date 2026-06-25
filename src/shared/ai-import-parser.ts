@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Shared contract or utility used across processes")
 const FILE_HEADER = /^===\s*FILE:\s*(.+?)\s*===\r?\n/gim
 
 interface ParsedFile {

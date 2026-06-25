@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Shared contract or utility used across processes")
 import type { SidebarRenameInput } from '../features/project-editor/project-editor-types.js'
 
 export function normalizeName(value: string): string {

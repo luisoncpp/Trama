@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Implements templates catalog for the writing workspace")
 import type { FilteredTemplate } from './templates-catalog-private/filter-template-paths'
 import { filterTemplatePaths } from './templates-catalog-private/filter-template-paths'
 

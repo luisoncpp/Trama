@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Single renderer hook for effective sidebar collapse + width, combining persisted")
 import { useSidebarResponsiveCollapse } from '../components/sidebar/sidebar-explorer-hooks'
 import { sidebarWidthPx } from './layout-metrics'
 

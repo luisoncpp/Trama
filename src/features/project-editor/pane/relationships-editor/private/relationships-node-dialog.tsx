@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Private implementation detail for parent module")
 /* eslint-disable max-lines-per-function */
 import { createPortal } from 'preact/compat'
 import { useCallback, useEffect, useState } from 'preact/hooks'

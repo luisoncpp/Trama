@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Get index handler")
 import type { IpcEnvelope, ProjectSnapshot } from '../../../../src/shared/ipc.js'
 import { errorEnvelope } from '../../../ipc-errors.js'
 import { getActiveIndexService } from '../../../ipc-runtime.js'

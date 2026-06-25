@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Git CLI/path helper layer: repo discovery, project-to-repo path scoping, managed")
 import path from 'node:path'
 import { access, stat } from 'node:fs/promises'
 import { execFile } from 'node:child_process'

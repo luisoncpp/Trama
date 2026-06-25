@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Handles workspace-level context menu commands (split/fullscreen/focus/split ratio)")
 import { useEffect } from 'preact/hooks'
 import { WORKSPACE_CONTEXT_MENU_EVENT, type WorkspaceContextCommand } from '../../shared/workspace-context-menu'
 import type { FocusScope } from './project-editor-types'

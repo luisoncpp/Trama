@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Pane-local revisions rail UI: current row, revision rows, load-more pagination, and")
 import type { GitDocumentRevision } from '../../../../shared/ipc'
 import type { RevisionRailState } from '../../project-editor-types'
 

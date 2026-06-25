@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Sidebar UI component for project explorer workflow")
 export function TreeChevron({ expanded }: { expanded: boolean }) {
   return (
     <span class={`sidebar-tree__chevron ${expanded ? 'is-expanded' : ''}`} aria-hidden="true">

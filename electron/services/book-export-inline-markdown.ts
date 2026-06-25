@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Shared inline emphasis parser for DOCX: `marked.lexer()` → `{ text, bold, italic }`")
 import { marked, type Token } from 'marked'
 
 export interface InlineTextRun {

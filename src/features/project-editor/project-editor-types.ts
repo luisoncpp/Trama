@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Shared TypeScript types for adjacent module")
 import type { DocumentMeta, ProjectSnapshot } from '../../shared/ipc.js'
 import type { GitHistoryState, RevisionRailState } from './project-editor-revision-types.js'
 import type { OpenProjectOptions } from './open-project-types.js'

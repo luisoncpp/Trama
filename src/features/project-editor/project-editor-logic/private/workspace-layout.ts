@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Private implementation detail for parent module")
 import type { WorkspaceLayoutState } from '../../project-editor-types'
 
 export const WORKSPACE_LAYOUT_STORAGE_KEY = 'trama.workspace.layout.v1'

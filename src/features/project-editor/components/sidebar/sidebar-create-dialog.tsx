@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Modal dialog UI for editor workflow step")
 /* eslint-disable max-lines-per-function */
 import type { SidebarCreateInput } from '../../project-editor-types'
 import type { FilteredTemplate } from '../../templates/templates-catalog-private/filter-template-paths'

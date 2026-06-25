@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Renders tag-link underline highlights over the editor surface")
 import type Quill from 'quill'
 import type { TagMatch } from './editor-session-tag-helpers'
 import { mapPlainTextIndexToQuillIndex, getTagMatchRects } from './editor-session-tag-math'

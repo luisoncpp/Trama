@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Book export orchestrator: scans `book/`, builds ordered chapter models, sanitizes per")
 import path, { relative } from 'node:path'
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import type { BookExportRequest, BookExportResponse, ProjectIndex } from '../../src/shared/ipc.js'

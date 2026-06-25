@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Read/save/create/rename/delete markdown files + folder rename/create")
 /* eslint-disable max-lines */
 import path from 'node:path'
 import { copyFile, mkdir, readFile, rename, rm, stat, writeFile } from 'node:fs/promises'

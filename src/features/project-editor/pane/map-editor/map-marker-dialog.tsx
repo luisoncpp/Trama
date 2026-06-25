@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Modal dialog UI for editor workflow step")
 /* eslint-disable max-lines-per-function */
 import { createPortal } from 'preact/compat'
 import { useCallback, useEffect, useState } from 'preact/hooks'

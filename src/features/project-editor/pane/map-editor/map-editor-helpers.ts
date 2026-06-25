@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Pure helper functions for adjacent UI or domain logic")
 import type { MapAssetResult } from './map-editor-types'
 
 export type { MapConfig, MapMarker, MapAssetResult } from './map-editor-types'

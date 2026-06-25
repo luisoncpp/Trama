@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Persist workspace layout (`trama.workspace.layout.v1`)")
 import { useEffect, useState } from 'preact/hooks'
 import {
   WORKSPACE_LAYOUT_STORAGE_KEY,

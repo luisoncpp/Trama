@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Private implementation detail for parent module")
 import { clampZoomLevel } from '../../editor-zoom'
 import type { WorkspaceLayoutState, FocusScope } from '../../project-editor-types'
 

@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="**Editor content loop**: debounced flush, canonical value tracking, external apply")
 import type Quill from 'quill'
 import type TurndownService from 'turndown'
 import { applyMarkdownToEditor, serializeEditorMarkdownFromRef } from '../../rich-markdown-editor-quill'

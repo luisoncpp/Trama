@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Detects bare Left Alt (not Alt+arrow shortcuts)")
 export type BareAltKeyEvent = {
   key: string
   code: string

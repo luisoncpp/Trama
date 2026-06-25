@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Reveals a path in the OS file manager with `shell.openPath` or `shell.showItemInFolder`")
 import { shell } from 'electron'
 import type { IpcEnvelope } from '../../../../src/shared/ipc.js'
 import {

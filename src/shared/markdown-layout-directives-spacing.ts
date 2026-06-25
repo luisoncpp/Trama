@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Shared contract or utility used across processes")
 const MAX_SPACER_LINES = 12
 const IMAGE_PLACEHOLDER_PREFIX = '<!-- IMAGE_PLACEHOLDER:'
 

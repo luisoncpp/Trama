@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Closes the active project via IPC and resets renderer project/editor state")
 import type { ProjectSnapshot } from '../../../../shared/ipc'
 import { createEmptyGitHistoryState } from '../../project-editor-git-history-state'
 import { PROJECT_EDITOR_STRINGS } from '../../project-editor-strings'

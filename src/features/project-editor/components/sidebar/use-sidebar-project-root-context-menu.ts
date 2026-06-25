@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Context menu open/close state and action wiring for the project-root breadcrumb")
 import { useState } from 'preact/hooks'
 import { useEditorActions } from '../../project-editor-actions-context.tsx'
 

@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Private implementation detail for parent module")
 import { createPortal } from 'preact/compat'
 import { useCallback, useEffect, useState } from 'preact/hooks'
 import { DEFAULT_REGION_COLOR } from './relationships-config-serialization'

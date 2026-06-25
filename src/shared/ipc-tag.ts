@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Shared contract or utility used across processes")
 import { z } from 'zod'
 
 const tagGetIndexResponseSchema = z.object({

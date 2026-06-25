@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Private implementation detail for parent module")
 import type { AiExportPickStagingMode } from '../../../../../shared/ipc'
 
 export type StagingPickerResult = {

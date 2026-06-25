@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Orchestrates tag index backend operations on disk")
 import type { DocumentMeta } from '../../src/shared/ipc.js'
 
 export class TagIndexService {

@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Private implementation detail for parent module")
 import { useMemo } from 'preact/hooks'
 import type { SidebarSection, WorkspaceLayoutState } from '../project-editor-types'
 import { deriveActivePaneDocument } from '../project-editor-logic'

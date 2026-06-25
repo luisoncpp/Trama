@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Canonical editor-value helpers: normalize image-bearing markdown into placeholder form")
 import { getDocumentContentSession } from '../../document-content/document-content-session'
 
 function normalizeMarkdown(value: string): string {

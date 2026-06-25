@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Synchronizes centered styling for editor blocks located between `center:start` and")
 import type Quill from 'quill'
 
 const CENTERED_CONTENT_CLASS = 'trama-centered-content'

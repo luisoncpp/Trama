@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Sidebar UI component for project explorer workflow")
 import { useScopedSidebarActions } from './use-scoped-sidebar-actions'
 import {
   useSidebarFileContextMenu,

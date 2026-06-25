@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Book export print surface: hidden `BrowserWindow` + `printToPDF` (lazy dynamic")
 import { mkdtemp, rm } from 'node:fs/promises'
 import os from 'node:os'
 import path from 'node:path'

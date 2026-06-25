@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Manages singleton Help child BrowserWindow, loading target HTML resources, and syncing")
 import { app, BrowserWindow } from 'electron'
 import path from 'node:path'
 import fs from 'node:fs'

@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Subscribes to external file events (watcher) and handles reloads/conflicts/tree refresh")
 import { useEffect } from 'preact/hooks'
 import type { ExternalFileEvent } from '../../shared/ipc'
 import type { WorkspacePane } from './project-editor-types'

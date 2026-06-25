@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Active project/index runtime state + watcher lifecycle")
 import type { BrowserWindow } from 'electron'
 import { externalFileEventSchema, IPC_CHANNELS, type DocumentMeta } from '../src/shared/ipc.js'
 import { IndexService } from './services/index-service.js'

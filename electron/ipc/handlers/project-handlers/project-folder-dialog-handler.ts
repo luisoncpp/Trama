@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Native folder picker endpoint")
 import { dialog } from 'electron'
 import path from 'node:path'
 import { mkdir, stat } from 'node:fs/promises'

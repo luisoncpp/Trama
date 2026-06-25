@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Small startup helper that decides between reopening the remembered project and falling")
 export interface StartupProjectOpenDeps {
   lastProjectRootPath: string | null
   openProject: (projectRoot: string) => Promise<void>

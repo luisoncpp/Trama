@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Implements sidebar create controller for the writing workspace")
 import type { SidebarCreateInput } from '../project-editor-types'
 import type { SidebarCreateMode } from '../components/sidebar/sidebar-create-dialog.tsx'
 import { TemplatesCatalog, type TemplatesCatalogSnapshot } from './templates-catalog'

@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Handles relationships document IPC requests with envelope responses")
 import {
   createRelationshipsDocumentRequestSchema,
   type CreateRelationshipsDocumentResponse,

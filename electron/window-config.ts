@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="BrowserWindow security-related defaults")
 import type { BrowserWindowConstructorOptions } from 'electron'
 
 const isWin32 = process.platform === 'win32'

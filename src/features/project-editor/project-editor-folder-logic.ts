@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Pure helpers for folder-prefix path remap (`isPathInsideFolder`, `remapFolderPrefix`,")
 import type { WorkspaceLayoutState } from './project-editor-types'
 import type { PaneWorkspace } from './pane'
 

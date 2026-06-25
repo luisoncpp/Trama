@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Explorer body (path, filter, tree, menus/dialogs)")
 import { useMemo } from 'preact/hooks'
 import { SidebarScopePathBreadcrumb } from '../../sidebar-scope-path-breadcrumb.tsx'
 import type { SidebarCreateInput } from '../../../../project-editor-types'

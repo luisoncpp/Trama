@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Private implementation detail for parent module")
 import { TEMPLATES_SECTION_ROOT } from '../../../../shared/project-sections'
 
 export interface FilteredTemplate {

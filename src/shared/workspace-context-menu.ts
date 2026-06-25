@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Shared contract or utility used across processes")
 export const WORKSPACE_CONTEXT_MENU_EVENT = 'trama:workspace-command'
 export const WORKSPACE_CONTEXT_MENU_STATE_GLOBAL = '__tramaWorkspaceContextMenuState'
 

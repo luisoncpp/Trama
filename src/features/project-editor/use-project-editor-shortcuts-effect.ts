@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Global workspace shortcuts (split/fullscreen/focus/pane switch)")
 import { useEffect } from 'preact/hooks'
 
 interface UseProjectEditorShortcutsEffectParams {

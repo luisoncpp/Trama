@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Sidebar UI component for project explorer workflow")
 /* eslint-disable max-lines-per-function */
 import { useEffect, useRef, useState } from 'preact/hooks'
 

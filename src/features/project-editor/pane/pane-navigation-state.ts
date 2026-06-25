@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Implements pane navigation state for the writing workspace")
 import type {
   PaneNavigationHistoryState,
   PaneNavigationHistoryStore,

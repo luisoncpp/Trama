@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Helper rendering component for tree structure area and empty state placeholder hints")
 import { SidebarTree } from '../../sidebar-tree.tsx'
 
 export function EmptyStateHint({ showOnlyStateHint, loadingProject, apiAvailable }: {

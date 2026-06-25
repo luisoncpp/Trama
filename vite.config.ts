@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Vite and Vitest build configuration")
 import { defineConfig } from 'vitest/config'
 import preact from '@preact/preset-vite'
 

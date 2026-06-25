@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Renderer hook: Left Alt → `tramaApi.revealMenuBar()`")
 import { useEffect } from 'preact/hooks'
 import { isBareMenuBarAltKey } from '../../shared/menu-bar-alt-key'
 

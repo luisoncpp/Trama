@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Core Quill lifecycle class (`EditorSessionImpl`): initialize Quill, apply markdown,")
 import type Quill from 'quill'
 import type TurndownService from 'turndown'
 import type { EditorSession as EditorSessionCore, TagMatch } from '../../../../project-editor-types.js'

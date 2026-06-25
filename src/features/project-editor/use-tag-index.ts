@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Hook orchestrating tag index state and effects")
 import { useState, useCallback, useEffect } from 'preact/hooks'
 import type { TagGetIndexResponse } from '../../shared/ipc-tag'
 import { TAG_INDEX_REFRESH_EVENT } from './tag-index-events'

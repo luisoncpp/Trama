@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Pure logic to mutate a cached `ProjectSnapshot` for file/folder create, delete, and rename")
 import type { TreeItem, DocumentMeta } from '../../src/shared/ipc.js'
 import { DocumentRepository } from './document-repository.js'
 import {

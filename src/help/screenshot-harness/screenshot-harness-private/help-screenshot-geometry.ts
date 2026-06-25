@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Bounding box and cropping region calculation functions for screenshot scenarios")
 import type { CaptureRegion } from '../../help-screenshot-harness-types'
 
 export function computeBoundingRegion(elements: Element[], padding = 16): CaptureRegion {

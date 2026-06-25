@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Scenario ID constants, type union, and scenario definition rows (fileName,")
 export const HELP_SCREENSHOT_SCENARIO_IDS = [
   'workspace-overview-dark',
   'workspace-overview-light',

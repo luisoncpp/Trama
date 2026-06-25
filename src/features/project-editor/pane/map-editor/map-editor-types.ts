@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Shared TypeScript types for adjacent module")
 export interface MapMarker {
   x: number
   y: number

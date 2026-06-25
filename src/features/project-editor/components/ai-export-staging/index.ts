@@ -1,3 +1,4 @@
+/** @Architecture(descriptionShort="`AiExportStagingController`, relative path hardening, native picker helpers, basket") */
 /**
  * AI export staging — native picker integration, relative path hardening, and basket controls.
  *

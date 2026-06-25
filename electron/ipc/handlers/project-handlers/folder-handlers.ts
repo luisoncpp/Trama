@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Folder rename handler with subtree internal-write tagging and index/tag reconcile")
 import {
   deleteFolderRequestSchema,
   type DeleteFolderResponse,

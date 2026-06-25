@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Pane editor shell, sync labels, save/revert affordance enablement, and")
 /* eslint-disable max-lines-per-function */
 import { PROJECT_EDITOR_STRINGS } from '../project-editor-strings'
 import type { EditorSession, FocusScope, EditorZoomRef, WorkspaceLayoutMode } from '../project-editor-types'

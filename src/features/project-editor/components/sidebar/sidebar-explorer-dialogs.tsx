@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Sidebar UI component for project explorer workflow")
 import type { SidebarCreateInput } from '../../project-editor-types'
 import type { FilteredTemplate } from '../../templates/templates-catalog-private/filter-template-paths'
 import type { SidebarCreateMode } from './sidebar-create-dialog.tsx'

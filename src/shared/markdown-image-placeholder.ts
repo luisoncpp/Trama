@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Shared contract or utility used across processes")
 const IMAGE_PLACEHOLDER_PROTOCOL = 'trama-image-placeholder:'
 const BROKEN_IMAGE_COMMENT_PREFIX = 'TRAMA_BROKEN_IMAGE:'
 

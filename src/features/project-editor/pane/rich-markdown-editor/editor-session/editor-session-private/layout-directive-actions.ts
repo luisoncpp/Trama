@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Toolbar-triggered layout helpers for pagebreak/spacer insertion and center toggle")
 import type Quill from 'quill'
 import Delta from 'quill-delta'
 import {

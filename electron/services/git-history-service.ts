@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Local Git history orchestrator: repository discovery/init, scoped snapshot")
 import path from 'node:path'
 import { readFile } from 'node:fs/promises'
 import { brokenImagePlaceholderToComment } from '../../src/shared/markdown-image-placeholder.js'

@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Geometry helpers for focus-mode (text offset resolution, visual line/sentence boundary")
 import Quill from 'quill'
 
 export function resolveTextOffsetToDomPosition(root: Node, offset: number): { node: Text; offset: number } | null {

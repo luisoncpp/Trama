@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Sidebar UI component for project explorer workflow")
 export type DropIndicatorType = 'before' | 'after' | 'onFolder' | 'onSection'
 
 export interface DropIndicatorPosition {

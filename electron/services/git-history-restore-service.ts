@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Dedicated historical restore write path: exact markdown write, referenced image")
 import path from 'node:path'
 import { mkdir, writeFile } from 'node:fs/promises'
 import { collectLinkedImagePaths } from './document-image-persistence.js'

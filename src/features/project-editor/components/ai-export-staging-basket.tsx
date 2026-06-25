@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Staging basket UI: Add Files/Folder actions, clear basket, wires")
 import { useEffect, useRef, useState } from 'preact/hooks'
 import { AiExportStagingController } from './ai-export-staging'
 import { AiExportStagingChips } from './ai-export-staging-chips'

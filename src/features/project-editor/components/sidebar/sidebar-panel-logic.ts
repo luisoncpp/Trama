@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Section scoping + filter-state helpers")
 import { useState } from 'preact/hooks'
 import type { SidebarSection } from '../../project-editor-types'
 import { SIDEBAR_SECTION_CONFIG, type ContentSidebarSection } from './sidebar-section-roots'

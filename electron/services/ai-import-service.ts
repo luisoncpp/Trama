@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Parses AI clipboard blocks, builds preview metadata, and executes multi-file import writes")
 import path from 'node:path'
 import { existsSync, readFileSync } from 'node:fs'
 import { writeFile, mkdir } from 'node:fs/promises'

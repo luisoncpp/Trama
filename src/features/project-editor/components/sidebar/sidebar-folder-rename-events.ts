@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Sidebar UI component for project explorer workflow")
 interface SidebarFolderPathRemapEvent {
   oldPath: string
   newPath: string

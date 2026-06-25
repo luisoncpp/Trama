@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Smart typography auto-replacement on user input: `--` → `—`, `<<` → `«`, `>>` → `»`")
 import Quill from 'quill'
 import Delta from 'quill-delta'
 

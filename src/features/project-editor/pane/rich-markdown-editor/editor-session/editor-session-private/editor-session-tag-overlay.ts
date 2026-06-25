@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Tag overlay interaction hook cluster: Ctrl/Cmd state, overlay match recomputation,")
 import type Quill from 'quill'
 import { useEffect, useRef, useState } from 'preact/hooks'
 import type { TagMatch } from './editor-session-tag-helpers'

@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Draggable sidebar edge handle; writes width through `setSidebarPanelWidth` using")
 import type { RefObject } from 'preact'
 import { clampSidebarWidth } from './layout-metrics'
 

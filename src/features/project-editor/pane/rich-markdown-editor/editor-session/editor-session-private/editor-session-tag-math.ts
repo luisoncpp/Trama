@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Tag overlay geometry: plain-text to Quill index mapping, rect computation, and hit testing")
 import type Quill from 'quill'
 import { findTagMatchesInText, filterMatchesOutsideCode, type TagMatch } from './editor-session-tag-helpers'
 

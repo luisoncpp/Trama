@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Private implementation detail for parent module")
 import type { RowGeometry } from './drop-position'
 import type { SidebarTreeRow } from '../../sidebar-tree-logic'
 

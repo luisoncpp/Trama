@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Shared layout directive types (`LayoutDirectiveEmbedType`,")
 export type LayoutDirectiveEmbedType = 'center' | 'spacer' | 'pagebreak' | 'broken-image' | 'unknown'
 
 export interface LayoutDirectiveEmbedValue {

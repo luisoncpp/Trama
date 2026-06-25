@@ -1,3 +1,4 @@
+/** @Architecture(descriptionShort="Public facade re-exporting module surface") */
 /**
  * Relationships editor — deep module for the relationships-chart pane surface.
  *

@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Preact hook that wires the screenshot harness onto")
 import { useEffect } from 'preact/hooks'
 import type { ProjectEditorActions } from '../features/project-editor/project-editor-types'
 import { runHelpScreenshotScenario } from './screenshot-harness/index.ts'

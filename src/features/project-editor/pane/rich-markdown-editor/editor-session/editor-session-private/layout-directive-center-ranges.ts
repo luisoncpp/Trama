@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Center-range utility module for Quill Delta: extracts center boundaries from ops,")
 import type Quill from 'quill'
 import Delta from 'quill-delta'
 import { LAYOUT_DIRECTIVE_BLOT_NAME } from './layout-directive-types'

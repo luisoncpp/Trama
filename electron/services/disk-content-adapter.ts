@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Main-process phase vocabulary for markdown images: `fromDiskRead` (disk → portable)")
 import {
   materializeMarkdownImages,
   resolveMarkdownImageSources,

@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Public `EditorSession` hook (`useEditorSession`) and `UseEditorSessionProps` type")
 import { useCallback, useRef, useState } from 'preact/hooks'
 import type Quill from 'quill'
 import type { EditorSession as EditorSessionCore, EditorZoomRef, FocusScope, TagMatch } from '../../../project-editor-types.js'

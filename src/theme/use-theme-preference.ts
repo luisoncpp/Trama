@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Hook orchestrating theme preference state and effects")
 import { useEffect, useState } from 'preact/hooks'
 import { markOverlayTitleBar } from '../features/project-editor/window-titlebar'
 import { readThemePreference, resolveThemePreference, THEME_MEDIA_QUERY, THEME_PREFERENCE_STORAGE_KEY } from './theme-logic'

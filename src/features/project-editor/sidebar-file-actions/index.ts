@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Public facade re-exporting module surface")
 export {
   setSidebarSection,
   toggleSidebarPanelCollapsed,

@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Pure tree mutation helpers used by `incremental-project-updater.ts`: deep clone, path")
 import type { TreeItem } from '../../src/shared/ipc.js'
 
 export function deepCloneTree(tree: TreeItem[]): TreeItem[] {

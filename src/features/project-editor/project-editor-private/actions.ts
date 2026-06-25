@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Private action assembly behind `use-project-editor.ts`")
 import { useCallback, useMemo } from 'preact/hooks'
 import type { DocumentMeta } from '../../../shared/ipc'
 import { getDocumentContentSession } from '../document-content/document-content-session'

@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Section rail and collapse toggle")
 import type { JSX } from 'preact'
 import type { SidebarSection } from '../../project-editor-types'
 import { useEditorActions } from '../../project-editor-actions-context.tsx'

@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Shared contract or utility used across processes")
 export const IPC_CHANNELS = {
   ping: 'trama:ping',
   debugLog: 'trama:debug:log',

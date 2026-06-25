@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Electron-side screenshot capture driver: runs scenarios, captures pages (full or")
 import { access } from 'node:fs/promises'
 import path from 'node:path'
 import { execFile } from 'node:child_process'

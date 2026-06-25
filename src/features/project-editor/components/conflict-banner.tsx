@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Implements conflict banner for the writing workspace")
 import { PROJECT_EDITOR_STRINGS } from '../project-editor-strings'
 
 interface ConflictBannerProps {

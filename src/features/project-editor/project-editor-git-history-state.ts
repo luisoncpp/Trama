@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Constructors/mappers for empty Git-history state and empty pane revision-rail state")
 import type { GitHistoryStatusResponse } from '../../shared/ipc.js'
 import type { GitHistoryState, RevisionRailState } from './project-editor-types'
 

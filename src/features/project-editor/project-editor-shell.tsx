@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Memoized sidebar shell boundary plus narrow shell state/action selectors over the full")
 import { memo } from 'preact/compat'
 import { useMemo } from 'preact/hooks'
 import type { ProjectEditorModel } from './project-editor-types'

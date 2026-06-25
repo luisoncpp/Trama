@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Hook orchestrating sidebar tree expanded folders state and effects")
 import { useEffect, useRef, useState } from 'preact/hooks'
 import { buildSidebarTree, getAncestorFolderPaths } from './sidebar-tree-logic'
 import { consumeSidebarFolderPathRemapped, remapExpandedFoldersForPathRemap } from './sidebar-folder-rename-events'

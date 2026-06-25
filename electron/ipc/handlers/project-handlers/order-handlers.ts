@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="File reorder handler (`handleReorderFiles`) for drag-and-drop reorder in sidebar")
 import {
   moveFileRequestSchema,
   reorderFilesRequestSchema,

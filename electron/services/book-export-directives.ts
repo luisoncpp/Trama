@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Shared directive parsing helpers for `trama:center`, `trama:spacer`, and")
 export type BookExportDirective =
   | { kind: 'pagebreak' }
   | { kind: 'centerStart' }

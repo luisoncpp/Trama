@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="AI import/export handlers: preview import, execute import, and backend export")
 import type { IpcMainInvokeEvent } from 'electron'
 import type {
   IpcEnvelope,

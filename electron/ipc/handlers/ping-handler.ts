@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Ping endpoint")
 import { pingRequestSchema, type IpcEnvelope, type PingResponse } from '../../../src/shared/ipc.js'
 
 export function buildPingResponse(rawPayload: unknown): IpcEnvelope<PingResponse> {

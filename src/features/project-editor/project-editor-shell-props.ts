@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Shell prop types and sidebar prop-builder helpers used to adapt the flat")
 import type { BookExportFormat } from '../../shared/ipc'
 import type { ResolvedTheme, ThemePreference } from '../../theme/theme-types'
 import type { ProjectEditorModel } from './project-editor-types'

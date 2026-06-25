@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Stops the watcher and clears active project runtime state")
 import type { IpcEnvelope } from '../../../../src/shared/ipc.js'
 import type { CloseProjectResponse } from '../../../../src/shared/ipc-project.js'
 import { errorEnvelope } from '../../../ipc-errors.js'

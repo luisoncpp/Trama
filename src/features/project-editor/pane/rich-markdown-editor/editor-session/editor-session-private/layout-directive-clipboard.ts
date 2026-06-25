@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Adds clipboard matcher logic that maps directive artifact nodes, including")
 import type Quill from 'quill'
 import Delta from 'quill-delta'
 import { LAYOUT_DIRECTIVE_BLOT_NAME, type LayoutDirectiveEmbedValue } from './layout-directive-types'

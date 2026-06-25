@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Handles relationships region pointer IPC requests with envelope responses")
 import {
   finishRegionDraw,
   getRegionDragPreview,

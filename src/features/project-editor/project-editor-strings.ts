@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Implements project editor strings for the writing workspace")
 export const PROJECT_EDITOR_STRINGS = {
   titleKicker: 'Trama - Phase 2 kickoff',
   title: 'Project Scan + Markdown Editing Loop',

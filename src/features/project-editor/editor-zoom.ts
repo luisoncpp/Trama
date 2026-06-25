@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Implements editor zoom for the writing workspace")
 export const MIN_ZOOM_LEVEL = 0.5
 export const MAX_ZOOM_LEVEL = 2.0
 export const ZOOM_STEP = 0.1

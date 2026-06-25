@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Public pane editor seam")
 import { useRef } from 'preact/hooks'
 import { RichMarkdownEditorView } from './rich-markdown-editor-view'
 import { useEditorSession, type UseEditorSessionProps } from './editor-session/editor-session'

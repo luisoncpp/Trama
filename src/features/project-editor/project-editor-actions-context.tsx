@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Stable Preact actions context for `ProjectEditorActions`: provider keeps latest")
 import { createContext, type ComponentChildren } from 'preact'
 import { useContext, useMemo, useRef } from 'preact/hooks'
 import type { ProjectEditorActions } from './project-editor-types'

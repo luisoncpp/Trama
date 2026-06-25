@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Recursive markdown scan + tree data (including empty folders)")
 import { readdir } from 'node:fs/promises'
 import path from 'node:path'
 import type { TreeItem } from '../../src/shared/ipc.js'

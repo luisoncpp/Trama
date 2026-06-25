@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Shared renderer-side Git-history types: pane-local revisions rail")
 import type { GitDocumentRevision } from '../../shared/ipc.js'
 
 export type RevisionSelection =

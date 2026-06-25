@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Registers explicit ArrowLeft/ArrowRight keyboard bindings so pagebreak embeds are")
 import type Quill from 'quill'
 import Delta from 'quill-delta'
 import { LAYOUT_DIRECTIVE_BLOT_NAME } from './layout-directive-types.js'

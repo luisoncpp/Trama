@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Context isolated preload script for the Help window exposing dismissal IPC methods")
 import { contextBridge, ipcRenderer } from 'electron'
 import {
   assertGettingStartedDismissedSaved,

@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Hook orchestrating sidebar tree rows drag state and effects")
 import { useEffect, useRef } from 'preact/hooks'
 import { calculateDropPosition, executeDrop, buildRowGeometries } from './sidebar-drop-logic'
 import type { RowGeometry } from './sidebar-drop-logic'

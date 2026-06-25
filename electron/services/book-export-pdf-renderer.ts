@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="PDF book orchestrator: `buildPdfExportSegments` → segment HTML → print surface →")
 import { writeFile } from 'node:fs/promises'
 import path from 'node:path'
 import { PDFDocument } from 'pdf-lib'

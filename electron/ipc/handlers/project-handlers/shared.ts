@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Implements shared for the writing workspace")
 import { stat } from 'node:fs/promises'
 import path from 'node:path'
 import { DocumentRepository } from '../../../services/document-repository.js'

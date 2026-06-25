@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Shared contract or utility used across processes")
 import TurndownService from 'turndown'
 import { serializeDirectiveArtifactNode } from './markdown-layout-directives.js'
 import { normalizeBlankLinesToSpacerDirectives } from './markdown-layout-directives-spacing.js'

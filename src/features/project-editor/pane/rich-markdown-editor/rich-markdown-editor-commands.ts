@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Handles workspace commands and blocks markdown paste while revision preview is read-only")
 import type Quill from 'quill'
 import TurndownService from 'turndown'
 import { marked } from 'marked'

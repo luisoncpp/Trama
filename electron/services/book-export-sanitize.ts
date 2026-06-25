@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Book export sanitize pipeline: strips frontmatter for all formats, strips HTML")
 import type { BookExportFormat } from '../../src/shared/ipc.js'
 
 function stripLeadingFrontmatter(content: string): string {

@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Hook orchestrating project editor core state state and effects")
 import { useMemo, useState } from 'preact/hooks'
 import type { ProjectSnapshot } from '../../shared/ipc'
 import type { PaneDocumentState } from './project-editor-types'

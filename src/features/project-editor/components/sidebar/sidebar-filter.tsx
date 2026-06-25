@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Sidebar filter input and clear button")
 import { useEffect, useState } from 'preact/hooks'
 
 interface SidebarFilterProps {

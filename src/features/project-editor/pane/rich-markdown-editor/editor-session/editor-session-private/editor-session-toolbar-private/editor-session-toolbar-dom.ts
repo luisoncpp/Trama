@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Private toolbar DOM helper: creates toolbar-specific controls and enforces the")
 import {
   createCenterIconButton,
   createHistoryBackIconButton,

@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Sidebar UI component for project explorer workflow")
 import type { SidebarTreeRow } from './sidebar-tree-logic'
 import { SCOPED_ROOT_KEY } from './sidebar-path-scoping'
 

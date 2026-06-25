@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Hook for book export dialog state: selected format, optional metadata (title/author),")
 import { useCallback, useEffect, useMemo, useState } from 'preact/hooks'
 import type { BookExportFormat } from '../../shared/ipc'
 

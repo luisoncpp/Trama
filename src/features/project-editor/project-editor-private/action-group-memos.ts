@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Private implementation detail for parent module")
 import { useMemo } from 'preact/hooks'
 import type {
   ProjectEditorLayoutState,

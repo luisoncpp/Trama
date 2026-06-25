@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Private implementation detail for parent module")
 import { canSelectFile } from '../../project-editor-logic'
 import { PROJECT_EDITOR_STRINGS } from '../../project-editor-strings'
 import type { WorkspaceLayoutState, WorkspacePane } from '../../project-editor-types'

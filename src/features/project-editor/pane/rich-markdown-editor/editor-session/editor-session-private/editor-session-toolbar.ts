@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Thin public toolbar hook")
 import { useEffect, useRef } from 'preact/hooks'
 import { RichEditorToolbarController, type SyncToolbarControlsParams } from './editor-session-toolbar-private/editor-session-toolbar-controller'
 

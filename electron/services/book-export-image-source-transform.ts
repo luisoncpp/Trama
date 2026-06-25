@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Shared markdown image-source rewriting helpers: converts local image references to")
 import path from 'node:path'
 import { randomUUID } from 'node:crypto'
 import { writeFile } from 'node:fs/promises'

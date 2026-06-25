@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Applies the shared zoom level to the editor root and triggers overlay re-render")
 import { useEffect } from 'preact/hooks'
 import type Quill from 'quill'
 import type { EditorZoomRef } from '../../../../project-editor-types.js'

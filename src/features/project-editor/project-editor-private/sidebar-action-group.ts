@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Private implementation detail for parent module")
 import type { ProjectEditorActions, SidebarSection } from '../project-editor-types'
 import * as sidebarFileActions from '../sidebar-file-actions'
 import type { ActionGroupParams } from './action-group-types'

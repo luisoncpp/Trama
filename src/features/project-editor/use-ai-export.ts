@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Hook for AI export dialog state, IPC export call, and clipboard copy flow")
 import { useState, useCallback, useEffect, useMemo } from 'preact/hooks'
 import { sortPathsByProjectIndex } from './components/ai-export-staging'
 import type { ProjectSnapshot } from '../../shared/ipc'

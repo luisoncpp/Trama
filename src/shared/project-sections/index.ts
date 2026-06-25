@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Public facade re-exporting module surface")
 export {
   RELEVANT_SECTION_NAMES,
   TEMPLATES_DIRECTORY_NAME,

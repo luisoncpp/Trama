@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Shared contract or utility used across processes")
 import { z } from 'zod'
 
 const zuluTagModeSchema = z.enum(['all', 'single', 'none'])

@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Shared contract or utility used across processes")
 const CENTER_START = '<!-- trama:center:start -->'
 const CENTER_END = '<!-- trama:center:end -->'
 const PAGEBREAK = '<!-- trama:pagebreak -->'

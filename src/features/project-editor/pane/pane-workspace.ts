@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Implements pane workspace for the writing workspace")
 import type { DocumentMeta } from '../../../shared/ipc'
 import type {
   PaneDocumentState,

@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Renderer action group for snapshot save, rail open/refresh, revision preview, and")
 import type { ProjectEditorActions, WorkspacePane } from './project-editor-types'
 import { createEmptyGitHistoryState, createEmptyRevisionRailState } from './project-editor-git-history-state'
 import type { ActionGroupParams } from './project-editor-private/action-group-types'

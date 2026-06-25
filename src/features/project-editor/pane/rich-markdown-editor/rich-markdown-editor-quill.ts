@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Quill adapter: creates the editor instance, applies markdown, syncs spellcheck, and")
 import Quill from 'quill'
 import TurndownService from 'turndown'
 import { marked } from 'marked'

@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Centered scroll logic: computes target scroll position to keep active line centered")
 import Quill from 'quill'
 
 interface SelectionRect extends DOMRect {

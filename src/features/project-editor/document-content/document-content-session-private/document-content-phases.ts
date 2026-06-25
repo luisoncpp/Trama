@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Pure phase implementations used by `DocumentContentSession`")
 import {
   hydrateMarkdownImages,
   stripBase64ImagesFromMarkdown,

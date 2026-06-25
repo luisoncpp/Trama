@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Spellcheck IPC handlers: reads and applies Electron session spellchecker settings for")
 import type { BrowserWindow, IpcMain } from 'electron'
 import { IPC_CHANNELS, setSpellcheckSettingsRequestSchema } from '../../src/shared/ipc.js'
 

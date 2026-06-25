@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Private implementation detail for parent module")
 import {
   RELEVANT_SECTION_ROOTS,
   TEMPLATES_SECTION_ROOT,

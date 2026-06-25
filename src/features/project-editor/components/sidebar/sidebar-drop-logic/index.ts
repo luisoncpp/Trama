@@ -1,3 +1,4 @@
+/** @Architecture(descriptionShort="Public facade re-exporting module surface") */
 /**
  * Sidebar drop logic — deep module for drag-and-drop position calculation and execution.
  *

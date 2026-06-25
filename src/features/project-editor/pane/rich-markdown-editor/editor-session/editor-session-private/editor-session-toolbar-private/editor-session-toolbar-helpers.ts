@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Toolbar control factories (icon buttons, zoom select) and zoom normalization helpers")
 import type Quill from 'quill'
 
 export type RichEditorSyncState = 'clean' | 'dirty' | 'saving' | 'disabled' | 'preview'

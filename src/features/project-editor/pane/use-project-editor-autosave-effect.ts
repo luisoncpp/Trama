@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Hook orchestrating project editor autosave effect state and effects")
 import { useEffect } from 'preact/hooks'
 import type { WorkspacePane } from '../project-editor-types'
 import type { PaneWorkspace } from './pane-workspace'

@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Export dialog controller (portal, close behavior, keyboard handling) wired to export")
 import { useCallback, useEffect, useState } from 'preact/hooks'
 import { createPortal } from 'preact/compat'
 import { AiExportDialogBody } from './ai-export-dialog-body'

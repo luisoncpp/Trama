@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Book export handler: validates request payload and delegates multi-format book export")
 import type { IpcMainInvokeEvent } from 'electron'
 import type {
   BookExportRequest,

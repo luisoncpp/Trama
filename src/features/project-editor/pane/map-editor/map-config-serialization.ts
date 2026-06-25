@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Implements map config serialization for the writing workspace")
 import type { DocumentMeta } from '../../../../shared/ipc'
 import type { MapConfig, MapMarker } from './map-editor-types'
 

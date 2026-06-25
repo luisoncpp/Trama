@@ -1,3 +1,4 @@
+/** @Architecture(descriptionShort="Public facade re-exporting module surface") */
 /**
  * Project editor logic — deep module for workspace layout, pane projection, and conflict helpers.
  *

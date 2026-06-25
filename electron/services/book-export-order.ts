@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Book export ordering logic: derives base order from tree and applies per-folder")
 import path from 'node:path'
 import type { ProjectIndex, TreeItem } from '../../src/shared/ipc.js'
 

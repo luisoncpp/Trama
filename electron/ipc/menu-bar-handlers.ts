@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Handles `revealMenuBar` / `hideMenuBar`")
 import { BrowserWindow, type IpcMain } from 'electron'
 import { hideMenuBar, revealMenuBar } from '../main-process/menu-bar-auto-hide.js'
 import { IPC_CHANNELS } from '../../src/shared/ipc-channels.js'

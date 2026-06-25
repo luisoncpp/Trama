@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Pure helper functions for adjacent UI or domain logic")
 import type { ResolvedTheme, ThemePreference } from './theme-types'
 
 export const THEME_PREFERENCE_STORAGE_KEY = 'trama.theme.preference'

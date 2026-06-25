@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Private implementation detail for parent module")
 import { isRelevantPath } from '../../../../../shared/project-sections'
 import type { ProjectSnapshot, TreeItem, ProjectIndex } from '../../../../../shared/ipc'
 

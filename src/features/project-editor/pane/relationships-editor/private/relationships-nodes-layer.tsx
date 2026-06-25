@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Private implementation detail for parent module")
 import type { JSX } from 'preact'
 import type { RelationshipNode } from './relationships-editor-types'
 
@@ -24,30 +25,41 @@ function RelationshipsNodeEmojis({ nodeId, emojis, readOnly, onAddClick, onRemov
   onAddClick: (nodeId: string, anchorRect: DOMRect) => void
   onRemove: (nodeId: string, emoji: string) => void
 }) {
+  const hasEmojis = emojis.length > 0
+  if (!hasEmojis && readOnly) return null
+
   return (
-    <div class={`relationships-node__emojis${emojis.length === 0 ? ' relationships-node__emojis--empty' : ''}`}>
+    <div
+      class={`relationships-node__emojis${hasEmojis ? '' : ' relationships-node__emojis--empty'}`}
+      role={hasEmojis ? 'group' : undefined}
+      aria-label={hasEmojis ? 'Character traits' : undefined}
+    >
       {emojis.map((emoji) => (
-        <button
-          key={emoji}
-          type="button"
-          class="relationships-node__emoji"
-          title={readOnly ? emoji : `${emoji} — click to remove`}
-          disabled={readOnly}
-          onPointerDown={(event) => event.stopPropagation()}
-          onClick={(event) => { event.stopPropagation(); onRemove(nodeId, emoji) }}
-        >
-          {emoji}
-        </button>
+        readOnly ? (
+          <span key={emoji} class="relationships-node__emoji-chip" title={emoji} aria-label={emoji}>{emoji}</span>
+        ) : (
+          <button
+            key={emoji}
+            type="button"
+            class="relationships-node__emoji-chip relationships-node__emoji-chip--interactive"
+            title={`${emoji} — click to remove`}
+            onPointerDown={(event) => event.stopPropagation()}
+            onClick={(event) => { event.stopPropagation(); onRemove(nodeId, emoji) }}
+          >
+            {emoji}
+          </button>
+        )
       ))}
       {readOnly ? null : (
         <button
           type="button"
-          class="relationships-node__emoji-add"
+          class="relationships-node__emoji-chip relationships-node__emoji-chip--add"
           title="Add emoji"
+          aria-label="Add emoji"
           onPointerDown={(event) => event.stopPropagation()}
           onClick={(event) => { event.stopPropagation(); onAddClick(nodeId, event.currentTarget.getBoundingClientRect()) }}
         >
-          +
+          <span class="relationships-node__emoji-add-glyph" aria-hidden="true">+</span>
         </button>
       )}
     </div>
@@ -78,8 +90,8 @@ function RelationshipsNodeAnchor({ node, index, linkSourceId, draggedOverride, r
         <span class="relationships-node__dot" style={{ backgroundColor: node.color }} />
         <span class="relationships-node__label">{node.label}</span>
         {node.description ? <span class="relationships-node__tooltip">{node.description}</span> : null}
+        <RelationshipsNodeEmojis nodeId={node.id} emojis={node.emojis} readOnly={readOnly} onAddClick={onEmojiAddClick} onRemove={onEmojiRemove} />
       </button>
-      <RelationshipsNodeEmojis nodeId={node.id} emojis={node.emojis} readOnly={readOnly} onAddClick={onEmojiAddClick} onRemove={onEmojiRemove} />
     </div>
   )
 }

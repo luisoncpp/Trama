@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Implements book export image utils for the writing workspace")
 import path from 'node:path'
 import { access, readFile } from 'node:fs/promises'
 

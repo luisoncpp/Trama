@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Presentational rich editor shell: host element, find bar mount point, and tag")
 import { TagHighlights } from './editor-session/editor-session-private/editor-session-tag-highlights'
 import type { EditorSession } from './editor-session/editor-session'
 

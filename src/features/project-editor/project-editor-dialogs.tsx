@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Centralized overlay/dialog composition for AI import/export and markdown book export")
 import { memo } from 'preact/compat'
 import { AiImportDialog } from './components/ai-import-dialog'
 import { AiExportDialog } from './components/ai-export-dialog'

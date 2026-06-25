@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Screen-level composition root for project editor shell, conflict overlays, layout")
 import type { ProjectEditorModel } from './project-editor-types'
 import { ConflictBanner } from './components/conflict-banner'
 import { ConflictComparePanel } from './components/conflict-compare-panel'

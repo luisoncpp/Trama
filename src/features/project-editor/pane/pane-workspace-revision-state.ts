@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Implements pane workspace revision state for the writing workspace")
 import type { DocumentMeta } from '../../../shared/ipc'
 import { createEmptyRevisionRailState } from '../project-editor-git-history-state'
 import type { PaneDocumentState, RevisionRailState } from '../project-editor-types'

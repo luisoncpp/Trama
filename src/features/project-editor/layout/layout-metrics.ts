@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Single TS source for project-editor layout constants and pure width/ratio math")
 export const SIDEBAR_RAIL_WIDTH_PX = 72
 export const SIDEBAR_DEFAULT_WIDTH_PX = 300
 export const SIDEBAR_MIN_WIDTH_PX = 260

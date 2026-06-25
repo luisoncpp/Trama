@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Implements map editor for the writing workspace")
 /* eslint-disable max-lines-per-function */
 import { useCallback, useEffect, useRef, useState } from 'preact/hooks'
 import type { DocumentMeta } from '../../../../shared/ipc'

@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Opens a path (folder or file) in the OS file manager via IPC")
 export async function revealInFileManager(
   path: string,
   setStatusMessage: (message: string) => void

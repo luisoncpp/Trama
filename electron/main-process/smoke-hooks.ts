@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Startup smoke hooks")
 import { app, BrowserWindow } from 'electron'
 
 export function setupSmokeTestHooks(win: BrowserWindow): void {

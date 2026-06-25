@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Private implementation detail for parent module")
 export function buildConflictCopyPath(originalPath: string, existingPaths: string[]): string {
   const normalizedOriginal = originalPath.replace(/\\/g, '/')
   const existing = new Set(existingPaths.map((value) => value.replace(/\\/g, '/')))

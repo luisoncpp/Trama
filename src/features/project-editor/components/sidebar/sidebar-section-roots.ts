@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Sidebar UI component for project explorer workflow")
 import type { SidebarSection } from '../../project-editor-types'
 import { defineSidebarSectionRoot, type SidebarSectionRoot } from './sidebar-path-scoping'
 import { RELEVANT_SECTION_ROOTS, TEMPLATES_SECTION_ROOT } from '../../../../shared/project-sections'

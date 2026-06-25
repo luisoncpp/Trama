@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Hook for spellcheck preferences: boot-time sync against Electron session, local")
 import { useCallback, useEffect, useState } from 'preact/hooks'
 import type { SpellcheckSettingsResponse } from '../shared/ipc'
 

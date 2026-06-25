@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Private implementation detail for parent module")
 import type { WorkspacePane, WorkspaceLayoutState } from '../../project-editor-types'
 import type { PaneWorkspace } from '../../pane'
 import { assignFileToActivePane } from '../../workspace-actions'

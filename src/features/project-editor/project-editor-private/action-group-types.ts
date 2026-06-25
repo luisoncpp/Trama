@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Shared TypeScript types for adjacent module")
 import type {
   ProjectEditorLayoutState,
   ProjectEditorProjectState,

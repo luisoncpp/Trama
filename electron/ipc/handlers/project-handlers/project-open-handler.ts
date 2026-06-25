@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Open project + scan + reconcile + watcher start")
 import { type IpcEnvelope, type ProjectSnapshot } from '../../../../src/shared/ipc.js'
 import { openProjectRequestSchema } from '../../../../src/shared/ipc-project.js'
 import { errorEnvelope } from '../../../ipc-errors.js'

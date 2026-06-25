@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Sidebar UI component for project explorer workflow")
 import { useEffect, useState } from 'preact/hooks'
 
 import { SIDEBAR_RESPONSIVE_BREAKPOINT_PX } from '../../layout/layout-metrics'

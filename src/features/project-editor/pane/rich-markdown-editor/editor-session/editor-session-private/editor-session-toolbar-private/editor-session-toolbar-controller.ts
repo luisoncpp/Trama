@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Private toolbar controller class: owns toolbar state synchronization for layout")
 import {
   isEditorInteractive,
   normalizeZoomValue,

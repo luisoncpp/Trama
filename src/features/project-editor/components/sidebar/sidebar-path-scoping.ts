@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Canonical sidebar path-scoping module")
 export const SCOPED_ROOT_KEY = ''
 
 type BrandedPath<T extends string> = string & { readonly __pathBrand: T }

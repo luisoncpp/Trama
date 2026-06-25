@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="In-document find controller; suppresses replace affordances during read-only revision")
 import { useCallback, useEffect, useMemo, useRef, useState } from 'preact/hooks'
 import type Quill from 'quill'
 import { FindOverlay, type FindMatchBounds } from './editor-session-find-overlay'

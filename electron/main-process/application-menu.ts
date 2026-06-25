@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Custom application menu setup: replaces Electron's default menu bar with a")
 import { BrowserWindow, Menu } from 'electron'
 import { WORKSPACE_CONTEXT_MENU_EVENT } from '../../src/shared/workspace-context-menu.js'
 import { openHelpPage } from './help-window.js'

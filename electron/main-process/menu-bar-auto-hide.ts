@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Alt menu behavior: Win32 overlay titlebars use `Menu.popup()`; other platforms use")
 import { BrowserWindow, Menu, nativeTheme, type Input } from 'electron'
 import { getTitleBarOverlayOptions, type ResolvedTheme } from '../window-chrome.js'
 

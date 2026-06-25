@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Shared TypeScript types for adjacent module")
 import type { PaneDocumentState, RevisionRailState } from '../project-editor-types'
 
 export interface PaneDocumentInfo {

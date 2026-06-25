@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Implements snapshot compare logger for the writing workspace")
 export function logSnapshotComparison(
   path: string,
   saved: string | null,

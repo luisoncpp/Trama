@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Pure helper functions for adjacent UI or domain logic")
 import type { SidebarTreeNode, SidebarTreeState } from './sidebar-tree-logic'
 
 export interface SidebarFilterResult {

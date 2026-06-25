@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Deep module for workspace layout, pane activation, focus, fullscreen, editor view,")
 import { canSelectFile } from './project-editor-logic'
 import { PROJECT_EDITOR_STRINGS } from './project-editor-strings'
 import type { DocumentMeta } from '../../shared/ipc'

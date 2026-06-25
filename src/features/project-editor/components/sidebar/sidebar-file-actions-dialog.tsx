@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Modal dialog UI for editor workflow step")
 import { createPortal } from 'preact/compat'
 
 export type SidebarFileActionMode = 'rename' | 'delete' | 'edit-tags'

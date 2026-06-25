@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Private implementation detail for parent module")
 import type { DocumentMeta, ProjectSnapshot } from '../../../../shared/ipc'
 import type { PaneDocumentState, WorkspaceLayoutState } from '../../project-editor-types'
 

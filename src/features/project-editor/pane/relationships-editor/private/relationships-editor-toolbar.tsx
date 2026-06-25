@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Private implementation detail for parent module")
 import type { JSX } from 'preact'
 import type {
   RelationshipEdgeDirection,

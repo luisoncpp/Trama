@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Lifecycle effects, feature hooks (find, focus, tags, zoom, toolbar), and public")
 import { useEffect } from 'preact/hooks'
 import type Quill from 'quill'
 import type { EditorZoomRef } from '../../../../project-editor-types.js'

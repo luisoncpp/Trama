@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Book export dialog body with project root display, optional metadata inputs, output")
 import type { BookExportFormat } from '../../../shared/ipc'
 
 interface BookExportDialogBodyProps {

@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Ambient TypeScript declarations for preload API")
 import type {
   AiExportRequest,
   AiExportResponse,

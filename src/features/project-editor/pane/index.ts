@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Public facade re-exporting module surface")
 // PaneWorkspace is the ONLY way to read or mutate the estate of the panels.
 // Do not use primaryPane/secondaryPane/setPrimaryPane/setSecondaryPane directly.
 export { PaneWorkspace, type WorkspacePane, type PaneDocumentInfo, type ActivePaneDocumentInfo, type PaneBindings } from './pane-workspace'

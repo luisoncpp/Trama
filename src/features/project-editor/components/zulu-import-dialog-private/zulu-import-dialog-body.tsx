@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="ZuluPad import dialog body: file info display, folder/tag configuration form, actions")
 import type { ZuluTagMode, ZuluImportPreviewResponse } from '../../../../shared/ipc'
 
 const TAG_MODE_OPTIONS: Array<{ value: ZuluTagMode; label: string }> = [

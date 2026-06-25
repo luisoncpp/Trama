@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Handles tag IPC requests with envelope responses")
 import { IPC_CHANNELS, type IpcEnvelope } from '../../../src/shared/ipc.js'
 import { type TagGetIndexResponse, type TagResolveRequest, type TagResolveResponse, tagResolveRequestSchema } from '../../../src/shared/ipc-tag.js'
 import { errorEnvelope } from '../../ipc-errors.js'

@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Hook orchestrating project editor model state and effects")
 import type { DocumentMeta } from '../../../shared/ipc'
 import type {
   PaneNavigationHistoryStore,

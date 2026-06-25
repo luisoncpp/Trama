@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Implements window chrome for the writing workspace")
 import type { BrowserWindow } from 'electron'
 import { nativeTheme } from 'electron'
 

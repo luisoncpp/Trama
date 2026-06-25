@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Full `EditorSession` interface exported for rich-editor consumers; extends the minimal")
 import type Quill from 'quill'
 import type { EditorSession as EditorSessionCore, TagMatch } from '../../../project-editor-types.js'
 

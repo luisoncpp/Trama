@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Implements window titlebar for the writing workspace")
 export function markOverlayTitleBar() {
   if (typeof navigator === 'undefined') {
     return

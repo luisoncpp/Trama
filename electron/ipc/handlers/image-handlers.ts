@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Handles image IPC requests with envelope responses")
 import path from 'node:path'
 import { readFile } from 'node:fs/promises'
 import { readImageFileRequestSchema, type IpcEnvelope, type ReadImageFileResponse } from '../../../src/shared/ipc.js'

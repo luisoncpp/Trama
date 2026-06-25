@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Git history IPC handlers: project Git status, save snapshot, list revisions, read")
 import type { IpcEnvelope } from '../../../src/shared/ipc.js'
 import {
   gitHistoryStatusResponseSchema,

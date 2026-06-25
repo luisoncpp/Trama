@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Private implementation detail for parent module")
 import type { DropIndicatorPosition } from '../../drop-indicator'
 import type { SidebarTreeRow } from '../../sidebar-tree-logic'
 

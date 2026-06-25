@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Sidebar UI component for project explorer workflow")
 import type { SidebarTreeRow } from './sidebar-tree-logic'
 import { findParentRowIndex } from './sidebar-tree-logic'
 import { TreeChevron, TreeNodeIcon } from './sidebar-tree-icons'

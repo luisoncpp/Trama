@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Hook that reads raw actions from `useEditorActions()` + root from")
 import { useMemo } from 'preact/hooks'
 import { useEditorActions } from '../../project-editor-actions-context.tsx'
 import { useSidebarSectionRoot } from './sidebar-section-scope-context'

@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Boundary-safe deletion logic: `buildBoundarySafeDeleteContents` and its")
 import type Quill from 'quill'
 import Delta from 'quill-delta'
 import {

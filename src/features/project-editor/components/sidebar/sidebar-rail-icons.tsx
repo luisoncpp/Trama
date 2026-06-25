@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Sidebar UI component for project explorer workflow")
 import type { JSX } from 'preact'
 
 function IconWrapper({ children }: { children: JSX.Element }): JSX.Element {

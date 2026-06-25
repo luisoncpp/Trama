@@ -1,3 +1,4 @@
+/** @Architecture(descriptionShort="Public facade re-exporting module surface") */
 /**
  * Templates deep module — template catalog, create controller, and React bridge.
  *

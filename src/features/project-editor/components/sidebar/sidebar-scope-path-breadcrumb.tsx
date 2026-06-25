@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Clickable project-root breadcrumb above the sidebar filter (full root path; CSS")
 import { PROJECT_EDITOR_STRINGS } from '../../project-editor-strings'
 import { useEditorActions } from '../../project-editor-actions-context.tsx'
 import { formatProjectRootBreadcrumbLabel } from './sidebar-panel-logic'

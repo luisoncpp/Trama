@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Implements project editor image save for the writing workspace")
 function convertImageDataUrlToPngDataUrl(dataUrl: string): Promise<string> {
   if (dataUrl.startsWith('data:image/png;')) {
     return Promise.resolve(dataUrl)

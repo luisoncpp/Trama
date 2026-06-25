@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Broken-image phase wrappers: preserve broken comments on serialize, expand them for")
 import {
   hydrateBrokenImageComments,
   renderBrokenImageCommentsAsHtml,

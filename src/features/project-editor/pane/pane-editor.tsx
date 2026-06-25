@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Implements pane editor for the writing workspace")
 /* eslint-disable max-lines-per-function */
 import type { ProjectEditorModel, EditorZoomRef, WorkspacePane } from '../project-editor-types'
 import { EditorPanel } from './editor-panel'

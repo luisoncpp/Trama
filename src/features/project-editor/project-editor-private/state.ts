@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Private state assembly behind `use-project-editor.ts`")
 import { useMemo } from 'preact/hooks'
 import type { ProjectSnapshot } from '../../../shared/ipc'
 import { useProjectEditorCoreState } from '../use-project-editor-core-state'

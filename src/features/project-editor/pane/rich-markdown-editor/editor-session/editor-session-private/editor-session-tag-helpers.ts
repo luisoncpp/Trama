@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Tag text matching helpers: accent normalization, regex escaping, code-block filtering")
 export interface TagMatch {
   tag: string
   start: number

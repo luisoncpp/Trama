@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Native open-file / open-directory dialogs for AI export staging basket (`defaultPath:")
 import { dialog } from 'electron'
 import { readdir } from 'node:fs/promises'
 import path from 'node:path'

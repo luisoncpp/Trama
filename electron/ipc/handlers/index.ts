@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Public facade re-exporting module surface")
 export { buildPingResponse } from './ping-handler.js'
 export {
   handleCreateDocument,

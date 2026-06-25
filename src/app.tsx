@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Top-level app composition")
 import { useCallback } from 'preact/hooks'
 import { ProjectEditorView } from './features/project-editor/project-editor-view'
 import { useProjectEditor } from './features/project-editor/use-project-editor'

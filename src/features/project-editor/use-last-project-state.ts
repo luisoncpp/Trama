@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Persist the last successfully opened project root (`trama.last-project.v1`) and clear")
 import { useCallback, useEffect, useMemo, useState } from 'preact/hooks'
 
 const LAST_PROJECT_STORAGE_KEY = 'trama.last-project.v1'

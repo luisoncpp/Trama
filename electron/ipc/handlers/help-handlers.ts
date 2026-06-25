@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Help IPC handlers: handles help page window open triggers and synchronization of")
 import {
   openHelpRequestSchema,
   setGettingStartedDismissedRequestSchema,

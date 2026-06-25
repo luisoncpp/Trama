@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="ZuluPad import dialog logic hooks: `useZuluImportDialogActions` (select file, preview,")
 import { useCallback, useEffect } from 'preact/hooks'
 import type { ZuluTagMode, ZuluImportPreviewResponse, ZuluSelectFileResponse } from '../../../../shared/ipc'
 import { useZuluImportDialogState } from './zulu-import-dialog-state'

@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Shared TypeScript types for adjacent module")
 export type RelationshipEdgeStyle = 'solid' | 'dashed' | 'dotted'
 
 export type RelationshipEdgeDirection = 'forward' | 'both' | 'none'

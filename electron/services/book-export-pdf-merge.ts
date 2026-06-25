@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Linear in-memory PDF segment merge via `pdf-lib` `copyPages` (`mergePdfSegments`)")
 import { PDFDocument } from 'pdf-lib'
 
 export async function mergePdfSegments(buffers: Uint8Array[]): Promise<Uint8Array> {

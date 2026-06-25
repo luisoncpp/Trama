@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Wrapping chip list with keyboard focus and per-chip remove controls")
 interface AiExportStagingChipsProps {
   projectRoot: string
   selectedPaths: string[]

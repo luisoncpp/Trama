@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Floating find UI with preview-aware replace toggle visibility")
 interface FindOverlayProps {
   query: string
   matchLabel: string

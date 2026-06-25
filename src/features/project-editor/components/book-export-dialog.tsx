@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Markdown book export modal controller (portal, close behavior, keyboard handling)")
 import { useCallback, useEffect, useState } from 'preact/hooks'
 import { createPortal } from 'preact/compat'
 import { BookExportDialogBody } from './book-export-dialog-body'

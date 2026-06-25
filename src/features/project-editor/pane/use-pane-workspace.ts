@@ -1,3 +1,4 @@
+// @Architecture(descriptionShort="Hook orchestrating pane workspace state and effects")
 import { useRef } from 'preact/hooks'
 import type { DocumentMeta } from '../../../shared/ipc'
 import type {
