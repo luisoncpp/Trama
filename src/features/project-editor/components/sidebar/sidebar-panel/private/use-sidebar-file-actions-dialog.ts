@@ -1,10 +1,10 @@
 // @Architecture(descriptionShort="Hook orchestrating sidebar file actions dialog state and effects")
 import { useMemo, useState } from 'preact/hooks'
-import { getBaseName, parseStringAsTags, serializeTags } from '../../../../shared/sidebar-utils'
-import { useScopedSidebarActions } from './use-scoped-sidebar-actions'
-import { useSidebarSectionRoot } from './sidebar-section-scope-context'
-import { toProjectPath, toSectionRelativePath, type SidebarSectionRoot } from './sidebar-path-scoping'
-import type { SidebarFileActionMode } from './sidebar-file-actions-dialog.tsx'
+import { getBaseName, parseStringAsTags, serializeTags } from '../../../../../../shared/sidebar-utils'
+import { useScopedSidebarActions } from '../../use-scoped-sidebar-actions.ts'
+import { useSidebarSectionRoot } from '../../sidebar-section-scope-context.tsx'
+import { toProjectPath, toSectionRelativePath, type SidebarSectionRoot } from '../../sidebar-path-scoping.ts'
+import type { SidebarFileActionMode } from '../../sidebar-file-actions-dialog.tsx'
 
 function buildFileLoaders(root: string) {
   const sectionRoot = root as SidebarSectionRoot

@@ -1,12 +1,12 @@
 // @Architecture(descriptionShort="Explorer container and dialog orchestration")
 import { useRef } from 'preact/hooks'
-import { useEditorActions } from '../../project-editor-actions-context.tsx'
-import { SidebarExplorerBody } from './sidebar-explorer-body/index.ts'
-import type { SidebarExplorerCommonProps } from './sidebar-types'
-import { useSidebarFileActionsDialog } from './use-sidebar-file-actions-dialog'
-import { useSidebarCreateDialog, useSidebarFolderActionsDialog } from './sidebar-dialog-hooks'
-import { useSidebarCreateControllerBridge } from '../../templates'
-import { SIDEBAR_SECTION_CONFIG } from './sidebar-section-roots'
+import { useEditorActions } from '../../../../project-editor-actions-context.tsx'
+import { SidebarExplorerBody } from '../../sidebar-explorer-body/index.ts'
+import type { SidebarExplorerCommonProps } from './sidebar-types.ts'
+import { useSidebarFileActionsDialog } from './use-sidebar-file-actions-dialog.ts'
+import { useSidebarCreateDialog, useSidebarFolderActionsDialog } from './sidebar-dialog-hooks.ts'
+import { useSidebarCreateControllerBridge } from '../../../../templates/index.ts'
+import { SIDEBAR_SECTION_CONFIG } from '../../sidebar-section-roots.ts'
 
 interface SidebarHeaderProps {
   title: string

@@ -1,8 +1,8 @@
 // @Architecture(descriptionShort="Sidebar settings panel (theme, spellcheck language, etc.)")
 import type { ComponentChildren } from 'preact'
-import type { ResolvedTheme, ThemePreference } from '../../../../theme/theme-types'
-import type { FocusScope } from '../../project-editor-types'
-import { useEditorActions } from '../../project-editor-actions-context.tsx'
+import type { ResolvedTheme, ThemePreference } from '../../../../../../theme/theme-types'
+import type { FocusScope } from '../../../../project-editor-types'
+import { useEditorActions } from '../../../../project-editor-actions-context.tsx'
 
 interface SettingsFieldProps {
   label: string

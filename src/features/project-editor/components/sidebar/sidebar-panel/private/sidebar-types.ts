@@ -1,8 +1,8 @@
 // @Architecture(descriptionShort="Shared TypeScript types for adjacent module")
-import type { FocusScope, SidebarSection } from '../../project-editor-types'
-import type { GitHistoryState } from '../../project-editor-types'
-import type { ResolvedTheme, ThemePreference } from '../../../../theme/theme-types'
-import type { BookExportFormat } from '../../../../shared/ipc'
+import type { FocusScope, SidebarSection } from '../../../../project-editor-types'
+import type { GitHistoryState } from '../../../../project-editor-types'
+import type { ResolvedTheme, ThemePreference } from '../../../../../../theme/theme-types'
+import type { BookExportFormat } from '../../../../../../shared/ipc'
 
 export interface SidebarSelectionProps {
   visibleFiles: string[]

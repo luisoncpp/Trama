@@ -1,12 +1,12 @@
 // @Architecture(descriptionShort="Sidebar UI component for project explorer workflow")
 /* eslint-disable max-lines-per-function */
 import { useState } from 'preact/hooks'
-import { useEditorActions } from '../../project-editor-actions-context.tsx'
-import { useScopedSidebarActions } from './use-scoped-sidebar-actions'
-import type { SidebarCreateInput } from '../../project-editor-types'
-import type { SidebarCreateMode } from './sidebar-create-dialog.tsx'
-import { getBaseName } from '../../../../shared/sidebar-utils'
-import type { SidebarFolderActionMode } from './sidebar-folder-actions-dialog.tsx'
+import { useEditorActions } from '../../../../project-editor-actions-context.tsx'
+import { useScopedSidebarActions } from '../../use-scoped-sidebar-actions.ts'
+import type { SidebarCreateInput } from '../../../../project-editor-types'
+import type { SidebarCreateMode } from '../../sidebar-create-dialog.tsx'
+import { getBaseName } from '../../../../../../shared/sidebar-utils'
+import type { SidebarFolderActionMode } from '../../sidebar-folder-actions-dialog.tsx'
 
 function normalizeDirectory(value: string): string {
   return value.trim().replaceAll('\\', '/').replace(/^\/+/, '').replace(/\/+$/, '')

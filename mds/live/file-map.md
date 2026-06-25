@@ -535,12 +535,30 @@ Mandatory doc navigation for new chats: start with `mds/START-HERE.md` — it pr
 
 ### Sidebar components
 
-- `src/features/project-editor/components/sidebar/sidebar-panel.tsx`
-  - Sidebar shell/orchestrator. Consumes `effectiveCollapsed` from the layout seam; no longer computes responsive collapse or writes inline width.
-- `src/features/project-editor/components/sidebar/sidebar-panel-body.tsx`
+- `src/features/project-editor/components/sidebar/sidebar-panel/index.ts`
+  - Deep module public facade — exports `SidebarPanel` and `formatProjectRootBreadcrumbLabel` (used by project-root breadcrumb).
+- `src/features/project-editor/components/sidebar/sidebar-panel/private/sidebar-panel.tsx`
+  - Sidebar shell/orchestrator. Consumes `effectiveCollapsed` from the layout seam; composes rail + section body.
+- `src/features/project-editor/components/sidebar/sidebar-panel/private/sidebar-panel-body.tsx`
   - Active section body composition. Thin adapter that converts raw sidebar callback strings through `sidebar-path-scoping.ts` before invoking project-level actions.
-- `src/features/project-editor/components/sidebar/sidebar-panel-logic.ts`
-  - Section scoping + filter-state helpers. Delegates path branding/scoping to `sidebar-path-scoping.ts`. Exports `formatProjectRootBreadcrumbLabel()` for the sidebar project-root breadcrumb.
+- `src/features/project-editor/components/sidebar/sidebar-panel/private/sidebar-panel-logic.ts`
+  - Section scoping + filter-state helpers inside the panel module. Delegates path branding/scoping to `sidebar-path-scoping.ts`.
+- `src/features/project-editor/components/sidebar/sidebar-panel/private/sidebar-types.ts`
+  - Shared TypeScript prop types for the panel shell and explorer content wiring (private to the panel deep module).
+- `src/features/project-editor/components/sidebar/sidebar-panel/private/sidebar-rail.tsx`
+  - Section rail and collapse toggle.
+- `src/features/project-editor/components/sidebar/sidebar-panel/private/sidebar-rail-icons.tsx`
+  - SVG icons for sidebar rail sections and collapse toggle.
+- `src/features/project-editor/components/sidebar/sidebar-panel/private/sidebar-explorer-content.tsx`
+  - Explorer container and dialog orchestration (create/file/folder dialog hooks + `SidebarExplorerBody` wiring).
+- `src/features/project-editor/components/sidebar/sidebar-panel/private/sidebar-settings.tsx`
+  - Sidebar settings panel (theme, spellcheck language, focus scope, etc.).
+- `src/features/project-editor/components/sidebar/sidebar-panel/private/sidebar-transfer-content.tsx`
+  - Import/export/transfer section body (AI interchange, book export, Git snapshot).
+- `src/features/project-editor/components/sidebar/sidebar-panel/private/sidebar-dialog-hooks.ts`
+  - Create and folder action dialog state hooks used by explorer content orchestration.
+- `src/features/project-editor/components/sidebar/sidebar-panel/private/use-sidebar-file-actions-dialog.ts`
+  - File rename/delete/tags dialog state hook used by explorer content orchestration.
 - `src/features/project-editor/components/sidebar/sidebar-section-scope-context.tsx`
   - Tiny Preact context providing `sectionConfig.root` to scoped action consumers inside `renderExplorer`.
 - `src/features/project-editor/components/sidebar/use-scoped-sidebar-actions.ts`
@@ -565,10 +583,6 @@ Mandatory doc navigation for new chats: start with `mds/START-HERE.md` — it pr
   - Unit tests for the reveal-in-file-manager IPC handler (validation, traversal escape prevention, folder vs file routing).
 - `src/features/project-editor/components/sidebar/sidebar-path-scoping.ts`
   - Canonical sidebar path-scoping module. Owns branded path types (`SectionRelativePath`, `ProjectRelativePath`, `SidebarSectionRoot`) and all conversions between section-relative/project-relative paths, reorder payload scoping, and create-path building.
-- `src/features/project-editor/components/sidebar/sidebar-rail.tsx`
-  - Section rail and collapse toggle.
-- `src/features/project-editor/components/sidebar/sidebar-explorer-content.tsx`
-  - Explorer container and dialog orchestration.
 - `src/features/project-editor/components/sidebar/sidebar-explorer-body/index.ts`
   - Deep module public facade for the sidebar explorer body component.
 - `src/features/project-editor/components/sidebar/sidebar-explorer-body/sidebar-explorer-body-private/sidebar-explorer-body.tsx`
@@ -605,8 +619,6 @@ Mandatory doc navigation for new chats: start with `mds/START-HERE.md` — it pr
   - Global project search modal.
 - `src/features/project-editor/components/sidebar/sidebar-search-results.tsx`
   - Search result rows with path, context preview, and click-to-open behavior.
-- `src/features/project-editor/components/sidebar/sidebar-settings.tsx`
-  - Sidebar settings panel (theme, spellcheck language, etc.).
 - `src/features/project-editor/components/sidebar/sidebar-templates-panel.tsx`
   - Templates panel for creating documents from templates.
 - `src/features/project-editor/components/sidebar/sidebar-transfer-panel.tsx`

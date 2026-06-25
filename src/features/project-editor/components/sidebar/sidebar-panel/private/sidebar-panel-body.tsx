@@ -1,20 +1,20 @@
 // @Architecture(descriptionShort="Active section body composition")
-import type { SidebarSection } from '../../project-editor-types'
+import type { SidebarSection } from '../../../../project-editor-types'
 import { SidebarExplorerContent } from './sidebar-explorer-content.tsx'
-import { SidebarSectionScopeProvider } from './sidebar-section-scope-context'
-import { SIDEBAR_SECTION_CONFIG, type ContentSidebarSection } from './sidebar-section-roots'
+import { SidebarSectionScopeProvider } from '../../sidebar-section-scope-context.tsx'
+import { SIDEBAR_SECTION_CONFIG, type ContentSidebarSection } from '../../sidebar-section-roots.ts'
 import { SidebarSettingsContent } from './sidebar-settings.tsx'
 import { SidebarTransferContent } from './sidebar-transfer-content.tsx'
 import {
   scopeCorkboardOrder,
-} from './sidebar-path-scoping'
+} from '../../sidebar-path-scoping.ts'
 import type {
   SidebarProjectContextProps,
   SidebarSelectionProps,
   SidebarSpellcheckProps,
   SidebarThemeProps,
   SidebarWorkspacePrefsProps,
-} from './sidebar-types'
+} from './sidebar-types.ts'
 
 export interface SidebarPanelBodyProps {
   effectiveCollapsed: boolean

@@ -1,7 +1,7 @@
 // @Architecture(descriptionShort="Sidebar UI component for project explorer workflow")
 import { useState } from 'preact/hooks'
-import { useEditorActions } from '../../project-editor-actions-context.tsx'
-import type { BookExportFormat } from '../../../../shared/ipc'
+import { useEditorActions } from '../../../../project-editor-actions-context.tsx'
+import type { BookExportFormat } from '../../../../../../shared/ipc'
 
 const BOOK_EXPORT_FORMAT_OPTIONS: Array<{ value: BookExportFormat; label: string }> = [
   { value: 'markdown', label: 'Markdown (.md)' },

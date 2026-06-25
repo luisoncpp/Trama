@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 import { h } from 'preact'
-import { formatProjectRootBreadcrumbLabel } from '../src/features/project-editor/components/sidebar/sidebar-panel-logic'
+import { formatProjectRootBreadcrumbLabel } from '../src/features/project-editor/components/sidebar/sidebar-panel/index.ts'
 import { SidebarScopePathBreadcrumb } from '../src/features/project-editor/components/sidebar/sidebar-scope-path-breadcrumb.tsx'
 import {
   buildEditorActionsSpies,

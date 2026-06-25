@@ -14,6 +14,18 @@ This guide covers the sidebar subsystem in `project-editor`:
 - drag-and-drop reorder and move
 - persistence model
 
+## Deep modules
+
+The sidebar uses nested deep modules (see `mds/dev-workflow.md` § Deep Modules). External code imports only each module's `index.ts` facade.
+
+| Module | Facade | Public surface | Private implementation |
+|--------|--------|----------------|------------------------|
+| **Sidebar panel shell** | `sidebar-panel/index.ts` | `SidebarPanel`, `formatProjectRootBreadcrumbLabel` | `sidebar-panel/private/*` — rail, section body, filter state, settings/transfer panels, explorer content orchestration |
+| **Explorer body** | `sidebar-explorer-body/index.ts` | `SidebarExplorerBody` | `sidebar-explorer-body-private/*` — filter, tree area, dialogs wiring |
+| **Drop logic** | `sidebar-drop-logic/index.ts` | drop position + execution helpers | `sidebar-drop-logic/private/*` |
+
+Shared sidebar seams that stay at `components/sidebar/` root (imported by multiple modules or other features): `sidebar-path-scoping.ts`, `sidebar-section-roots.ts`, `sidebar-tree.tsx`, dialog components, context menus, and `use-scoped-sidebar-actions.ts`.
+
 ## Architecture overview
 
 The sidebar is a **multi-section panel** that renders different content based on the active rail section. Each content section (`explorer`, `outline`, `lore`) shares a common data model: a flat list of section-scoped paths (files and optional explicit folder entries), rendered as a hierarchical tree.
@@ -294,10 +306,10 @@ SidebarPanelBody
 
 ### Adding a new file action
 
-1. Add callback to `SidebarFileActions` interface in `sidebar-types.ts`
+1. Add callback to the file-actions dialog hook pattern in `sidebar-panel/private/use-sidebar-file-actions-dialog.ts`
 2. Add to context menu in `sidebar-file-context-menu.tsx`
 3. Add dialog hook if needed (follow `useSidebarFileActionsDialog` pattern)
-4. Wire through `SidebarPanelBody` → `SidebarExplorerContent` → `SidebarTree`
+4. Wire through `sidebar-panel/private/sidebar-panel-body.tsx` → `sidebar-panel/private/sidebar-explorer-content.tsx` → `SidebarTree`
 
 ## Invariants
 

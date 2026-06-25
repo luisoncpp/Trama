@@ -1,9 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { h, type VNode } from 'preact'
 import { act } from 'preact/test-utils'
-import { SidebarPanel } from '../src/features/project-editor/components/sidebar/sidebar-panel.tsx'
-import { SidebarExplorerContent } from '../src/features/project-editor/components/sidebar/sidebar-explorer-content.tsx'
-import { SidebarSettingsContent } from '../src/features/project-editor/components/sidebar/sidebar-settings.tsx'
+import { SidebarPanel } from '../src/features/project-editor/components/sidebar/sidebar-panel/index.ts'
+import { SidebarExplorerContent } from '../src/features/project-editor/components/sidebar/sidebar-panel/private/sidebar-explorer-content.tsx'
+import { SidebarSettingsContent } from '../src/features/project-editor/components/sidebar/sidebar-panel/private/sidebar-settings.tsx'
 import type { ThemePreference } from '../src/theme/theme-types'
 import {
   buildEditorActionsSpies,

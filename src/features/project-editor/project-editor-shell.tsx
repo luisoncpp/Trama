@@ -2,7 +2,7 @@
 import { memo } from 'preact/compat'
 import { useMemo } from 'preact/hooks'
 import type { ProjectEditorModel } from './project-editor-types'
-import { SidebarPanel } from './components/sidebar/sidebar-panel.tsx'
+import { SidebarPanel } from './components/sidebar/sidebar-panel/index.ts'
 import {
   buildSidebarSectionProps,
   type ProjectEditorShellState,

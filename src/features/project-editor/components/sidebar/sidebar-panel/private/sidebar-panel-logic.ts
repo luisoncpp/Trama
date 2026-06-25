@@ -1,8 +1,8 @@
 // @Architecture(descriptionShort="Section scoping + filter-state helpers")
 import { useState } from 'preact/hooks'
-import type { SidebarSection } from '../../project-editor-types'
-import { SIDEBAR_SECTION_CONFIG, type ContentSidebarSection } from './sidebar-section-roots'
-import { getScopedFiles, getScopedSelectedPath } from './sidebar-path-scoping'
+import type { SidebarSection } from '../../../../project-editor-types'
+import { SIDEBAR_SECTION_CONFIG, type ContentSidebarSection } from '../../sidebar-section-roots.ts'
+import { getScopedFiles, getScopedSelectedPath } from '../../sidebar-path-scoping.ts'
 
 export function formatProjectRootBreadcrumbLabel(projectRootPath: string): string {
   return projectRootPath.replace(/\\/g, '/').replace(/\/$/, '')

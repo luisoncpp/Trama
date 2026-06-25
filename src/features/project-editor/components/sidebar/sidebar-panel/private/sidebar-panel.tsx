@@ -1,8 +1,8 @@
 // @Architecture(descriptionShort="Sidebar shell/orchestrator")
 import { SidebarPanelBody } from './sidebar-panel-body.tsx'
-import { SidebarRail } from './sidebar-rail'
-import { useSidebarContentSection } from './sidebar-panel-logic'
-import type { SidebarPanelCommonProps } from './sidebar-types'
+import { SidebarRail } from './sidebar-rail.tsx'
+import { useSidebarContentSection } from './sidebar-panel-logic.ts'
+import type { SidebarPanelCommonProps } from './sidebar-types.ts'
 
 type SidebarPanelProps = SidebarPanelCommonProps
 

@@ -1,7 +1,7 @@
 // @Architecture(descriptionShort="Section rail and collapse toggle")
 import type { JSX } from 'preact'
-import type { SidebarSection } from '../../project-editor-types'
-import { useEditorActions } from '../../project-editor-actions-context.tsx'
+import type { SidebarSection } from '../../../../project-editor-types'
+import { useEditorActions } from '../../../../project-editor-actions-context.tsx'
 import { LoreIcon, ManuscriptIcon, OutlineIcon, SettingsIcon, TemplatesIcon, TransferIcon, HelpIcon, CollapseLeftIcon, ExpandRightIcon } from './sidebar-rail-icons.tsx'
 
 interface SidebarRailProps {
