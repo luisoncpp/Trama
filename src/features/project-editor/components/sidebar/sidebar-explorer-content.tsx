@@ -5,7 +5,7 @@ import { SidebarExplorerBody } from './sidebar-explorer-body/index.ts'
 import type { SidebarExplorerCommonProps } from './sidebar-types'
 import { useSidebarFileActionsDialog } from './use-sidebar-file-actions-dialog'
 import { useSidebarCreateDialog, useSidebarFolderActionsDialog } from './sidebar-dialog-hooks'
-import { useSidebarCreateControllerBridge } from '../../templates/use-sidebar-create-controller-bridge'
+import { useSidebarCreateControllerBridge } from '../../templates'
 import { SIDEBAR_SECTION_CONFIG } from './sidebar-section-roots'
 
 interface SidebarHeaderProps {

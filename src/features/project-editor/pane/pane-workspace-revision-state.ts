@@ -2,7 +2,7 @@
 import type { DocumentMeta } from '../../../shared/ipc'
 import { createEmptyRevisionRailState } from '../project-editor-git-history-state'
 import type { PaneDocumentState, RevisionRailState } from '../project-editor-types'
-import { areEquivalentEditorValues } from './rich-markdown-editor/rich-markdown-editor-value-sync'
+import { areEquivalentEditorValues } from './rich-markdown-editor/rich-markdown-editor'
 
 function computeCurrentRevisionLabel(
   path: string | null,

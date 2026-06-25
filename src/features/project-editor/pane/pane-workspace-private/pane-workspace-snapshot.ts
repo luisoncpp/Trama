@@ -1,6 +1,6 @@
 // @Architecture(descriptionShort="Private implementation detail for parent module")
-import { logSnapshotComparison } from '../snapshot-compare-logger'
-import { areEquivalentEditorValues } from '../rich-markdown-editor/rich-markdown-editor-value-sync'
+import { logSnapshotComparison } from '../pane-shared'
+import { areEquivalentEditorValues } from '../rich-markdown-editor/rich-markdown-editor'
 
 export class PaneSnapshotTracker {
   private map: Map<string, string>

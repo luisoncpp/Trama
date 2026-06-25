@@ -1,6 +1,6 @@
 // @Architecture(descriptionShort="Private implementation detail for parent module")
 import { useRef } from 'preact/hooks'
-import type { FilteredTemplate } from '../../../templates/templates-catalog-private/filter-template-paths'
+import type { FilteredTemplate } from '../../../templates'
 import { useTemplatePickerCombobox } from './use-template-picker-combobox'
 import { TemplatePickerDropdown } from './template-picker-dropdown.tsx'
 

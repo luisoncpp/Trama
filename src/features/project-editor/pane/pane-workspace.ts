@@ -8,7 +8,7 @@ import type {
   WorkspaceLayoutState,
   WorkspacePane,
 } from '../project-editor-types'
-import { PaneNavigation } from './pane-navigation'
+import { PaneNavigation } from './pane-shared'
 import { buildActivePaneDocumentInfo, buildPaneDocumentInfo } from './pane-workspace-private/pane-workspace-document-info'
 import { PaneAutosave } from './pane-workspace-private/pane-workspace-autosave'
 import {

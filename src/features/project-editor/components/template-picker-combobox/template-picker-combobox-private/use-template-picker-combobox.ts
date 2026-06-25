@@ -1,6 +1,6 @@
 // @Architecture(descriptionShort="Hook orchestrating template picker combobox state and effects")
 import { useEffect, useState } from 'preact/hooks'
-import type { FilteredTemplate } from '../../../templates/templates-catalog-private/filter-template-paths'
+import type { FilteredTemplate } from '../../../templates'
 
 interface KeyboardNavParams {
   event: KeyboardEvent

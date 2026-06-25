@@ -3,7 +3,7 @@ import Quill from 'quill'
 import TurndownService from 'turndown'
 import { marked } from 'marked'
 import { renderDirectiveArtifactsToMarkdown } from '../../../../shared/markdown-layout-directives'
-import { LayoutDirectiveController } from './editor-session/editor-session-private/layout-directive-controller'
+import { LayoutDirectiveController } from './editor-session/editor-session-internals'
 import {
   hydrateMarkdownImages,
   renderBrokenImageCommentsAsHtml,

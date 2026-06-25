@@ -5,6 +5,7 @@ color: "#7c3aed"
 icon: app-window
 exclude:
   - use-project-editor.ts
+  - use-project-editor-effects.ts
   - workspace-actions.ts
   - project-editor-private/**
   - workspace-actions/**

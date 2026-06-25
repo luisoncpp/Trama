@@ -7,9 +7,10 @@ facades:
   - use-project-editor.ts
 files:
   - use-project-editor.ts
+  - use-project-editor-effects.ts
 match:
   - "project-editor-private/**"
 descriptionShort: useProjectEditor hook & private assembly
 ---
 
-Public feature hook and its private state/action assembly. External seam is use-project-editor.ts; project-editor-private/ modules must not be imported elsewhere.
+Public feature hook, effects composition, and private state/action assembly. External seam is use-project-editor.ts; project-editor-private/ modules must not be imported elsewhere.

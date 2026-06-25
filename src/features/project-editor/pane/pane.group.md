@@ -5,6 +5,7 @@ color: "#16a34a"
 icon: layers
 facades:
   - index.ts
+  - pane-shared.ts
 exclude:
   - pane-workspace.ts
   - pane-workspace-types.ts

@@ -207,7 +207,8 @@ Mandatory doc navigation for new chats: start with `mds/START-HERE.md` — it pr
 - `src/features/project-editor/use-project-editor.ts`
   - Main feature hook and public seam for the project editor Module.
   - Owns the stable session-only pane-history store injected into `PaneWorkspace`.
-  - The only file that imports from `project-editor-private/`.
+  - Re-exports `ActionGroupParams` and `ProjectEditorActionSetters` for git-history action groups.
+  - The only file outside `use-project-editor-effects.ts` that imports from `project-editor-private/`.
 - `src/features/project-editor/project-editor-view.tsx`
   - Screen-level composition root for project editor shell, conflict overlays, layout shell, and dialogs.
   - Mounts `EditorActionsProvider` so sidebar leaves can consume `ProjectEditorActions` without prop drilling.
@@ -265,7 +266,7 @@ Mandatory doc navigation for new chats: start with `mds/START-HERE.md` — it pr
 - `src/features/project-editor/open-project-types.ts`
   - Shared `OpenProjectOptions` type used by the project editor Module, conflict flow, and sidebar file/folder adapters.
 - `src/features/project-editor/project-editor-private/`
-  - Private implementation directory for the `use-project-editor.ts` seam. Do not import from it outside `use-project-editor.ts`.
+  - Private implementation directory for the `use-project-editor.ts` seam. Do not import from it outside `use-project-editor.ts` and `use-project-editor-effects.ts`.
   - `state.ts` — private state assembly: core state, persisted layout/sidebar state, active-pane projection, visible-files derivation, setters, and `paneBindings`.
   - `actions.ts` — private action assembly: clear/load/save/open plus flat `ProjectEditorActions` composition over the deep Modules via `action-group-types.ts`, `sidebar-action-group.ts`, `workspace-action-group.ts`, and `conflict-action-group.ts`.
   - `action-group-memos.ts` — memoized sidebar/workspace/conflict action-group hooks so the flat action surface only rebuilds when each domain's real inputs change.
@@ -346,7 +347,8 @@ Mandatory doc navigation for new chats: start with `mds/START-HERE.md` — it pr
   - Minimal Preact adapter: detects dirty → calls `paneWorkspace.scheduleAutosave`, detects clean/unmount → calls `paneWorkspace.cancelAutosave`. Timer logic lives in `PaneWorkspace`.
 - `src/features/project-editor/pane/`
   - Private module for pane coordination. All pane state, flush, save, and autosave access goes through this module.
-  - `pane/index.ts` — barrel exporting `PaneWorkspace`, `usePaneWorkspace`, and public types
+  - `pane/index.ts` — barrel exporting `PaneWorkspace`, `usePaneWorkspace`, navigation helpers, and public types
+  - `pane/pane-shared.ts` — cycle-safe secondary facade for `PaneNavigation`, navigation history helpers, and snapshot compare logging; consumed by `PaneWorkspace` without importing `pane/index.ts`
   - `pane/pane-workspace.ts` — coordinator class with read methods (`getPaneDocument`, `isPaneDirty`) and write methods (`savePaneNow`, `preparePaneExit`, `preparePaneRevert`, `saveAllDirtyPanes`, `scheduleAutosave`, `updatePaneContent`, etc.); `savePaneIfDirty` and `markPaneSaved` are internal.
   - `pane/pane-workspace-private/pane-workspace-bindings.ts` — pane/editor-session ref accessors and `updatePaneState` helper; consumed only by `PaneWorkspace` and sibling private modules.
   - `pane/pane-workspace-private/pane-workspace-init.ts` — constructor arg resolution for navigation history vs saved-content map; consumed only by `PaneWorkspace`.
@@ -451,6 +453,8 @@ Mandatory doc navigation for new chats: start with `mds/START-HERE.md` — it pr
 - `src/features/project-editor/pane/rich-markdown-editor/editor-session/editor-session.ts`
   - Public `EditorSession` hook (`useEditorSession`) and `UseEditorSessionProps` type.
   - Orchestrates lifecycle via `editor-session-orchestration.ts` into a single session facade.
+- `src/features/project-editor/pane/rich-markdown-editor/editor-session/editor-session-internals.ts`
+  - Cycle-safe secondary facade exporting `LayoutDirectiveController` and `TagHighlights` for rich-editor siblings without importing `useEditorSession`.
 - `src/features/project-editor/pane/rich-markdown-editor/editor-session/editor-session-types.ts`
   - Full `EditorSession` interface exported for rich-editor consumers; extends the minimal `EditorSession` in `project-editor-types.ts`.
 - `src/features/project-editor/pane/rich-markdown-editor/editor-session/editor-session-private/editor-session-lifecycle.ts`

@@ -4,6 +4,10 @@ import { RichMarkdownEditorView } from './rich-markdown-editor-view'
 import { useEditorSession, type UseEditorSessionProps } from './editor-session/editor-session'
 
 export type RichMarkdownEditorProps = UseEditorSessionProps
+export {
+  areEquivalentEditorValues,
+  normalizeEditorDocumentValue,
+} from './rich-markdown-editor-value-sync'
 
 export function RichMarkdownEditor(props: RichMarkdownEditorProps) {
   const hostRef = useRef<HTMLDivElement | null>(null)

@@ -1,6 +1,6 @@
 // @Architecture(descriptionShort="Private implementation detail for parent module")
 import type { PaneNavigationHistoryStore } from '../../project-editor-types'
-import { getEmptyNavigationHistory } from '../pane-navigation-state'
+import { getEmptyNavigationHistory } from '../pane-shared'
 
 function createDefaultNavigationStore(): PaneNavigationHistoryStore {
   return {

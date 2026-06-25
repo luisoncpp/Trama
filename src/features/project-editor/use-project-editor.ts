@@ -54,6 +54,8 @@ function useProjectEditorWorkspace(
   }
 }
 
+export type { ActionGroupParams, ProjectEditorActionSetters } from './project-editor-private/action-group-types'
+
 export function useProjectEditor(): ProjectEditorModel {
   const autoPickProjectFolderOnStart = import.meta.env.MODE !== 'test' && !isHelpScreenshotCaptureMode()
   const state = useProjectEditorState()

@@ -6,3 +6,8 @@ export { usePaneWorkspace } from './use-pane-workspace'
 export { WorkspaceLayoutPanel } from './workspace-editor-panels'
 export { useProjectEditorAutosaveEffect } from './use-project-editor-autosave-effect'
 export { useProjectEditorCloseEffect } from './use-project-editor-close-effect'
+export {
+  PaneNavigation,
+  getEmptyNavigationHistory,
+  logSnapshotComparison,
+} from './pane-shared'
