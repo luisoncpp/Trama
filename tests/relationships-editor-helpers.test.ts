@@ -14,6 +14,7 @@ import {
   normalizeEmojis,
   rectFromDragCorners,
   resolveAutoNodeTag,
+  shouldBlockRelationshipsChartPanFromTarget,
   withRelationshipsConfig,
 } from '../src/features/project-editor/pane/relationships-editor/private/relationships-editor-helpers'
 import { resizeRegionFromEdge } from '../src/features/project-editor/pane/relationships-editor/private/relationships-region-editing-helpers'
@@ -300,5 +301,22 @@ describe('relationships-editor-helpers', () => {
     expect(ninja.length).toBeGreaterThan(0)
     expect(ninja.some((c) => c.emojis.includes('🥷'))).toBe(true)
     expect(filterEmojiCategories('zzz-not-an-emoji')).toHaveLength(0)
+  })
+
+  it('allows chart pan from region body but blocks header and resize handles', () => {
+    const region = document.createElement('div')
+    region.setAttribute('data-relationships-region', 'true')
+    const header = document.createElement('div')
+    header.setAttribute('data-relationships-region-header', 'true')
+    const body = document.createElement('div')
+    body.setAttribute('data-relationships-region-body', 'true')
+    const handle = document.createElement('div')
+    handle.setAttribute('data-relationships-region-handle', 'n')
+    region.append(header, handle, body)
+
+    expect(shouldBlockRelationshipsChartPanFromTarget(body)).toBe(false)
+    expect(shouldBlockRelationshipsChartPanFromTarget(header)).toBe(true)
+    expect(shouldBlockRelationshipsChartPanFromTarget(handle)).toBe(true)
+    expect(shouldBlockRelationshipsChartPanFromTarget(document.createElement('div'))).toBe(false)
   })
 })

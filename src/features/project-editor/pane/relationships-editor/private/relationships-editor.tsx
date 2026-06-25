@@ -13,6 +13,7 @@ import {
   RELATIONSHIPS_STAGE_HEIGHT,
   RELATIONSHIPS_STAGE_WIDTH,
   resolveNodeDestination,
+  shouldBlockRelationshipsChartPanFromTarget,
   withRelationshipsConfig,
   type RelationshipEdge,
   type RelationshipEdgePreset,
@@ -141,7 +142,7 @@ export function RelationshipsEditor({ meta, pane, layoutMode, readOnlyPreview = 
   const handlePointerDown = useCallback(/* handleRelationshipsPointerDown */ (event: PointerEvent) => {
     if (event.button !== 0 && event.button !== 1) return
     if ((event.target as HTMLElement | null)?.closest('[data-relationships-node="true"]')) return
-    if ((event.target as HTMLElement | null)?.closest('[data-relationships-region="true"]')) return
+    if (shouldBlockRelationshipsChartPanFromTarget(event.target)) return
     if (event.button === 0 && linkSourceId) {
       setLinkSourceId(null)
       return

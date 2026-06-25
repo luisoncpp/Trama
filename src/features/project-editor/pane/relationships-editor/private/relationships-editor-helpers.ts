@@ -158,3 +158,10 @@ export function getParallelEdgeIndex(edges: RelationshipEdge[], edgeIndex: numbe
   }
   return position
 }
+
+/** Region header/edge chrome blocks chart pan; the semi-transparent body behaves like canvas. */
+export function shouldBlockRelationshipsChartPanFromTarget(target: EventTarget | null): boolean {
+  if (!(target instanceof HTMLElement)) return false
+  if (target.closest('[data-relationships-region-body="true"]')) return false
+  return Boolean(target.closest('[data-relationships-region="true"]'))
+}
