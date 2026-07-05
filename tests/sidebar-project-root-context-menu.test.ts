@@ -12,11 +12,12 @@ describe('SidebarScopePathBreadcrumb context menu', () => {
     const onPickFolder = vi.fn()
     const container = document.createElement('div')
     renderWithEditorActions(
-      h(SidebarScopePathBreadcrumb, {
-        projectRootPath: 'C:/Proyectos/trama/example-fantasy',
-        disabled: false,
-      }),
-      { container, actions: buildEditorActionsSpies({ pickProjectFolder: onPickFolder }) },
+      h(SidebarScopePathBreadcrumb, {}),
+      {
+        container,
+        actions: buildEditorActionsSpies({ pickProjectFolder: onPickFolder }),
+        sidebarState: { rootPath: 'C:/Proyectos/trama/example-fantasy' },
+      },
     )
 
     const button = container.querySelector('.path-breadcrumb-trigger') as HTMLButtonElement
@@ -42,11 +43,8 @@ describe('SidebarScopePathBreadcrumb context menu', () => {
   it('disables project-only actions when no project is open', () => {
     const container = document.createElement('div')
     renderWithEditorActions(
-      h(SidebarScopePathBreadcrumb, {
-        projectRootPath: '',
-        disabled: false,
-      }),
-      { container },
+      h(SidebarScopePathBreadcrumb, {}),
+      { container, sidebarState: { rootPath: '' } },
     )
 
     const button = container.querySelector('.path-breadcrumb-trigger') as HTMLButtonElement

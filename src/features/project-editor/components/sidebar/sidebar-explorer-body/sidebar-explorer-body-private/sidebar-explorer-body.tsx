@@ -21,8 +21,6 @@ export interface SidebarExplorerBodyProps {
   loadingProject: boolean
   apiAvailable: boolean
   statusMessage: string
-  projectRootPath: string
-  pickFolderDisabled: boolean
   filterQuery: string
   onFilterQueryChange: (value: string) => void
   createMode: SidebarCreateMode | null
@@ -138,10 +136,7 @@ export function SidebarExplorerBody(props: SidebarExplorerBodyProps) {
 
   return (
     <>
-      <SidebarScopePathBreadcrumb
-        projectRootPath={props.projectRootPath}
-        disabled={props.pickFolderDisabled}
-      />
+      <SidebarScopePathBreadcrumb />
       {props.statusMessage && <p class="project-menu__status">{props.statusMessage}</p>}
       <SidebarFilter
         value={props.filterQuery} onChange={props.onFilterQueryChange}

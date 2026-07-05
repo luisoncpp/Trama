@@ -3,6 +3,10 @@ import { act } from 'preact/test-utils'
 import { vi } from 'vitest'
 import { EditorActionsProvider } from '../../src/features/project-editor/project-editor-actions-context.tsx'
 import { SidebarSectionScopeProvider } from '../../src/features/project-editor/components/sidebar/sidebar-section-scope-context'
+import {
+  SidebarStateProvider,
+  type SidebarProjectState,
+} from '../../src/features/project-editor/components/sidebar/sidebar-state-context.tsx'
 import type { ProjectEditorActions } from '../../src/features/project-editor/project-editor-types'
 
 const EDITOR_ACTION_KEYS: Array<keyof ProjectEditorActions> = [
@@ -31,25 +35,52 @@ export function buildEditorActionsSpies(
   return spies
 }
 
+export function buildSidebarStateDefaults(): SidebarProjectState {
+  return {
+    apiAvailable: true,
+    rootPath: '',
+    visibleFiles: [],
+    selectedPath: null,
+    loadingProject: false,
+    loadingDocument: false,
+    statusMessage: '',
+    corkboardOrder: {},
+    gitHistory: {
+      gitAvailable: true,
+      repositoryRoot: null,
+      usesParentRepository: false,
+      needsInitialization: false,
+      loading: false,
+    },
+    sidebarActiveSection: 'explorer',
+    focusModeEnabled: false,
+    focusScope: 'paragraph',
+  }
+}
+
 interface RenderWithEditorActionsOptions {
   actions?: ProjectEditorActions
   container?: HTMLElement
   scopeRoot?: string
+  sidebarState?: Partial<SidebarProjectState>
 }
 
 export function renderWithEditorActions(
   vnode: VNode<any>,
-  { actions, container, scopeRoot }: RenderWithEditorActionsOptions = {},
+  { actions, container, scopeRoot, sidebarState }: RenderWithEditorActionsOptions = {},
 ) {
   const resolvedActions = actions ?? buildEditorActionsSpies()
   const target = container ?? document.createElement('div')
   if (!container) {
     document.body.appendChild(target)
   }
-  let wrapped: VNode<any> = h(EditorActionsProvider, { actions: resolvedActions, children: vnode })
+  let inner: VNode<any> = vnode
   if (scopeRoot) {
-    wrapped = h(SidebarSectionScopeProvider, { root: scopeRoot, children: wrapped })
+    inner = h(SidebarSectionScopeProvider, { root: scopeRoot, children: inner })
   }
+  const stateValue: SidebarProjectState = { ...buildSidebarStateDefaults(), ...sidebarState }
+  const stateWrapped = h(SidebarStateProvider, { value: stateValue, children: inner })
+  const wrapped: VNode<any> = h(EditorActionsProvider, { actions: resolvedActions, children: stateWrapped })
   act(() => {
     render(wrapped, target)
   })

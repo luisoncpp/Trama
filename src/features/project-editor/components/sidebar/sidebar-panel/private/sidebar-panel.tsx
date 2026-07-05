@@ -11,7 +11,6 @@ function buildSidebarBodyProps(props: SidebarPanelProps, effectiveCollapsed: boo
     effectiveCollapsed,
     sidebarActiveSection: props.sidebarActiveSection,
     sectionConfig: sectionState.sectionConfig,
-    rootPath: props.rootPath,
     scopedFiles: sectionState.scopedFiles,
     scopedSelectedPath: sectionState.scopedSelectedPath,
     activeFilterQuery: sectionState.activeFilterQuery,

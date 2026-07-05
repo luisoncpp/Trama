@@ -23,13 +23,11 @@ describe('SidebarScopePathBreadcrumb', () => {
     const onPickFolder = vi.fn()
     const container = document.createElement('div')
     renderWithEditorActions(
-      h(SidebarScopePathBreadcrumb, {
-        projectRootPath: '',
-        disabled: false,
-      }),
+      h(SidebarScopePathBreadcrumb, {}),
       {
         container,
         actions: buildEditorActionsSpies({ pickProjectFolder: onPickFolder }),
+        sidebarState: { rootPath: '' },
       },
     )
 
@@ -41,11 +39,8 @@ describe('SidebarScopePathBreadcrumb', () => {
   it('renders full project root with tooltip and css ellipsis class', () => {
     const container = document.createElement('div')
     renderWithEditorActions(
-      h(SidebarScopePathBreadcrumb, {
-        projectRootPath: 'C:/Proyectos/trama/example-fantasy',
-        disabled: false,
-      }),
-      { container },
+      h(SidebarScopePathBreadcrumb, {}),
+      { container, sidebarState: { rootPath: 'C:/Proyectos/trama/example-fantasy' } },
     )
 
     const button = container.querySelector('button')

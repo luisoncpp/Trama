@@ -1,14 +1,10 @@
 // @Architecture(descriptionShort="Clickable project-root breadcrumb above the sidebar filter (full root path; CSS")
 import { PROJECT_EDITOR_STRINGS } from '../../project-editor-strings'
 import { useEditorActions } from '../../project-editor-actions-context.tsx'
+import { useSidebarState } from './sidebar-state-context.tsx'
 import { formatProjectRootBreadcrumbLabel } from './sidebar-panel/index.ts'
 import { SidebarProjectRootContextMenu } from './sidebar-project-root-context-menu.tsx'
 import { useSidebarProjectRootContextMenu } from './use-sidebar-project-root-context-menu.ts'
-
-interface SidebarScopePathBreadcrumbProps {
-  projectRootPath: string
-  disabled: boolean
-}
 
 function ScopePathFolderIcon() {
   return (
@@ -27,13 +23,12 @@ function ScopePathFolderIcon() {
   )
 }
 
-export function SidebarScopePathBreadcrumb({
-  projectRootPath,
-  disabled,
-}: SidebarScopePathBreadcrumbProps) {
+export function SidebarScopePathBreadcrumb() {
   const { pickProjectFolder } = useEditorActions()
-  const hasProject = Boolean(projectRootPath.trim())
-  const label = hasProject ? formatProjectRootBreadcrumbLabel(projectRootPath) : PROJECT_EDITOR_STRINGS.noFolderSelected
+  const { rootPath, loadingProject, apiAvailable } = useSidebarState()
+  const disabled = loadingProject || !apiAvailable
+  const hasProject = Boolean(rootPath.trim())
+  const label = hasProject ? formatProjectRootBreadcrumbLabel(rootPath) : PROJECT_EDITOR_STRINGS.noFolderSelected
   const contextMenu = useSidebarProjectRootContextMenu({ hasProject })
 
   return (

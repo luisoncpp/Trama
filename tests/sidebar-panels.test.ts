@@ -5,10 +5,21 @@ import { SidebarPanel } from '../src/features/project-editor/components/sidebar/
 import { SidebarExplorerContent } from '../src/features/project-editor/components/sidebar/sidebar-panel/private/sidebar-explorer-content.tsx'
 import { SidebarSettingsContent } from '../src/features/project-editor/components/sidebar/sidebar-panel/private/sidebar-settings.tsx'
 import type { ThemePreference } from '../src/theme/theme-types'
+import type { SidebarProjectState } from '../src/features/project-editor/components/sidebar/sidebar-state-context.tsx'
 import {
   buildEditorActionsSpies,
   renderWithEditorActions,
 } from './helpers/editor-actions-test-helper.ts'
+
+const PANEL_SIDEBAR_STATE: Partial<SidebarProjectState> = {
+  rootPath: 'C:/Proyectos/test_trama',
+  visibleFiles: [
+    'book/Act-01/Chapter-01/Scene-001.md',
+    'outline/arc-general.md',
+    'lore/personajes/protagonista.md',
+  ],
+  selectedPath: 'book/Act-01/Chapter-01/Scene-001.md',
+}
 
 function buildPanelProps(
   overrides: Partial<Parameters<typeof SidebarPanel>[0]> = {},
@@ -57,8 +68,13 @@ function buildPanelProps(
 describe('sidebar panels', () => {
   let container: HTMLDivElement
 
-  function renderSidebar(vnode: VNode<any>, actions = buildEditorActionsSpies(), scopeRoot?: string) {
-    return renderWithEditorActions(vnode, { container, actions, scopeRoot })
+  function renderSidebar(
+    vnode: VNode<any>,
+    actions = buildEditorActionsSpies(),
+    scopeRoot?: string,
+    sidebarState?: Partial<SidebarProjectState>,
+  ) {
+    return renderWithEditorActions(vnode, { container, actions, scopeRoot, sidebarState })
   }
 
   beforeEach(() => {
@@ -71,7 +87,7 @@ describe('sidebar panels', () => {
   })
 
   it('renders explorer, outline, lore and settings sections with scoped trees', () => {
-    renderSidebar(h(SidebarPanel, buildPanelProps()))
+    renderSidebar(h(SidebarPanel, buildPanelProps()), undefined, undefined, PANEL_SIDEBAR_STATE)
 
     expect(container.textContent).toContain('Manuscript')
     expect(container.textContent).toContain('test_trama')
@@ -79,20 +95,20 @@ describe('sidebar panels', () => {
     expect(container.textContent).toContain('Scene-001.md')
     expect(container.textContent).not.toContain('arc-general.md')
 
-    renderSidebar(h(SidebarPanel, buildPanelProps({ sidebarActiveSection: 'outline' })))
+    renderSidebar(h(SidebarPanel, buildPanelProps({ sidebarActiveSection: 'outline' })), undefined, undefined, PANEL_SIDEBAR_STATE)
 
     expect(container.textContent).toContain('Outline')
     expect(container.textContent).toContain('test_trama')
     expect(container.textContent).toContain('arc-general.md')
     expect(container.textContent).not.toContain('Scene-001.md')
 
-    renderSidebar(h(SidebarPanel, buildPanelProps({ sidebarActiveSection: 'lore' })))
+    renderSidebar(h(SidebarPanel, buildPanelProps({ sidebarActiveSection: 'lore' })), undefined, undefined, PANEL_SIDEBAR_STATE)
 
     expect(container.textContent).toContain('Lore')
     expect(container.textContent).toContain('test_trama')
     expect(container.textContent).toContain('protagonista.md')
 
-    renderSidebar(h(SidebarPanel, buildPanelProps({ sidebarActiveSection: 'transfer' })))
+    renderSidebar(h(SidebarPanel, buildPanelProps({ sidebarActiveSection: 'transfer' })), undefined, undefined, PANEL_SIDEBAR_STATE)
 
     expect(container.textContent).toContain('Import / Export')
     expect(container.textContent).toContain('Import AI Content')
@@ -105,7 +121,7 @@ describe('sidebar panels', () => {
     expect(container.textContent).toContain('EPUB (.epub)')
     expect(container.textContent).toContain('PDF (.pdf)')
 
-    renderSidebar(h(SidebarPanel, buildPanelProps({ sidebarActiveSection: 'settings' })))
+    renderSidebar(h(SidebarPanel, buildPanelProps({ sidebarActiveSection: 'settings' })), undefined, undefined, PANEL_SIDEBAR_STATE)
 
     expect(container.textContent).toContain('Settings')
     expect(container.textContent).toContain('Theme')
@@ -157,11 +173,9 @@ describe('sidebar panels', () => {
       apiAvailable: true,
       loadingProject: false,
       statusMessage: '',
-      projectRootPath: 'C:/Proyectos/test_trama',
-      pickFolderDisabled: false,
       filterQuery: '',
       onFilterQueryChange,
-    }), actions, 'book/')
+    }), actions, 'book/', { rootPath: 'C:/Proyectos/test_trama' })
 
     const folderButton = container.querySelector('.path-breadcrumb-trigger') as HTMLButtonElement
     expect(folderButton).toBeTruthy()
@@ -188,11 +202,9 @@ describe('sidebar panels', () => {
       apiAvailable: true,
       loadingProject: false,
       statusMessage: '',
-      projectRootPath: 'C:/Proyectos/test_trama',
-      pickFolderDisabled: false,
       filterQuery: '',
       onFilterQueryChange: () => undefined,
-    }), buildEditorActionsSpies(), 'book/')
+    }), buildEditorActionsSpies(), 'book/', { rootPath: 'C:/Proyectos/test_trama' })
 
     const filterInput = container.querySelector('.sidebar-filter__input') as HTMLInputElement
     expect(filterInput).toBeTruthy()
@@ -215,11 +227,9 @@ describe('sidebar panels', () => {
       apiAvailable: true,
       loadingProject: true,
       statusMessage: '',
-      projectRootPath: 'C:/Proyectos/test_trama',
-      pickFolderDisabled: true,
       filterQuery: '',
       onFilterQueryChange: () => undefined,
-    }), buildEditorActionsSpies(), 'book/')
+    }), buildEditorActionsSpies(), 'book/', { rootPath: 'C:/Proyectos/test_trama', loadingProject: true })
 
     const treeEl = container.querySelector('.sidebar-tree')
     expect(treeEl).toBeTruthy()
@@ -234,11 +244,9 @@ describe('sidebar panels', () => {
       apiAvailable: false,
       loadingProject: false,
       statusMessage: '',
-      projectRootPath: 'C:/Proyectos/test_trama',
-      pickFolderDisabled: true,
       filterQuery: '',
       onFilterQueryChange: () => undefined,
-    }), buildEditorActionsSpies(), 'book/')
+    }), buildEditorActionsSpies(), 'book/', { rootPath: 'C:/Proyectos/test_trama', apiAvailable: false })
 
     expect(container.textContent).toContain('Preload API unavailable.')
   })
@@ -412,7 +420,7 @@ describe('sidebar panels', () => {
       }),
     }
 
-    renderSidebar(h(SidebarPanel, buildPanelProps()))
+    renderSidebar(h(SidebarPanel, buildPanelProps()), undefined, undefined, PANEL_SIDEBAR_STATE)
 
     const createArticleButton = Array.from(container.querySelectorAll('.sidebar-footer-actions .editor-button')).find(
       (node) => node.textContent?.includes('+ Article'),

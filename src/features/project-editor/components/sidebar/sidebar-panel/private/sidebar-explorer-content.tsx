@@ -1,6 +1,7 @@
 // @Architecture(descriptionShort="Explorer container and dialog orchestration")
 import { useRef } from 'preact/hooks'
 import { useEditorActions } from '../../../../project-editor-actions-context.tsx'
+import { useSidebarState } from '../../sidebar-state-context.tsx'
 import { SidebarExplorerBody } from '../../sidebar-explorer-body/index.ts'
 import type { SidebarExplorerCommonProps } from './sidebar-types.ts'
 import { useSidebarFileActionsDialog } from './use-sidebar-file-actions-dialog.ts'
@@ -20,8 +21,6 @@ interface SidebarExplorerContentProps {
   apiAvailable: SidebarExplorerCommonProps['apiAvailable']
   loadingProject: SidebarExplorerCommonProps['loadingProject']
   statusMessage: SidebarExplorerCommonProps['statusMessage']
-  projectRootPath: string
-  pickFolderDisabled: boolean
   filterQuery: string
   onFilterQueryChange: (value: string) => void
   corkboardOrder?: Record<string, string[]>
@@ -31,6 +30,7 @@ interface SidebarExplorerContentProps {
 
 function useSidebarExplorerDialogs(props: SidebarExplorerContentProps) {
   const actions = useEditorActions()
+  const { rootPath } = useSidebarState()
   const createDialog = useSidebarCreateDialog({
     selectedPath: props.selectedPath,
   })
@@ -45,7 +45,7 @@ function useSidebarExplorerDialogs(props: SidebarExplorerContentProps) {
     isActiveSectionContent: (section: string) => Object.hasOwn(SIDEBAR_SECTION_CONFIG, section),
     getActiveSection: () => props.activeSection ?? 'explorer',
     getSelectedPath: () => props.selectedPath,
-    getProjectRoot: () => props.projectRootPath,
+    getProjectRoot: () => rootPath,
   })
 
   const submitWithTemplate = () => {
@@ -95,8 +95,7 @@ export function SidebarExplorerContent(props: SidebarExplorerContentProps) {
           title={props.title} visibleFiles={props.visibleFiles} selectedPath={props.selectedPath}
           loadingDocument={props.loadingDocument}
           loadingProject={props.loadingProject} apiAvailable={props.apiAvailable}
-          statusMessage={props.statusMessage} projectRootPath={props.projectRootPath}
-          pickFolderDisabled={props.pickFolderDisabled}
+          statusMessage={props.statusMessage}
           filterQuery={props.filterQuery} onFilterQueryChange={props.onFilterQueryChange}
           createMode={createCtrlSnapshot.mode} createInput={createCtrlSnapshot.input}
           openCreateDialog={createCtrl.open.bind(createCtrl)} closeCreateDialog={createCtrl.close.bind(createCtrl)}

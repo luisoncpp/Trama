@@ -20,7 +20,6 @@ export interface SidebarPanelBodyProps {
   effectiveCollapsed: boolean
   sidebarActiveSection: SidebarSection
   sectionConfig: (typeof SIDEBAR_SECTION_CONFIG)[ContentSidebarSection] | null
-  rootPath: string
   scopedFiles: string[]
   scopedSelectedPath: string | null
   activeFilterQuery: string
@@ -52,7 +51,7 @@ export interface SidebarPanelBodyProps {
 
 function renderExplorer(props: SidebarPanelBodyProps) {
   const {
-    contentProps, sectionConfig, rootPath, scopedFiles, scopedSelectedPath,
+    contentProps, sectionConfig, scopedFiles, scopedSelectedPath,
     activeFilterQuery, onFilterQueryChange, corkboardOrder,
   } = props
   if (!sectionConfig) return null
@@ -62,8 +61,6 @@ function renderExplorer(props: SidebarPanelBodyProps) {
       <SidebarExplorerContent
         {...contentProps}
         title={sectionConfig.title}
-        projectRootPath={rootPath}
-        pickFolderDisabled={contentProps.loadingProject || !contentProps.apiAvailable}
         visibleFiles={scopedFiles}
         selectedPath={scopedSelectedPath}
         filterQuery={activeFilterQuery}
