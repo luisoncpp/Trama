@@ -1,6 +1,7 @@
 // @Architecture(descriptionShort="Sidebar UI component for project explorer workflow")
 import { useState } from 'preact/hooks'
 import { useEditorActions } from '../../../../project-editor-actions-context.tsx'
+import { useSidebarState } from '../../sidebar-state-context.tsx'
 import type { BookExportFormat } from '../../../../../../shared/ipc'
 
 const BOOK_EXPORT_FORMAT_OPTIONS: Array<{ value: BookExportFormat; label: string }> = [
@@ -12,16 +13,19 @@ const BOOK_EXPORT_FORMAT_OPTIONS: Array<{ value: BookExportFormat; label: string
 ]
 
 interface SidebarTransferContentProps {
-  disabled: boolean
-  gitAvailable: boolean
-  savingSnapshot?: boolean
   onImport: () => void
   onExport: () => void
   onExportBook: (format: BookExportFormat) => void
   onImportZulu: () => void
 }
 
-function SidebarInterchangeActions({ disabled, onImport, onExport }: Pick<SidebarTransferContentProps, 'disabled' | 'onImport' | 'onExport'>) {
+interface SidebarTransferFlags {
+  disabled: boolean
+  gitAvailable: boolean
+  savingSnapshot: boolean
+}
+
+function SidebarInterchangeActions({ disabled, onImport, onExport }: Pick<SidebarTransferFlags, 'disabled'> & Pick<SidebarTransferContentProps, 'onImport' | 'onExport'>) {
   return (
     <div class="project-menu__actions">
       <button
@@ -44,7 +48,7 @@ function SidebarInterchangeActions({ disabled, onImport, onExport }: Pick<Sideba
   )
 }
 
-function SidebarBookExportActions({ disabled, onExportBook }: Pick<SidebarTransferContentProps, 'disabled' | 'onExportBook'>) {
+function SidebarBookExportActions({ disabled, onExportBook }: Pick<SidebarTransferFlags, 'disabled'> & Pick<SidebarTransferContentProps, 'onExportBook'>) {
   const [format, setFormat] = useState<BookExportFormat>('markdown')
 
   return (
@@ -75,7 +79,7 @@ function SidebarBookExportActions({ disabled, onExportBook }: Pick<SidebarTransf
   )
 }
 
-function SidebarGitActions({ disabled, savingSnapshot = false }: Pick<SidebarTransferContentProps, 'disabled' | 'savingSnapshot'>) {
+function SidebarGitActions({ disabled, savingSnapshot = false }: Pick<SidebarTransferFlags, 'disabled' | 'savingSnapshot'>) {
   const { saveSnapshot } = useEditorActions()
   return (
     <div class="project-menu">
@@ -99,7 +103,40 @@ function SidebarGitActions({ disabled, savingSnapshot = false }: Pick<SidebarTra
   )
 }
 
-export function SidebarTransferContent({ disabled, gitAvailable, savingSnapshot, onImport, onExport, onExportBook, onImportZulu }: SidebarTransferContentProps) {
+function SidebarZuluImport({ disabled, onImportZulu }: Pick<SidebarTransferFlags, 'disabled'> & Pick<SidebarTransferContentProps, 'onImportZulu'>) {
+  return (
+    <div class="project-menu">
+      <label class="project-menu__field">
+        <span>ZuluPad import</span>
+        <span class="project-menu__field-note">
+          Import pages from a .zulu file exported from ZuluPad.
+        </span>
+      </label>
+      <div class="project-menu__actions">
+        <button
+          type="button"
+          class="editor-button editor-button--secondary"
+          disabled={disabled}
+          onClick={onImportZulu}
+        >
+          Import ZuluPad File
+        </button>
+      </div>
+    </div>
+  )
+}
+
+function useSidebarTransferFlags(): SidebarTransferFlags {
+  const { loadingProject, apiAvailable, gitHistory } = useSidebarState()
+  return {
+    disabled: loadingProject || !apiAvailable,
+    gitAvailable: gitHistory.gitAvailable,
+    savingSnapshot: gitHistory.loading,
+  }
+}
+
+export function SidebarTransferContent({ onImport, onExport, onExportBook, onImportZulu }: SidebarTransferContentProps) {
+  const { disabled, gitAvailable, savingSnapshot } = useSidebarTransferFlags()
   return (
     <div class="sidebar-panel-content">
       <aside class="workspace-panel workspace-panel--sidebar">
@@ -108,24 +145,7 @@ export function SidebarTransferContent({ disabled, gitAvailable, savingSnapshot,
             <p class="workspace-panel__eyebrow">Import / Export</p>
           </div>
         </div>
-        <div class="project-menu">
-          <label class="project-menu__field">
-            <span>ZuluPad import</span>
-            <span class="project-menu__field-note">
-              Import pages from a .zulu file exported from ZuluPad.
-            </span>
-          </label>
-          <div class="project-menu__actions">
-            <button
-              type="button"
-              class="editor-button editor-button--secondary"
-              disabled={disabled}
-              onClick={onImportZulu}
-            >
-              Import ZuluPad File
-            </button>
-          </div>
-        </div>
+        <SidebarZuluImport disabled={disabled} onImportZulu={onImportZulu} />
 
         <div class="project-menu">
           <label class="project-menu__field">

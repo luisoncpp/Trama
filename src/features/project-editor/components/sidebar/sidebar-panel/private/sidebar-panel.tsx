@@ -28,7 +28,6 @@ function buildSidebarBodyProps(props: SidebarPanelProps, effectiveCollapsed: boo
     spellcheckLanguageSelectionSupported: props.spellcheckLanguageSelectionSupported,
     onSpellcheckEnabledChange: props.onSpellcheckEnabledChange,
     onSpellcheckLanguageChange: props.onSpellcheckLanguageChange,
-    focusScope: props.focusScope,
     corkboardOrder: props.corkboardOrder,
     allVisibleFiles: props.visibleFiles,
     activeSectionForController: props.sidebarActiveSection,
@@ -50,9 +49,7 @@ export function SidebarPanel(props: SidebarPanelProps) {
   return (
     <aside class={`sidebar-shell ${effectiveCollapsed ? 'is-collapsed' : ''}`}>
       <SidebarRail
-        activeSection={props.sidebarActiveSection}
         collapsed={effectiveCollapsed}
-        focusModeEnabled={props.focusModeEnabled}
         onOpenHelp={openHelpGettingStarted}
       />
       <SidebarPanelBody {...bodyProps} />

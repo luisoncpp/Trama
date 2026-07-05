@@ -1,6 +1,5 @@
 // @Architecture(descriptionShort="Shared TypeScript types for adjacent module")
-import type { FocusScope, SidebarSection } from '../../../../project-editor-types'
-import type { GitHistoryState } from '../../../../project-editor-types'
+import type { SidebarSection } from '../../../../project-editor-types'
 import type { ResolvedTheme, ThemePreference } from '../../../../../../theme/theme-types'
 import type { BookExportFormat } from '../../../../../../shared/ipc'
 
@@ -21,7 +20,6 @@ export interface SidebarProjectContextProps {
   loadingProject: boolean
   rootPath: string
   statusMessage: string
-  gitHistory: GitHistoryState
   onImport: () => void
   onImportZulu: () => void
   onExportBook: (format: BookExportFormat) => void
@@ -43,17 +41,11 @@ export interface SidebarSpellcheckProps {
   onSpellcheckLanguageChange: (language: string) => void
 }
 
-export interface SidebarWorkspacePrefsProps {
-  focusModeEnabled: boolean
-  focusScope: FocusScope
-}
-
 export type SidebarPanelCommonProps = SidebarSelectionProps &
   SidebarPanelLayoutProps &
   SidebarProjectContextProps &
   SidebarThemeProps &
-  SidebarSpellcheckProps &
-  SidebarWorkspacePrefsProps & {
+  SidebarSpellcheckProps & {
     corkboardOrder?: Record<string, string[]>
   }
 

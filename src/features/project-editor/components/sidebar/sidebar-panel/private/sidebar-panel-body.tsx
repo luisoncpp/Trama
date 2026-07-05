@@ -13,7 +13,6 @@ import type {
   SidebarSelectionProps,
   SidebarSpellcheckProps,
   SidebarThemeProps,
-  SidebarWorkspacePrefsProps,
 } from './sidebar-types.ts'
 
 export interface SidebarPanelBodyProps {
@@ -33,7 +32,6 @@ export interface SidebarPanelBodyProps {
   spellcheckLanguageSelectionSupported: SidebarSpellcheckProps['spellcheckLanguageSelectionSupported']
   onSpellcheckEnabledChange: SidebarSpellcheckProps['onSpellcheckEnabledChange']
   onSpellcheckLanguageChange: SidebarSpellcheckProps['onSpellcheckLanguageChange']
-  focusScope: SidebarWorkspacePrefsProps['focusScope']
   onImport: () => void
   onImportZulu: () => void
   onExportBook: SidebarProjectContextProps['onExportBook']
@@ -88,16 +86,12 @@ export function SidebarPanelBody(props: SidebarPanelBodyProps) {
         spellcheckLanguageSelectionSupported={props.spellcheckLanguageSelectionSupported}
         onSpellcheckEnabledChange={props.onSpellcheckEnabledChange}
         onSpellcheckLanguageChange={props.onSpellcheckLanguageChange}
-        focusScope={props.focusScope}
       />
     )
   }
   if (props.sidebarActiveSection === 'transfer') {
     return (
       <SidebarTransferContent
-        disabled={props.contentProps.loadingProject || !props.contentProps.apiAvailable}
-        gitAvailable={props.contentProps.gitHistory.gitAvailable}
-        savingSnapshot={props.contentProps.gitHistory.loading}
         onImport={props.onImport}
         onImportZulu={props.onImportZulu}
         onExportBook={props.onExportBook}

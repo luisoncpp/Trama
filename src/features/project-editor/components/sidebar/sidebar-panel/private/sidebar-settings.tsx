@@ -3,6 +3,7 @@ import type { ComponentChildren } from 'preact'
 import type { ResolvedTheme, ThemePreference } from '../../../../../../theme/theme-types'
 import type { FocusScope } from '../../../../project-editor-types'
 import { useEditorActions } from '../../../../project-editor-actions-context.tsx'
+import { useSidebarState } from '../../sidebar-state-context.tsx'
 
 interface SettingsFieldProps {
   label: string
@@ -31,16 +32,15 @@ interface SidebarSettingsContentProps {
   spellcheckLanguageSelectionSupported: boolean
   onSpellcheckEnabledChange: (enabled: boolean) => void
   onSpellcheckLanguageChange: (language: string) => void
-  focusScope: FocusScope
 }
 
 export function SidebarSettingsContent({
   themePreference, resolvedTheme, onThemePreferenceChange,
   spellcheckEnabled, spellcheckLanguage, spellcheckLanguageOptions,
   spellcheckLanguageSelectionSupported, onSpellcheckEnabledChange, onSpellcheckLanguageChange,
-  focusScope,
 }: SidebarSettingsContentProps) {
   const { setFocusScope } = useEditorActions()
+  const { focusScope } = useSidebarState()
   return (
     <div class="sidebar-panel-content">
       <aside class="workspace-panel workspace-panel--sidebar">

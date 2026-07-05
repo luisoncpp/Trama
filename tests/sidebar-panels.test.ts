@@ -39,13 +39,6 @@ function buildPanelProps(
     loadingProject: false,
     rootPath: 'C:/Proyectos/test_trama',
     statusMessage: '',
-    gitHistory: {
-      gitAvailable: true,
-      repositoryRoot: 'C:/Proyectos/test_trama/.git',
-      usesParentRepository: false,
-      needsInitialization: false,
-      loading: false,
-    },
     onImport: () => undefined,
     onImportZulu: () => undefined,
     onExportBook: (_format) => undefined,
@@ -59,8 +52,6 @@ function buildPanelProps(
     spellcheckLanguageSelectionSupported: true,
     onSpellcheckEnabledChange: () => undefined,
     onSpellcheckLanguageChange: () => undefined,
-    focusModeEnabled: false,
-    focusScope: 'paragraph',
     ...overrides,
   }
 }
@@ -132,6 +123,8 @@ describe('sidebar panels', () => {
   it('hides Save Snapshot when Git is unavailable', () => {
     renderSidebar(h(SidebarPanel, buildPanelProps({
       sidebarActiveSection: 'transfer',
+    })), undefined, undefined, {
+      ...PANEL_SIDEBAR_STATE,
       gitHistory: {
         gitAvailable: false,
         repositoryRoot: null,
@@ -139,7 +132,7 @@ describe('sidebar panels', () => {
         needsInitialization: false,
         loading: false,
       },
-    })))
+    })
 
     expect(container.textContent).not.toContain('Save Snapshot')
   })
@@ -666,7 +659,6 @@ describe('sidebar panels', () => {
           spellcheckLanguageSelectionSupported: true,
           onSpellcheckEnabledChange: () => undefined,
           onSpellcheckLanguageChange: () => undefined,
-          focusScope: 'paragraph',
         }),
         { container, actions },
       )
@@ -700,7 +692,6 @@ describe('sidebar panels', () => {
           spellcheckLanguageSelectionSupported: true,
           onSpellcheckEnabledChange: () => undefined,
           onSpellcheckLanguageChange: () => undefined,
-          focusScope: 'paragraph',
         }),
         { container, actions },
       )
@@ -734,7 +725,6 @@ describe('sidebar panels', () => {
           spellcheckLanguageSelectionSupported: true,
           onSpellcheckEnabledChange,
           onSpellcheckLanguageChange: () => undefined,
-          focusScope: 'paragraph',
         }),
         { container, actions },
       )
@@ -767,7 +757,6 @@ describe('sidebar panels', () => {
           spellcheckLanguageSelectionSupported: true,
           onSpellcheckEnabledChange: () => undefined,
           onSpellcheckLanguageChange,
-          focusScope: 'paragraph',
         }),
         { container, actions },
       )

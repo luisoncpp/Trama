@@ -49,7 +49,6 @@ function buildSidebarProjectContextProps(
     loadingProject: shellState.loadingProject,
     rootPath: shellState.rootPath,
     statusMessage: shellState.statusMessage,
-    gitHistory: shellState.gitHistory,
     onImport: () => props.dialogsProps.aiImport.setOpen(true),
     onImportZulu: () => props.dialogsProps.zuluImport.setOpen(true),
     onExportBook: (format: BookExportFormat) => {
@@ -67,8 +66,6 @@ function buildSidebarProjectContextProps(
     spellcheckLanguageSelectionSupported: props.spellcheckLanguageSelectionSupported,
     onSpellcheckEnabledChange: props.onSpellcheckEnabledChange,
     onSpellcheckLanguageChange: props.onSpellcheckLanguageChange,
-    focusModeEnabled: shellState.workspaceLayout.focusModeEnabled,
-    focusScope: shellState.workspaceLayout.focusScope,
   }
 }
 

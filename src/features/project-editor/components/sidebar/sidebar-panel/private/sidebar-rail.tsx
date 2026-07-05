@@ -2,12 +2,11 @@
 import type { JSX } from 'preact'
 import type { SidebarSection } from '../../../../project-editor-types'
 import { useEditorActions } from '../../../../project-editor-actions-context.tsx'
+import { useSidebarState } from '../../sidebar-state-context.tsx'
 import { LoreIcon, ManuscriptIcon, OutlineIcon, SettingsIcon, TemplatesIcon, TransferIcon, HelpIcon, CollapseLeftIcon, ExpandRightIcon } from './sidebar-rail-icons.tsx'
 
 interface SidebarRailProps {
-  activeSection: SidebarSection
   collapsed: boolean
-  focusModeEnabled: boolean
   onOpenHelp: () => void
 }
 
@@ -31,8 +30,9 @@ function RailItemLabel({ item }: { item: SidebarRailItem }): JSX.Element {
   return <Icon />
 }
 
-export function SidebarRail({ activeSection, collapsed, focusModeEnabled, onOpenHelp }: SidebarRailProps) {
+export function SidebarRail({ collapsed, onOpenHelp }: SidebarRailProps) {
   const { setSidebarSection, toggleSidebarPanelCollapsed } = useEditorActions()
+  const { sidebarActiveSection, focusModeEnabled } = useSidebarState()
 
   return (
     <nav class="sidebar-rail" aria-label="Workspace sections">
@@ -41,7 +41,7 @@ export function SidebarRail({ activeSection, collapsed, focusModeEnabled, onOpen
           <button
             key={item.section}
             type="button"
-            class={`sidebar-rail__item ${activeSection === item.section ? 'is-active' : ''}`}
+            class={`sidebar-rail__item ${sidebarActiveSection === item.section ? 'is-active' : ''}`}
             title={item.title}
             aria-label={item.title}
             onClick={() => setSidebarSection(item.section)}
