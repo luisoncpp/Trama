@@ -8,96 +8,90 @@ Any render of `App` (which calls `useProjectEditor()`).
 
 `App` in `src/app.tsx:7` passes `model` to `ProjectEditorView`.
 
+## State vs props split
+
+Sidebar **state** (visible files, selected path, loading flags, git history, focus
+scope, active section, corkboard order) no longer threads through the render chain as
+props. It is published once by `ProjectEditorView` via `SidebarStateProvider` and read
+at the leaves through `useSidebarState()` (raw, project-relative) or
+`useScopedSidebarState()` (section-relative, inside a `SidebarSectionScopeProvider`).
+
+Only these still flow as props from the shell: `effectiveCollapsed` (layout), the four
+dialog openers (`onImport`, `onImportZulu`, `onExport`, `onExportBook`), theme props, and
+spellcheck props.
+
 ## Component chain
 
 ```
 App (src/app.tsx)
   │ model = useProjectEditor()
-  │ model.state.visibleFiles
   ▼
 ProjectEditorView (src/features/project-editor/project-editor-view.tsx)
-  │ EditorActionsProvider (wraps sidebar + workspace)
-  │   buildSidebarSectionProps(model, ...) → { visibleFiles: state.visibleFiles, corkboardOrder, ... }
+  │ EditorActionsProvider (actions facade)
+  │   SidebarStateProvider value={useMemo(buildSidebarProjectState(shellState))}
+  │     — provider value identity changes only when a state field changes
   ▼
-SidebarPanel (src/.../sidebar/sidebar-panel.tsx)
-  │ useSidebarPanelRenderState(props)
-  │   ├─ useSidebarResponsiveCollapse()
-  │   └─ useSidebarContentSection(sidebarActiveSection, visibleFiles, selectedPath)
-  │        ├─ sectionConfig from SIDEBAR_SECTION_CONFIG
-  │        ├─ scopedFiles = getScopedFiles(visibleFiles, sectionConfig.root)
-  │        └─ scopedSelectedPath = getScopedSelectedPath(selectedPath, sectionConfig.root)
-  │
-  │ buildSidebarBodyProps(props, effectiveCollapsed, sectionState)
-  │   scopedFiles: sectionState.scopedFiles
+ProjectEditorSidebarShell (memo, project-editor-shell.tsx)
+  │ buildSidebarSectionProps(props) → { effectiveCollapsed, ...openers, ...theme, ...spellcheck }
+  │ (no per-keystroke state props → memo does not re-render while typing)
+  ▼
+SidebarPanel (src/.../sidebar/sidebar-panel/private/sidebar-panel.tsx)
+  │ const { sidebarActiveSection } = useSidebarState()
+  │ useSidebarContentSection(sidebarActiveSection) → { sectionConfig, activeFilterQuery, onFilterQueryChange }
+  ├─ SidebarRail        — reads sidebarActiveSection, focusModeEnabled from context
   ▼
 SidebarPanelBody (sidebar-panel-body.tsx)
   │ if effectiveCollapsed → null
-  │ if sectionConfig → renderExplorer(props)
-  │   section paths enter the sidebar-path-scoping seam
-  │   scopedCorkboardOrder = scopeCorkboardOrder(corkboardOrder, sectionConfig.root)
+  │ if sectionConfig → renderExplorer: <SidebarSectionScopeProvider root={sectionConfig.root}>
+  │ else settings/transfer switch reads useSidebarState().sidebarActiveSection
   ▼
 SidebarExplorerContent (sidebar-explorer-content.tsx)
-  │ visibleFiles={scopedFiles}
-  │ corkboardOrder={scopedCorkboardOrder}
+  │ { title, filterQuery, onFilterQueryChange } only
+  │ reads useSidebarState()/useScopedSidebarState() for controller bridge + aria-busy
   ▼
-SidebarExplorerBody (sidebar-explorer-body.tsx)
-  │ SidebarTreeArea (inline)
-  │   visibleFiles={props.visibleFiles}  ← scopedFiles
-  │   corkboardOrder={props.corkboardOrder}
+SidebarExplorerBody (sidebar-explorer-body/index.ts)
+  │ const scoped = useScopedSidebarState()  → tree/expansion memos
+  │ const { apiAvailable, loadingProject, statusMessage } = useSidebarState()
+  ├─ SidebarScopePathBreadcrumb — reads rootPath/loadingProject/apiAvailable from context
+  ├─ SidebarTreeArea — reads apiAvailable/loadingProject from context
   ▼
 SidebarTree (sidebar-tree.tsx)
-  │ useSidebarTreeData(visibleFiles, selectedPath, filterQuery, corkboardOrder)
-  │   ├─ tree = useMemo(() => buildSidebarTree(visibleFiles), [visibleFiles])
-  │   ├─ filterResult = useMemo(() => filterSidebarTree(tree, filterQuery), [filterQuery, tree])
-  │   ├─ [setFolderExpanded, effectiveExpandedFolders] = useSidebarTreeExpandedFolders(tree, selectedPath, filterQuery, autoExpandFolderPaths)
-  │   ├─ rawRows = useMemo(() => getVisibleSidebarRows(tree, expandedFolders, visibleNodePaths), [tree, expandedFolders, ...])
-  │   └─ rows = useMemo(() => corkboardOrder ? sortTreeRowsByOrder(rawRows, corkboardOrder) : rawRows, [rawRows, corkboardOrder])
-  │
-  │ if visibleFiles.length === 0 && !hasFilterQuery → <p>No Markdown files.</p>
-  │ if rows.length === 0 && hasFilterQuery → <p>No files match query.</p>
-  │
+  │ const scoped = useScopedSidebarState()  → visibleFiles/selectedPath/corkboardOrder
+  │ const { loadingDocument, loadingProject } = useSidebarState()
   ▼
-SidebarTreeRows (sidebar-tree.tsx:83)
-  │ rows.map(row → SidebarTreeRowButton key={row.nodeId} ...)
-  ▼
-SidebarTreeRowButton (sidebar-tree-row-button.tsx)
-  │ renders individual tree row with indent, icon, name
+SidebarTreeRows → SidebarTreeRowButton
 ```
+
+## Scoped vs raw at the leaves
+
+`useScopedSidebarState()` strips the section root (e.g. `book/`) from
+`state.visibleFiles`, `state.selectedPath`, and `state.corkboardOrder` using
+`getScopedFiles` / `getScopedSelectedPath` / `scopeCorkboardOrder` from
+`sidebar-path-scoping.ts`. Any file list, selected path, or corkboard order consumed
+inside the scope provider MUST come from `useScopedSidebarState()`; raw
+`useSidebarState()` is only for booleans/flags, `rootPath`, `statusMessage`,
+`sidebarActiveSection`, and the deliberately-raw `visibleFiles` used as template paths.
 
 ## Path transformation at each stage
 
 | Stage | Path format | Example |
 |-------|------------|---------|
-| `model.state.visibleFiles` | Project-relative, folders with `/` | `book/Act-01/` |
-| `useSidebarContentSection` input | Same | `book/Act-01/` |
-| `getScopedFiles` output | Section-relative, strip `sectionRoot` | `Act-01/` (if section is `book/`) |
-| `SidebarTree.visibleFiles` prop | Section-relative | `Act-01/` |
+| `state.visibleFiles` (context) | Project-relative, folders with `/` | `book/Act-01/` |
+| `useScopedSidebarState()` output | Section-relative, strip `sectionRoot` | `Act-01/` (if section is `book/`) |
 | `buildSidebarTree` nodeId | Normalized, no trailing `/` | `Act-01` |
 | `SidebarTreeRowButton.key` | nodeId | `Act-01` |
-
-## Key props passed to SidebarTree
-
-| Prop | Source | Type |
-|------|--------|------|
-| `visibleFiles` | `scopedFiles` from `getScopedFiles` | `string[]` (section-relative) |
-| `selectedPath` | `scopedSelectedPath` from `getScopedSelectedPath` | `string \| null` (section-relative) |
-| `filterQuery` | `activeFilterQuery` from `useSidebarContentSection` | `string` |
-| `corkboardOrder` | `scopeCorkboardOrder(global order, sectionRoot)` | `Record<string, string[]>` (section-relative keys) |
-
-## Important: naming mismatch
-
-In `renderExplorer` → `SidebarExplorerContent` → `SidebarExplorerBody` → `SidebarTreeArea` → `SidebarTree`, the prop is consistently named `visibleFiles`, but its value is the **section-relative** `scopedFiles`. Keep this in mind when adding debug logs in `SidebarTree` — do NOT use project-relative paths (e.g. `book/Act-05/fads/`) in `visibleFiles.includes()` checks.
 
 ## Files to inspect
 
 | File | Role |
 |------|------|
-| `src/app.tsx` | Top-level model wiring |
-| `src/features/project-editor/project-editor-view.tsx` | `buildSidebarSectionProps` |
-| `src/.../sidebar/sidebar-panel.tsx` | `useSidebarPanelRenderState` |
-| `src/.../sidebar/sidebar-panel-logic.ts` | `useSidebarContentSection`, `joinProjectPath` |
-| `src/.../sidebar/sidebar-path-scoping.ts` | branded path seam: `getScopedFiles`, `getScopedSelectedPath`, `scopeCorkboardOrder`, `buildScopedReorderHandler` |
-| `src/.../sidebar/sidebar-panel-body.tsx` | `renderExplorer`, raw-string adapter into the path-scoping seam |
-| `src/.../sidebar/sidebar-explorer-content.tsx` | Pass-through to `SidebarExplorerBody` |
-| `src/.../sidebar/sidebar-explorer-body.tsx` | `SidebarTreeArea` inline component |
-| `src/.../sidebar/sidebar-tree.tsx` | `useSidebarTreeData`, `SidebarTreeRows` |
+| `src/features/project-editor/project-editor-view.tsx` | mounts `SidebarStateProvider` |
+| `src/.../sidebar/sidebar-state-context.tsx` | `SidebarProjectState`, `useSidebarState` |
+| `src/.../sidebar/use-scoped-sidebar-state.ts` | `useScopedSidebarState` |
+| `src/.../sidebar/sidebar-path-scoping.ts` | branded path seam: `getScopedFiles`, `getScopedSelectedPath`, `scopeCorkboardOrder` |
+| `src/.../sidebar/sidebar-panel/private/sidebar-panel.tsx` | orchestrator |
+| `src/.../sidebar/sidebar-panel/private/sidebar-panel-logic.ts` | `useSidebarContentSection` |
+| `src/.../sidebar/sidebar-panel/private/sidebar-panel-body.tsx` | `renderExplorer` + section switch |
+| `src/.../sidebar/sidebar-panel/private/sidebar-explorer-content.tsx` | explorer container |
+| `src/.../sidebar/sidebar-explorer-body/sidebar-explorer-body-private/sidebar-explorer-body.tsx` | tree/filter/dialogs body |
+| `src/.../sidebar/sidebar-tree.tsx` | tree rows |

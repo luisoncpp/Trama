@@ -98,8 +98,8 @@ This flow involves two IPC calls, two workspace layout updates, and a snapshot r
 | `electron/ipc/handlers/project-handlers/project-open-handler.ts` | `handleOpenProject` — returns fresh snapshot |
 | `src/features/project-editor/project-editor-private/open-project.ts` | `applyOpenedProject` — applies snapshot to state |
 | `src/features/project-editor/project-editor-private/state.ts` | `getVisibleSidebarPaths` → `useMemo` chain |
-| `src/features/project-editor/components/sidebar/sidebar-panel-logic.ts` | `useSidebarContentSection` + `getScopedFiles` |
-| `src/features/project-editor/components/sidebar/sidebar-dialog-hooks.ts` | Dialog hooks that consume `deleteFolder` via `useEditorActions()` and scope paths |
+| `src/features/project-editor/components/sidebar/sidebar-panel/private/sidebar-panel-logic.ts` | `useSidebarContentSection` (section config + filter state); scoping now lives in `useScopedSidebarState` |
+| `src/features/project-editor/components/sidebar/sidebar-panel/private/sidebar-dialog-hooks.ts` | Dialog hooks that consume `deleteFolder` via `useEditorActions()` and scope paths |
 | `src/features/project-editor/components/sidebar/sidebar-path-scoping.ts` | `toSectionRelativePath()` + `toProjectPath()` used for delete-path conversion |
 | `src/features/project-editor/project-editor-actions-context.tsx` | Stable Preact context providing `useEditorActions()` |
 | `src/features/project-editor/components/sidebar/sidebar-tree.tsx` | `useSidebarTreeData` → tree build → render |

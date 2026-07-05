@@ -55,34 +55,32 @@ Any state setter that updates `coreState.snapshot` — typically from `applyOpen
 
 8. `App` passes `model` to `ProjectEditorView`.
 
-9. `ProjectEditorView` calls `buildSidebarSectionProps(model, ...)`:
-   ```
-   visibleFiles: state.visibleFiles,
-   corkboardOrder: state.corkboardOrder,
-   ```
+9. `ProjectEditorView` publishes `state.visibleFiles` (and the rest of the sidebar state)
+   into context via `SidebarStateProvider` — it is **not** threaded through props anymore.
+   `buildSidebarSectionProps` only forwards `effectiveCollapsed`, dialog openers, theme,
+   and spellcheck.
 
-10. `SidebarPanel` receives both as props.
-
-11. `SidebarPanel.useSidebarPanelRenderState` calls `useSidebarContentSection(sidebarActiveSection, visibleFiles, selectedPath)`.
+10. Sidebar leaves read the raw project-relative `visibleFiles` via `useSidebarState()`.
 
 ### Step E — Section scoping
 
-12. `useSidebarContentSection` in `sidebar-panel-logic.ts:36`:
-    - Selects `sectionConfig` from `SIDEBAR_SECTION_CONFIG` (e.g. `{ title: 'Manuscript', root: 'book/' }`).
-    - Calls `getScopedFiles(visibleFiles, sectionConfig.root)`:
+11. Inside a `SidebarSectionScopeProvider` (mounted by `renderExplorer` with
+    `sectionConfig.root`), `useScopedSidebarState()` calls
+    `getScopedFiles(state.visibleFiles, sectionRoot)`:
       1. Normalizes backslashes to forward slashes.
-      2. Filters paths that start with `sectionConfig.root` (e.g. keeps `book/Act-01/file.md`, drops `lore/places/city.md`).
+      2. Filters paths that start with the section root (e.g. keeps `book/Act-01/file.md`, drops `lore/places/city.md`).
       3. Strips the section root prefix from remaining paths (e.g. `book/Act-01/file.md` → `Act-01/file.md`).
       4. Filters out empty strings.
-    - Returns these **section-relative** paths as `scopedFiles`.
-
-13. `renderExplorer` (in `sidebar-panel-body.tsx:103`) passes `visibleFiles={scopedFiles}` to `SidebarExplorerContent`.
+    - Returns these **section-relative** paths as `scoped.visibleFiles`.
 
 ### Step F — Tree build
 
-14. `SidebarExplorerContent` → `SidebarExplorerBody` → `SidebarTreeArea` → `SidebarTree` (prop name remains `visibleFiles` throughout, but the value is section-relative).
+12. `SidebarExplorerBody` and `SidebarTree` each call `useScopedSidebarState()` to obtain
+    the section-relative `visibleFiles`/`selectedPath`/`corkboardOrder`. No `visibleFiles`
+    prop is passed down the explorer chain.
 
-15. `SidebarTree.useSidebarTreeData` in `sidebar-tree.tsx:45`:
+13. `SidebarTree` in `sidebar-tree.tsx`:
+    - `const scoped = useScopedSidebarState()` provides `visibleFiles`
     - `tree = useMemo(() => buildSidebarTree(visibleFiles), [visibleFiles])`:
       - `parseSidebarPath(rawPath)` normalizes slashes, detects folder type by trailing `/`, strips the suffix.
       - Iterates segments to build parent folder chain via `ensureFolderNode`.

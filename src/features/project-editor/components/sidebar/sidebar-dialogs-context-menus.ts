@@ -22,7 +22,7 @@ export function useSidebarDialogs(props: {
 }) {
   const actions = useScopedSidebarActions()
   const fileContextMenu = useSidebarFileContextMenu({
-    onSelectFile: actions.selectFile,
+    selectFile: actions.selectFile,
     onOpenEditTags: props.openEditTagsDialog,
     onOpenRename: props.openRenameDialog,
     onOpenDelete: props.openDeleteDialog,

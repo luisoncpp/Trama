@@ -50,14 +50,14 @@ export function useSidebarFilterShortcut({ enabled, focusFilterInput }: UseSideb
 }
 
 interface UseSidebarFileContextMenuParams {
-  onSelectFile: (path: string) => Promise<void>
+  selectFile: (path: string) => Promise<void>
   onOpenEditTags: (path: string) => void
   onOpenRename: (path: string) => void
   onOpenDelete: (path: string) => void
   onOpenReveal: (path: string) => void
 }
 
-export function useSidebarFileContextMenu({ onSelectFile, onOpenEditTags, onOpenRename, onOpenDelete, onOpenReveal }: UseSidebarFileContextMenuParams) {
+export function useSidebarFileContextMenu({ selectFile, onOpenEditTags, onOpenRename, onOpenDelete, onOpenReveal }: UseSidebarFileContextMenuParams) {
   const [state, setState] = useState<{ path: string; x: number; y: number } | null>(null)
 
   const closeContextMenu = () => {
@@ -65,7 +65,7 @@ export function useSidebarFileContextMenu({ onSelectFile, onOpenEditTags, onOpen
   }
 
   const handleFileContextMenu = (path: string, event: MouseEvent) => {
-    void onSelectFile(path)
+    void selectFile(path)
     setState({ path, x: event.clientX, y: event.clientY })
   }
 

@@ -4,6 +4,10 @@ Trama is a file-first desktop writing tool where a project is an opened folder c
 
 ## Language
 
+**Sidebar project state**:
+The read-only snapshot of project/workspace state (visible files, selected path, loading flags, git history, focus scope) that sidebar leaf components consume via Preact context instead of threaded props. Scoped per sidebar section through the section scope context.
+_Avoid_: Shell state bag, prop chain state
+
 **Staging Basket**:
 The transient UI collection tracking project-relative file paths actively selected by a user for data collection or processing during an export or batch session.
 _Avoid_: Selection queue, download cart

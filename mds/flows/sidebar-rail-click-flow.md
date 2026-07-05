@@ -66,13 +66,13 @@ Calling `setSidebarActiveSection(section)` and `setSidebarPanelCollapsed(false)`
 
 ### Step 4 — Re-render: sidebar width updates
 
-**File:** `sidebar-panel.tsx:51`
+**File:** `sidebar-panel/private/sidebar-panel.tsx`
 
 ```typescript
 class={`sidebar-shell ${effectiveCollapsed ? 'is-collapsed' : ''}`}
 ```
 
-After the state update, `SidebarPanel` re-renders. Since `effectiveCollapsed` (derived from `props.sidebarPanelCollapsed || isResponsiveCollapsed`) is now `false`, the `sidebar-shell` element loses the `is-collapsed` class and its width is driven by the layout CSS.
+After the state update, `SidebarPanel` re-renders. `effectiveCollapsed` is computed in the view (`useSidebarLayout` = `sidebarPanelCollapsed || responsiveCollapse`) and passed as the one remaining layout prop. When it is now `false`, the `sidebar-shell` element loses the `is-collapsed` class and its width is driven by the layout CSS.
 
 The panel body (`SidebarPanelBody`) also becomes visible since `effectiveCollapsed` is now `false`.
 
@@ -82,11 +82,11 @@ The panel body (`SidebarPanelBody`) also becomes visible since `effectiveCollaps
 
 | File | Role |
 |------|------|
-| `src/features/project-editor/components/sidebar/sidebar-rail.tsx:34` | Entry: button `onClick` calls `setSidebarSection` from `useEditorActions()` |
+| `src/features/project-editor/components/sidebar/sidebar-panel/private/sidebar-rail.tsx` | Entry: button `onClick` calls `setSidebarSection` from `useEditorActions()`; reads `sidebarActiveSection`/`focusModeEnabled` from `useSidebarState()` |
 | `src/features/project-editor/project-editor-actions-context.tsx` | Stable Preact context for `ProjectEditorActions` |
 | `src/features/project-editor/workspace-actions.ts` | Core logic: sets section + conditionally expands panel |
 | `src/features/project-editor/use-sidebar-ui-state.ts` | State setters backed by `useState` |
-| `src/features/project-editor/components/sidebar/sidebar-panel.tsx:51` | CSS class driven by `effectiveCollapsed` |
+| `src/features/project-editor/components/sidebar/sidebar-panel/private/sidebar-panel.tsx` | CSS class driven by `effectiveCollapsed` |
 
 ## Common failure modes
 
@@ -94,7 +94,7 @@ The panel body (`SidebarPanelBody`) also becomes visible since `effectiveCollaps
 
 2. **Panel expands during focus mode** — The `!layout.focusModeEnabled` guard should prevent this. If it still happens, verify `focusModeEnabled` in `layout` matches `workspaceLayout.focusModeEnabled` from state.
 
-3. **Responsive collapse overriding** — `useSidebarResponsiveCollapse` can independently collapse the panel on narrow viewports. The `effectiveCollapsed` in `sidebar-panel.tsx:62` is `props.sidebarPanelCollapsed || isResponsiveCollapsed`, meaning responsive collapse takes precedence and cannot be undone by `setSidebarSection` alone.
+3. **Responsive collapse overriding** — `useSidebarResponsiveCollapse` (used by `useSidebarLayout` in the view) can independently collapse the panel on narrow viewports. `effectiveCollapsed` is `sidebarPanelCollapsed || isResponsiveCollapsed`, meaning responsive collapse takes precedence and cannot be undone by `setSidebarSection` alone.
 
 ## Related flows
 

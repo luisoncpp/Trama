@@ -123,7 +123,7 @@ return <ProjectEditorView model={model} ... />
 - `useProjectEditorShellState(model)` — picks only shell-relevant fields (`rootPath`, `visibleFiles`, `sidebarActiveSection`, etc.) into a memoized object
 - `useProjectEditorViewDialogs(rootPath, visibleFiles)` — repackages dialog hook state (AI import/export, book export, Zulu import) into stable memoized prop bundles
 
-The sidebar shell (`ProjectEditorSidebarShell`) is wrapped in `memo(...)` and only re-renders when its narrowed props actually change. `ProjectEditorDialogs` is also memoized so closed dialog leaf components do not receive new props during typing.
+The sidebar shell (`ProjectEditorSidebarShell`) is wrapped in `memo(...)`. Sidebar **state** is no longer passed to it as props — `ProjectEditorView` publishes it once via `SidebarStateProvider` (value = `useMemo(buildSidebarProjectState(shellState))`), and sidebar leaves read it through `useSidebarState()` / `useScopedSidebarState()`. The shell only receives `effectiveCollapsed`, dialog openers, theme, and spellcheck props, so it does not re-render while typing (see `sidebar-render-chain-flow.md`). `ProjectEditorDialogs` is also memoized so closed dialog leaf components do not receive new props during typing.
 
 Top-level callbacks (spellcheck enable/disable, theme preference) are stabilized via `useCallback` in `App` so they do not defeat the memo boundary.
 
@@ -186,7 +186,8 @@ App → ProjectEditorView
   │   │
   │   ├─ ProjectEditorSidebarShell (memo)
   │   │   └─ ... → SidebarPanel → SidebarTree
-  │   │      (only re-renders when shellState/shellActions props change)
+  │   │      (state read via SidebarStateProvider context, not props;
+  │   │       shell only re-renders when layout/opener/theme/spellcheck props change)
   │   │
   │   └─ ProjectEditorMainPane → WorkspaceLayoutPanel
   │      (re-renders on model changes — accepts the live model)

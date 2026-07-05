@@ -12,7 +12,7 @@ User right-clicks the project-root breadcrumb above the sidebar filter and click
 
 1. `SidebarScopePathBreadcrumb` captures the right-click via `useSidebarProjectRootContextMenu`, which stores `{ x, y }` position in local state (`use-sidebar-project-root-context-menu.ts:22`).
 2. `SidebarProjectRootContextMenu` renders at the mouse position. The label is platform-sensitive: `navigator.platform` check at `sidebar-project-root-context-menu.tsx:4` returns **"Reveal in Finder"** on Mac, **"Show in File Explorer"** everywhere else.
-3. User clicks the menu item → `onRevealInFileManager` fires → `handleRevealInFileManager` closes the menu and calls the action (`use-sidebar-project-root-context-menu.ts:33`).
+3. User clicks the menu item → the menu's local `onRevealInFileManager` callback (`sidebar-project-root-context-menu.tsx`) fires → `handleRevealInFileManager` closes the menu and calls the `revealInFileManager` action read from `useEditorActions()` (`use-sidebar-project-root-context-menu.ts:33`).
 4. Action consumption:
    - `sidebar-scope-path-breadcrumb.tsx:40` consumes `revealInFileManager` via `useEditorActions()`
    - `use-sidebar-project-root-context-menu.ts` also reads `revealInFileManager` from the editor actions context
