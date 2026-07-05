@@ -82,9 +82,9 @@ describe('ProjectEditorView shell split', () => {
     const handleSpellcheckLanguageChange = () => undefined
     const spellcheckLanguageOptions: string[] = []
 
-    const sidebarSpy = vi.spyOn(sidebarPanelModule, 'SidebarPanel').mockImplementation((props) => {
+    const sidebarSpy = vi.spyOn(sidebarPanelModule, 'SidebarPanel').mockImplementation(() => {
       sidebarRenderCount += 1
-      return h('div', { 'data-testid': 'sidebar-shell-probe', 'data-selected-path': props.selectedPath ?? '' })
+      return h('div', { 'data-testid': 'sidebar-shell-probe' })
     })
     const aiImportSpy = vi.spyOn(aiImportDialogModule, 'AiImportDialog').mockImplementation(() => {
       aiImportRenderCount += 1

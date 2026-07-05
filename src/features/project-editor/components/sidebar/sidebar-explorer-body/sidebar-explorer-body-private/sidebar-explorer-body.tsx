@@ -1,6 +1,8 @@
 // @Architecture(descriptionShort="Explorer body (path, filter, tree, menus/dialogs)")
 import { useMemo } from 'preact/hooks'
 import { SidebarScopePathBreadcrumb } from '../../sidebar-scope-path-breadcrumb.tsx'
+import { useSidebarState } from '../../sidebar-state-context.tsx'
+import { useScopedSidebarState } from '../../use-scoped-sidebar-state.ts'
 import type { SidebarCreateInput } from '../../../../project-editor-types'
 import type { SidebarCreateMode } from '../../sidebar-create-dialog.tsx'
 import type { SidebarFileActionMode } from '../../sidebar-file-actions-dialog.tsx'
@@ -15,12 +17,6 @@ import { SidebarTreeArea } from './sidebar-tree-area.tsx'
 
 export interface SidebarExplorerBodyProps {
   title: string
-  visibleFiles: string[]
-  selectedPath: string | null
-  loadingDocument: boolean
-  loadingProject: boolean
-  apiAvailable: boolean
-  statusMessage: string
   filterQuery: string
   onFilterQueryChange: (value: string) => void
   createMode: SidebarCreateMode | null
@@ -53,7 +49,6 @@ export interface SidebarExplorerBodyProps {
   onSourceImagePathChange: (value: string) => void
   onBrowseSourceImage: () => Promise<void>
   filterInputRef: (element: HTMLInputElement | null) => void
-  corkboardOrder?: Record<string, string[]>
   showTemplatePicker?: boolean
   templateSearchQuery?: string
   templateSelectedPath?: string | null
@@ -69,12 +64,13 @@ export interface SidebarExplorerBodyProps {
 
 function buildDialogsProps(
   props: SidebarExplorerBodyProps,
+  flags: { loadingProject: boolean; apiAvailable: boolean },
   fileContextMenu: ReturnType<typeof useSidebarDialogs>['fileContextMenu'],
   folderContextMenu: ReturnType<typeof useSidebarDialogs>['folderContextMenu'],
 ) {
   return {
-    loadingProject: props.loadingProject,
-    apiAvailable: props.apiAvailable,
+    loadingProject: flags.loadingProject,
+    apiAvailable: flags.apiAvailable,
     openCreateDialog: props.openCreateDialog,
     createMode: props.createMode,
     createInput: props.createInput,
@@ -117,6 +113,8 @@ function buildDialogsProps(
 }
 
 export function SidebarExplorerBody(props: SidebarExplorerBodyProps) {
+  const { apiAvailable, loadingProject, statusMessage } = useSidebarState()
+  const scoped = useScopedSidebarState()
   const { fileContextMenu, folderContextMenu } = useSidebarDialogs({
     openEditTagsDialog: props.openEditTagsDialog,
     openRenameDialog: props.openRenameDialog,
@@ -125,11 +123,11 @@ export function SidebarExplorerBody(props: SidebarExplorerBodyProps) {
     openDeleteFolderDialog: props.openDeleteFolderDialog,
   })
 
-  const tree = useMemo(/* getExplorerTree */ () => buildSidebarTree(props.visibleFiles), [props.visibleFiles] /*Inputs for getExplorerTree*/)
+  const tree = useMemo(/* getExplorerTree */ () => buildSidebarTree(scoped.visibleFiles), [scoped.visibleFiles] /*Inputs for getExplorerTree*/)
   const filterResult = useMemo(/* getExplorerFilterResult */ () => filterSidebarTree(tree, props.filterQuery), [tree, props.filterQuery] /*Inputs for getExplorerFilterResult*/)
   const [setFolderExpanded, expandedFolders] = useSidebarTreeExpandedFolders(
     tree,
-    props.selectedPath,
+    scoped.selectedPath,
     props.filterQuery,
     filterResult.autoExpandFolderPaths,
   )
@@ -137,22 +135,19 @@ export function SidebarExplorerBody(props: SidebarExplorerBodyProps) {
   return (
     <>
       <SidebarScopePathBreadcrumb />
-      {props.statusMessage && <p class="project-menu__status">{props.statusMessage}</p>}
+      {statusMessage && <p class="project-menu__status">{statusMessage}</p>}
       <SidebarFilter
         value={props.filterQuery} onChange={props.onFilterQueryChange}
-        disabled={!props.apiAvailable || props.loadingProject} inputRef={props.filterInputRef}
+        disabled={!apiAvailable || loadingProject} inputRef={props.filterInputRef}
       />
       <SidebarTreeArea
-        showOnlyStateHint={!props.apiAvailable} loadingProject={props.loadingProject}
-        apiAvailable={props.apiAvailable} visibleFiles={props.visibleFiles}
-        selectedPath={props.selectedPath} loadingDocument={props.loadingDocument}
-        filterQuery={props.filterQuery} corkboardOrder={props.corkboardOrder}
+        filterQuery={props.filterQuery}
         expandedFolders={expandedFolders}
         onFileContextMenu={fileContextMenu.handleFileContextMenu}
         onFolderContextMenu={folderContextMenu.handleFolderContextMenu}
         onToggleFolder={setFolderExpanded}
       />
-      <SidebarExplorerDialogs {...buildDialogsProps(props, fileContextMenu, folderContextMenu)} />
+      <SidebarExplorerDialogs {...buildDialogsProps(props, { loadingProject, apiAvailable }, fileContextMenu, folderContextMenu)} />
     </>
   )
 }

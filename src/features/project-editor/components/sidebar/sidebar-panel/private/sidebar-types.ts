@@ -3,12 +3,6 @@ import type { SidebarSection } from '../../../../project-editor-types'
 import type { ResolvedTheme, ThemePreference } from '../../../../../../theme/theme-types'
 import type { BookExportFormat } from '../../../../../../shared/ipc'
 
-export interface SidebarSelectionProps {
-  visibleFiles: string[]
-  selectedPath: string | null
-  loadingDocument: boolean
-}
-
 export interface SidebarPanelLayoutProps {
   sidebarActiveSection: SidebarSection
   sidebarPanelCollapsed: boolean
@@ -19,7 +13,6 @@ export interface SidebarProjectContextProps {
   apiAvailable: boolean
   loadingProject: boolean
   rootPath: string
-  statusMessage: string
   onImport: () => void
   onImportZulu: () => void
   onExportBook: (format: BookExportFormat) => void
@@ -41,14 +34,7 @@ export interface SidebarSpellcheckProps {
   onSpellcheckLanguageChange: (language: string) => void
 }
 
-export type SidebarPanelCommonProps = SidebarSelectionProps &
-  SidebarPanelLayoutProps &
+export type SidebarPanelCommonProps = SidebarPanelLayoutProps &
   SidebarProjectContextProps &
   SidebarThemeProps &
-  SidebarSpellcheckProps & {
-    corkboardOrder?: Record<string, string[]>
-  }
-
-export type SidebarExplorerCommonProps = SidebarSelectionProps & SidebarProjectContextProps & {
-  corkboardOrder?: Record<string, string[]>
-}
+  SidebarSpellcheckProps

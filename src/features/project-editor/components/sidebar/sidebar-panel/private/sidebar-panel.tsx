@@ -2,6 +2,7 @@
 import { SidebarPanelBody } from './sidebar-panel-body.tsx'
 import { SidebarRail } from './sidebar-rail.tsx'
 import { useSidebarContentSection } from './sidebar-panel-logic.ts'
+import { useSidebarState } from '../../sidebar-state-context.tsx'
 import type { SidebarPanelCommonProps } from './sidebar-types.ts'
 
 type SidebarPanelProps = SidebarPanelCommonProps
@@ -9,10 +10,7 @@ type SidebarPanelProps = SidebarPanelCommonProps
 function buildSidebarBodyProps(props: SidebarPanelProps, effectiveCollapsed: boolean, sectionState: ReturnType<typeof useSidebarContentSection>) {
   return {
     effectiveCollapsed,
-    sidebarActiveSection: props.sidebarActiveSection,
     sectionConfig: sectionState.sectionConfig,
-    scopedFiles: sectionState.scopedFiles,
-    scopedSelectedPath: sectionState.scopedSelectedPath,
     activeFilterQuery: sectionState.activeFilterQuery,
     onFilterQueryChange: sectionState.onFilterQueryChange,
     onImport: props.onImport,
@@ -28,10 +26,6 @@ function buildSidebarBodyProps(props: SidebarPanelProps, effectiveCollapsed: boo
     spellcheckLanguageSelectionSupported: props.spellcheckLanguageSelectionSupported,
     onSpellcheckEnabledChange: props.onSpellcheckEnabledChange,
     onSpellcheckLanguageChange: props.onSpellcheckLanguageChange,
-    corkboardOrder: props.corkboardOrder,
-    allVisibleFiles: props.visibleFiles,
-    activeSectionForController: props.sidebarActiveSection,
-    contentProps: props,
   }
 }
 
@@ -42,7 +36,8 @@ function openHelpGettingStarted() {
 }
 
 export function SidebarPanel(props: SidebarPanelProps) {
-  const sectionState = useSidebarContentSection(props.sidebarActiveSection, props.visibleFiles, props.selectedPath)
+  const { sidebarActiveSection } = useSidebarState()
+  const sectionState = useSidebarContentSection(sidebarActiveSection)
   const effectiveCollapsed = props.effectiveCollapsed
   const bodyProps = buildSidebarBodyProps(props, effectiveCollapsed, sectionState)
 

@@ -25,20 +25,12 @@ function buildPanelProps(
   overrides: Partial<Parameters<typeof SidebarPanel>[0]> = {},
 ): Parameters<typeof SidebarPanel>[0] {
   return {
-    visibleFiles: [
-      'book/Act-01/Chapter-01/Scene-001.md',
-      'outline/arc-general.md',
-      'lore/personajes/protagonista.md',
-    ],
-    selectedPath: 'book/Act-01/Chapter-01/Scene-001.md',
-    loadingDocument: false,
     sidebarActiveSection: 'explorer',
     sidebarPanelCollapsed: false,
     effectiveCollapsed: false,
     apiAvailable: true,
     loadingProject: false,
     rootPath: 'C:/Proyectos/test_trama',
-    statusMessage: '',
     onImport: () => undefined,
     onImportZulu: () => undefined,
     onExportBook: (_format) => undefined,
@@ -86,20 +78,20 @@ describe('sidebar panels', () => {
     expect(container.textContent).toContain('Scene-001.md')
     expect(container.textContent).not.toContain('arc-general.md')
 
-    renderSidebar(h(SidebarPanel, buildPanelProps({ sidebarActiveSection: 'outline' })), undefined, undefined, PANEL_SIDEBAR_STATE)
+    renderSidebar(h(SidebarPanel, buildPanelProps()), undefined, undefined, { ...PANEL_SIDEBAR_STATE, sidebarActiveSection: 'outline' })
 
     expect(container.textContent).toContain('Outline')
     expect(container.textContent).toContain('test_trama')
     expect(container.textContent).toContain('arc-general.md')
     expect(container.textContent).not.toContain('Scene-001.md')
 
-    renderSidebar(h(SidebarPanel, buildPanelProps({ sidebarActiveSection: 'lore' })), undefined, undefined, PANEL_SIDEBAR_STATE)
+    renderSidebar(h(SidebarPanel, buildPanelProps()), undefined, undefined, { ...PANEL_SIDEBAR_STATE, sidebarActiveSection: 'lore' })
 
     expect(container.textContent).toContain('Lore')
     expect(container.textContent).toContain('test_trama')
     expect(container.textContent).toContain('protagonista.md')
 
-    renderSidebar(h(SidebarPanel, buildPanelProps({ sidebarActiveSection: 'transfer' })), undefined, undefined, PANEL_SIDEBAR_STATE)
+    renderSidebar(h(SidebarPanel, buildPanelProps()), undefined, undefined, { ...PANEL_SIDEBAR_STATE, sidebarActiveSection: 'transfer' })
 
     expect(container.textContent).toContain('Import / Export')
     expect(container.textContent).toContain('Import AI Content')
@@ -112,7 +104,7 @@ describe('sidebar panels', () => {
     expect(container.textContent).toContain('EPUB (.epub)')
     expect(container.textContent).toContain('PDF (.pdf)')
 
-    renderSidebar(h(SidebarPanel, buildPanelProps({ sidebarActiveSection: 'settings' })), undefined, undefined, PANEL_SIDEBAR_STATE)
+    renderSidebar(h(SidebarPanel, buildPanelProps()), undefined, undefined, { ...PANEL_SIDEBAR_STATE, sidebarActiveSection: 'settings' })
 
     expect(container.textContent).toContain('Settings')
     expect(container.textContent).toContain('Theme')
@@ -121,10 +113,9 @@ describe('sidebar panels', () => {
   })
 
   it('hides Save Snapshot when Git is unavailable', () => {
-    renderSidebar(h(SidebarPanel, buildPanelProps({
-      sidebarActiveSection: 'transfer',
-    })), undefined, undefined, {
+    renderSidebar(h(SidebarPanel, buildPanelProps()), undefined, undefined, {
       ...PANEL_SIDEBAR_STATE,
+      sidebarActiveSection: 'transfer',
       gitHistory: {
         gitAvailable: false,
         repositoryRoot: null,
@@ -140,7 +131,7 @@ describe('sidebar panels', () => {
   it('maps scoped file selections back to project-relative paths', () => {
     const actions = buildEditorActionsSpies()
 
-    renderSidebar(h(SidebarPanel, buildPanelProps()), actions)
+    renderSidebar(h(SidebarPanel, buildPanelProps()), actions, undefined, PANEL_SIDEBAR_STATE)
 
     const rowButtons = Array.from(container.querySelectorAll('.sidebar-tree__row')) as HTMLButtonElement[]
     const fileRowButton = rowButtons.find((button) => button.textContent?.includes('Scene-001.md'))
@@ -160,15 +151,13 @@ describe('sidebar panels', () => {
 
     renderSidebar(h(SidebarExplorerContent, {
       title: 'Manuscript',
-      visibleFiles: ['docs/README.md'],
-      selectedPath: 'docs/README.md',
-      loadingDocument: false,
-      apiAvailable: true,
-      loadingProject: false,
-      statusMessage: '',
       filterQuery: '',
       onFilterQueryChange,
-    }), actions, 'book/', { rootPath: 'C:/Proyectos/test_trama' })
+    }), actions, 'book/', {
+      rootPath: 'C:/Proyectos/test_trama',
+      visibleFiles: ['book/docs/README.md'],
+      selectedPath: 'book/docs/README.md',
+    })
 
     const folderButton = container.querySelector('.path-breadcrumb-trigger') as HTMLButtonElement
     expect(folderButton).toBeTruthy()
@@ -189,15 +178,13 @@ describe('sidebar panels', () => {
   it('does not capture Ctrl+F in the sidebar filter anymore', () => {
     renderSidebar(h(SidebarExplorerContent, {
       title: 'Manuscript',
-      visibleFiles: ['docs/README.md'],
-      selectedPath: 'docs/README.md',
-      loadingDocument: false,
-      apiAvailable: true,
-      loadingProject: false,
-      statusMessage: '',
       filterQuery: '',
       onFilterQueryChange: () => undefined,
-    }), buildEditorActionsSpies(), 'book/', { rootPath: 'C:/Proyectos/test_trama' })
+    }), buildEditorActionsSpies(), 'book/', {
+      rootPath: 'C:/Proyectos/test_trama',
+      visibleFiles: ['book/docs/README.md'],
+      selectedPath: 'book/docs/README.md',
+    })
 
     const filterInput = container.querySelector('.sidebar-filter__input') as HTMLInputElement
     expect(filterInput).toBeTruthy()
@@ -214,15 +201,14 @@ describe('sidebar panels', () => {
   it('shows loading and api-unavailable sidebar states', () => {
     renderSidebar(h(SidebarExplorerContent, {
       title: 'Manuscript',
-      visibleFiles: ['docs/README.md'],
-      selectedPath: 'docs/README.md',
-      loadingDocument: false,
-      apiAvailable: true,
-      loadingProject: true,
-      statusMessage: '',
       filterQuery: '',
       onFilterQueryChange: () => undefined,
-    }), buildEditorActionsSpies(), 'book/', { rootPath: 'C:/Proyectos/test_trama', loadingProject: true })
+    }), buildEditorActionsSpies(), 'book/', {
+      rootPath: 'C:/Proyectos/test_trama',
+      visibleFiles: ['book/docs/README.md'],
+      selectedPath: 'book/docs/README.md',
+      loadingProject: true,
+    })
 
     const treeEl = container.querySelector('.sidebar-tree')
     expect(treeEl).toBeTruthy()
@@ -231,15 +217,14 @@ describe('sidebar panels', () => {
 
     renderSidebar(h(SidebarExplorerContent, {
       title: 'Manuscript',
-      visibleFiles: ['docs/README.md'],
-      selectedPath: 'docs/README.md',
-      loadingDocument: false,
-      apiAvailable: false,
-      loadingProject: false,
-      statusMessage: '',
       filterQuery: '',
       onFilterQueryChange: () => undefined,
-    }), buildEditorActionsSpies(), 'book/', { rootPath: 'C:/Proyectos/test_trama', apiAvailable: false })
+    }), buildEditorActionsSpies(), 'book/', {
+      rootPath: 'C:/Proyectos/test_trama',
+      visibleFiles: ['book/docs/README.md'],
+      selectedPath: 'book/docs/README.md',
+      apiAvailable: false,
+    })
 
     expect(container.textContent).toContain('Preload API unavailable.')
   })
@@ -247,7 +232,7 @@ describe('sidebar panels', () => {
   it('triggers create article/category callbacks from footer actions', async () => {
     const actions = buildEditorActionsSpies()
 
-    renderSidebar(h(SidebarPanel, buildPanelProps()), actions)
+    renderSidebar(h(SidebarPanel, buildPanelProps()), actions, undefined, PANEL_SIDEBAR_STATE)
 
     const createArticleButton = Array.from(container.querySelectorAll('.sidebar-footer-actions .editor-button')).find(
       (node) => node.textContent?.includes('+ Article'),
@@ -452,7 +437,7 @@ describe('sidebar panels', () => {
       readDocument: readDocumentMock,
     }
 
-    renderSidebar(h(SidebarPanel, buildPanelProps()), actions)
+    renderSidebar(h(SidebarPanel, buildPanelProps()), actions, undefined, PANEL_SIDEBAR_STATE)
 
     const fileRowButton = Array.from(container.querySelectorAll('.sidebar-tree__row')).find((node) =>
       node.textContent?.includes('Scene-001.md'),
@@ -574,7 +559,7 @@ describe('sidebar panels', () => {
   it('triggers rename and delete callbacks from folder context menu', () => {
     const actions = buildEditorActionsSpies()
 
-    renderSidebar(h(SidebarPanel, buildPanelProps()), actions)
+    renderSidebar(h(SidebarPanel, buildPanelProps()), actions, undefined, PANEL_SIDEBAR_STATE)
 
     const folderRowButton = Array.from(container.querySelectorAll('.sidebar-tree__row')).find((node) =>
       node.textContent?.includes('Chapter-01'),
@@ -785,7 +770,7 @@ describe('sidebar panels', () => {
   it('triggers reveal callback from file context menu', () => {
     const actions = buildEditorActionsSpies()
 
-    renderSidebar(h(SidebarPanel, buildPanelProps()), actions)
+    renderSidebar(h(SidebarPanel, buildPanelProps()), actions, undefined, PANEL_SIDEBAR_STATE)
 
     const fileRowButton = Array.from(container.querySelectorAll('.sidebar-tree__row')).find((node) =>
       node.textContent?.includes('Scene-001.md'),
@@ -811,7 +796,7 @@ describe('sidebar panels', () => {
   it('triggers reveal callback from folder context menu', () => {
     const actions = buildEditorActionsSpies()
 
-    renderSidebar(h(SidebarPanel, buildPanelProps()), actions)
+    renderSidebar(h(SidebarPanel, buildPanelProps()), actions, undefined, PANEL_SIDEBAR_STATE)
 
     const folderRowButton = Array.from(container.querySelectorAll('.sidebar-tree__row')).find((node) =>
       node.textContent?.includes('Chapter-01'),

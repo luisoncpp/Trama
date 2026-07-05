@@ -1,26 +1,19 @@
 // @Architecture(descriptionShort="Active section body composition")
-import type { SidebarSection } from '../../../../project-editor-types'
 import { SidebarExplorerContent } from './sidebar-explorer-content.tsx'
 import { SidebarSectionScopeProvider } from '../../sidebar-section-scope-context.tsx'
+import { useSidebarState } from '../../sidebar-state-context.tsx'
 import { SIDEBAR_SECTION_CONFIG, type ContentSidebarSection } from '../../sidebar-section-roots.ts'
 import { SidebarSettingsContent } from './sidebar-settings.tsx'
 import { SidebarTransferContent } from './sidebar-transfer-content.tsx'
-import {
-  scopeCorkboardOrder,
-} from '../../sidebar-path-scoping.ts'
 import type {
   SidebarProjectContextProps,
-  SidebarSelectionProps,
   SidebarSpellcheckProps,
   SidebarThemeProps,
 } from './sidebar-types.ts'
 
 export interface SidebarPanelBodyProps {
   effectiveCollapsed: boolean
-  sidebarActiveSection: SidebarSection
   sectionConfig: (typeof SIDEBAR_SECTION_CONFIG)[ContentSidebarSection] | null
-  scopedFiles: string[]
-  scopedSelectedPath: string | null
   activeFilterQuery: string
   onFilterQueryChange: (value: string) => void
   themePreference: SidebarThemeProps['themePreference']
@@ -36,60 +29,44 @@ export interface SidebarPanelBodyProps {
   onImportZulu: () => void
   onExportBook: SidebarProjectContextProps['onExportBook']
   onExport: () => void
-  corkboardOrder?: Record<string, string[]>
-  contentProps: Omit<
-    SidebarProjectContextProps & SidebarSelectionProps,
-    | 'visibleFiles'
-    | 'selectedPath'
-    | 'rootPath'
-  >
-  allVisibleFiles: string[]
-  activeSectionForController: string
 }
 
 function renderExplorer(props: SidebarPanelBodyProps) {
-  const {
-    contentProps, sectionConfig, scopedFiles, scopedSelectedPath,
-    activeFilterQuery, onFilterQueryChange, corkboardOrder,
-  } = props
+  const { sectionConfig, activeFilterQuery, onFilterQueryChange } = props
   if (!sectionConfig) return null
-  const root = sectionConfig.root
   return (
-    <SidebarSectionScopeProvider root={root}>
+    <SidebarSectionScopeProvider root={sectionConfig.root}>
       <SidebarExplorerContent
-        {...contentProps}
         title={sectionConfig.title}
-        visibleFiles={scopedFiles}
-        selectedPath={scopedSelectedPath}
         filterQuery={activeFilterQuery}
         onFilterQueryChange={onFilterQueryChange}
-        allVisibleFiles={props.allVisibleFiles}
-        activeSection={props.activeSectionForController}
-        corkboardOrder={scopeCorkboardOrder(corkboardOrder, root)}
       />
     </SidebarSectionScopeProvider>
   )
 }
 
+function renderSettings(props: SidebarPanelBodyProps) {
+  return (
+    <SidebarSettingsContent
+      themePreference={props.themePreference}
+      resolvedTheme={props.resolvedTheme}
+      onThemePreferenceChange={props.onThemePreferenceChange}
+      spellcheckEnabled={props.spellcheckEnabled}
+      spellcheckLanguage={props.spellcheckLanguage}
+      spellcheckLanguageOptions={props.spellcheckLanguageOptions}
+      spellcheckLanguageSelectionSupported={props.spellcheckLanguageSelectionSupported}
+      onSpellcheckEnabledChange={props.onSpellcheckEnabledChange}
+      onSpellcheckLanguageChange={props.onSpellcheckLanguageChange}
+    />
+  )
+}
+
 export function SidebarPanelBody(props: SidebarPanelBodyProps) {
+  const { sidebarActiveSection } = useSidebarState()
   if (props.effectiveCollapsed) return null
   if (props.sectionConfig) return renderExplorer(props)
-  if (props.sidebarActiveSection === 'settings') {
-    return (
-      <SidebarSettingsContent
-        themePreference={props.themePreference}
-        resolvedTheme={props.resolvedTheme}
-        onThemePreferenceChange={props.onThemePreferenceChange}
-        spellcheckEnabled={props.spellcheckEnabled}
-        spellcheckLanguage={props.spellcheckLanguage}
-        spellcheckLanguageOptions={props.spellcheckLanguageOptions}
-        spellcheckLanguageSelectionSupported={props.spellcheckLanguageSelectionSupported}
-        onSpellcheckEnabledChange={props.onSpellcheckEnabledChange}
-        onSpellcheckLanguageChange={props.onSpellcheckLanguageChange}
-      />
-    )
-  }
-  if (props.sidebarActiveSection === 'transfer') {
+  if (sidebarActiveSection === 'settings') return renderSettings(props)
+  if (sidebarActiveSection === 'transfer') {
     return (
       <SidebarTransferContent
         onImport={props.onImport}
@@ -101,5 +78,3 @@ export function SidebarPanelBody(props: SidebarPanelBodyProps) {
   }
   return null
 }
-
-

@@ -1,29 +1,47 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { h, render } from 'preact'
-import { useMemo, useState } from 'preact/hooks'
+import { h } from 'preact'
+import { useMemo } from 'preact/hooks'
 import { act } from 'preact/test-utils'
 import { SidebarTree } from '../src/features/project-editor/components/sidebar/sidebar-tree.tsx'
 import { buildSidebarTree } from '../src/features/project-editor/components/sidebar/sidebar-tree-logic'
 import { filterSidebarTree } from '../src/features/project-editor/components/sidebar/sidebar-filter-logic'
 import { useSidebarTreeExpandedFolders } from '../src/features/project-editor/components/sidebar/use-sidebar-tree-expanded-folders'
+import { getScopedFiles, getScopedSelectedPath, defineSidebarSectionRoot } from '../src/features/project-editor/components/sidebar/sidebar-path-scoping'
 import {
-  buildEditorActionsSpies,
   renderWithEditorActions,
 } from './helpers/editor-actions-test-helper.ts'
 
-function TestTree(props: Omit<Parameters<typeof SidebarTree>[0], 'expandedFolders' | 'onToggleFolder'>) {
-  const tree = useMemo(() => buildSidebarTree(props.visibleFiles), [props.visibleFiles])
+const BOOK_ROOT = defineSidebarSectionRoot('book/')
+
+interface TestTreeProps {
+  visibleFiles: string[]
+  selectedPath: string | null
+  filterQuery: string
+}
+
+function TestTree(props: TestTreeProps) {
+  const scopedFiles = getScopedFiles(props.visibleFiles, BOOK_ROOT)
+  const scopedSelectedPath = getScopedSelectedPath(props.selectedPath, BOOK_ROOT)
+  const tree = useMemo(() => buildSidebarTree(scopedFiles), [props.visibleFiles])
   const filterResult = useMemo(() => filterSidebarTree(tree, props.filterQuery), [tree, props.filterQuery])
   const [setFolderExpanded, expandedFolders] = useSidebarTreeExpandedFolders(
     tree,
-    props.selectedPath,
+    scopedSelectedPath,
     props.filterQuery,
     filterResult.autoExpandFolderPaths,
   )
   return h(SidebarTree, {
-    ...props,
+    filterQuery: props.filterQuery,
     expandedFolders,
     onToggleFolder: setFolderExpanded,
+  })
+}
+
+function renderTestTree(container: HTMLElement, props: TestTreeProps) {
+  renderWithEditorActions(h(TestTree, props), {
+    container,
+    scopeRoot: 'book/',
+    sidebarState: { visibleFiles: props.visibleFiles, selectedPath: props.selectedPath },
   })
 }
 
@@ -40,37 +58,29 @@ describe('sidebar filter UX', () => {
   })
 
   it('shows empty state message when filter has no matches', () => {
-    const actions = buildEditorActionsSpies()
     act(() => {
-      renderWithEditorActions(
-        h(SidebarTree, {
-          visibleFiles: ['Act-01/Chapter-01/Scene-001.md'],
-          selectedPath: null,
-          loadingDocument: false,
-          filterQuery: 'missing-file',
-          expandedFolders: [],
-          onToggleFolder: () => {},
-        }),
-        { container, actions, scopeRoot: 'book/' },
-      )
+      renderTestTree(container, {
+        visibleFiles: ['book/Act-01/Chapter-01/Scene-001.md'],
+        selectedPath: null,
+        filterQuery: 'missing-file',
+      })
     })
 
     expect(container.textContent).toContain('No files match "missing-file".')
   })
 
   it('restores previously expanded folders after clearing filter', () => {
-    const props = {
+    const props: TestTreeProps = {
       visibleFiles: [
-        'Act-01/Chapter-01/Scene-001.md',
-        'Act-01/Chapter-02/Scene-003.md',
+        'book/Act-01/Chapter-01/Scene-001.md',
+        'book/Act-01/Chapter-02/Scene-003.md',
       ],
       selectedPath: null,
-      loadingDocument: false,
       filterQuery: '',
     }
 
     act(() => {
-      renderWithEditorActions(h(TestTree, props), { container, scopeRoot: 'book/' })
+      renderTestTree(container, props)
     })
 
     const chapter01Button = Array.from(container.querySelectorAll('.sidebar-tree__row')).find((node) =>
@@ -84,14 +94,14 @@ describe('sidebar filter UX', () => {
     expect(container.textContent).toContain('Scene-001.md')
 
     act(() => {
-      renderWithEditorActions(h(TestTree, { ...props, filterQuery: 'scene-003' }), { container, scopeRoot: 'book/' })
+      renderTestTree(container, { ...props, filterQuery: 'scene-003' })
     })
 
     expect(container.textContent).toContain('Scene-003.md')
     expect(container.textContent).not.toContain('Scene-001.md')
 
     act(() => {
-      renderWithEditorActions(h(TestTree, { ...props, filterQuery: '' }), { container, scopeRoot: 'book/' })
+      renderTestTree(container, { ...props, filterQuery: '' })
     })
 
     expect(container.textContent).toContain('Scene-001.md')
@@ -99,18 +109,17 @@ describe('sidebar filter UX', () => {
   })
 
   it('allows collapsing all folders without auto-expanding them again', () => {
-    const props = {
+    const props: TestTreeProps = {
       visibleFiles: [
-        'Act-01/Chapter-01/Scene-001.md',
-        'Lore/People/Hero.md',
+        'book/Act-01/Chapter-01/Scene-001.md',
+        'book/Lore/People/Hero.md',
       ],
       selectedPath: null,
-      loadingDocument: false,
       filterQuery: '',
     }
 
     act(() => {
-      renderWithEditorActions(h(TestTree, props), { container, scopeRoot: 'book/' })
+      renderTestTree(container, props)
     })
 
     const rootButtons = Array.from(container.querySelectorAll('.sidebar-tree__row')).filter((node) =>

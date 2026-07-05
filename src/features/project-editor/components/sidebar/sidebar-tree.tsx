@@ -10,20 +10,17 @@ import {
 import { useSidebarTreeRowsDrag } from './use-sidebar-tree-rows-drag'
 import { SidebarTreeRowButton } from './sidebar-tree-row-button'
 import { useScopedSidebarActions } from './use-scoped-sidebar-actions'
+import { useScopedSidebarState } from './use-scoped-sidebar-state'
+import { useSidebarState } from './sidebar-state-context'
 import type { DropIndicatorPosition } from './drop-indicator'
 import type { SidebarTreeRow } from './sidebar-tree-logic'
 
 export interface SidebarTreeProps {
-  visibleFiles: string[]
-  selectedPath: string | null
-  loadingDocument: boolean
   filterQuery: string
-  corkboardOrder?: Record<string, string[]>
   onFileContextMenu?: (filePath: string, event: MouseEvent) => void
   onFolderContextMenu?: (folderPath: string, event: MouseEvent) => void
   expandedFolders: string[]
   onToggleFolder: (path: string, expanded: boolean) => void
-  isLoading?: boolean
 }
 
 export interface SidebarTreeRowsProps {
@@ -149,10 +146,13 @@ function SidebarTreeRows({
 
 export function SidebarTree(props: SidebarTreeProps) {
   const {
-    visibleFiles, selectedPath, loadingDocument, filterQuery,
-    corkboardOrder, onFileContextMenu, onFolderContextMenu,
-    expandedFolders, onToggleFolder, isLoading,
+    filterQuery, onFileContextMenu, onFolderContextMenu,
+    expandedFolders, onToggleFolder,
   } = props
+  const scoped = useScopedSidebarState()
+  const { loadingDocument, loadingProject } = useSidebarState()
+  const { visibleFiles, selectedPath, corkboardOrder } = scoped
+  const isLoading = loadingProject
   const { selectFile, reorderFiles, moveFile, moveFolder } = useScopedSidebarActions()
   const { rows, filterResult } = useSidebarTreeRows(visibleFiles, expandedFolders, filterQuery, corkboardOrder)
   const containerRef = useRef<HTMLDivElement | null>(null)

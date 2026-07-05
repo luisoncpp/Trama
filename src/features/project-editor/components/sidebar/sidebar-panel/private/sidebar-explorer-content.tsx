@@ -2,8 +2,8 @@
 import { useRef } from 'preact/hooks'
 import { useEditorActions } from '../../../../project-editor-actions-context.tsx'
 import { useSidebarState } from '../../sidebar-state-context.tsx'
+import { useScopedSidebarState } from '../../use-scoped-sidebar-state.ts'
 import { SidebarExplorerBody } from '../../sidebar-explorer-body/index.ts'
-import type { SidebarExplorerCommonProps } from './sidebar-types.ts'
 import { useSidebarFileActionsDialog } from './use-sidebar-file-actions-dialog.ts'
 import { useSidebarCreateDialog, useSidebarFolderActionsDialog } from './sidebar-dialog-hooks.ts'
 import { useSidebarCreateControllerBridge } from '../../../../templates/index.ts'
@@ -15,36 +15,26 @@ interface SidebarHeaderProps {
 
 interface SidebarExplorerContentProps {
   title: string
-  visibleFiles: SidebarExplorerCommonProps['visibleFiles']
-  selectedPath: SidebarExplorerCommonProps['selectedPath']
-  loadingDocument: SidebarExplorerCommonProps['loadingDocument']
-  apiAvailable: SidebarExplorerCommonProps['apiAvailable']
-  loadingProject: SidebarExplorerCommonProps['loadingProject']
-  statusMessage: SidebarExplorerCommonProps['statusMessage']
   filterQuery: string
   onFilterQueryChange: (value: string) => void
-  corkboardOrder?: Record<string, string[]>
-  allVisibleFiles?: string[]
-  activeSection?: string
 }
 
-function useSidebarExplorerDialogs(props: SidebarExplorerContentProps) {
+function useSidebarExplorerDialogs() {
   const actions = useEditorActions()
-  const { rootPath } = useSidebarState()
+  const { rootPath, sidebarActiveSection, visibleFiles } = useSidebarState()
+  const scoped = useScopedSidebarState()
   const createDialog = useSidebarCreateDialog({
-    selectedPath: props.selectedPath,
+    selectedPath: scoped.selectedPath,
   })
 
   const fileDialog = useSidebarFileActionsDialog()
   const folderDialog = useSidebarFolderActionsDialog()
 
-  const allVisibleFiles = props.allVisibleFiles ?? []
-
   const { controller: createCtrl, snapshot: createCtrlSnapshot } = useSidebarCreateControllerBridge({
-    getTemplatePaths: () => allVisibleFiles,
+    getTemplatePaths: () => visibleFiles,
     isActiveSectionContent: (section: string) => Object.hasOwn(SIDEBAR_SECTION_CONFIG, section),
-    getActiveSection: () => props.activeSection ?? 'explorer',
-    getSelectedPath: () => props.selectedPath,
+    getActiveSection: () => sidebarActiveSection,
+    getSelectedPath: () => scoped.selectedPath,
     getProjectRoot: () => rootPath,
   })
 
@@ -81,7 +71,8 @@ function SidebarHeader({ title }: SidebarHeaderProps) {
 }
 
 export function SidebarExplorerContent(props: SidebarExplorerContentProps) {
-  const { fileDialog, folderDialog, createCtrl, createCtrlSnapshot, submitWithTemplate } = useSidebarExplorerDialogs(props)
+  const { loadingProject, sidebarActiveSection } = useSidebarState()
+  const { fileDialog, folderDialog, createCtrl, createCtrlSnapshot, submitWithTemplate } = useSidebarExplorerDialogs()
   const filterInputElementRef = useRef<HTMLInputElement | null>(null)
   const setFilterInputRef = (el: HTMLInputElement | null) => { filterInputElementRef.current = el }
 
@@ -89,13 +80,10 @@ export function SidebarExplorerContent(props: SidebarExplorerContentProps) {
 
   return (
     <div class="sidebar-panel-content">
-      <aside class="workspace-panel workspace-panel--sidebar" aria-busy={props.loadingProject ? 'true' : 'false'}>
+      <aside class="workspace-panel workspace-panel--sidebar" aria-busy={loadingProject ? 'true' : 'false'}>
         <SidebarHeader title={props.title} />
         <SidebarExplorerBody
-          title={props.title} visibleFiles={props.visibleFiles} selectedPath={props.selectedPath}
-          loadingDocument={props.loadingDocument}
-          loadingProject={props.loadingProject} apiAvailable={props.apiAvailable}
-          statusMessage={props.statusMessage}
+          title={props.title}
           filterQuery={props.filterQuery} onFilterQueryChange={props.onFilterQueryChange}
           createMode={createCtrlSnapshot.mode} createInput={createCtrlSnapshot.input}
           openCreateDialog={createCtrl.open.bind(createCtrl)} closeCreateDialog={createCtrl.close.bind(createCtrl)}
@@ -114,11 +102,11 @@ export function SidebarExplorerContent(props: SidebarExplorerContentProps) {
           confirmFolderActionDialog={folderDialog.confirm} closeFolderActionDialog={folderDialog.closeDialog}
           onDirectoryChange={createCtrl.setDirectory.bind(createCtrl)} onNameChange={createCtrl.setName.bind(createCtrl)}
           onSourceImagePathChange={createCtrl.setSourceImagePath.bind(createCtrl)} onBrowseSourceImage={createCtrl.browseSourceImage.bind(createCtrl)}
-          filterInputRef={setFilterInputRef} corkboardOrder={props.corkboardOrder}
+          filterInputRef={setFilterInputRef}
           showTemplatePicker={createCtrlSnapshot.showTemplatePicker} templateSearchQuery={catalogSnapshot.query}
           templateSelectedPath={catalogSnapshot.selectedPath} filteredTemplates={catalogSnapshot.filteredPaths}
           onTemplateSearchChange={createCtrl.setTemplateSearch.bind(createCtrl)} onTemplateSelect={createCtrl.selectTemplate.bind(createCtrl)}
-          hideMapOption={props.activeSection === 'templates'}
+          hideMapOption={sidebarActiveSection === 'templates'}
         />
       </aside>
     </div>

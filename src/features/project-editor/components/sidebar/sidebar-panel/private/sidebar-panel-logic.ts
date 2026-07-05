@@ -2,17 +2,12 @@
 import { useState } from 'preact/hooks'
 import type { SidebarSection } from '../../../../project-editor-types'
 import { SIDEBAR_SECTION_CONFIG, type ContentSidebarSection } from '../../sidebar-section-roots.ts'
-import { getScopedFiles, getScopedSelectedPath } from '../../sidebar-path-scoping.ts'
 
 export function formatProjectRootBreadcrumbLabel(projectRootPath: string): string {
   return projectRootPath.replace(/\\/g, '/').replace(/\/$/, '')
 }
 
-export function useSidebarContentSection(
-  sidebarActiveSection: SidebarSection,
-  visibleFiles: string[],
-  selectedPath: string | null,
-) {
+export function useSidebarContentSection(sidebarActiveSection: SidebarSection) {
   const [sectionFilters, setSectionFilters] = useState<Record<ContentSidebarSection, string>>({
     explorer: '',
     outline: '',
@@ -27,8 +22,6 @@ export function useSidebarContentSection(
 
   return {
     sectionConfig,
-    scopedFiles: sectionConfig ? getScopedFiles(visibleFiles, sectionConfig.root) : [],
-    scopedSelectedPath: sectionConfig ? getScopedSelectedPath(selectedPath, sectionConfig.root) : null,
     activeFilterQuery: contentSection ? sectionFilters[contentSection] : '',
     onFilterQueryChange: (value: string) => {
       if (!contentSection) {
