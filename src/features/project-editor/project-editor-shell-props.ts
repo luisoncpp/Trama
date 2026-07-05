@@ -40,15 +40,9 @@ export interface ProjectEditorSidebarShellProps extends ProjectEditorShellSettin
 }
 
 function buildSidebarProjectContextProps(
-  shellState: ProjectEditorShellState,
   props: ProjectEditorSidebarShellProps,
 ) {
   return {
-    corkboardOrder: shellState.corkboardOrder,
-    apiAvailable: shellState.apiAvailable,
-    loadingProject: shellState.loadingProject,
-    rootPath: shellState.rootPath,
-    statusMessage: shellState.statusMessage,
     onImport: () => props.dialogsProps.aiImport.setOpen(true),
     onImportZulu: () => props.dialogsProps.zuluImport.setOpen(true),
     onExportBook: (format: BookExportFormat) => {
@@ -70,15 +64,8 @@ function buildSidebarProjectContextProps(
 }
 
 export function buildSidebarSectionProps(props: ProjectEditorSidebarShellProps) {
-  const { shellState } = props
-
   return {
-    visibleFiles: shellState.visibleFiles,
-    selectedPath: shellState.selectedPath,
-    loadingDocument: shellState.loadingDocument,
-    sidebarActiveSection: shellState.sidebarActiveSection,
-    sidebarPanelCollapsed: shellState.sidebarPanelCollapsed,
     effectiveCollapsed: props.effectiveCollapsed,
-    ...buildSidebarProjectContextProps(shellState, props),
+    ...buildSidebarProjectContextProps(props),
   }
 }

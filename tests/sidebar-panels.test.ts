@@ -25,12 +25,7 @@ function buildPanelProps(
   overrides: Partial<Parameters<typeof SidebarPanel>[0]> = {},
 ): Parameters<typeof SidebarPanel>[0] {
   return {
-    sidebarActiveSection: 'explorer',
-    sidebarPanelCollapsed: false,
     effectiveCollapsed: false,
-    apiAvailable: true,
-    loadingProject: false,
-    rootPath: 'C:/Proyectos/test_trama',
     onImport: () => undefined,
     onImportZulu: () => undefined,
     onExportBook: (_format) => undefined,

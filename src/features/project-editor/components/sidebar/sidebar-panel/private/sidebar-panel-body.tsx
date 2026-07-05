@@ -6,7 +6,7 @@ import { SIDEBAR_SECTION_CONFIG, type ContentSidebarSection } from '../../sideba
 import { SidebarSettingsContent } from './sidebar-settings.tsx'
 import { SidebarTransferContent } from './sidebar-transfer-content.tsx'
 import type {
-  SidebarProjectContextProps,
+  SidebarDialogOpenerProps,
   SidebarSpellcheckProps,
   SidebarThemeProps,
 } from './sidebar-types.ts'
@@ -27,7 +27,7 @@ export interface SidebarPanelBodyProps {
   onSpellcheckLanguageChange: SidebarSpellcheckProps['onSpellcheckLanguageChange']
   onImport: () => void
   onImportZulu: () => void
-  onExportBook: SidebarProjectContextProps['onExportBook']
+  onExportBook: SidebarDialogOpenerProps['onExportBook']
   onExport: () => void
 }
 

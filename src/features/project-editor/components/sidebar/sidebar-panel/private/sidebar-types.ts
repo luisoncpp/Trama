@@ -1,18 +1,8 @@
 // @Architecture(descriptionShort="Shared TypeScript types for adjacent module")
-import type { SidebarSection } from '../../../../project-editor-types'
 import type { ResolvedTheme, ThemePreference } from '../../../../../../theme/theme-types'
 import type { BookExportFormat } from '../../../../../../shared/ipc'
 
-export interface SidebarPanelLayoutProps {
-  sidebarActiveSection: SidebarSection
-  sidebarPanelCollapsed: boolean
-  effectiveCollapsed: boolean
-}
-
-export interface SidebarProjectContextProps {
-  apiAvailable: boolean
-  loadingProject: boolean
-  rootPath: string
+export interface SidebarDialogOpenerProps {
   onImport: () => void
   onImportZulu: () => void
   onExportBook: (format: BookExportFormat) => void
@@ -34,7 +24,7 @@ export interface SidebarSpellcheckProps {
   onSpellcheckLanguageChange: (language: string) => void
 }
 
-export type SidebarPanelCommonProps = SidebarPanelLayoutProps &
-  SidebarProjectContextProps &
+export type SidebarPanelCommonProps = { effectiveCollapsed: boolean } &
+  SidebarDialogOpenerProps &
   SidebarThemeProps &
   SidebarSpellcheckProps
