@@ -3,7 +3,7 @@ import type { JSX } from 'preact'
 import type { SidebarSection } from '../../../../project-editor-types'
 import { useEditorActions } from '../../../../project-editor-actions-context.tsx'
 import { useSidebarState } from '../../sidebar-state-context.tsx'
-import { LoreIcon, ManuscriptIcon, OutlineIcon, SettingsIcon, TemplatesIcon, TransferIcon, HelpIcon, CollapseLeftIcon, ExpandRightIcon } from './sidebar-rail-icons.tsx'
+import { LoreIcon, ManuscriptIcon, OutlineIcon, SearchIcon, SettingsIcon, TemplatesIcon, TransferIcon, HelpIcon, CollapseLeftIcon, ExpandRightIcon } from './sidebar-rail-icons.tsx'
 
 interface SidebarRailProps {
   collapsed: boolean
@@ -21,6 +21,7 @@ const SIDEBAR_ITEMS: SidebarRailItem[] = [
   { section: 'outline', title: 'Outline', icon: OutlineIcon },
   { section: 'lore', title: 'Lore', icon: LoreIcon },
   { section: 'templates', title: 'Templates', icon: TemplatesIcon },
+  { section: 'search', title: 'Global search', icon: SearchIcon },
   { section: 'transfer', title: 'Import and export', icon: TransferIcon },
   { section: 'settings', title: 'Project settings', icon: SettingsIcon },
 ]

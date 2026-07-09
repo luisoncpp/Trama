@@ -1,10 +1,12 @@
 // @Architecture(descriptionShort="Shared find/replace state helpers: search state hook (`useSearchState`), replace")
 import { useCallback, useRef, useState } from 'preact/hooks'
 import type Quill from 'quill'
+import { DEFAULT_TEXT_SEARCH_OPTIONS, findTextMatches, type TextSearchOptions } from '../../../../../../shared/text-search/index.js'
 import { mapPlainTextIndexToQuillIndex } from './editor-session-tag-math'
 
 export interface SearchState {
   query: string
+  options: TextSearchOptions
   matches: number[]
   activeMatch: number
 }
@@ -14,27 +16,18 @@ function getDocumentText(editor: Quill): string {
   return editor.getText(0, length)
 }
 
-function findAllMatches(text: string, query: string): number[] {
-  const normalizedQuery = query.trim().toLocaleLowerCase()
-  if (!normalizedQuery) {
-    return []
+function findAllMatches(text: string, query: string, options: TextSearchOptions): number[] {
+  return findTextMatches(text, query, options)
+}
+
+function computeRefreshedState(editor: Quill | null, current: SearchState): SearchState | null {
+  if (!editor || !current.query.trim()) {
+    return null
   }
 
-  const normalizedText = text.toLocaleLowerCase()
-  const matches: number[] = []
-  let from = 0
-
-  while (from < normalizedText.length) {
-    const index = normalizedText.indexOf(normalizedQuery, from)
-    if (index < 0) {
-      break
-    }
-
-    matches.push(index)
-    from = index + normalizedQuery.length
-  }
-
-  return matches
+  const matches = findAllMatches(getDocumentText(editor), current.query, current.options)
+  const activeMatch = Math.max(0, Math.min(current.activeMatch, matches.length - 1))
+  return { ...current, matches, activeMatch }
 }
 
 export function isModF(event: KeyboardEvent): boolean {
@@ -62,7 +55,7 @@ function quillReplaceRange(editor: Quill, plainStart: number, queryLength: numbe
 }
 
 export function useSearchState(editorRef: { current: Quill | null }) {
-  const [state, setState] = useState<SearchState>({ query: '', matches: [], activeMatch: 0 })
+  const [state, setState] = useState<SearchState>({ query: '', options: DEFAULT_TEXT_SEARCH_OPTIONS, matches: [], activeMatch: 0 })
   const stateRef = useRef(state)
   stateRef.current = state
 
@@ -80,17 +73,23 @@ export function useSearchState(editorRef: { current: Quill | null }) {
   }
 
   const updateMatches = (nextQuery: string) => {
-    const editor = editorRef.current
-    if (!editor) {
-      return
-    }
+    applySearch(nextQuery, stateRef.current.options)
+  }
 
-    const matches = findAllMatches(getDocumentText(editor), nextQuery)
-    setState({ query: nextQuery, matches, activeMatch: 0 })
+  const applySearch = (nextQuery: string, options: TextSearchOptions) => {
+    const editor = editorRef.current
+    const matches = editor ? findAllMatches(getDocumentText(editor), nextQuery, options) : []
+    setState({ query: nextQuery, options, matches, activeMatch: 0 })
+  }
+
+  const refreshMatches = () => {
+    // Functional update: a refresh may run in the same effect flush as applySearch
+    // (document navigation with the find bar open) and must not clobber it.
+    setState((previous) => computeRefreshedState(editorRef.current, previous) ?? previous)
   }
 
   const setMatches = (query: string, matches: number[], activeMatch: number) => {
-    setState({ query, matches, activeMatch })
+    setState((previous) => ({ ...previous, query, matches, activeMatch }))
   }
 
   const jumpMatch = (direction: 1 | -1) => {
@@ -106,10 +105,10 @@ export function useSearchState(editorRef: { current: Quill | null }) {
   }
 
   const reset = () => {
-    setState({ query: '', matches: [], activeMatch: 0 })
+    setState((previous) => ({ query: '', options: previous.options, matches: [], activeMatch: 0 }))
   }
 
-  return { state, updateMatches, setMatches, jumpMatch, reset, selectMatch, stateRef }
+  return { state, updateMatches, applySearch, refreshMatches, setMatches, jumpMatch, reset, selectMatch, stateRef }
 }
 
 export function useReplaceActions({
@@ -137,7 +136,7 @@ export function useReplaceActions({
     const plainStart = current.matches[boundedIndex]
     quillReplaceRange(editor, plainStart, queryLength, replaceValue)
 
-    const matches = findAllMatches(getDocumentText(editor), current.query)
+    const matches = findAllMatches(getDocumentText(editor), current.query, current.options)
     const newActive = Math.min(boundedIndex, Math.max(0, matches.length - 1))
     setMatches(current.query, matches, newActive)
     if (matches.length > 0) {
@@ -156,7 +155,7 @@ export function useReplaceActions({
       quillReplaceRange(editor, current.matches[i], queryLength, replaceValue)
     }
 
-    const remaining = findAllMatches(getDocumentText(editor), current.query)
+    const remaining = findAllMatches(getDocumentText(editor), current.query, current.options)
     setMatches(current.query, remaining, 0)
     if (remaining.length > 0) {
       selectMatch(remaining, 0, queryLength)

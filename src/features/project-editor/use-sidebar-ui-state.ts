@@ -30,6 +30,7 @@ function readSidebarUiState(): PersistedSidebarUiState {
       parsed.activeSection === 'outline' ||
       parsed.activeSection === 'lore' ||
       parsed.activeSection === 'templates' ||
+      parsed.activeSection === 'search' ||
       parsed.activeSection === 'transfer' ||
       parsed.activeSection === 'settings'
         ? parsed.activeSection

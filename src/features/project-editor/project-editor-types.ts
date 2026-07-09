@@ -16,7 +16,7 @@ export interface EditorSession {
   flush(): string | null
 }
 
-export type SidebarSection = 'explorer' | 'outline' | 'lore' | 'templates' | 'transfer' | 'settings'
+export type SidebarSection = 'explorer' | 'outline' | 'lore' | 'templates' | 'search' | 'transfer' | 'settings'
 export type WorkspaceLayoutMode = 'single' | 'split'
 export type WorkspacePane = 'primary' | 'secondary'
 export type FocusScope = 'line' | 'sentence' | 'paragraph'

@@ -4,11 +4,18 @@ import type Quill from 'quill'
 import { FindOverlay, type FindMatchBounds } from './editor-session-find-overlay'
 import { getActiveMatchBounds, useActiveMatchOverlayEffect } from './editor-session-find-visual'
 import {
+  buildToggleFindOption,
+  useContentMutatedRefreshEffect,
+  useGlobalFindPresetEffect,
+  type FindContentSession,
+} from './editor-session-find-preset'
+import {
   isModF,
   isModH,
   formatMatchLabel,
   useSearchState,
   useReplaceActions,
+  type SearchState,
 } from './editor-session-find-state'
 
 interface UseRichEditorFindParams {
@@ -16,6 +23,8 @@ interface UseRichEditorFindParams {
   hostRef: { current: HTMLDivElement | null }
   editorRef: { current: Quill | null }
   readOnlyPreview?: boolean
+  contentSession?: FindContentSession | null
+  editorDisabled?: boolean
 }
 
 function useFindShortcutEffect({
@@ -64,12 +73,14 @@ function useFindLifecycle({
   isOpen,
   state,
   keepFindFocus,
+  editorDisabled,
 }: {
   hostRef: { current: HTMLDivElement | null }
   editorRef: { current: Quill | null }
   isOpen: boolean
   state: ReturnType<typeof useSearchState>['state']
   keepFindFocus: () => void
+  editorDisabled?: boolean
 }) {
   const [, setScrollTick] = useState(0)
 
@@ -88,6 +99,7 @@ function useFindLifecycle({
     hostRef,
     editorRef,
     keepFindFocus,
+    editorDisabled,
   })
 }
 
@@ -130,9 +142,22 @@ function useFindBarActions({
   return { isOpen, replaceMode, openFind, openReplace, closeFind, toggleReplaceMode, jumpPrevious, jumpNext }
 }
 
-export function useRichEditorFind({ documentId, hostRef, editorRef, readOnlyPreview = false }: UseRichEditorFindParams) {
+function computeActiveFindBounds(
+  isOpen: boolean,
+  state: SearchState,
+  hostRef: { current: HTMLDivElement | null },
+  editorRef: { current: Quill | null },
+): FindMatchBounds | null {
+  if (!isOpen || state.matches.length === 0 || !state.query.trim()) return null
+  const host = hostRef.current
+  const editor = editorRef.current
+  if (!host || !editor) return null
+  return getActiveMatchBounds(host, editor, state.matches[state.activeMatch], state.query.trim().length)
+}
+
+export function useRichEditorFind({ documentId, hostRef, editorRef, readOnlyPreview = false, contentSession = null, editorDisabled = false }: UseRichEditorFindParams) {
   const [replaceValue, setReplaceValue] = useState('')
-  const { state, updateMatches, setMatches, jumpMatch, selectMatch, stateRef } = useSearchState(editorRef)
+  const { state, updateMatches, applySearch, refreshMatches, setMatches, jumpMatch, selectMatch, stateRef } = useSearchState(editorRef)
   const inputRef = useRef<HTMLInputElement | null>(null)
   const matchLabel = useMemo(/* formatMatchLabel */ () => formatMatchLabel(state), [state] /*Inputs for formatMatchLabel*/)
   const keepFindFocus = useCallback(/* keepFindFocus */ () => window.setTimeout(() => inputRef.current?.focus(), 0), [/*Inputs for keepFindFocus — stable*/])
@@ -147,17 +172,14 @@ export function useRichEditorFind({ documentId, hostRef, editorRef, readOnlyPrev
 
   useEffect(/* resetFindOnDocumentChange */ () => { closeFind(); setReplaceValue('') }, [documentId] /*Inputs for resetFindOnDocumentChange*/)
 
-  useFindShortcutEffect({ hostRef, editorRef, onOpenFind: openFind, onOpenReplace: handleOpenReplace })
-  useFindLifecycle({ hostRef, editorRef, isOpen, state, keepFindFocus })
+  useGlobalFindPresetEffect({ documentId, openFind, applySearch })
+  useContentMutatedRefreshEffect({ isOpen, contentSession, documentId, hasQuery: () => Boolean(stateRef.current.query.trim()), refreshMatches })
+  const toggleFindOption = buildToggleFindOption({ stateRef, applySearch, keepFindFocus })
 
-  let activeBounds: FindMatchBounds | null = null
-  if (isOpen && state.matches.length > 0 && state.query.trim()) {
-    const host = hostRef.current
-    const editor = editorRef.current
-    if (host && editor) {
-      activeBounds = getActiveMatchBounds(host, editor, state.matches[state.activeMatch], state.query.trim().length)
-    }
-  }
+  useFindShortcutEffect({ hostRef, editorRef, onOpenFind: openFind, onOpenReplace: handleOpenReplace })
+  useFindLifecycle({ hostRef, editorRef, isOpen, state, keepFindFocus, editorDisabled })
+
+  const activeBounds = computeActiveFindBounds(isOpen, state, hostRef, editorRef)
 
   if (!isOpen) return null
 
@@ -170,6 +192,10 @@ export function useRichEditorFind({ documentId, hostRef, editorRef, readOnlyPrev
       replaceMode={replaceMode && !readOnlyPreview}
       allowReplace={!readOnlyPreview}
       replaceValue={replaceValue}
+      caseSensitive={state.options.caseSensitive}
+      wholeWord={state.options.wholeWord}
+      onToggleCaseSensitive={() => toggleFindOption('caseSensitive')}
+      onToggleWholeWord={() => toggleFindOption('wholeWord')}
       onQueryChange={updateMatches}
       onReplaceValueChange={setReplaceValue}
       onClose={closeFind}

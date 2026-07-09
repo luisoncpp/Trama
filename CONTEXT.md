@@ -8,6 +8,10 @@ Trama is a file-first desktop writing tool where a project is an opened folder c
 The read-only snapshot of project/workspace state (visible files, selected path, loading flags, git history, focus scope) that sidebar leaf components consume via Preact context instead of threaded props. Scoped per sidebar section through the section scope context.
 _Avoid_: Shell state bag, prop chain state
 
+**Global search**:
+The sidebar section that scans all **Trama-managed project content** markdown bodies for a term on explicit request (case-sensitive and whole-word options), listing matching documents. Opening a result navigates via `selectFile` and presets the in-editor find bar with the searched term through the find-request mailbox.
+_Avoid_: Live search, project index search
+
 **Staging Basket**:
 The transient UI collection tracking project-relative file paths actively selected by a user for data collection or processing during an export or batch session.
 _Avoid_: Selection queue, download cart

@@ -56,6 +56,8 @@ import type {
   SaveDocumentResponse,
   SaveGitSnapshotRequest,
   SaveGitSnapshotResponse,
+  SearchProjectRequest,
+  SearchProjectResponse,
   SetSpellcheckSettingsRequest,
   SetFullscreenRequest,
   SetFullscreenResponse,
@@ -115,6 +117,7 @@ declare global {
       renameDocument(payload: RenameDocumentRequest): Promise<IpcEnvelope<RenameDocumentResponse>>
       deleteDocument(payload: DeleteDocumentRequest): Promise<IpcEnvelope<DeleteDocumentResponse>>
       getIndex(): Promise<IpcEnvelope<ProjectIndex>>
+      searchProject(payload: SearchProjectRequest): Promise<IpcEnvelope<SearchProjectResponse>>
       setFullscreen(payload: SetFullscreenRequest): Promise<IpcEnvelope<SetFullscreenResponse>>
       revealMenuBar(): Promise<void>
       hideMenuBar(): Promise<void>

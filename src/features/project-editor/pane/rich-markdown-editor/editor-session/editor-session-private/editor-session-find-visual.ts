@@ -77,47 +77,67 @@ function handleFocusModeMatch(
   })
 }
 
+function revealActiveMatch(
+  host: HTMLDivElement,
+  editor: Quill,
+  state: SearchLikeState,
+): void {
+  const plainStart = state.matches[state.activeMatch]
+  const plainLength = state.query.trim().length
+  const { index: quillIndex, length: quillLength } = toQuillRange(editor, plainStart, plainLength)
+  editor.setSelection(quillIndex, quillLength, 'silent')
+
+  const container = host.querySelector('.ql-container')
+  const editorRoot = host.querySelector('.ql-editor')
+  if (
+    container instanceof HTMLElement &&
+    editorRoot instanceof HTMLElement &&
+    editorRoot.classList.contains('is-focus-mode')
+  ) {
+    handleFocusModeMatch(container, editorRoot, editor, quillIndex, Math.max(1, quillLength))
+  } else {
+    editor.scrollSelectionIntoView()
+  }
+}
+
+// Re-assert the reveal after layout settles: image hydration or a late external
+// apply can shift or reset the scroll produced by the first pass.
+const REVEAL_SETTLE_DELAY_MS = 150
+
 export function useActiveMatchOverlayEffect({
   isOpen,
   state,
   hostRef,
   editorRef,
   keepFindFocus,
+  editorDisabled = false,
 }: {
   isOpen: boolean
   state: SearchLikeState
   hostRef: { current: HTMLDivElement | null }
   editorRef: { current: Quill | null }
   keepFindFocus: () => void
+  editorDisabled?: boolean
 }) {
   useEffect(() => {
     if (!isOpen || state.matches.length === 0 || !state.query.trim()) {
       return
     }
 
-    const host = hostRef.current
-    const editor = editorRef.current
-    if (!host || !editor) {
-      return
+    const reveal = () => {
+      const host = hostRef.current
+      const editor = editorRef.current
+      if (!host || !editor) {
+        return
+      }
+      revealActiveMatch(host, editor, state)
+      keepFindFocus()
     }
 
-    const plainStart = state.matches[state.activeMatch]
-    const plainLength = state.query.trim().length
-    const { index: quillIndex, length: quillLength } = toQuillRange(editor, plainStart, plainLength)
-    editor.setSelection(quillIndex, quillLength, 'silent')
-
-    const container = host.querySelector('.ql-container')
-    const editorRoot = host.querySelector('.ql-editor')
-    if (
-      container instanceof HTMLElement &&
-      editorRoot instanceof HTMLElement &&
-      editorRoot.classList.contains('is-focus-mode')
-    ) {
-      handleFocusModeMatch(container, editorRoot, editor, quillIndex, Math.max(1, quillLength))
-    } else {
-      editor.scrollSelectionIntoView()
+    reveal()
+    const settleTimer = window.setTimeout(reveal, REVEAL_SETTLE_DELAY_MS)
+    return () => {
+      window.clearTimeout(settleTimer)
     }
-
-    keepFindFocus()
-  }, [editorRef, hostRef, isOpen, keepFindFocus, state.activeMatch, state.matches, state.query])
+  }, [editorRef, hostRef, isOpen, keepFindFocus, state.activeMatch, state.matches, state.query, editorDisabled])
 }

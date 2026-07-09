@@ -21,6 +21,7 @@ export const IPC_CHANNELS = {
   renameDocument: 'trama:document:rename',
   deleteDocument: 'trama:document:delete',
   getIndex: 'trama:index:get',
+  searchProject: 'trama:project:search',
   externalFileEvent: 'trama:project:external-file-event',
   setFullscreen: 'trama:window:set-fullscreen',
   revealMenuBar: 'trama:window:reveal-menu-bar',

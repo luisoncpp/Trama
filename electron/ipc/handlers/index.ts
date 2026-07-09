@@ -23,6 +23,7 @@ export {
   handleMoveFolder,
   handleCreateFromTemplate,
   handleGetTemplates,
+  handleSearchProject,
 } from './project-handlers/index.js'
 export {
   handleAiImportPreview,

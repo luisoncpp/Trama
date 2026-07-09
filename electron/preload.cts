@@ -60,6 +60,8 @@ import {
   type SaveDocumentResponse,
   type SaveGitSnapshotRequest,
   type SaveGitSnapshotResponse,
+  type SearchProjectRequest,
+  type SearchProjectResponse,
   type ReorderFilesRequest,
   type ReorderFilesResponse,
   type MoveFileRequest,
@@ -159,6 +161,9 @@ const tramaApi = {
   },
   getIndex(): Promise<IpcEnvelope<ProjectIndex>> {
     return ipcRenderer.invoke(IPC_CHANNELS.getIndex)
+  },
+  searchProject(payload: SearchProjectRequest): Promise<IpcEnvelope<SearchProjectResponse>> {
+    return ipcRenderer.invoke(IPC_CHANNELS.searchProject, payload)
   },
   setFullscreen(payload: SetFullscreenRequest): Promise<IpcEnvelope<SetFullscreenResponse>> {
     return ipcRenderer.invoke(IPC_CHANNELS.setFullscreen, payload)

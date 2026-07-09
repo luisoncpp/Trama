@@ -120,6 +120,16 @@
   background: var(--surface-hover-bg);
 }
 
+.editor-findbar__button--option {
+  color: var(--text-muted);
+}
+
+.editor-findbar__button--option.is-active {
+  color: var(--text-main);
+  border-color: var(--accent-border-strong);
+  background: var(--surface-accent-bg);
+}
+
 .editor-findbar__button--close,
 .editor-findbar__button--toggle-replace {
   padding: 4px 6px;

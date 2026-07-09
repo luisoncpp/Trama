@@ -7,6 +7,8 @@ interface FindOverlayProps {
   replaceMode: boolean
   allowReplace?: boolean
   replaceValue: string
+  caseSensitive: boolean
+  wholeWord: boolean
   onQueryChange: (value: string) => void
   onReplaceValueChange: (value: string) => void
   onClose: () => void
@@ -15,6 +17,8 @@ interface FindOverlayProps {
   onReplace: () => void
   onReplaceAll: () => void
   onToggleReplaceMode: () => void
+  onToggleCaseSensitive: () => void
+  onToggleWholeWord: () => void
 }
 
 export interface FindMatchBounds {
@@ -24,7 +28,32 @@ export interface FindMatchBounds {
   height: number
 }
 
-function FindInputRow({ query, inputRef, matchLabel, replaceMode, allowReplace, onQueryChange, onClose, onJumpPrevious, onJumpNext, onToggleReplaceMode }: FindOverlayProps) {
+function FindOptionButton({ pressed, title, label, onToggle }: { pressed: boolean; title: string; label: string; onToggle: () => void }) {
+  return (
+    <button
+      type="button"
+      class={`editor-findbar__button editor-findbar__button--option ${pressed ? 'is-active' : ''}`}
+      onClick={onToggle}
+      aria-pressed={pressed}
+      aria-label={title}
+      title={title}
+    >
+      {label}
+    </button>
+  )
+}
+
+function FindOptionToggles({ caseSensitive, wholeWord, onToggleCaseSensitive, onToggleWholeWord }: Pick<FindOverlayProps, 'caseSensitive' | 'wholeWord' | 'onToggleCaseSensitive' | 'onToggleWholeWord'>) {
+  return (
+    <>
+      <FindOptionButton pressed={caseSensitive} title="Match case" label="Aa" onToggle={onToggleCaseSensitive} />
+      <FindOptionButton pressed={wholeWord} title="Match whole word" label="[ab]" onToggle={onToggleWholeWord} />
+    </>
+  )
+}
+
+function FindInputRow(props: FindOverlayProps) {
+  const { query, inputRef, matchLabel, replaceMode, allowReplace, onQueryChange, onClose, onJumpPrevious, onJumpNext, onToggleReplaceMode } = props
   return (
     <div class="editor-findbar__row">
       <input
@@ -52,6 +81,7 @@ function FindInputRow({ query, inputRef, matchLabel, replaceMode, allowReplace, 
         }}
       />
 
+      <FindOptionToggles {...props} />
       <span class="editor-findbar__count" aria-live="polite">{matchLabel}</span>
       <button type="button" class="editor-findbar__button" onClick={onJumpPrevious} aria-label="Previous match">Prev</button>
       <button type="button" class="editor-findbar__button" onClick={onJumpNext} aria-label="Next match">Next</button>

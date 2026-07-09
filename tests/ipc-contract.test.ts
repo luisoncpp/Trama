@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { buildPingResponse } from '../electron/ipc'
-import { documentMetaSchema } from '../src/shared/ipc'
+import { documentMetaSchema, searchProjectRequestSchema } from '../src/shared/ipc'
 
 describe('IPC contract validation', () => {
   it('accepts a valid payload', () => {
@@ -37,5 +37,11 @@ describe('IPC contract validation', () => {
     })
 
     expect(parsed.success).toBe(true)
+  })
+
+  it('accepts a valid project search payload and rejects a blank query', () => {
+    expect(searchProjectRequestSchema.safeParse({ query: 'dragon', caseSensitive: true, wholeWord: false }).success).toBe(true)
+    expect(searchProjectRequestSchema.safeParse({ query: '   ', caseSensitive: false, wholeWord: false }).success).toBe(false)
+    expect(searchProjectRequestSchema.safeParse({ query: 'dragon' }).success).toBe(false)
   })
 })

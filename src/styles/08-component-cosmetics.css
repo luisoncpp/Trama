@@ -242,6 +242,126 @@
   border-color: var(--accent-border);
 }
 
+.sidebar-search__controls {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sidebar-search__query-row {
+  display: flex;
+  gap: 6px;
+}
+
+.sidebar-search__input {
+  flex: 1 1 auto;
+  min-width: 0;
+  border: 1px solid var(--border-strong);
+  border-radius: 10px;
+  background: var(--surface-input-bg);
+  color: var(--text-main);
+  padding: 8px 10px;
+  font-size: 0.8rem;
+}
+
+.sidebar-search__input::placeholder {
+  color: var(--text-dim);
+}
+
+.sidebar-search__option {
+  border: 1px solid var(--border-strong);
+  border-radius: 10px;
+  background: var(--surface-input-bg);
+  color: var(--text-muted);
+  padding: 0 8px;
+  font-size: 0.72rem;
+  white-space: nowrap;
+}
+
+.sidebar-search__option:hover {
+  color: var(--text-main);
+  border-color: var(--accent-border);
+}
+
+.sidebar-search__option.is-active {
+  color: var(--text-main);
+  border-color: var(--accent-border-strong);
+  background: var(--surface-accent-bg);
+}
+
+.sidebar-search__status {
+  margin: 10px 2px 0;
+  font-size: 0.74rem;
+  color: var(--text-muted);
+}
+
+.sidebar-search__status--error {
+  color: var(--danger, #e11d48);
+}
+
+.sidebar-search__results {
+  margin: 10px 0 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  overflow-y: auto;
+}
+
+.sidebar-search__result {
+  width: 100%;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  min-height: 36px;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-areas:
+    'title count'
+    'path count';
+  align-items: center;
+  column-gap: 8px;
+  text-align: left;
+  background: var(--tree-row-bg);
+  color: var(--text-muted);
+  padding: 6px 10px;
+  transition: background-color 160ms ease, border-color 160ms ease, color 160ms ease;
+}
+
+.sidebar-search__result:hover,
+.sidebar-search__result:focus-visible {
+  border-color: var(--accent-border);
+  color: var(--text-main);
+}
+
+.sidebar-search__result-title {
+  grid-area: title;
+  font-size: 0.8rem;
+  color: inherit;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sidebar-search__result-path {
+  grid-area: path;
+  font-size: 0.68rem;
+  color: var(--text-dim);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sidebar-search__result-count {
+  grid-area: count;
+  font-size: 0.7rem;
+  color: var(--text-dim);
+  border: 1px solid var(--border-strong);
+  border-radius: 999px;
+  padding: 1px 7px;
+}
+
 .sidebar-footer-actions {
   margin-top: 12px;
   display: flex;

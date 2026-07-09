@@ -85,6 +85,8 @@ function useEditorSessionFeatureHooks(ctx: OrchestrationContext) {
     hostRef,
     editorRef,
     readOnlyPreview: props.readOnlyPreview,
+    contentSession: lifecycleSession,
+    editorDisabled: props.disabled,
   })
   useFocusModeScopeEffect(
     lifecycleSession?.getEditor() ?? null,
