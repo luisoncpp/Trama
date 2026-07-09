@@ -20,6 +20,7 @@ The user clicks a file row in the sidebar Search results list.
 8. `EditorContentLoop.applyExternalValue()` notifies content mutation after applying disk content. The find controller recomputes matches against the current Quill text.
 9. `useActiveMatchOverlayEffect()` selects and reveals the active match. After reveal it forces one fresh bounds render so an early `getBounds()` miss or stale layout read does not leave the `.editor-find-highlight` absent.
 10. A short settle timer reasserts reveal after late layout shifts.
+11. While find is open, `useFindLifecycle()` attaches the scroll listener to the current Quill instance's `.container`; when global-search navigation swaps documents while the find bar was already open, the listener must reattach to the new container so mouse-wheel scrolls refresh active-match bounds.
 
 ## Reads
 
@@ -46,6 +47,7 @@ The user clicks a file row in the sidebar Search results list.
 - A global find request must only be consumed by the editor whose `documentId` matches the requested path.
 - Applying a preset query is not enough; matches must be refreshed after the query/options commit and after target content applies.
 - Active match bounds are layout-dependent. Recompute after reveal as well as on scroll.
+- Scroll tracking must follow the current Quill container, not only the stable `editorRef` object; global-search navigation can replace the instance while `isOpen` remains true.
 - Plain-text match offsets must be converted to Quill document indexes before `setSelection()` or `getBounds()`.
 
 ## Common Failure Modes
@@ -55,6 +57,7 @@ The user clicks a file row in the sidebar Search results list.
 | Find bar opens but no match appears selected after result click | Preset scanned old/empty editor content and never refreshed after query commit | `useContentMutatedRefreshEffect()` dependencies |
 | Counter shows matches but highlight is absent | First bounds read happened before layout was ready and no follow-up render occurred | `useActiveMatchOverlayEffect()` bounds refresh |
 | Highlight drifts during scroll | Scroll listener is not attached to the current `.ql-container` | `useFindLifecycle()` scroll effect |
+| Highlight stays fixed after clicking a global search result and mouse-wheel scrolling | Find stayed open across document navigation, but the scroll effect remained attached to the previous Quill container | `useFindLifecycle()` dependency on `editorRef.current` / current editor instance |
 | Match range is shifted around layout directives/images | Plain text offset was passed directly to Quill | `mapPlainTextIndexToQuillIndex()` |
 
 ## Focused Tests

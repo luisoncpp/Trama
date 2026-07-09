@@ -19,6 +19,7 @@ Additionally, `getActiveMatchBounds` originally used `container.offsetTop + boun
 3. Replaced `offsetTop/offsetLeft` with `getBoundingClientRect()` differences (`containerRect.top - shellRect.top + bounds.top`), exactly like the tag overlay fix.
 4. Applied `mapPlainTextIndexToQuillIndex()` to correct the plain-text-vs-delta-index mismatch when embeds exist.
 5. Fixed `mapPlainTextIndexToQuillIndex` to use `<` instead of `<=` when checking if a plain-text offset falls inside a string op. This ensures offsets that land exactly on a boundary between string ops skip past intermediate embeds (e.g. center boundaries, spacers, pagebreaks) instead of pointing at the embed itself.
+6. Reattached the scroll listener when the current Quill instance changes, not only when the find bar opens. Global-search navigation can keep find open while replacing `.ql-container`, so listening to the old container makes mouse-wheel scrolls move the document while the overlay appears fixed on screen.
 
 ## Rule
 
@@ -28,9 +29,12 @@ Any overlay that positions itself with `position: absolute` relative to a scroll
 
 Prefer the first option when possible. If the overlay must live outside (e.g. to avoid being clipped), use a scroll listener to trigger fresh geometry reads.
 
+When the editor instance itself can change under an open overlay, make the listener depend on the current Quill instance or concrete container element. A stable ref object is not enough because `ref.current` can point at a new editor without changing the ref identity.
+
 ## Regression Coverage
 
 `tests/rich-markdown-editor-find-regression.test.ts` verifies:
 - `getActiveMatchBounds` never reads `offsetTop/offsetLeft`.
 - `getActiveMatchBounds` converts plain-text offsets through `mapPlainTextIndexToQuillIndex` when embeds precede the match.
 - Scrolling `.ql-container` triggers a fresh `getBounds` call.
+- `tests/global-find-preset-selection.test.ts` verifies a global-search navigation with find already open reattaches scroll tracking to the new editor container.

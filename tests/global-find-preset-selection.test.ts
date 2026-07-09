@@ -204,6 +204,49 @@ describe('global find preset selection', () => {
     expectRevealedFirstMatch(root, setSelectionSpy)
   })
 
+  it('reattaches active highlight scroll tracking after navigating with find already open', async () => {
+    act(() => {
+      render(h(RichMarkdownEditor, buildEditorProps({ documentId: 'book/a.md', value: 'alpha beta alpha' })), root)
+    })
+    await sleep(80)
+
+    const editorA = getQuillInstance(root)
+    act(() => {
+      editorA.focus()
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'f', ctrlKey: true, bubbles: true }))
+    })
+    await sleep(30)
+
+    const previousInput = root.querySelector('.editor-findbar__input') as HTMLInputElement
+    act(() => {
+      previousInput.value = 'alpha'
+      previousInput.dispatchEvent(new Event('input', { bubbles: true }))
+    })
+    await sleep(30)
+
+    act(() => {
+      postGlobalFindRequest({ path: 'book/b.md', query: 'target', options: { caseSensitive: false, wholeWord: false } })
+      render(h(RichMarkdownEditor, buildEditorProps({ documentId: 'book/b.md', value: TARGET_BODY, disabled: false })), root)
+    })
+    await sleep(80)
+
+    const editorB = getQuillInstance(root)
+    const getBoundsSpy = vi.spyOn(editorB, 'getBounds').mockReturnValue({
+      top: 10,
+      left: 10,
+      width: 50,
+      height: 20,
+    } as any)
+
+    act(() => {
+      editorB.container.dispatchEvent(new Event('scroll', { bubbles: false }))
+    })
+    await sleep(30)
+
+    expect(getBoundsSpy.mock.calls.length).toBeGreaterThan(0)
+    getBoundsSpy.mockRestore()
+  })
+
   it('refreshes the preset query after fast navigation while the find bar was already open without a query', async () => {
     act(() => {
       render(h(RichMarkdownEditor, buildEditorProps({ documentId: 'book/a.md', value: 'alpha beta alpha' })), root)

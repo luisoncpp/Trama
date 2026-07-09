@@ -86,15 +86,16 @@ function useFindLifecycle({
   const refreshFindBounds = useCallback(/* refreshFindBounds */ () => {
     setScrollTick((t) => t + 1)
   }, [/*Inputs for refreshFindBounds — stable*/])
+  const currentEditor = editorRef.current
 
   useEffect(/* trackEditorScrollForBounds */ () => {
     if (!isOpen) return
-    const container = hostRef.current?.querySelector('.ql-container')
+    const container = currentEditor?.container ?? hostRef.current?.querySelector('.ql-container')
     if (!container) return
     const onScroll = () => setScrollTick((t) => t + 1)
     container.addEventListener('scroll', onScroll, { passive: true })
     return () => { container.removeEventListener('scroll', onScroll) }
-  }, [isOpen, hostRef] /*Inputs for trackEditorScrollForBounds*/)
+  }, [currentEditor, isOpen, hostRef] /*Inputs for trackEditorScrollForBounds*/)
 
   useActiveMatchOverlayEffect({
     isOpen,
