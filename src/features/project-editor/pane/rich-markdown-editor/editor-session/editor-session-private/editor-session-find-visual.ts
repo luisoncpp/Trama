@@ -110,6 +110,7 @@ export function useActiveMatchOverlayEffect({
   hostRef,
   editorRef,
   keepFindFocus,
+  refreshFindBounds,
   editorDisabled = false,
 }: {
   isOpen: boolean
@@ -117,6 +118,7 @@ export function useActiveMatchOverlayEffect({
   hostRef: { current: HTMLDivElement | null }
   editorRef: { current: Quill | null }
   keepFindFocus: () => void
+  refreshFindBounds: () => void
   editorDisabled?: boolean
 }) {
   useEffect(() => {
@@ -131,6 +133,7 @@ export function useActiveMatchOverlayEffect({
         return
       }
       revealActiveMatch(host, editor, state)
+      refreshFindBounds()
       keepFindFocus()
     }
 
@@ -139,5 +142,5 @@ export function useActiveMatchOverlayEffect({
     return () => {
       window.clearTimeout(settleTimer)
     }
-  }, [editorRef, hostRef, isOpen, keepFindFocus, state.activeMatch, state.matches, state.query, editorDisabled])
+  }, [editorRef, hostRef, isOpen, keepFindFocus, refreshFindBounds, state.activeMatch, state.matches, state.query, editorDisabled])
 }

@@ -34,20 +34,38 @@ export function useContentMutatedRefreshEffect({
   isOpen,
   contentSession,
   documentId,
+  query,
+  options,
+  editorDisabled,
   hasQuery,
   refreshMatches,
 }: {
   isOpen: boolean
   contentSession: FindContentSession | null
   documentId: string | null
+  query: string
+  options: TextSearchOptions
+  editorDisabled: boolean
   hasQuery: () => boolean
   refreshMatches: () => void
 }) {
   useEffect(/* refreshMatchesOnContentMutated */ () => {
     if (!isOpen || !contentSession) return
-    if (hasQuery()) refreshMatches()
-    return contentSession.subscribeContentMutated(() => refreshMatches())
-  }, [isOpen, contentSession, documentId] /*Inputs for refreshMatchesOnContentMutated*/)
+    if (hasQuery()) {
+      refreshMatches()
+    }
+    return contentSession.subscribeContentMutated(() => {
+      refreshMatches()
+    })
+  }, [
+    isOpen,
+    contentSession,
+    documentId,
+    query,
+    options.caseSensitive,
+    options.wholeWord,
+    editorDisabled,
+  ] /*Inputs for refreshMatchesOnContentMutated*/)
 }
 
 export function buildToggleFindOption({

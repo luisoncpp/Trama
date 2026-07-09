@@ -198,6 +198,60 @@ describe('RichMarkdownEditor find scroll regression', () => {
 
     getBoundsSpy.mockRestore()
   })
+
+  it('recalcula activeBounds despues de revelar si el primer bounds todavia no esta listo', async () => {
+    act(() => {
+      render(
+        h(RichMarkdownEditor, {
+          documentId: 'late-bounds-test',
+          value: 'intro text target more target',
+          disabled: false,
+          onChange: () => {},
+          historyBackDisabled: true,
+          onHistoryBack: noop,
+          saveDisabled: false,
+          saveLabel: 'Guardar',
+          onSaveNow: () => {},
+          revertDisabled: true,
+          revertLabel: '',
+          onRevertNow: noop,
+          syncState: 'clean',
+          syncStateLabel: 'Sin cambios',
+        }),
+        root,
+      )
+    })
+
+    await sleep(80)
+
+    const editor = getQuillInstance(root)
+    let boundsCalls = 0
+    const getBoundsSpy = vi.spyOn(editor, 'getBounds').mockImplementation(() => {
+      boundsCalls += 1
+      if (boundsCalls === 1) return null as any
+      return { top: 10, left: 10, width: 50, height: 20 } as any
+    })
+
+    act(() => {
+      editor.focus()
+      window.dispatchEvent(
+        new KeyboardEvent('keydown', { key: 'f', ctrlKey: true, bubbles: true }),
+      )
+    })
+    await sleep(30)
+
+    const input = root.querySelector('.editor-findbar__input') as HTMLInputElement
+    act(() => {
+      input.value = 'target'
+      input.dispatchEvent(new Event('input', { bubbles: true }))
+    })
+    await sleep(80)
+
+    expect(boundsCalls).toBeGreaterThan(1)
+    expect(root.querySelector('.editor-find-highlight')).toBeTruthy()
+
+    getBoundsSpy.mockRestore()
+  })
 })
 
 describe('RichMarkdownEditor find & replace', () => {

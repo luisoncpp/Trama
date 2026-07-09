@@ -83,6 +83,9 @@ function useFindLifecycle({
   editorDisabled?: boolean
 }) {
   const [, setScrollTick] = useState(0)
+  const refreshFindBounds = useCallback(/* refreshFindBounds */ () => {
+    setScrollTick((t) => t + 1)
+  }, [/*Inputs for refreshFindBounds — stable*/])
 
   useEffect(/* trackEditorScrollForBounds */ () => {
     if (!isOpen) return
@@ -99,6 +102,7 @@ function useFindLifecycle({
     hostRef,
     editorRef,
     keepFindFocus,
+    refreshFindBounds,
     editorDisabled,
   })
 }
@@ -173,7 +177,10 @@ export function useRichEditorFind({ documentId, hostRef, editorRef, readOnlyPrev
   useEffect(/* resetFindOnDocumentChange */ () => { closeFind(); setReplaceValue('') }, [documentId] /*Inputs for resetFindOnDocumentChange*/)
 
   useGlobalFindPresetEffect({ documentId, openFind, applySearch })
-  useContentMutatedRefreshEffect({ isOpen, contentSession, documentId, hasQuery: () => Boolean(stateRef.current.query.trim()), refreshMatches })
+  useContentMutatedRefreshEffect({
+    isOpen, contentSession, documentId, query: state.query, options: state.options, editorDisabled,
+    hasQuery: () => Boolean(stateRef.current.query.trim()), refreshMatches,
+  })
   const toggleFindOption = buildToggleFindOption({ stateRef, applySearch, keepFindFocus })
 
   useFindShortcutEffect({ hostRef, editorRef, onOpenFind: openFind, onOpenReplace: handleOpenReplace })

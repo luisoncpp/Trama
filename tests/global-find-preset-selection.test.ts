@@ -204,6 +204,31 @@ describe('global find preset selection', () => {
     expectRevealedFirstMatch(root, setSelectionSpy)
   })
 
+  it('refreshes the preset query after fast navigation while the find bar was already open without a query', async () => {
+    act(() => {
+      render(h(RichMarkdownEditor, buildEditorProps({ documentId: 'book/a.md', value: 'alpha beta alpha' })), root)
+    })
+    await sleep(80)
+
+    const editorA = getQuillInstance(root)
+    act(() => {
+      editorA.focus()
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'f', ctrlKey: true, bubbles: true }))
+    })
+    await sleep(30)
+
+    const setSelectionSpy = vi.spyOn(Quill.prototype, 'setSelection')
+
+    act(() => {
+      postGlobalFindRequest({ path: 'book/b.md', query: 'target', options: { caseSensitive: false, wholeWord: false } })
+      render(h(RichMarkdownEditor, buildEditorProps({ documentId: 'book/b.md', value: TARGET_BODY, disabled: false })), root)
+    })
+    await sleep(80)
+
+    expectRevealedFirstMatch(root, setSelectionSpy)
+    setSelectionSpy.mockRestore()
+  })
+
   it('re-asserts the reveal after layout settles (late content shifts)', async () => {
     act(() => {
       render(h(RichMarkdownEditor, buildEditorProps({ documentId: 'book/a.md', value: TARGET_BODY })), root)
