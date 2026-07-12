@@ -8,7 +8,9 @@ facades:
 files:
   - app.tsx
   - main.tsx
+groups:
+  - project-editor
 descriptionShort: Preact UI entry & shared seams
 ---
 
-Preact renderer bootstrap (main.tsx) and top-level app composition (app.tsx). Feature UI nests under features/; cross-cutting contracts live in shared/, theme/, and types/.
+Preact renderer bootstrap (main.tsx) and top-level app composition (app.tsx). The project editor shell is its primary UI subgroup; cross-cutting contracts live in shared/, theme/, and types/.
