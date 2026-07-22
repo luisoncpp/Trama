@@ -3,7 +3,7 @@ import type { SidebarSection } from '../../project-editor-types'
 import { defineSidebarSectionRoot, type SidebarSectionRoot } from './sidebar-path-scoping'
 import { RELEVANT_SECTION_ROOTS, TEMPLATES_SECTION_ROOT } from '../../../../shared/project-sections'
 
-export type ContentSidebarSection = Exclude<SidebarSection, 'settings' | 'transfer' | 'search'>
+export type ContentSidebarSection = Exclude<SidebarSection, 'settings' | 'transfer' | 'search' | 'contents'>
 
 export interface SidebarSectionConfig {
   title: string

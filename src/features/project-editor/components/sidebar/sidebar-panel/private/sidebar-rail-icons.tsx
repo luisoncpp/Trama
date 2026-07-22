@@ -20,6 +20,18 @@ export function ManuscriptIcon(): JSX.Element {
   )
 }
 
+export function ContentsIcon(): JSX.Element {
+  return (
+    <IconWrapper>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true">
+        <path d="M4 6h16" />
+        <path d="M8 12h12" />
+        <path d="M12 18h8" />
+      </svg>
+    </IconWrapper>
+  )
+}
+
 export function OutlineIcon(): JSX.Element {
   return (
     <IconWrapper>

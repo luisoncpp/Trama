@@ -6,7 +6,12 @@ import { ConflictComparePanel } from './components/conflict-compare-panel'
 import { ProjectEditorDialogs } from './project-editor-dialogs'
 import { EditorActionsProvider } from './project-editor-actions-context.tsx'
 import { SidebarStateProvider, buildSidebarProjectState } from './components/sidebar/sidebar-state-context.tsx'
+import {
+  DocumentContentsProvider,
+  type DocumentContentsState,
+} from './components/sidebar/document-contents-context.tsx'
 import { useProjectEditorShellState } from './project-editor-shell'
+import { deriveActivePaneDocument } from './project-editor-logic'
 import { useProjectEditorViewDialogs } from './project-editor-view-dialogs'
 import { ProjectEditorLayout } from './project-editor-view-layout'
 import type { ProjectEditorShellSettingsProps } from './project-editor-shell-props'
@@ -75,6 +80,21 @@ function useProjectEditorViewState(model: ProjectEditorModel, props: Omit<Projec
   )
   const sidebarStyle = buildSidebarStyle(sidebarWidthPx)
   const sidebarState = useMemo(() => buildSidebarProjectState(shellState), [shellState])
+  // model.state strips editorMeta (ProjectEditorState Omit), so derive the
+  // active-pane projection from the pane states via the single pure projector.
+  const { editorValue, editorMeta, selectedPath } = deriveActivePaneDocument(
+    model.state.workspaceLayout,
+    model.state.primaryPane,
+    model.state.secondaryPane,
+  )
+  const documentContentsState = useMemo(
+    /* buildDocumentContentsState */ (): DocumentContentsState => ({
+      editorValue,
+      documentType: editorMeta.type,
+      selectedPath,
+    }),
+    [editorValue, editorMeta.type, selectedPath] /*Inputs for buildDocumentContentsState*/,
+  )
   const layoutProps = {
     model,
     shellState,
@@ -92,22 +112,24 @@ function useProjectEditorViewState(model: ProjectEditorModel, props: Omit<Projec
     onSpellcheckEnabledChange: props.onSpellcheckEnabledChange,
     onSpellcheckLanguageChange: props.onSpellcheckLanguageChange,
   }
-  return { layoutProps, dialogsProps, sidebarState }
+  return { layoutProps, dialogsProps, sidebarState, documentContentsState }
 }
 
 export function ProjectEditorView({ model, ...rest }: ProjectEditorViewProps) {
-  const { layoutProps, dialogsProps, sidebarState } = useProjectEditorViewState(model, rest)
+  const { layoutProps, dialogsProps, sidebarState, documentContentsState } = useProjectEditorViewState(model, rest)
   return (
     <EditorActionsProvider actions={model.actions}>
       <SidebarStateProvider value={sidebarState}>
-        <>
-          <WindowTitlebar />
-          <main class={buildShellClassName(model)}>
-            <ProjectEditorConflictOverlays model={model} />
-            <ProjectEditorLayout {...layoutProps} />
-            <ProjectEditorDialogs {...dialogsProps} />
-          </main>
-        </>
+        <DocumentContentsProvider value={documentContentsState}>
+          <>
+            <WindowTitlebar />
+            <main class={buildShellClassName(model)}>
+              <ProjectEditorConflictOverlays model={model} />
+              <ProjectEditorLayout {...layoutProps} />
+              <ProjectEditorDialogs {...dialogsProps} />
+            </main>
+          </>
+        </DocumentContentsProvider>
       </SidebarStateProvider>
     </EditorActionsProvider>
   )

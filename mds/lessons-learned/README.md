@@ -71,7 +71,7 @@ Avoid: "bug description + fix". Prefer: "what I learned that applies to future w
 | `pdf-lib-winansi-encoding.md` | PDF Unicode requires embedding real fonts via fontkit; standard fonts fall back to WinAnsi | 2026-04-13 |
 | `epub-gen-image-limitations.md` | EPUB generators need `file://` paths; materialize data URLs to temp files first | 2026-04-14 |
 | `quill-custom-data-attribute-loss.md` | Quill drops unknown `data-*` attrs during ingestion; use dedicated blots for durable objects | 2026-04-12 |
-| `quill-getbounds-container-reference.md` | `quill.getBounds()` coordinates are relative to `quill.container`, not the root element | 2026-04-11 |
+| `quill-getbounds-container-reference.md` | `quill.getBounds()` uses live container-relative coordinates: use the container as the reference and add its current scroll offset for absolute content positioning | 2026-04-11 |
 | `wiki-tag-modifier-click-race.md` | Use event-time modifier state (`event.ctrlKey`) for behavior, not derived React state | 2026-04-11 |
 | `split-pane-pane-targeted-editor-change.md` | Every editor onChange must route to an explicit pane; global active pane causes timing bugs | 2026-04-14 |
 | `focus-mode-centered-scroll-spacers.md` | Reliable EOF edge spacing in Quill: spacer pseudo-elements on `.ql-editor`, not container padding | 2026-04-07 |
@@ -146,4 +146,7 @@ Avoid: "bug description + fix". Prefer: "what I learned that applies to future w
 | `relationships-chart-arrowheads-above-nodes.md` | Relationship chart arrow markers must render in an SVG layer above HTML node pills; anchor endpoints with label-width box intersection, not a fixed radius | 2026-06-14 |
 | `relationships-auto-tag-uses-label-not-slug.md` | Add-character Auto tag matches the lowered full label against `tagIndex`, not the `buildNodeId` slug; `id` and `destinationTag` are independent | 2026-06-14 |
 | `relationships-emoji-chips-must-not-affect-edge-geometry.md` | Emoji decoration chips below a node pill must be absolutely positioned (out of flow) so the anchor box and `estimateNodeHalfExtents` stay label-only; otherwise edges miss the pill border | 2026-06-18 |
+| `quill-setselection-always-focuses-root.md` | `setSelection` (even `'silent'`) DOM-focuses the Quill root via `setNativeRange`; jsdom keeps that focus on `contenteditable=false` roots, so assert `editor.focus()` was not called instead of `hasFocus() === false` | 2026-07-21 |
+| `project-editor-model-state-omits-editor-meta.md` | `model.state` strips `editorMeta` at runtime (`Omit` enforced in `use-project-editor.ts`); shell-level code must re-derive document type from pane states via `deriveActivePaneDocument` | 2026-07-21 |
+| `sidebar-rail-section-persistence-allowlist.md` | A new rail section also needs the `use-sidebar-ui-state.ts` persistence allowlist, or the stored selection silently falls back to `explorer` on next start | 2026-07-21 |
 

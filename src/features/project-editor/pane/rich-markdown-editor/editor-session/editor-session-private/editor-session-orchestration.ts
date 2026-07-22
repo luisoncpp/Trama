@@ -153,6 +153,7 @@ function buildEditorSessionFacade(
   if (!lifecycleSession) return null
   return {
     flush: () => lifecycleSession.flush(),
+    revealHeading: (target) => lifecycleSession.revealHeading(target),
     getEditor: () => lifecycleSession.getEditor(),
     getCanonicalValue: () => lifecycleSession.getCanonicalValue(),
     subscribeContentMutated: (cb) => lifecycleSession.subscribeContentMutated(cb),

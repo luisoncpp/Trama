@@ -3,6 +3,7 @@ import { useEffect } from 'preact/hooks'
 import type Quill from 'quill'
 import type { FindMatchBounds } from './editor-session-find-overlay'
 import { mapPlainTextIndexToQuillIndex } from './editor-session-tag-math'
+import { computeCenteredScrollTop } from '../../../../document-contents/index.js'
 
 interface SearchLikeState {
   query: string
@@ -67,10 +68,7 @@ function handleFocusModeMatch(
 
   requestAnimationFrame(() => {
     const refreshed = editor.getBounds(quillIndex, quillLength) ?? bounds
-    const desired = refreshed.top - (container.clientHeight / 2 - refreshed.height / 2)
-    const maxScroll = Math.max(0, container.scrollHeight - container.clientHeight)
-    const target = Math.max(0, Math.min(desired, maxScroll))
-    container.scrollTop = Math.round(target)
+    container.scrollTop = computeCenteredScrollTop(container, refreshed)
     if (selection) {
       editor.setSelection(selection.index, selection.length, 'silent')
     }

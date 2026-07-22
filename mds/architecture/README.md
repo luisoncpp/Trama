@@ -16,6 +16,7 @@ Canonical technical guides — the single source of truth for each subsystem's d
 |------|-----------|-------|
 | `ai-import-export-architecture.md` | Clipboard pipeline, format grammar, import preview/execute, export multi-file | |
 | `book-export-architecture.md` | Export pipeline: formats, renderers, directive mapping, image handling | |
+| `document-contents-architecture.md` | Contents heading navigation: parser contract, ordinal identity, reveal mechanics, narrow state subscription | Slice 1 implemented (2026-07-21) |
 | `editor-serialization-debounce-architecture.md` | Debounced editor serialization, flush-before-save/switch, per-pane isolation | |
 | `focus-mode-architecture.md` | Highlights API rendering, overlay fallback, scope dimming | |
 | `image-handling-architecture.md` | Inline base64 image workflow: dual-representation strategy, image cache, load-edit-save lifecycle | |

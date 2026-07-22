@@ -26,6 +26,7 @@ function makeRefs() {
     primary: {
       current: {
         flush: (): string | null => '# flushed',
+        revealHeading: () => {},
         flushSync: (): string | null => '# flushed',
         isSerializationPending: () => false,
         tagOverlayRecalcRef: { current: false },
@@ -35,6 +36,7 @@ function makeRefs() {
     secondary: {
       current: {
         flush: (): string | null => '# flushed',
+        revealHeading: () => {},
         flushSync: (): string | null => '# flushed',
         isSerializationPending: () => false,
         tagOverlayRecalcRef: { current: false },

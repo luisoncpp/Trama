@@ -46,6 +46,17 @@ const rect = editor.container.getBoundingClientRect()
 
 Any code that converts Quill `getBounds()` coordinates to viewport or parent-relative coordinates must use `quill.container.getBoundingClientRect()` as the reference, not `quill.root.getBoundingClientRect()`.
 
+For scrolling, `bounds.top` is a live container-relative DOM coordinate, not an absolute content offset. Preserve the current scroll position when centering:
+
+```ts
+const desired =
+  container.scrollTop +
+  bounds.top -
+  (container.clientHeight / 2 - bounds.height / 2)
+```
+
+Also use `quill.focus({ preventScroll: true })` before applying a custom scroll target. Plain `focus()` calls `scrollSelectionIntoView()` and can move the container before the centering calculation, which makes the missing-offset bug look like every heading navigates near the top.
+
 ## Official documentation
 
 From https://quilljs.com/mds/api#PgetBounds (v2.0.3, the version used in this project):
@@ -59,3 +70,4 @@ This is unambiguous and intentional API design. The container is the element pas
 - Overlay/highlight positioned correctly at narrow width but drifts right as editor widens.
 - Ctrl+Click hit-tests only work on the left side of words when the editor is wide.
 - The distortion scales linearly with available horizontal space.
+- Heading navigation from a scrolled document lands near the top because every computed target loses the existing `scrollTop`.

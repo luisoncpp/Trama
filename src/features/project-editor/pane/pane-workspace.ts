@@ -1,6 +1,7 @@
 // @Architecture(descriptionShort="Implements pane workspace for the writing workspace")
 import type { DocumentMeta } from '../../../shared/ipc'
 import type {
+  HeadingRevealTarget,
   PaneDocumentState,
   PaneNavigationHistoryState,
   PaneNavigationHistoryStore,
@@ -105,6 +106,10 @@ export class PaneWorkspace {
 
   flushPaneContent(pane: WorkspacePane): string | null {
     return getEditorSessionRefForPane(pane, this.editorSessionRefs).current?.flush() ?? null
+  }
+
+  revealHeadingInPane(pane: WorkspacePane, target: HeadingRevealTarget): void {
+    getEditorSessionRefForPane(pane, this.editorSessionRefs).current?.revealHeading(target)
   }
 
   async savePaneIfDirty(pane: WorkspacePane): Promise<void> {

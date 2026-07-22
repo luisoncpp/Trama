@@ -12,11 +12,18 @@ export interface TagMatch {
   filePath: string
 }
 
-export interface EditorSession {
-  flush(): string | null
+export interface HeadingRevealTarget {
+  ordinal: number
+  level: 1 | 2 | 3
+  text: string
 }
 
-export type SidebarSection = 'explorer' | 'outline' | 'lore' | 'templates' | 'search' | 'transfer' | 'settings'
+export interface EditorSession {
+  flush(): string | null
+  revealHeading(target: HeadingRevealTarget): void
+}
+
+export type SidebarSection = 'explorer' | 'contents' | 'outline' | 'lore' | 'templates' | 'search' | 'transfer' | 'settings'
 export type WorkspaceLayoutMode = 'single' | 'split'
 export type WorkspacePane = 'primary' | 'secondary'
 export type FocusScope = 'line' | 'sentence' | 'paragraph'
@@ -156,6 +163,7 @@ export interface ProjectEditorActions {
   markEditorDirty: (pane?: WorkspacePane) => void
   updateEditorMeta: (meta: DocumentMeta, pane?: WorkspacePane) => void
   updateEditorValue: (value: string, pane?: WorkspacePane) => void
+  revealDocumentHeading: (target: HeadingRevealTarget) => void
   saveNow: (pane?: WorkspacePane) => Promise<void>
   saveSnapshot: () => Promise<void>
   revertChanges: (pane?: WorkspacePane) => void

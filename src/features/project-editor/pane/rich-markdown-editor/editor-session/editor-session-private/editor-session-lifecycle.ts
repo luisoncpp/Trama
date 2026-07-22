@@ -1,7 +1,8 @@
 // @Architecture(descriptionShort="Core Quill lifecycle class (`EditorSessionImpl`): initialize Quill, apply markdown,")
 import type Quill from 'quill'
 import type TurndownService from 'turndown'
-import type { EditorSession as EditorSessionCore, TagMatch } from '../../../../project-editor-types.js'
+import type { EditorSession as EditorSessionCore, HeadingRevealTarget, TagMatch } from '../../../../project-editor-types.js'
+import { revealQuillHeading } from '../../../../document-contents/index.js'
 import { WORKSPACE_CONTEXT_MENU_EVENT } from '../../../../../../shared/workspace-context-menu.js'
 import { createTramaTurndownService, TurndownServiceFlags } from '../../../../../../shared/turndown-service-factory.js'
 import { createQuillEditor, syncEditorSpellcheck, applyMarkdownToEditor } from '../../rich-markdown-editor-quill.js'
@@ -11,6 +12,7 @@ import { EditorContentLoop } from './editor-session-content.js'
 
 export class EditorSessionImpl implements EditorSessionCore {
   private editor: Quill
+  private host: HTMLDivElement
   private documentId: string
   private turndownRef: { current: TurndownService }
   private contentLoop: EditorContentLoop
@@ -28,6 +30,7 @@ export class EditorSessionImpl implements EditorSessionCore {
     onDirtyRef: { current: () => void }
   }) {
     this.editor = createQuillEditor(params.host)
+    this.host = params.host
     this.documentId = params.documentId
     this.turndownRef = { current: createTramaTurndownService(TurndownServiceFlags.None) }
     this.onChangeRef = params.onChangeRef
@@ -52,6 +55,11 @@ export class EditorSessionImpl implements EditorSessionCore {
   flush(): string | null {
     if (this.disposed) return null
     return this.contentLoop.flush(this.editor, this.documentId, this.turndownRef, this.onChangeRef)
+  }
+
+  revealHeading(target: HeadingRevealTarget): void {
+    if (this.disposed) return
+    revealQuillHeading(this.host, this.editor, target)
   }
 
   getEditor(): Quill | null {

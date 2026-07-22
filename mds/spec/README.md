@@ -12,6 +12,7 @@ Feature specifications — what the system should do from the user's perspective
 | `ai-import-format.md` | Clipboard format specification for AI import |
 | `project-history-git-spec.md` | Local Git-backed snapshots, document revisions, preview, and restore behavior |
 | `project-structure-template.md` | Project folder structure convention |
+| `document-contents-navigation-spec.md` | Heading-based (H1–H3) in-document navigation: Contents rail panel, click-to-scroll |
 
 ## When to add a doc here
 

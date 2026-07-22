@@ -219,6 +219,7 @@ describe('revertChanges', () => {
     const flushSpy = vi.fn(() => '# unsaved content')
     editorSessionRefs.primary.current = {
       flush: flushSpy,
+      revealHeading: () => {},
       getEditor: () => null,
       getCanonicalValue: () => '',
       subscribeContentMutated: () => () => {},

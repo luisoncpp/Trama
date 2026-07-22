@@ -27,6 +27,7 @@ function readSidebarUiState(): PersistedSidebarUiState {
     const parsed = JSON.parse(raw) as Partial<PersistedSidebarUiState>
     const activeSection =
       parsed.activeSection === 'explorer' ||
+      parsed.activeSection === 'contents' ||
       parsed.activeSection === 'outline' ||
       parsed.activeSection === 'lore' ||
       parsed.activeSection === 'templates' ||

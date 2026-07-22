@@ -1,5 +1,5 @@
 // @Architecture(descriptionShort="Private implementation detail for parent module")
-import type { FocusScope, ProjectEditorActions, WorkspacePane } from '../project-editor-types'
+import type { FocusScope, HeadingRevealTarget, ProjectEditorActions, WorkspacePane } from '../project-editor-types'
 import type { DocumentMeta } from '../../../shared/ipc'
 import { buildGitHistoryActions } from '../git-history-actions'
 import * as workspaceActions from '../workspace-actions'
@@ -19,6 +19,7 @@ export function buildWorkspaceActions(params: ActionGroupParams): Pick<ProjectEd
   | 'markEditorDirty'
   | 'updateEditorMeta'
   | 'updateEditorValue'
+  | 'revealDocumentHeading'
   | 'saveNow'
   | 'revertChanges'
   | 'saveSnapshot'
@@ -97,6 +98,7 @@ function buildWorkspaceEditorActions({
     markEditorDirty: (pane?: WorkspacePane) => workspaceActions.markEditorDirty(pane, paneWorkspace),
     updateEditorMeta: (meta: DocumentMeta, pane?: WorkspacePane) => workspaceActions.updateEditorMeta(meta, pane, paneWorkspace),
     updateEditorValue: (value: string, pane?: WorkspacePane) => workspaceActions.updateEditorValue(value, pane, paneWorkspace),
+    revealDocumentHeading: (target: HeadingRevealTarget) => workspaceActions.revealDocumentHeading(target, paneWorkspace),
     saveNow: (pane?: WorkspacePane) => workspaceActions.saveNow(pane, {
       workspace: paneWorkspace,
       uiState,

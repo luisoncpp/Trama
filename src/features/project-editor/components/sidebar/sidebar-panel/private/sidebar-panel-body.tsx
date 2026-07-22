@@ -3,6 +3,7 @@ import { SidebarExplorerContent } from './sidebar-explorer-content.tsx'
 import { SidebarSectionScopeProvider } from '../../sidebar-section-scope-context.tsx'
 import { useSidebarState } from '../../sidebar-state-context.tsx'
 import { SIDEBAR_SECTION_CONFIG, type ContentSidebarSection } from '../../sidebar-section-roots.ts'
+import { SidebarContentsContent } from './sidebar-contents-content.tsx'
 import { SidebarSearchContent } from './sidebar-search-content.tsx'
 import { SidebarSettingsContent } from './sidebar-settings.tsx'
 import { SidebarTransferContent } from './sidebar-transfer-content.tsx'
@@ -66,6 +67,7 @@ export function SidebarPanelBody(props: SidebarPanelBodyProps) {
   const { sidebarActiveSection } = useSidebarState()
   if (props.effectiveCollapsed) return null
   if (props.sectionConfig) return renderExplorer(props)
+  if (sidebarActiveSection === 'contents') return <SidebarContentsContent />
   if (sidebarActiveSection === 'search') return <SidebarSearchContent />
   if (sidebarActiveSection === 'settings') return renderSettings(props)
   if (sidebarActiveSection === 'transfer') {

@@ -333,6 +333,7 @@ SidebarPanelBody
 ## See also
 
 - Drag-and-drop architecture: `mds/architecture/sidebar-drag-drop-architecture.md`
+- Contents navigation spec (heading index panel, draft): `mds/spec/document-contents-navigation-spec.md`
 - Layout ownership: `mds/architecture/layout-ownership.md`
 - Path scoping model: `mds/architecture/sidebar-path-scoping-model.md`
 - Tree building: `mds/architecture/tree-building-and-implicit-folders.md`
