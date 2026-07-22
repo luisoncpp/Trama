@@ -44,4 +44,27 @@ describe('blank line spacer bug', () => {
     session.dispose()
     host.remove()
   })
+
+  it('editor reopen: a saved one-line spacer does not add another blank paragraph', () => {
+    const host = document.createElement('div')
+    const session = new EditorSessionImpl({
+      host,
+      documentId: 'blank-line-reopen-doc',
+      value: 'Paragraph 1\n\n<!-- trama:spacer lines=1 -->\n\nParagraph 2',
+      spellcheckEnabled: true,
+      onChangeRef: { current: () => {} },
+      onDirtyRef: { current: () => {} },
+    })
+
+    const editor = session.getEditor()!
+    const contents = editor.getContents()
+    const textOps = contents.ops.filter((op) => typeof op.insert === 'string')
+
+    expect(textOps.map((op) => op.insert).join('')).toBe('Paragraph 1\nParagraph 2\n')
+    expect(editor.root.innerHTML).not.toContain('<p><br></p>')
+    expect(session.flush()).toBe('Paragraph 1\n\n<!-- trama:spacer lines=1 -->\n\nParagraph 2')
+
+    session.dispose()
+    host.remove()
+  })
 })

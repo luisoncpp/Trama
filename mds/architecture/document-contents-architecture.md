@@ -40,22 +40,25 @@ Row click
 
 Consumers: `sidebar-contents-content.tsx` (parser) and `editor-session-lifecycle.ts` (reveal helpers). Neither imports the private files. `HeadingRevealTarget` is declared in `project-editor-types.ts` (the Electron build reaches that file via `src/shared/sidebar-utils.ts`, so it must stay free of Quill/DOM types) and re-exported by the facade; `editor-session-find-visual.ts` imports `computeCenteredScrollTop` from the facade, keeping one centering implementation (invariant 5).
 
-## Heading extraction contract (parser)
+## Heading and layout directive extraction contract (parser)
 
 1:1 with spec §4:
 
 - Strip YAML frontmatter before scanning.
-- Track fenced code blocks (` ``` ` and `~~~`); lines inside fences are never headings.
-- ATX only: `^(#{1,3})\s+` (a space is required after the marker; `#nospace` is not a heading). H4+ ignored.
+- Track fenced code blocks (` ``` ` and `~~~`); lines inside fences are never extracted.
+- ATX headings: `^(#{1,3})\s+` (a space is required after the marker; `#nospace` is not a heading). H4+ ignored.
+- Page breaks: `<!-- trama:pagebreak -->` or `<div data-trama-directive="pagebreak">` → `type: 'pagebreak'` (`⎘ Page Break`).
+- Spacers: `<!-- trama:spacer lines=N -->` or `<div data-trama-directive="spacer">` or consecutive blank lines (>= 2) → `type: 'spacer'` (`↕ Spacer (N lines)`).
 - Strip closing hashes (`## Title ##` → `Title`).
 - Strip inline markers from display text: `**`, `*`, `__`, `_`, `~~`, backticks.
 - Omit headings whose text is empty after stripping.
-- Output: `[{ level: 1|2|3, text, ordinal }]` where `ordinal` is the 0-based position in the full heading list.
+- Output: `[{ level: 1|2|3, text, ordinal, type?: 'heading' | 'pagebreak' | 'spacer', lines?: number }]` where `ordinal` is the 0-based position in the full item list.
 
-## Quill heading identity
+## Quill item identity
 
-- Quill stores `header` as a **line attribute on the newline op**. `scanQuillHeadings(editor)` walks `editor.getContents().ops`, accumulating line-start indexes; when an op is `\n` carrying `attributes.header` in `{1,2,3}`, it records `{ index: lineStart, level, text }`.
-- **Ordinal identity**: the parser list and the Quill list are both in document order, so panel row N maps to the Nth Quill heading. This is the only robust key — duplicate texts are common and image placeholders shift raw offsets.
+- Quill stores `header` as a **line attribute on the newline op**, and layout directives as **block embed blots** (`LayoutDirectiveBlot` under blot name `LAYOUT_DIRECTIVE_BLOT_NAME = 'trama-directive'`).
+- `scanQuillHeadings(editor)` walks `editor.getContents().ops`, accumulating line-start indexes. It extracts headers, page break embeds, spacer embeds, and consecutive blank lines.
+- **Ordinal identity**: the parser list and the Quill list share identical document ordering, so panel row N maps to the Nth Quill item. This is the only robust key — duplicate texts are common and directive embeds shift raw offsets.
 - **Drift tolerance** (spec §6.3): within the debounce window the two lists can disagree. Clamp the ordinal to `[0, count-1]`; never throw. Text is display-only plus a sanity fallback, never the primary key.
 
 ## Reveal mechanics

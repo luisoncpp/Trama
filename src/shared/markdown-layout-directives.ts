@@ -159,17 +159,17 @@ export function renderDirectiveArtifactsToMarkdown(markdown: string): {
     }
     const directive = token.directive
     if (directive.type === 'center-start') {
-      renderedLines.push('<div class="trama-center-boundary trama-center-start" data-trama-directive="center" data-trama-role="start"></div>')
+      renderedLines.push('<div class="trama-layout-directive trama-center-boundary trama-center-start" data-trama-directive="center" data-trama-role="start"></div>')
     } else if (directive.type === 'center-end') {
-      renderedLines.push('<div class="trama-center-boundary trama-center-end" data-trama-directive="center" data-trama-role="end"></div>')
+      renderedLines.push('<div class="trama-layout-directive trama-center-boundary trama-center-end" data-trama-directive="center" data-trama-role="end"></div>')
     } else if (directive.type === 'spacer') {
       const safeLines = Number.isInteger(directive.lines) ? Math.min(12, Math.max(1, directive.lines ?? 1)) : 1
-      renderedLines.push(`<div class="trama-spacer trama-spacer-${safeLines}" data-trama-directive="spacer" data-trama-lines="${safeLines}"></div>`)
+      renderedLines.push(`<div class="trama-layout-directive trama-spacer trama-spacer-${safeLines}" data-trama-directive="spacer" data-trama-lines="${safeLines}"></div>`)
     } else if (directive.type === 'pagebreak') {
-      renderedLines.push('<div class="trama-pagebreak" data-trama-directive="pagebreak" contenteditable="false"></div>')
+      renderedLines.push('<div class="trama-layout-directive trama-pagebreak" data-trama-directive="pagebreak" contenteditable="false"></div>')
     } else {
       const encodedRaw = encodeRawDirective(directive.raw ?? '')
-      renderedLines.push(`<div class="trama-directive-unknown" data-trama-directive="unknown" data-trama-raw="${encodedRaw}"></div>`)
+      renderedLines.push(`<div class="trama-layout-directive trama-directive-unknown" data-trama-directive="unknown" data-trama-raw="${encodedRaw}"></div>`)
     }
   }
   return {

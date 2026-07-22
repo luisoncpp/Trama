@@ -32,6 +32,7 @@ That distinction is what prevents image-bearing documents from re-rendering dest
    - set `isApplyingExternalValueRef.current = true`
    - capture the current Quill selection and scroll position
    - call `applyMarkdownToEditor(editor, value, 'silent', documentId)`
+   - convert each layout-directive artifact to one `BlockEmbed` operation; the clipboard matcher does not add a newline
    - restore selection, focus, and scroll
    - set `lastEditorValueRef.current = nextNormalized`
    - clear `isApplyingExternalValueRef.current` on `setTimeout(..., 0)`
@@ -98,6 +99,7 @@ These must be treated as the same editor document value.
 | Images blink or disappear after first keystroke | Placeholder-markdown corrupted parent state, cascading re-render destroyed images | `editor-session-content.ts` → `mds/lessons-learned/editor-onchange-image-hydration.md` |
 | Cursor jumps on reload | Selection was not preserved around a real re-apply | `editor-session-content.ts` |
 | Placeholder comments become visible content | Hydration/re-apply boundary drifted | `rich-markdown-editor-quill.ts` and `markdown-image-placeholder.ts` |
+| One blank line becomes two after reopen | Layout-directive clipboard matcher appended `\n` after a `BlockEmbed`, creating `<p><br></p>` beside the spacer | `layout-directive-clipboard.ts` and `tests/blank-line-spacer-bug.test.ts` |
 
 ## High-value notes
 

@@ -40,6 +40,7 @@ function parseDirectiveFromDataAttr(directive: string, node: Element): LayoutDir
 }
 
 function parseDirectiveFromClassList(node: Element): LayoutDirectiveEmbedValue | null {
+  if (!node.classList) return null
   if (node.classList.contains('trama-pagebreak')) {
     return { directive: 'pagebreak' }
   }
@@ -55,7 +56,7 @@ function parseDirectiveFromClassList(node: Element): LayoutDirectiveEmbedValue |
       lines: getSpacerLinesFromClassList(node.classList),
     }
   }
-  if (node.hasAttribute('data-trama-broken-image-source')) {
+  if (typeof node.hasAttribute === 'function' && node.hasAttribute('data-trama-broken-image-source')) {
     return {
       directive: 'broken-image',
       alt: node.getAttribute('data-trama-broken-image-alt') ?? '',
@@ -66,22 +67,26 @@ function parseDirectiveFromClassList(node: Element): LayoutDirectiveEmbedValue |
 }
 
 function parseDirectiveFromNode(node: Element): LayoutDirectiveEmbedValue | null {
+  if (!node || typeof node.getAttribute !== 'function') return null
   const directive = node.getAttribute('data-trama-directive')
   if (directive) return parseDirectiveFromDataAttr(directive, node)
   return parseDirectiveFromClassList(node)
 }
 
 export function registerLayoutDirectiveClipboardMatchers(editor: Quill): void {
-  editor.clipboard.addMatcher('div', (node, delta) => {
-    if (!(node instanceof Element)) {
-      return delta
+  const matcher = (node: unknown): Delta => {
+    if (!node || (node as Element).nodeType !== 1) {
+      return new Delta()
     }
 
-    const value = parseDirectiveFromNode(node)
+    const value = parseDirectiveFromNode(node as Element)
     if (!value) {
-      return delta
+      return new Delta()
     }
 
     return new Delta().insert({ [LAYOUT_DIRECTIVE_BLOT_NAME]: value })
-  })
+  }
+
+  const selector = '.trama-layout-directive, .trama-pagebreak, .trama-center-boundary, .trama-spacer, [data-trama-directive]'
+  editor.clipboard.addMatcher(selector, matcher)
 }

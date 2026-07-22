@@ -126,7 +126,7 @@ function readDirectiveValue(domNode: HTMLElement): LayoutDirectiveEmbedValue {
 function createLayoutDirectiveBlot(QuillBlockEmbed: QuillBlockEmbedCtor): typeof QuillBlockEmbed {
   class LayoutDirectiveBlot extends QuillBlockEmbed {
     static blotName = LAYOUT_DIRECTIVE_BLOT_NAME
-    static tagName = 'div'
+    static tagName = 'DIV'
     static className = 'trama-layout-directive'
 
     static create(value?: unknown): HTMLElement {
@@ -143,12 +143,10 @@ function createLayoutDirectiveBlot(QuillBlockEmbed: QuillBlockEmbedCtor): typeof
 }
 
 export function registerLayoutDirectiveBlots(): void {
-  if (isLayoutDirectiveBlotRegistered) {
-    return
-  }
-
   const QuillBlockEmbed = Quill.import('blots/block/embed') as unknown as QuillBlockEmbedCtor
   const LayoutDirectiveBlot = createLayoutDirectiveBlot(QuillBlockEmbed)
-  Quill.register(`formats/${LAYOUT_DIRECTIVE_BLOT_NAME}`, LayoutDirectiveBlot, true)
+  Quill.register(LayoutDirectiveBlot as any, true)
+  Quill.register(`blots/${LAYOUT_DIRECTIVE_BLOT_NAME}`, LayoutDirectiveBlot as any, true)
+  Quill.register(`formats/${LAYOUT_DIRECTIVE_BLOT_NAME}`, LayoutDirectiveBlot as any, true)
   isLayoutDirectiveBlotRegistered = true
 }

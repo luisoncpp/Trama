@@ -29,18 +29,21 @@ Long documents (chapters, compiled lore) are hard to navigate by scrolling alone
 - Slice 4: drag a heading row to reorder the corresponding document section.
 - Heading-level filter chips; collapse/expand of levels.
 
-## 4. Heading Extraction Rules
+## 4. Heading and Layout Directive Extraction Rules
 
-The heading list is derived from the active document's current in-memory markdown, including unsaved changes.
+The document contents list is derived from the active document's current in-memory markdown or Quill Delta ops, including unsaved changes.
 
 1. **Levels**: only H1, H2, H3. Deeper headings are not produced by the editor and are ignored if present.
-2. **Fenced code blocks**: lines inside ```` ``` ```` fences are never headings (e.g., `# comment` in code).
-3. **Frontmatter**: YAML frontmatter is excluded from extraction.
-4. **Closed ATX**: `## Title ##` displays as `Title`.
-5. **Inline formatting**: rows display plain text with markdown markers stripped (`## **Bold** _title_` → `Bold title`).
-6. **Empty headings**: a heading marker with no text is omitted.
-7. **Identity**: each heading is identified by its ordinal position in the document (1st, 2nd, 3rd…), NOT by its text. Duplicate heading texts are common and every occurrence remains independently navigable.
-8. **Updates**: the list refreshes automatically as the document changes; no manual refresh action exists. Update lag consistent with the editor's serialization debounce is acceptable.
+2. **Page Breaks**: explicit page break layout directives (`<!-- trama:pagebreak -->` / `<div data-trama-directive="pagebreak">`) are extracted as `pagebreak` entries (`⎘ Page Break`).
+3. **Spacers**: explicit spacer layout directives (`<!-- trama:spacer lines=N -->` / `<div data-trama-directive="spacer">`) and consecutive blank lines (>= 2) are extracted as `spacer` entries (`↕ Spacer (N lines)`).
+4. **Fenced code blocks**: lines inside ```` ``` ```` fences are never extracted.
+5. **Frontmatter**: YAML frontmatter is excluded from extraction.
+6. **Closed ATX**: `## Title ##` displays as `Title`.
+7. **Inline formatting**: rows display plain text with markdown markers stripped (`## **Bold** _title_` → `Bold title`).
+8. **Empty headings**: a heading marker with no text is omitted.
+9. **Identity**: each item is identified by its ordinal position in the document (1st, 2nd, 3rd…), NOT by its text. Duplicate heading texts or directive items are common and every occurrence remains independently navigable.
+10. **Filter Toggles**: header toggle buttons allow filtering Page Breaks or Spacers on/off in the sidebar panel. Both are activated by default.
+11. **Updates**: the list refreshes automatically as the document changes; no manual refresh action exists. Update lag consistent with the editor's serialization debounce is acceptable.
 
 ## 5. Contents Panel Behavior
 

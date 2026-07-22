@@ -179,6 +179,8 @@ syncCenteredLayoutArtifacts()          // Sync centered content CSS artifacts
 
 The entire operation is wrapped in a `contentEditable = 'false'` guard to prevent user keystrokes from corrupting the DOM during `dangerouslyPasteHTML`.
 
+Layout-directive HTML is converted by `layout-directive-clipboard.ts` into exactly one `LayoutDirectiveBlot` Delta insert. Because the blot extends Quill `BlockEmbed`, the matcher must not append an explicit `\n`; doing so creates a real `<p><br></p>` after the spacer on reopen, making one saved blank line render as two and duplicating the spacer on the next serialization.
+
 > **Note:** `syncCenteredLayoutArtifacts()` is also called on every `text-change` event (not just on load) to keep centered content CSS classes in sync during editing.
 
 > **Images:** If the markdown contains inline base64 images (`![uuid](data:image/...)`), `marked.parse()` produces `<img src="data:...">` tags directly. `restoreImagesAfterMarkedparsing()` also handles legacy HTML comment placeholders for backward compatibility. See `mds/architecture/image-handling-architecture.md` for the full image handling spec.
@@ -240,7 +242,7 @@ The `turndownRef` in `rich-markdown-editor.tsx` is initialized once with `create
 ```typescript
 class LayoutDirectiveBlot extends QuillBlockEmbed {
   static blotName = 'trama-directive'
-  static tagName = 'div'
+  static tagName = 'DIV'
   static className = 'trama-layout-directive'
   
   static create(value?: unknown): HTMLElement {
@@ -270,6 +272,16 @@ class LayoutDirectiveBlot extends QuillBlockEmbed {
 Quill.register(`formats/${LAYOUT_DIRECTIVE_BLOT_NAME}`, LayoutDirectiveBlot, true)
 // Flag `true` = allow overriding existing formats
 ```
+
+### Clipboard Delta invariant
+
+`registerLayoutDirectiveClipboardMatchers()` returns only the embed operation:
+
+```typescript
+new Delta().insert({ [LAYOUT_DIRECTIVE_BLOT_NAME]: value })
+```
+
+Do not append `insert('\n')`. `BlockEmbed` already owns the block boundary; an added newline becomes an extra empty Quill paragraph. The focused save/reopen regression is `tests/blank-line-spacer-bug.test.ts`.
 
 ---
 
@@ -470,6 +482,9 @@ Verify that `updateEditorValue(value, pane)` targets the correct pane. `syncStat
 
 ### Tag overlay offsets wrong
 `mapPlainTextIndexToQuillIndex()` handles the offset between `getText()` (doesn't include embeds) and Quill ops (includes embeds as 1 document unit).
+
+### Blank line grows after save and reopen
+Inspect `layout-directive-clipboard.ts` first. A one-line spacer should load as one block embed with no adjacent `<p><br></p>`, and flushing the reopened editor must reproduce the same single spacer directive. Run `npm run test -- tests/blank-line-spacer-bug.test.ts tests/rich-markdown-editor.test.ts`.
 
 ---
 

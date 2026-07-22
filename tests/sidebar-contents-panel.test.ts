@@ -120,11 +120,55 @@ describe('sidebar contents panel', () => {
     expect(queryRows(container).map((row) => row.textContent)).toEqual(['One', 'Two'])
   })
 
-  it('shows the empty state when the document has no headings', () => {
-    renderContents(buildContentsState({ editorValue: 'Just prose.\n\nMore prose.' }))
+  it('shows the empty state when the document has no items', () => {
+    renderContents(buildContentsState({ editorValue: 'Just prose.\nMore prose.' }))
 
-    expect(container.textContent).toContain('No headings in this document.')
+    expect(container.textContent).toContain('No items in document contents.')
     expect(queryRows(container)).toHaveLength(0)
+  })
+
+  it('renders page breaks and spacers alongside headings with icons and toggles', () => {
+    const markdown = [
+      '# Intro',
+      '<!-- trama:pagebreak -->',
+      '<!-- trama:spacer lines=2 -->',
+      '## Chapter 1',
+    ].join('\n')
+
+    renderContents(buildContentsState({ editorValue: markdown }))
+
+    const rows = queryRows(container)
+    expect(rows.map((row) => row.textContent)).toEqual(['Intro', '⎘Page Break', '↕Spacer (2 lines)', 'Chapter 1'])
+    expect(rows[1].classList.contains('sidebar-contents__row--pagebreak')).toBe(true)
+    expect(rows[2].classList.contains('sidebar-contents__row--spacer')).toBe(true)
+  })
+
+  it('filters page breaks or spacers when toggled', () => {
+    const markdown = [
+      '# Intro',
+      '<!-- trama:pagebreak -->',
+      '<!-- trama:spacer lines=2 -->',
+      '## Chapter 1',
+    ].join('\n')
+
+    renderContents(buildContentsState({ editorValue: markdown }))
+
+    const toggleButtons = Array.from(container.querySelectorAll<HTMLButtonElement>('.sidebar-contents__toggle'))
+    expect(toggleButtons).toHaveLength(2)
+
+    // Toggle Page breaks off
+    act(() => {
+      toggleButtons[0].click()
+    })
+
+    expect(queryRows(container).map((row) => row.textContent)).toEqual(['Intro', '↕Spacer (2 lines)', 'Chapter 1'])
+
+    // Toggle Spacers off
+    act(() => {
+      toggleButtons[1].click()
+    })
+
+    expect(queryRows(container).map((row) => row.textContent)).toEqual(['Intro', 'Chapter 1'])
   })
 
   it('shows the unavailable state for map documents even when the body has headings', () => {

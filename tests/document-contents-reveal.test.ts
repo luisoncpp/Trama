@@ -11,9 +11,13 @@ import { EditorSessionImpl } from '../src/features/project-editor/pane/rich-mark
 import type { PaneDocumentState, WorkspaceLayoutState } from '../src/features/project-editor/project-editor-types'
 import { createEmptyRevisionRailState } from '../src/features/project-editor/project-editor-git-history-state'
 
+import { LayoutDirectiveController } from '../src/features/project-editor/pane/rich-markdown-editor/editor-session/editor-session-private/layout-directive-controller'
+import { renderDirectiveArtifactsToMarkdown } from '../src/shared/markdown-layout-directives'
+
 let host: HTMLDivElement
 
 beforeEach(() => {
+  LayoutDirectiveController.register()
   if (typeof Range !== 'undefined' && !Range.prototype.getBoundingClientRect) {
     ;(Range.prototype as unknown as { getBoundingClientRect: () => DOMRect }).getBoundingClientRect =
       () => new DOMRect(0, 0, 0, 0)
@@ -27,7 +31,7 @@ afterEach(() => {
 })
 
 function createSession(value: string, onDirty: () => void = () => {}): EditorSessionImpl {
-  return new EditorSessionImpl({
+  const session = new EditorSessionImpl({
     host,
     documentId: 'contents-reveal-doc',
     value,
@@ -35,6 +39,11 @@ function createSession(value: string, onDirty: () => void = () => {}): EditorSes
     onChangeRef: { current: () => {} },
     onDirtyRef: { current: onDirty },
   })
+  const editor = session.getEditor()
+  if (editor) {
+    LayoutDirectiveController.addClipboardMatchers(editor)
+  }
+  return session
 }
 
 describe('scanQuillHeadings', () => {
@@ -62,15 +71,45 @@ describe('scanQuillHeadings', () => {
     session.dispose()
   })
 
+  it('scans page break and spacer embeds as document content items', () => {
+    const markdown = [
+      '# One',
+      '',
+      'Text body.',
+      '',
+      '<!-- trama:pagebreak -->',
+      '<!-- trama:spacer lines=3 -->',
+      '',
+      '## Two',
+      '',
+    ].join('\n')
+    const session = createSession(markdown)
+    const editor = session.getEditor()!
+
+    const headings = scanQuillHeadings(editor)
+
+    expect(headings.map((h) => [h.type, h.text])).toEqual([
+      ['heading', 'One'],
+      ['pagebreak', 'Page Break'],
+      ['spacer', 'Spacer (3 lines)'],
+      ['heading', 'Two'],
+    ])
+    session.dispose()
+  })
+
   it('stays aligned with the markdown parser (shared heading definition)', () => {
     const markdown = [
       '# Part One',
       '',
       'Intro text.',
       '',
+      '<!-- trama:pagebreak -->',
+      '',
       '```',
       '# not a heading',
       '```',
+      '',
+      '<!-- trama:spacer lines=2 -->',
       '',
       '## **Bold** _title_',
       '',
@@ -84,7 +123,7 @@ describe('scanQuillHeadings', () => {
 
     const parsed = parseDocumentHeadings(markdown)
     const scanned = scanQuillHeadings(session.getEditor()!)
-    expect(scanned.map((s) => [s.level, s.text])).toEqual(parsed.map((p) => [p.level, p.text]))
+    expect(scanned.map((s) => [s.type ?? 'heading', s.level, s.text])).toEqual(parsed.map((p) => [p.type ?? 'heading', p.level, p.text]))
     session.dispose()
   })
 })
