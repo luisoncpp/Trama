@@ -78,6 +78,14 @@
   width: 100%;
 }
 
+.sidebar-rail__separator {
+  width: 32px;
+  height: 1px;
+  background: var(--border);
+  margin: 2px auto;
+  flex-shrink: 0;
+}
+
 .sidebar-rail__bottom {
   display: flex;
   flex-direction: column;

@@ -7,7 +7,7 @@ Goal: explain the sidebar subsystem end-to-end so contributors can understand da
 ## Scope
 
 This guide covers the sidebar subsystem in `project-editor`:
-- section model (explorer/outline/lore/transfer/settings)
+- section model (explorer/outline/lore/templates/contents/search/transfer/settings)
 - path scoping (section-relative vs project-relative)
 - tree building and filtering
 - dialogs and context menus

@@ -56,7 +56,7 @@ export function SidebarContentsContent(): JSX.Element {
     <div class="sidebar-panel-content">
       <aside class="workspace-panel workspace-panel--sidebar">
         <div class="workspace-panel__header">
-          <p class="workspace-panel__eyebrow">Contents</p>
+          <p class="workspace-panel__eyebrow">Table of contents</p>
         </div>
         {selectedPath === null ? null : <ContentsBody headings={headings} unavailable={unavailable} />}
       </aside>

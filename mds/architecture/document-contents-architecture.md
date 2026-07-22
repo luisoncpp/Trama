@@ -88,7 +88,7 @@ Instead:
 
 - `SidebarSection` gains `'contents'` (`project-editor-types.ts`).
 - `ContentSidebarSection` Exclude gains `'contents'` (`sidebar-section-roots.ts`) — Contents has no folder root, like `search`/`settings`/`transfer`.
-- Rail item + `ContentsIcon` in `sidebar-rail.tsx` / `sidebar-rail-icons.tsx`; positioned right after the Manuscript explorer (closest kin to the current document; trivial to reorder).
+- Rail item + `ContentsIcon` in `sidebar-rail.tsx` / `sidebar-rail-icons.tsx`; positioned below the Templates section with a visual rail separator (`.sidebar-rail__separator`). Eyebrow label in header is `"TABLE OF CONTENTS"` (`"Table of contents"` transformed via CSS uppercase).
 - `SidebarPanelBody` branch renders `SidebarContentsContent` (in `sidebar-panel/private/`), the same pattern as `SidebarSearchContent`.
 - Panel states per spec §5.3: no document / no headings / non-text document (`documentType` from context; `map` and `relationships` → unavailable state).
 - The panel derives everything from state on each render; no cached heading list survives a document switch.

@@ -1,5 +1,5 @@
 // @Architecture(descriptionShort="Section rail and collapse toggle")
-import type { JSX } from 'preact'
+import { Fragment, type JSX } from 'preact'
 import type { SidebarSection } from '../../../../project-editor-types'
 import { useEditorActions } from '../../../../project-editor-actions-context.tsx'
 import { useSidebarState } from '../../sidebar-state-context.tsx'
@@ -18,10 +18,10 @@ interface SidebarRailItem {
 
 const SIDEBAR_ITEMS: SidebarRailItem[] = [
   { section: 'explorer', title: 'Manuscript explorer', icon: ManuscriptIcon },
-  { section: 'contents', title: 'Document contents', icon: ContentsIcon },
   { section: 'outline', title: 'Outline', icon: OutlineIcon },
   { section: 'lore', title: 'Lore', icon: LoreIcon },
   { section: 'templates', title: 'Templates', icon: TemplatesIcon },
+  { section: 'contents', title: 'Current Document\'s Table of contents', icon: ContentsIcon },
   { section: 'search', title: 'Global search', icon: SearchIcon },
   { section: 'transfer', title: 'Import and export', icon: TransferIcon },
   { section: 'settings', title: 'Project settings', icon: SettingsIcon },
@@ -40,16 +40,18 @@ export function SidebarRail({ collapsed, onOpenHelp }: SidebarRailProps) {
     <nav class="sidebar-rail" aria-label="Workspace sections">
       <div class="sidebar-rail__items">
         {SIDEBAR_ITEMS.map((item) => (
-          <button
-            key={item.section}
-            type="button"
-            class={`sidebar-rail__item ${sidebarActiveSection === item.section ? 'is-active' : ''}`}
-            title={item.title}
-            aria-label={item.title}
-            onClick={() => setSidebarSection(item.section)}
-          >
-            <RailItemLabel item={item} />
-          </button>
+          <Fragment key={item.section}>
+            {item.section === 'contents' ? <div class="sidebar-rail__separator" role="separator" /> : null}
+            <button
+              type="button"
+              class={`sidebar-rail__item ${sidebarActiveSection === item.section ? 'is-active' : ''}`}
+              title={item.title}
+              aria-label={item.title}
+              onClick={() => setSidebarSection(item.section)}
+            >
+              <RailItemLabel item={item} />
+            </button>
+          </Fragment>
         ))}
       </div>
 

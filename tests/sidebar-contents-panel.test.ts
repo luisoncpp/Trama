@@ -143,7 +143,7 @@ describe('sidebar contents panel', () => {
   it('renders a neutral blank state when no document is open', () => {
     renderContents(buildContentsState({ selectedPath: null, editorValue: '' }))
 
-    expect(container.textContent).toContain('Contents')
+    expect(container.textContent).toContain('Table of contents')
     expect(queryRows(container)).toHaveLength(0)
     expect(container.textContent).not.toContain('No headings in this document.')
     expect(container.textContent).not.toContain('not available')
@@ -159,12 +159,12 @@ describe('sidebar contents panel', () => {
     )
 
     expect(queryRows(container).map((row) => row.textContent)).toEqual(['Alpha', 'Beta'])
-    const railItem = container.querySelector('[aria-label="Document contents"]') as HTMLButtonElement
+    const railItem = container.querySelector('[aria-label="Table of contents"]') as HTMLButtonElement
     expect(railItem).toBeTruthy()
     expect(railItem.className).toContain('is-active')
   })
 
-  it('selects the contents section from the rail', () => {
+  it('selects the contents section from the rail and includes a separator above contents', () => {
     const actions = buildEditorActionsSpies()
     renderWithEditorActions(
       h(DocumentContentsProvider, {
@@ -174,7 +174,10 @@ describe('sidebar contents panel', () => {
       { container, actions },
     )
 
-    const railItem = container.querySelector('[aria-label="Document contents"]') as HTMLButtonElement
+    const separator = container.querySelector('.sidebar-rail__separator')
+    expect(separator).toBeTruthy()
+
+    const railItem = container.querySelector('[aria-label="Table of contents"]') as HTMLButtonElement
     expect(railItem).toBeTruthy()
     act(() => {
       railItem.click()
