@@ -6,6 +6,7 @@ import * as aiExportDialogModule from '../src/features/project-editor/components
 import * as bookExportDialogModule from '../src/features/project-editor/components/book-export-dialog'
 import * as sidebarPanelModule from '../src/features/project-editor/components/sidebar/sidebar-panel/index.ts'
 import * as zuluImportDialogModule from '../src/features/project-editor/components/zulu-import-dialog'
+import * as wordCountsDialogModule from '../src/features/project-editor/components/word-counts-dialog'
 import { ProjectEditorView } from '../src/features/project-editor/project-editor-view'
 import { useProjectEditor } from '../src/features/project-editor/use-project-editor'
 import type { ProjectEditorModel } from '../src/features/project-editor/project-editor-types'
@@ -77,6 +78,7 @@ describe('ProjectEditorView shell split', () => {
     let aiExportRenderCount = 0
     let bookExportRenderCount = 0
     let zuluImportRenderCount = 0
+    let wordCountsRenderCount = 0
     const handleThemePreferenceChange = () => undefined
     const handleSpellcheckEnabledChange = () => undefined
     const handleSpellcheckLanguageChange = () => undefined
@@ -100,6 +102,10 @@ describe('ProjectEditorView shell split', () => {
     })
     const zuluImportSpy = vi.spyOn(zuluImportDialogModule, 'ZuluImportDialog').mockImplementation(() => {
       zuluImportRenderCount += 1
+      return null
+    })
+    const wordCountsSpy = vi.spyOn(wordCountsDialogModule, 'WordCountsDialog').mockImplementation(() => {
+      wordCountsRenderCount += 1
       return null
     })
 
@@ -135,6 +141,7 @@ describe('ProjectEditorView shell split', () => {
     const shellAiExportRenderCount = aiExportRenderCount
     const shellBookExportRenderCount = bookExportRenderCount
     const shellZuluImportRenderCount = zuluImportRenderCount
+    const shellWordCountsRenderCount = wordCountsRenderCount
 
     act(() => {
       model?.actions.markEditorDirty()
@@ -146,11 +153,13 @@ describe('ProjectEditorView shell split', () => {
     expect(aiExportRenderCount).toBe(shellAiExportRenderCount)
     expect(bookExportRenderCount).toBe(shellBookExportRenderCount)
     expect(zuluImportRenderCount).toBe(shellZuluImportRenderCount)
+    expect(wordCountsRenderCount).toBe(shellWordCountsRenderCount)
 
     sidebarSpy.mockRestore()
     aiImportSpy.mockRestore()
     aiExportSpy.mockRestore()
     bookExportSpy.mockRestore()
     zuluImportSpy.mockRestore()
+    wordCountsSpy.mockRestore()
   })
 })

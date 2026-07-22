@@ -51,6 +51,7 @@ function buildSidebarProjectContextProps(
       props.dialogsProps.bookExport.setOpen(true)
     },
     onExport: () => props.dialogsProps.aiExport.setOpen(true),
+    onCountWords: () => props.dialogsProps.wordCounts.openDialog(),
     themePreference: props.themePreference,
     resolvedTheme: props.resolvedTheme,
     onThemePreferenceChange: props.onThemePreferenceChange,

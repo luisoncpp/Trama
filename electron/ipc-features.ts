@@ -51,6 +51,7 @@ import {
   handleOpenHelp,
   handleGetGettingStartedDismissed,
   handleSetGettingStartedDismissed,
+  handleGetWordCounts,
 } from './ipc/handlers/index.js'
 
 export function registerProjectHandlers(ipcMain: IpcMain): void {
@@ -61,6 +62,7 @@ export function registerProjectHandlers(ipcMain: IpcMain): void {
   ipcMain.handle(IPC_CHANNELS.validateProjectFolder, (_event, payload) => handleValidateProjectFolder(payload))
   ipcMain.handle(IPC_CHANNELS.getIndex, () => handleGetIndex())
   ipcMain.handle(IPC_CHANNELS.searchProject, (_event, payload) => handleSearchProject(payload))
+  ipcMain.handle(IPC_CHANNELS.wordCounts, (_event, payload) => handleGetWordCounts(payload))
   ipcMain.handle(IPC_CHANNELS.reorderFiles, (_event, payload) => handleReorderFiles(payload))
   ipcMain.handle(IPC_CHANNELS.moveFile, (_event, payload) => handleMoveFile(payload))
 }

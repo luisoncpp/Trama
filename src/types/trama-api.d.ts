@@ -81,6 +81,7 @@ import type {
   ZuluSelectFileResponse,
   OpenHelpRequest,
   OpenHelpResponse,
+  WordCountsResponse,
 } from '../shared/ipc'
 import type { TagGetIndexResponse, TagResolveRequest, TagResolveResponse } from '../shared/ipc-tag'
 import type { HelpScreenshotHarness } from '../help/help-screenshot-harness-types'
@@ -147,6 +148,7 @@ declare global {
       zuluImportPreview(payload: ZuluImportPreviewRequest): Promise<IpcEnvelope<ZuluImportPreviewResponse>>
       zuluImport(payload: ZuluImportRequest): Promise<IpcEnvelope<ZuluImportResponse>>
       openHelp(payload: OpenHelpRequest): Promise<IpcEnvelope<OpenHelpResponse>>
+      getWordCounts(projectRoot: string): Promise<IpcEnvelope<WordCountsResponse>>
     }
   }
 }

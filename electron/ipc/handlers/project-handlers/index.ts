@@ -19,3 +19,5 @@ export { handleSelectProjectFolder, handleValidateProjectFolder } from './projec
 export { handleMoveFile, handleReorderFiles } from './order-handlers.js'
 export { handleCreateFromTemplate, handleGetTemplates } from './template-handlers.js'
 export { handleSearchProject } from './search-handler.js'
+export { handleGetWordCounts } from './word-count-handler.js'
+

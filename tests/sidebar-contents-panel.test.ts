@@ -31,6 +31,7 @@ function buildPanelProps(
     onImportZulu: () => undefined,
     onExportBook: (_format) => undefined,
     onExport: () => undefined,
+    onCountWords: () => undefined,
     themePreference: 'dark',
     resolvedTheme: 'dark',
     onThemePreferenceChange: () => undefined,
@@ -159,7 +160,7 @@ describe('sidebar contents panel', () => {
     )
 
     expect(queryRows(container).map((row) => row.textContent)).toEqual(['Alpha', 'Beta'])
-    const railItem = container.querySelector('[aria-label="Table of contents"]') as HTMLButtonElement
+    const railItem = container.querySelector('[aria-label*="Table of contents"]') as HTMLButtonElement
     expect(railItem).toBeTruthy()
     expect(railItem.className).toContain('is-active')
   })
@@ -177,7 +178,7 @@ describe('sidebar contents panel', () => {
     const separator = container.querySelector('.sidebar-rail__separator')
     expect(separator).toBeTruthy()
 
-    const railItem = container.querySelector('[aria-label="Table of contents"]') as HTMLButtonElement
+    const railItem = container.querySelector('[aria-label*="Table of contents"]') as HTMLButtonElement
     expect(railItem).toBeTruthy()
     act(() => {
       railItem.click()

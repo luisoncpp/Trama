@@ -145,7 +145,14 @@ export const openHelpRequestSchema = z.object({ page: helpPageIdSchema })
 const openHelpResponseSchema = z.object({ success: z.boolean() })
 export const setGettingStartedDismissedRequestSchema = z.object({ dismissed: z.boolean() })
 const setGettingStartedDismissedResponseSchema = z.object({ success: z.boolean() })
-const getGettingStartedDismissedResponseSchema = z.object({ dismissed: z.boolean() })
+export const getGettingStartedDismissedResponseSchema = z.object({ dismissed: z.boolean() })
+export const getWordCountsRequestSchema = z.object({ projectRoot: z.string().trim().min(1) })
+export const wordCountsResponseSchema = z.object({
+  manuscript: z.number().int().nonnegative(),
+  outline: z.number().int().nonnegative(),
+  lore: z.number().int().nonnegative(),
+  total: z.number().int().nonnegative(),
+})
 
 export {
   gitHistoryStatusResponseSchema,
@@ -229,7 +236,10 @@ export type OpenHelpResponse = z.infer<typeof openHelpResponseSchema>
 export type SetGettingStartedDismissedRequest = z.infer<typeof setGettingStartedDismissedRequestSchema>
 export type SetGettingStartedDismissedResponse = z.infer<typeof setGettingStartedDismissedResponseSchema>
 export type GetGettingStartedDismissedResponse = z.infer<typeof getGettingStartedDismissedResponseSchema>
+export type GetWordCountsRequest = z.infer<typeof getWordCountsRequestSchema>
+export type WordCountsResponse = z.infer<typeof wordCountsResponseSchema>
 export type NotifyCloseState = { hasUnsavedChanges: boolean }
+
 export type {
   GitHistoryStatusResponse,
   SaveGitSnapshotRequest,

@@ -85,6 +85,7 @@ import {
   type ZuluSelectFileResponse,
   type OpenHelpRequest,
   type OpenHelpResponse,
+  type WordCountsResponse,
 } from '../src/shared/ipc'
 import { type TagGetIndexResponse, type TagResolveRequest, type TagResolveResponse, tagResolveRequestSchema } from '../src/shared/ipc-tag'
 
@@ -283,6 +284,9 @@ const tramaApi = {
   },
   openHelp(payload: OpenHelpRequest): Promise<IpcEnvelope<OpenHelpResponse>> {
     return ipcRenderer.invoke(IPC_CHANNELS.openHelp, payload)
+  },
+  getWordCounts(projectRoot: string): Promise<IpcEnvelope<WordCountsResponse>> {
+    return ipcRenderer.invoke(IPC_CHANNELS.wordCounts, { projectRoot })
   },
 }
 

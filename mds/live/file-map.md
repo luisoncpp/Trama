@@ -137,6 +137,8 @@ Mandatory doc navigation for new chats: start with `mds/START-HERE.md` — it pr
   - Formats selected files into `=== ARCHIVO: ... ===` blocks, validates relative paths against project root, and supports frontmatter include/exclude mode.
 - `electron/services/zulu-import-service.ts`
   - ZuluPad import service: parses `.zulu` XML content into pages, generates frontmatter with optional tags, and writes markdown files to the target folder.
+- `electron/services/word-count-service.ts`
+  - On-demand word count calculation service for manuscript (`book/`), outline (`outline/`), and lore (`lore/`) sections (strips frontmatter).
 - `electron/services/book-export-service.ts`
   - Book export orchestrator: scans `book/`, builds ordered chapter models, sanitizes per format, dispatches renderer (`md/html/docx/epub/pdf`), and writes output artifact.
 - `electron/services/book-export-renderers.ts`
@@ -332,6 +334,10 @@ Mandatory doc navigation for new chats: start with `mds/START-HERE.md` — it pr
   - Renderer hook for book export dialog state: selected format, optional metadata (title/author), default output path handling, IPC export call, and success toast flow.
 - `src/features/project-editor/use-zulu-import.ts`
   - Renderer hook for ZuluPad import dialog state: file selection, preview, and execution via IPC.
+- `src/features/project-editor/use-word-counts-dialog.ts`
+  - Renderer hook for word counts dialog state and on-demand IPC calculation trigger.
+- `src/features/project-editor/components/word-counts-dialog.tsx`
+  - Modal dialog component displaying section word counts breakdown (Manuscript, Outline, Lore, Total).
 
 ### Project editor hooks (detailed)
 

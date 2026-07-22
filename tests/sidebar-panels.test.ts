@@ -30,6 +30,7 @@ function buildPanelProps(
     onImportZulu: () => undefined,
     onExportBook: (_format) => undefined,
     onExport: () => undefined,
+    onCountWords: () => undefined,
     themePreference: 'dark',
     resolvedTheme: 'dark',
     onThemePreferenceChange: () => undefined,

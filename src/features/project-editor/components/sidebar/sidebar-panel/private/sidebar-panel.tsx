@@ -17,6 +17,7 @@ function buildSidebarBodyProps(props: SidebarPanelProps, effectiveCollapsed: boo
     onImportZulu: props.onImportZulu,
     onExportBook: props.onExportBook,
     onExport: props.onExport,
+    onCountWords: props.onCountWords,
     themePreference: props.themePreference,
     resolvedTheme: props.resolvedTheme,
     onThemePreferenceChange: props.onThemePreferenceChange,

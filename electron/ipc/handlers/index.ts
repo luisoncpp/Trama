@@ -24,6 +24,7 @@ export {
   handleCreateFromTemplate,
   handleGetTemplates,
   handleSearchProject,
+  handleGetWordCounts,
 } from './project-handlers/index.js'
 export {
   handleAiImportPreview,

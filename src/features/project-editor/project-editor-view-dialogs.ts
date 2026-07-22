@@ -6,6 +6,7 @@ import { useAiExport } from './use-ai-export'
 import { useAiImport } from './use-ai-import'
 import { useBookExport } from './use-book-export'
 import { useZuluImport } from './use-zulu-import'
+import { useWordCountsDialog } from './use-word-counts-dialog'
 import type { OpenProjectOptions } from './open-project-types'
 
 export function useProjectEditorViewDialogs(
@@ -29,6 +30,7 @@ export function useProjectEditorViewDialogs(
   const aiExport = useAiExport(rootPath, snapshot)
   const bookExport = useBookExport(rootPath)
   const zuluImport = useZuluImport(rootPath, handleImportSuccess)
+  const wordCounts = useWordCountsDialog(rootPath)
 
   const dialogsProps = useMemo(
     /* buildProjectEditorDialogsProps */ (): ProjectEditorDialogsProps => ({
@@ -38,10 +40,10 @@ export function useProjectEditorViewDialogs(
       bookExport,
       aiExport,
       zuluImport,
+      wordCounts,
     }),
-    [rootPath, visibleFiles, aiImport, bookExport, aiExport, zuluImport] /*Inputs for buildProjectEditorDialogsProps*/,
+    [rootPath, visibleFiles, aiImport, bookExport, aiExport, zuluImport, wordCounts] /*Inputs for buildProjectEditorDialogsProps*/,
   )
 
   return { dialogsProps }
 }
-

@@ -31,6 +31,7 @@ export interface SidebarPanelBodyProps {
   onImportZulu: () => void
   onExportBook: SidebarDialogOpenerProps['onExportBook']
   onExport: () => void
+  onCountWords: () => void
 }
 
 function renderExplorer(props: SidebarPanelBodyProps) {
@@ -77,6 +78,7 @@ export function SidebarPanelBody(props: SidebarPanelBodyProps) {
         onImportZulu={props.onImportZulu}
         onExportBook={props.onExportBook}
         onExport={props.onExport}
+        onCountWords={props.onCountWords}
       />
     )
   }

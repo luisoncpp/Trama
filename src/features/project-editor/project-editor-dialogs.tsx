@@ -4,10 +4,12 @@ import { AiImportDialog } from './components/ai-import-dialog'
 import { AiExportDialog } from './components/ai-export-dialog'
 import { BookExportDialog } from './components/book-export-dialog'
 import { ZuluImportDialog } from './components/zulu-import-dialog'
+import { WordCountsDialog } from './components/word-counts-dialog'
 import { useAiImport } from './use-ai-import'
 import { useAiExport } from './use-ai-export'
 import { useBookExport } from './use-book-export'
 import { useZuluImport } from './use-zulu-import'
+import { useWordCountsDialog } from './use-word-counts-dialog'
 
 interface ExportToastProps {
   message: string
@@ -33,9 +35,10 @@ export interface ProjectEditorDialogsProps {
   bookExport: ReturnType<typeof useBookExport>
   aiExport: ReturnType<typeof useAiExport>
   zuluImport: ReturnType<typeof useZuluImport>
+  wordCounts: ReturnType<typeof useWordCountsDialog>
 }
 
-function ProjectEditorDialogPortals({ rootPath, aiImport, bookExport, aiExport, zuluImport }: ProjectEditorDialogsProps) {
+function ImportPortals({ rootPath, aiImport, zuluImport, wordCounts }: Pick<ProjectEditorDialogsProps, 'rootPath' | 'aiImport' | 'zuluImport' | 'wordCounts'>) {
   return (
     <>
       <AiImportDialog
@@ -53,6 +56,20 @@ function ProjectEditorDialogPortals({ rootPath, aiImport, bookExport, aiExport, 
         onExecute={zuluImport.handleExecute}
         projectRoot={rootPath}
       />
+      <WordCountsDialog
+        open={wordCounts.isOpen}
+        loading={wordCounts.loading}
+        wordCounts={wordCounts.wordCounts}
+        error={wordCounts.error}
+        onClose={wordCounts.closeDialog}
+      />
+    </>
+  )
+}
+
+function ExportPortals({ rootPath, bookExport, aiExport }: Pick<ProjectEditorDialogsProps, 'rootPath' | 'bookExport' | 'aiExport'>) {
+  return (
+    <>
       <AiExportDialog
         open={aiExport.open}
         onClose={() => aiExport.setOpen(false)}
@@ -86,6 +103,15 @@ function ProjectEditorDialogPortals({ rootPath, aiImport, bookExport, aiExport, 
   )
 }
 
+function ProjectEditorDialogPortals(props: ProjectEditorDialogsProps) {
+  return (
+    <>
+      <ImportPortals rootPath={props.rootPath} aiImport={props.aiImport} zuluImport={props.zuluImport} wordCounts={props.wordCounts} />
+      <ExportPortals rootPath={props.rootPath} bookExport={props.bookExport} aiExport={props.aiExport} />
+    </>
+  )
+}
+
 function ProjectEditorDialogToasts({
   bookExport,
   aiExport,
@@ -95,32 +121,16 @@ function ProjectEditorDialogToasts({
   return (
     <>
       {aiExport.copyToastMessage && (
-        <ExportToast
-          message={aiExport.copyToastMessage}
-          dismissLabel="Dismiss export copied notification"
-          onDismiss={aiExport.dismissCopyToast}
-        />
+        <ExportToast message={aiExport.copyToastMessage} dismissLabel="Dismiss export copied notification" onDismiss={aiExport.dismissCopyToast} />
       )}
       {bookExport.toastMessage && (
-        <ExportToast
-          message={bookExport.toastMessage}
-          dismissLabel="Dismiss book export notification"
-          onDismiss={bookExport.dismissToast}
-        />
+        <ExportToast message={bookExport.toastMessage} dismissLabel="Dismiss book export notification" onDismiss={bookExport.dismissToast} />
       )}
       {aiImport.toastMessage && (
-        <ExportToast
-          message={aiImport.toastMessage}
-          dismissLabel="Dismiss AI import notification"
-          onDismiss={aiImport.dismissToast}
-        />
+        <ExportToast message={aiImport.toastMessage} dismissLabel="Dismiss AI import notification" onDismiss={aiImport.dismissToast} />
       )}
       {zuluImport.toastMessage && (
-        <ExportToast
-          message={zuluImport.toastMessage}
-          dismissLabel="Dismiss Zulu import notification"
-          onDismiss={zuluImport.dismissToast}
-        />
+        <ExportToast message={zuluImport.toastMessage} dismissLabel="Dismiss Zulu import notification" onDismiss={zuluImport.dismissToast} />
       )}
     </>
   )
@@ -130,12 +140,7 @@ function ProjectEditorDialogsInner(props: ProjectEditorDialogsProps) {
   return (
     <>
       <ProjectEditorDialogPortals {...props} />
-      <ProjectEditorDialogToasts
-        aiExport={props.aiExport}
-        bookExport={props.bookExport}
-        aiImport={props.aiImport}
-        zuluImport={props.zuluImport}
-      />
+      <ProjectEditorDialogToasts aiExport={props.aiExport} bookExport={props.bookExport} aiImport={props.aiImport} zuluImport={props.zuluImport} />
     </>
   )
 }

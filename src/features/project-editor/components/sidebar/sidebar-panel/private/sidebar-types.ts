@@ -7,6 +7,7 @@ export interface SidebarDialogOpenerProps {
   onImportZulu: () => void
   onExportBook: (format: BookExportFormat) => void
   onExport: () => void
+  onCountWords: () => void
 }
 
 export interface SidebarThemeProps {

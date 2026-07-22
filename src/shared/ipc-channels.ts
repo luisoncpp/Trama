@@ -55,4 +55,5 @@ export const IPC_CHANNELS = {
   openHelp: 'trama:help:open',
   getGettingStartedDismissed: 'trama:help:get-getting-started-dismissed',
   setGettingStartedDismissed: 'trama:help:set-getting-started-dismissed',
+  wordCounts: 'trama:project:word-counts',
 } as const

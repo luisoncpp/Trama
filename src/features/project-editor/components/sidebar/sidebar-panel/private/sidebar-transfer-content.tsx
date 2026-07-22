@@ -17,6 +17,7 @@ interface SidebarTransferContentProps {
   onExport: () => void
   onExportBook: (format: BookExportFormat) => void
   onImportZulu: () => void
+  onCountWords: () => void
 }
 
 interface SidebarTransferFlags {
@@ -79,6 +80,29 @@ function SidebarBookExportActions({ disabled, onExportBook }: Pick<SidebarTransf
   )
 }
 
+function SidebarWordCountActions({ disabled, onCountWords }: Pick<SidebarTransferFlags, 'disabled'> & Pick<SidebarTransferContentProps, 'onCountWords'>) {
+  return (
+    <div class="project-menu">
+      <label class="project-menu__field">
+        <span>Word counts</span>
+        <span class="project-menu__field-note">
+          Calculate word totals for manuscript, outline, and lore sections on demand.
+        </span>
+      </label>
+      <div class="project-menu__actions">
+        <button
+          type="button"
+          class="editor-button editor-button--secondary"
+          disabled={disabled}
+          onClick={onCountWords}
+        >
+          Count Words
+        </button>
+      </div>
+    </div>
+  )
+}
+
 function SidebarGitActions({ disabled, savingSnapshot = false }: Pick<SidebarTransferFlags, 'disabled' | 'savingSnapshot'>) {
   const { saveSnapshot } = useEditorActions()
   return (
@@ -135,7 +159,7 @@ function useSidebarTransferFlags(): SidebarTransferFlags {
   }
 }
 
-export function SidebarTransferContent({ onImport, onExport, onExportBook, onImportZulu }: SidebarTransferContentProps) {
+export function SidebarTransferContent({ onImport, onExport, onExportBook, onImportZulu, onCountWords }: SidebarTransferContentProps) {
   const { disabled, gitAvailable, savingSnapshot } = useSidebarTransferFlags()
   return (
     <div class="sidebar-panel-content">
@@ -145,6 +169,7 @@ export function SidebarTransferContent({ onImport, onExport, onExportBook, onImp
             <p class="workspace-panel__eyebrow">Import / Export</p>
           </div>
         </div>
+        <SidebarWordCountActions disabled={disabled} onCountWords={onCountWords} />
         <SidebarZuluImport disabled={disabled} onImportZulu={onImportZulu} />
 
         <div class="project-menu">
