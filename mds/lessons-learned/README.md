@@ -27,6 +27,7 @@ Avoid: "bug description + fix". Prefer: "what I learned that applies to future w
 
 | File | Topic | Date |
 |------|-------|------|
+| `filtered-contents-ordinals-must-stay-document-global.md` | Contents filters must not compact ordinal identity used by Quill reveal and directive mutations | 2026-07-23 |
 | `global-find-preset-refresh-after-query-commit.md` | Global search presets must refresh matches after the preset query/options commit and after reveal bounds settle | 2026-07-09 |
 | `editor-session-electron-type-seam.md` | Split the `EditorSession` interface: a minimal contract in shared types for the Electron build, extended in the renderer module for the full Quill/DOM surface | 2026-06-15 |
 | `electron-fsa-picker-empty-path.md` | `showOpenFilePicker` files cannot be turned into disk paths in Electron; use main-process `dialog.showOpenDialog` when staging needs `projectRoot`-relative paths | 2026-06-03 |

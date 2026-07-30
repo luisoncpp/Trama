@@ -7,6 +7,7 @@ export interface DocumentContentsState {
   editorValue: string
   documentType: DocumentMeta['type']
   selectedPath: string | null
+  canEdit: boolean
 }
 
 const DocumentContentsContext = createContext<DocumentContentsState | null>(null)

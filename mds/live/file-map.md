@@ -540,11 +540,15 @@ Mandatory doc navigation for new chats: start with `mds/START-HERE.md` — it pr
 - `src/features/project-editor/document-content/document-content-session-private/document-content-broken-track.ts`
   - Broken-image phase wrappers: preserve broken comments on serialize, expand them for save, render them for the editor.
 - `src/features/project-editor/document-contents/index.ts`
-  - Deep module public facade for the Contents navigation feature — re-exports `parseDocumentHeadings`, the Quill reveal helpers (`scanQuillHeadings`, `revealQuillHeading`, `computeCenteredScrollTop`), `DocumentHeading`, `DocumentHeadingType`, `ParseDocumentHeadingsOptions`, `ScanQuillHeadingsOptions`, and `HeadingRevealTarget` (declared in `project-editor-types.ts` for the Electron seam).
+  - Deep module public facade for the Contents navigation feature — re-exports parser, label-source fallback, Quill reveal helpers (`scanQuillHeadings`, `revealQuillHeading`, `computeCenteredScrollTop`), Contents types, and `HeadingRevealTarget` (declared in `project-editor-types.ts` for the Electron seam).
 - `src/features/project-editor/document-contents/private/document-headings-parser.ts`
-  - Pure markdown ATX heading and layout directive extraction (H1–H3, pagebreaks `<!-- trama:pagebreak -->`, spacers `<!-- trama:spacer -->` and blank lines >= 2): strips YAML frontmatter, tracks fences, strips closing hashes and inline markers, omits empty headings, assigns compact 0-based ordinals, and supports filter options.
+  - Pure markdown ATX heading and layout directive extraction (H1–H3, labeled/unlabeled pagebreaks and spacers, and blank lines >= 2): strips YAML frontmatter, tracks fences, strips closing hashes and inline markers, omits empty headings, and retains document-global 0-based ordinals when filters omit rows.
+- `src/features/project-editor/document-contents/private/document-layout-label.ts`
+  - Pure source-level Contents label mutation. Preserves canonical directives and converts a selected blank-line spacer to a labeled explicit spacer directive.
 - `src/features/project-editor/document-contents/private/quill-heading-reveal.ts`
-  - Quill document content scan (`header` line attributes + layout directive embed blots `LayoutDirectiveBlot` + blank lines → `{ index, level, text, type, lines }`), ordinal clamp, and centered-scroll reveal with 150 ms settle re-assert. Hosts `computeCenteredScrollTop`, the single centering implementation shared with `editor-session-find-visual.ts`.
+  - Quill document content scan (`header` line attributes + layout directive embed blots `LayoutDirectiveBlot` + blank lines → `{ index, level, text, type, lines, label, ordinal }`), ordinal clamp, and centered-scroll reveal with 150 ms settle re-assert. Hosts `computeCenteredScrollTop`, the single centering implementation shared with `editor-session-find-visual.ts`.
+- `src/features/project-editor/pane/rich-markdown-editor/editor-session/editor-session-private/layout-directive-label.ts`
+  - Atomically replaces a live spacer/pagebreak embed with the requested Contents-only label while preserving selection and keeping label text out of the editor.
 
 ### Sidebar components
 
@@ -567,7 +571,9 @@ Mandatory doc navigation for new chats: start with `mds/START-HERE.md` — it pr
 - `src/features/project-editor/components/sidebar/sidebar-panel/private/sidebar-search-content.tsx`
   - Global search section body (query controls, status, result list) following the custom panel content pattern.
 - `src/features/project-editor/components/sidebar/sidebar-panel/private/sidebar-contents-content.tsx`
-  - Contents section body: headings (H1–H3), page breaks (`⎘`), and spacers (`↕`) with header toggle buttons (`includePageBreaks`, `includeSpacers`), level indentation, ellipsis + full-text tooltip, spec §5.3 empty/unavailable/blank states, click → `revealDocumentHeading`. Sole consumer of `useDocumentContentsState()`; parses via the `document-contents` facade on each debounced flush.
+  - Contents section body: headings (H1–H3), page breaks, and spacers with filters, level indentation, and click → `revealDocumentHeading`. Writable directive rows open the label dialog; it parses via the `document-contents` facade on each debounced flush.
+- `src/features/project-editor/components/sidebar/sidebar-panel/private/sidebar-contents-label-dialog.tsx`
+  - Compact controlled dialog for adding/removing a Contents-only spacer/page-break label.
 - `src/features/project-editor/components/sidebar/sidebar-panel/private/sidebar-settings.tsx`
   - Sidebar settings panel (theme, spellcheck language, focus scope, etc.).
 - `src/features/project-editor/components/sidebar/sidebar-panel/private/sidebar-transfer-content.tsx`
@@ -583,7 +589,7 @@ Mandatory doc navigation for new chats: start with `mds/START-HERE.md` — it pr
 - `src/features/project-editor/components/sidebar/sidebar-section-roots.ts`
   - `ContentSidebarSection` (sections backed by folder roots) and `SIDEBAR_SECTION_CONFIG` titles/roots; `contents` is excluded like `search`/`settings`/`transfer`.
 - `src/features/project-editor/components/sidebar/document-contents-context.tsx`
-  - Narrow `DocumentContentsContext` (`{ editorValue, documentType, selectedPath }`, memoized on those three values) + `useDocumentContentsState()`. Mounted in `project-editor-view.tsx` next to `SidebarStateProvider`; only `SidebarContentsContent` consumes it, so context propagation bypasses the memoized sidebar shell.
+  - Narrow `DocumentContentsContext` (`{ editorValue, documentType, selectedPath, canEdit }`, memoized on those values) + `useDocumentContentsState()`. Mounted in `project-editor-view.tsx` next to `SidebarStateProvider`; only `SidebarContentsContent` consumes it, so context propagation bypasses the memoized sidebar shell.
 - `src/features/project-editor/components/sidebar/use-scoped-sidebar-actions.ts`
   - Hook that reads raw actions from `useEditorActions()` + root from `useSidebarSectionRoot()` and returns same-name scoped wrappers (`renameFile`, `deleteFolder`, `selectFile`, etc.) with path conversion built in.
 - `src/features/project-editor/components/sidebar/sidebar-scope-path-breadcrumb.tsx`

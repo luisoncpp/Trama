@@ -5,6 +5,7 @@ export interface LayoutDirectiveEmbedValue {
   directive: LayoutDirectiveEmbedType
   role?: 'start' | 'end'
   lines?: number
+  label?: string
   alt?: string
   source?: string
   raw?: string

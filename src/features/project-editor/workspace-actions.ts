@@ -11,7 +11,7 @@ export {
   setZoomLevel,
 } from './workspace-actions/private/view-modes'
 export { openPreviousInPaneHistory, openNextInPaneHistory } from './workspace-actions/private/pane-history'
-export { revealDocumentHeading } from './workspace-actions/private/document-navigation'
+export { revealDocumentHeading, setDocumentContentsLabel } from './workspace-actions/private/document-navigation'
 
 function updatePathForPane(layout: WorkspaceLayoutState, pane: WorkspacePane, path: string): WorkspaceLayoutState {
   return pane === 'primary'

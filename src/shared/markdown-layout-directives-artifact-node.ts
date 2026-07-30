@@ -1,7 +1,11 @@
 // @Architecture(descriptionShort="Shared contract or utility used across processes")
+import {
+  normalizeDirectiveLabel,
+  serializeDirectiveLabelSuffix,
+} from './markdown-layout-directive-label.js'
+
 const CENTER_START = '<!-- trama:center:start -->'
 const CENTER_END = '<!-- trama:center:end -->'
-const PAGEBREAK = '<!-- trama:pagebreak -->'
 
 interface DirectiveArtifactClassList {
   contains: (token: string) => boolean
@@ -32,9 +36,10 @@ function getSpacerLinesClassToken(classList: DirectiveArtifactClassList): string
 
 export function serializeDirectiveArtifactNode(node: DirectiveArtifactNode): string | null {
   const directive = node.getAttribute('data-trama-directive')
+  const label = normalizeDirectiveLabel(node.getAttribute('data-trama-label'))
   const classList = node.classList
   if (!directive) {
-    if (classList.contains('trama-pagebreak')) return PAGEBREAK
+    if (classList.contains('trama-pagebreak')) return `<!-- trama:pagebreak${serializeDirectiveLabelSuffix(label)} -->`
     if (classList.contains('trama-center-boundary')) {
       if (classList.contains('trama-center-end')) return CENTER_END
       return CENTER_START
@@ -44,7 +49,7 @@ export function serializeDirectiveArtifactNode(node: DirectiveArtifactNode): str
       const match = classLines?.match(/^trama-spacer-(\d+)$/)
       const lines = Number.parseInt(match?.[1] ?? '1', 10)
       const safeLines = Number.isInteger(lines) && lines >= 1 && lines <= 12 ? lines : 1
-      return `<!-- trama:spacer lines=${safeLines} -->`
+      return `<!-- trama:spacer lines=${safeLines}${serializeDirectiveLabelSuffix(label)} -->`
     }
     return null
   }
@@ -59,11 +64,11 @@ export function serializeDirectiveArtifactNode(node: DirectiveArtifactNode): str
   if (directive === 'spacer') {
     const lines = Number.parseInt(node.getAttribute('data-trama-lines') ?? '1', 10)
     const safeLines = Number.isInteger(lines) && lines >= 1 && lines <= 12 ? lines : 1
-    return `<!-- trama:spacer lines=${safeLines} -->`
+    return `<!-- trama:spacer lines=${safeLines}${serializeDirectiveLabelSuffix(label)} -->`
   }
 
   if (directive === 'pagebreak') {
-    return PAGEBREAK
+    return `<!-- trama:pagebreak${serializeDirectiveLabelSuffix(label)} -->`
   }
   if (directive === 'unknown') {
     const raw = decodeRawDirective(node.getAttribute('data-trama-raw'))

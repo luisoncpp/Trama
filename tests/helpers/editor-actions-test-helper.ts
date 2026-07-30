@@ -17,7 +17,7 @@ const EDITOR_ACTION_KEYS: Array<keyof ProjectEditorActions> = [
   'setSidebarSection', 'toggleSidebarPanelCollapsed', 'setSidebarPanelWidth',
   'toggleWorkspaceLayoutMode', 'setWorkspaceLayoutRatio', 'setWorkspaceActivePane',
   'setFullscreenEnabled', 'toggleFocusMode', 'setFocusScope', 'setZoomLevel',
-  'markEditorDirty', 'updateEditorMeta', 'updateEditorValue', 'revealDocumentHeading', 'saveNow', 'saveSnapshot',
+  'markEditorDirty', 'updateEditorMeta', 'updateEditorValue', 'revealDocumentHeading', 'setDocumentContentsLabel', 'saveNow', 'saveSnapshot',
   'revertChanges', 'toggleDocumentRevisions', 'closeDocumentRevisions',
   'selectRevisionCurrent', 'selectDocumentRevision', 'loadMoreDocumentRevisions',
   'requestLoadDocumentRevision', 'cancelLoadDocumentRevision', 'confirmLoadDocumentRevision',

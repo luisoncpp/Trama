@@ -21,6 +21,17 @@ describe('PDF print directives', () => {
     expect(output).not.toContain(PAGEBREAK)
   })
 
+  it('uses labeled directives for layout without rendering their labels', () => {
+    const output = replaceDirectivesForPdfPrint([
+      '<!-- trama:spacer lines=2 label="Scene transition" -->',
+      '<!-- trama:pagebreak label="Part II" -->',
+    ].join('\n'))
+
+    expect(output).toContain('class="trama-spacer" style="height:2em"')
+    expect(output).not.toContain('Scene transition')
+    expect(output).not.toContain('Part II')
+  })
+
   it('unwraps standalone image paragraphs for print layout', () => {
     const output = normalizePdfPrintChapterBody(
       '<div class="trama-center"><p></p><p><img src="x.png" alt="cover"></p></div>',

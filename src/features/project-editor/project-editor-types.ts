@@ -18,9 +18,16 @@ export interface HeadingRevealTarget {
   text: string
 }
 
+export interface DocumentContentsLabelTarget {
+  ordinal: number
+  type: 'pagebreak' | 'spacer'
+  label: string | null
+}
+
 export interface EditorSession {
   flush(): string | null
   revealHeading(target: HeadingRevealTarget): void
+  setLayoutDirectiveLabel(target: DocumentContentsLabelTarget): boolean
 }
 
 export type SidebarSection = 'explorer' | 'contents' | 'outline' | 'lore' | 'templates' | 'search' | 'transfer' | 'settings'
@@ -164,6 +171,7 @@ export interface ProjectEditorActions {
   updateEditorMeta: (meta: DocumentMeta, pane?: WorkspacePane) => void
   updateEditorValue: (value: string, pane?: WorkspacePane) => void
   revealDocumentHeading: (target: HeadingRevealTarget) => void
+  setDocumentContentsLabel: (target: DocumentContentsLabelTarget) => void
   saveNow: (pane?: WorkspacePane) => Promise<void>
   saveSnapshot: () => Promise<void>
   revertChanges: (pane?: WorkspacePane) => void

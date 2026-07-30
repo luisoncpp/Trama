@@ -2,6 +2,7 @@
 import type Quill from 'quill'
 import Delta from 'quill-delta'
 import { LAYOUT_DIRECTIVE_BLOT_NAME, type LayoutDirectiveEmbedValue } from './layout-directive-types'
+import { normalizeDirectiveLabel } from '../../../../../../shared/markdown-layout-directive-label.js'
 
 function getSpacerLinesFromClassList(classList: DOMTokenList): number {
   const linesClass = Array.from(classList).find((className) => /^trama-spacer-(\d+)$/.test(className))
@@ -18,10 +19,10 @@ function parseDirectiveFromDataAttr(directive: string, node: Element): LayoutDir
   if (directive === 'spacer') {
     const rawLines = Number.parseInt(node.getAttribute('data-trama-lines') ?? '1', 10)
     const lines = Number.isInteger(rawLines) && rawLines >= 1 && rawLines <= 12 ? rawLines : 1
-    return { directive, lines }
+    return { directive, lines, label: normalizeDirectiveLabel(node.getAttribute('data-trama-label')) }
   }
   if (directive === 'pagebreak') {
-    return { directive }
+    return { directive, label: normalizeDirectiveLabel(node.getAttribute('data-trama-label')) }
   }
   if (directive === 'broken-image') {
     return {

@@ -4,8 +4,9 @@ import {
   parseDocumentHeadings,
   revealQuillHeading,
   scanQuillHeadings,
+  setMarkdownLayoutDirectiveLabel,
 } from '../src/features/project-editor/document-contents'
-import { revealDocumentHeading } from '../src/features/project-editor/workspace-actions'
+import { revealDocumentHeading, setDocumentContentsLabel } from '../src/features/project-editor/workspace-actions'
 import { PaneWorkspace, type PaneBindings } from '../src/features/project-editor/pane'
 import { EditorSessionImpl } from '../src/features/project-editor/pane/rich-markdown-editor/editor-session/editor-session-private/editor-session-lifecycle'
 import type { PaneDocumentState, WorkspaceLayoutState } from '../src/features/project-editor/project-editor-types'
@@ -240,6 +241,47 @@ describe('EditorSession.revealHeading', () => {
   })
 })
 
+describe('EditorSession.setLayoutDirectiveLabel', () => {
+  it('updates a page-break label and serializes it without visible editor text', () => {
+    const onDirty = vi.fn()
+    const session = createSession('<!-- trama:pagebreak -->\n# After', onDirty)
+
+    expect(session.setLayoutDirectiveLabel({ ordinal: 0, type: 'pagebreak', label: 'Part II' })).toBe(true)
+    expect(session.flush()).toContain('<!-- trama:pagebreak label="Part II" -->')
+    expect(session.getEditor()!.root.textContent).not.toContain('Part II')
+    expect(onDirty).toHaveBeenCalled()
+    session.dispose()
+  })
+
+  it('updates a spacer label without changing its visible spacer behavior', () => {
+    const session = createSession('<!-- trama:spacer lines=3 -->\n# After')
+
+    expect(session.setLayoutDirectiveLabel({ ordinal: 0, type: 'spacer', label: 'Scene transition' })).toBe(true)
+    expect(session.flush()).toContain('<!-- trama:spacer lines=3 label="Scene transition" -->')
+    expect(session.getEditor()!.root.textContent).not.toContain('Scene transition')
+    session.dispose()
+  })
+
+  it('converts a blank-line spacer into a labeled spacer directive from the source fallback', () => {
+    const markdown = '# Before\n\n\n## After'
+
+    expect(setMarkdownLayoutDirectiveLabel(markdown, {
+      ordinal: 1,
+      type: 'spacer',
+      label: 'Scene transition',
+    })).toBe('# Before\n<!-- trama:spacer lines=2 label="Scene transition" -->\n## After')
+  })
+
+  it('rejects label changes while the editor is read-only', () => {
+    const session = createSession('<!-- trama:pagebreak -->')
+    session.setDisabled(true, true)
+
+    expect(session.setLayoutDirectiveLabel({ ordinal: 0, type: 'pagebreak', label: 'Part II' })).toBe(false)
+    expect(session.flush()).toBe('<!-- trama:pagebreak -->')
+    session.dispose()
+  })
+})
+
 describe('revealDocumentHeading workspace action', () => {
   function makeLayout(activePane: 'primary' | 'secondary'): WorkspaceLayoutState {
     return {
@@ -268,8 +310,8 @@ describe('revealDocumentHeading workspace action', () => {
     const revealPrimary = vi.fn()
     const revealSecondary = vi.fn()
     const refs = {
-      primary: { current: { flush: () => null, revealHeading: revealPrimary } },
-      secondary: { current: { flush: () => null, revealHeading: revealSecondary } },
+      primary: { current: { flush: () => null, revealHeading: revealPrimary, setLayoutDirectiveLabel: () => false } },
+      secondary: { current: { flush: () => null, revealHeading: revealSecondary, setLayoutDirectiveLabel: () => false } },
     }
     const workspace = new PaneWorkspace(makeLayout('secondary'), bindings, refs, vi.fn())
     const target = { ordinal: 0, level: 1 as const, text: 'B' }
@@ -278,5 +320,49 @@ describe('revealDocumentHeading workspace action', () => {
 
     expect(revealSecondary).toHaveBeenCalledWith(target)
     expect(revealPrimary).not.toHaveBeenCalled()
+  })
+
+  it('updates labels only in the active pane', () => {
+    const bindings: PaneBindings = {
+      primaryPane: makePane('docs/a.md', '# A'),
+      secondaryPane: makePane('docs/b.md', '# B'),
+      setPrimaryPane: () => {},
+      setSecondaryPane: () => {},
+    }
+    const setPrimary = vi.fn(() => true)
+    const setSecondary = vi.fn(() => true)
+    const refs = {
+      primary: { current: { flush: () => null, revealHeading: () => {}, setLayoutDirectiveLabel: setPrimary } },
+      secondary: { current: { flush: () => null, revealHeading: () => {}, setLayoutDirectiveLabel: setSecondary } },
+    }
+    const workspace = new PaneWorkspace(makeLayout('secondary'), bindings, refs, vi.fn())
+    const target = { ordinal: 0, type: 'pagebreak' as const, label: 'Part II' }
+
+    setDocumentContentsLabel(target, workspace)
+
+    expect(setSecondary).toHaveBeenCalledWith(target)
+    expect(setPrimary).not.toHaveBeenCalled()
+  })
+
+  it('uses the active pane source fallback for a blank-line spacer', () => {
+    let secondary = makePane('docs/b.md', '# Before\n\n\n## After')
+    const bindings: PaneBindings = {
+      primaryPane: makePane('docs/a.md', '# A'),
+      secondaryPane: secondary,
+      setPrimaryPane: () => {},
+      setSecondaryPane: (value) => {
+        secondary = typeof value === 'function' ? value(secondary) : value
+      },
+    }
+    const refs = {
+      primary: { current: { flush: () => null, revealHeading: () => {}, setLayoutDirectiveLabel: () => false } },
+      secondary: { current: { flush: () => null, revealHeading: () => {}, setLayoutDirectiveLabel: () => false } },
+    }
+    const workspace = new PaneWorkspace(makeLayout('secondary'), bindings, refs, vi.fn())
+
+    setDocumentContentsLabel({ ordinal: 1, type: 'spacer', label: 'Scene transition' }, workspace)
+
+    expect(secondary.content).toContain('<!-- trama:spacer lines=2 label="Scene transition" -->')
+    expect(secondary.isDirty).toBe(true)
   })
 })

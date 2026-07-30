@@ -18,6 +18,7 @@ function buildContentsState(overrides: Partial<DocumentContentsState> = {}): Doc
     editorValue: '',
     documentType: undefined,
     selectedPath: 'book/Act-01/Scene-001.md',
+    canEdit: true,
     ...overrides,
   }
 }
@@ -141,6 +142,42 @@ describe('sidebar contents panel', () => {
     expect(rows.map((row) => row.textContent)).toEqual(['Intro', '⎘Page Break', '↕Spacer (2 lines)', 'Chapter 1'])
     expect(rows[1].classList.contains('sidebar-contents__row--pagebreak')).toBe(true)
     expect(rows[2].classList.contains('sidebar-contents__row--spacer')).toBe(true)
+  })
+
+  it('shows labels in Contents and edits them from the directive pencil button', () => {
+    const actions = buildEditorActionsSpies()
+    const markdown = [
+      '<!-- trama:pagebreak label="Part II" -->',
+      '<!-- trama:spacer lines=2 label="Scene transition" -->',
+    ].join('\n')
+
+    renderContents(buildContentsState({ editorValue: markdown }), actions)
+
+    expect(queryRows(container).map((row) => row.textContent)).toEqual(['⎘Part II', '↕Scene transition'])
+    const editButtons = Array.from(container.querySelectorAll<HTMLButtonElement>('.sidebar-contents__edit'))
+    expect(editButtons).toHaveLength(2)
+
+    act(() => { editButtons[0].click() })
+    const dialog = document.body.querySelector('[role="dialog"][aria-label="Edit page break label"]') as HTMLFormElement
+    const input = dialog.querySelector('input') as HTMLInputElement
+    expect(input.value).toBe('Part II')
+
+    act(() => {
+      input.value = 'Part III'
+      input.dispatchEvent(new Event('input', { bubbles: true }))
+    })
+    act(() => {
+      dialog.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }))
+    })
+
+    expect(actions.setDocumentContentsLabel).toHaveBeenCalledWith({ ordinal: 0, type: 'pagebreak', label: 'Part III' })
+    expect(document.body.querySelector('[role="dialog"][aria-label="Edit page break label"]')).toBeNull()
+  })
+
+  it('hides directive label editing in read-only Contents', () => {
+    renderContents(buildContentsState({ editorValue: '<!-- trama:pagebreak -->', canEdit: false }))
+
+    expect(container.querySelector('.sidebar-contents__edit')).toBeNull()
   })
 
   it('filters page breaks or spacers when toggled', () => {

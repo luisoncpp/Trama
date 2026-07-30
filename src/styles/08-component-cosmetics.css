@@ -372,6 +372,12 @@
   overflow-y: auto;
 }
 
+.sidebar-contents__item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
 .sidebar-contents__row {
   width: 100%;
   border: 1px solid transparent;
@@ -385,6 +391,28 @@
   padding: 4px 10px;
   font-size: 0.8rem;
   transition: background-color 160ms ease, border-color 160ms ease, color 160ms ease;
+}
+
+.sidebar-contents__edit {
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-dim);
+  cursor: pointer;
+  font-size: 0.82rem;
+  opacity: 0;
+  padding: 4px 6px;
+}
+
+.sidebar-contents__item:hover .sidebar-contents__edit,
+.sidebar-contents__edit:focus-visible {
+  opacity: 1;
+}
+
+.sidebar-contents__edit:hover,
+.sidebar-contents__edit:focus-visible {
+  color: var(--text-main);
+  background: var(--accent-subtle, rgba(255, 255, 255, 0.08));
 }
 
 .sidebar-contents__row:hover,

@@ -108,8 +108,8 @@ mergePdfSegments(buffers)    — un PDFDocument, load cada buffer una vez, copyP
 | Directiva | En segmento HTML |
 |-----------|------------------|
 | `<!-- trama:center:start/end -->` | `replaceDirectivesForPdfPrint` → `.trama-center` |
-| `<!-- trama:spacer lines=N -->` | `.trama-spacer` |
-| `<!-- trama:pagebreak -->` | **No** va dentro del segmento; solo delimita segmentos en `buildPdfExportSegments`. Líneas pagebreak al inicio del manuscrito se eliminan. |
+| `<!-- trama:spacer lines=N [label=JSON-string] -->` | `.trama-spacer`; el label se ignora y no se imprime |
+| `<!-- trama:pagebreak [label=JSON-string] -->` | **No** va dentro del segmento; solo delimita segmentos en `buildPdfExportSegments`. El label se ignora y no se imprime. Líneas pagebreak al inicio del manuscrito se eliminan. |
 
 ### Imágenes en PDF
 

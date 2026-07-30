@@ -1,7 +1,7 @@
 # Markdown Layout Directives Specification (Invisible Markers)
 
-Status: Draft v1  
-Last updated: 2026-04-12
+Status: Draft v1.1
+Last updated: 2026-07-23
 
 Implementation guide: `mds/plan/done/markdown-layout-directives-implementation-plan.md`
 
@@ -46,12 +46,14 @@ Content to be centered.
 
 ```md
 <!-- trama:spacer lines=2 -->
+<!-- trama:spacer lines=2 label="Scene transition" -->
 ```
 
 #### Page break
 
 ```md
 <!-- trama:pagebreak -->
+<!-- trama:pagebreak label="Part II" -->
 ```
 
 ## 4. Grammar (v1)
@@ -67,16 +69,17 @@ Directive comments are case-sensitive and must match exactly.
 
 ### 4.2 Spacer
 
-- Token: `<!-- trama:spacer lines=N -->`
+- Token: `<!-- trama:spacer lines=N [label=JSON-string] -->`
 - `N` must be integer in range `[1, 12]`.
 - Invalid or missing `N`: fallback to `N = 1` and emit warning.
+- `label` is optional metadata encoded as one JSON string (for example, `label="Scene transition"`). It is trimmed; an empty label is omitted on serialization.
 
 ### 4.3 Page break
 
-- Token: `<!-- trama:pagebreak -->`
-- Inline attributes: none in v1.
+- Token: `<!-- trama:pagebreak [label=JSON-string] -->`
+- `label` follows the spacer rule and is Contents-only metadata.
 
-Important for v1: directive metadata is not part of Markdown syntax. Markdown directives remain canonical and minimal.
+Labels are backward-compatible: directives without `label` retain their existing behavior and display names. Center directives do not support labels.
 
 ## 5. Parser and Pipeline Rules
 
@@ -98,8 +101,8 @@ The pre-processor should emit neutral nodes:
 
 - `layout.center.start`
 - `layout.center.end`
-- `layout.spacer { lines: number }`
-- `layout.pagebreak`
+- `layout.spacer { lines: number, label?: string }`
+- `layout.pagebreak { label?: string }`
 
 These nodes are format-agnostic and should be consumed by each exporter backend.
 
@@ -140,13 +143,14 @@ Quill internal HTML metadata contract (required):
 - Optional helper attributes:
   - `data-trama-lines` for spacer size
   - `data-trama-role` for internal role (`start`/`end` for center boundaries)
+  - `data-trama-label` for the optional Contents-only label on spacers and page breaks
 
 Reference HTML shape examples (editor-internal):
 
 ```html
 <div class="trama-center-boundary" data-trama-directive="center" data-trama-role="start"></div>
-<div class="trama-spacer" data-trama-directive="spacer" data-trama-lines="2"></div>
-<div class="trama-pagebreak" data-trama-directive="pagebreak" contenteditable="false"></div>
+<div class="trama-spacer" data-trama-directive="spacer" data-trama-lines="2" data-trama-label="Scene transition"></div>
+<div class="trama-pagebreak" data-trama-directive="pagebreak" data-trama-label="Part II" contenteditable="false"></div>
 <div class="trama-center-boundary" data-trama-directive="center" data-trama-role="end"></div>
 ```
 
@@ -159,7 +163,7 @@ The workspace command `copy-as-markdown` must include layout directives in copie
 Rules:
 
 1. If current document contains Trama directives, clipboard Markdown must preserve them.
-2. Output must use canonical tokens (`trama:center:start`, `trama:center:end`, `trama:spacer`, `trama:pagebreak`).
+2. Output must use canonical tokens (`trama:center:start`, `trama:center:end`, `trama:spacer`, `trama:pagebreak`) and preserve any optional labels.
 3. Normalization can adjust line endings (`CRLF` to `LF`) but must not rewrite directive semantics.
 4. No best-effort stripping: unknown `trama:` directives should remain unchanged in clipboard output.
 
@@ -171,7 +175,7 @@ AI export currently copies file content from disk into `=== FILE: ... ===` block
 
 Required behavior for v1:
 
-1. Layout directives are included as-is in exported text.
+1. Layout directives, including optional labels, are included as-is in exported text.
 2. `includeFrontmatter` only affects YAML frontmatter, not Trama directives in body content.
 3. Export must not sanitize or remove HTML comments matching `trama:*`.
 
@@ -180,6 +184,8 @@ Implication:
 - If a document saved on disk contains directives, AI export and downstream LLM workflows receive those directives verbatim.
 
 ## 6. Rendering/Export Mapping
+
+Labels never render in the editor canvas or reader-facing HTML/PDF/EPUB/DOCX/MOBI output. They are consumed only by the interactive Contents panel; source-oriented Copy as Markdown and AI export preserve them verbatim.
 
 ## 6.1 HTML
 
@@ -284,6 +290,7 @@ Paragraph before page transition.
 7. Copy as Markdown includes Trama directives present in the current document.
 8. AI export includes Trama directives in copied `=== FILE: ... ===` output.
 9. Page break appears in-editor as a tall separator but behaves as one atomic cursor object.
+10. A labeled spacer or page break shows its label only in Contents and remains invisible in the editor canvas and reader-facing exports.
 
 ## 11. Non-Goals (v1)
 

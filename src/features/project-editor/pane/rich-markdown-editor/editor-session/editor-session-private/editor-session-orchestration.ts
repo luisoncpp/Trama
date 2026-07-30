@@ -154,6 +154,7 @@ function buildEditorSessionFacade(
   return {
     flush: () => lifecycleSession.flush(),
     revealHeading: (target) => lifecycleSession.revealHeading(target),
+    setLayoutDirectiveLabel: (target) => lifecycleSession.setLayoutDirectiveLabel(target),
     getEditor: () => lifecycleSession.getEditor(),
     getCanonicalValue: () => lifecycleSession.getCanonicalValue(),
     subscribeContentMutated: (cb) => lifecycleSession.subscribeContentMutated(cb),

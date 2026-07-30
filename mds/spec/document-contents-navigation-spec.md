@@ -34,14 +34,14 @@ Long documents (chapters, compiled lore) are hard to navigate by scrolling alone
 The document contents list is derived from the active document's current in-memory markdown or Quill Delta ops, including unsaved changes.
 
 1. **Levels**: only H1, H2, H3. Deeper headings are not produced by the editor and are ignored if present.
-2. **Page Breaks**: explicit page break layout directives (`<!-- trama:pagebreak -->` / `<div data-trama-directive="pagebreak">`) are extracted as `pagebreak` entries (`⎘ Page Break`).
-3. **Spacers**: explicit spacer layout directives (`<!-- trama:spacer lines=N -->` / `<div data-trama-directive="spacer">`) and consecutive blank lines (>= 2) are extracted as `spacer` entries (`↕ Spacer (N lines)`).
+2. **Page Breaks**: explicit page break layout directives (`<!-- trama:pagebreak -->` / `<div data-trama-directive="pagebreak">`) are extracted as `pagebreak` entries (`⎘ Page Break`). Optional `label="..."` metadata replaces that Contents display text only.
+3. **Spacers**: explicit spacer layout directives (`<!-- trama:spacer lines=N -->` / `<div data-trama-directive="spacer">`) and consecutive blank lines (>= 2) are extracted as `spacer` entries (`↕ Spacer (N lines)`). Optional `label="..."` metadata replaces that Contents display text only.
 4. **Fenced code blocks**: lines inside ```` ``` ```` fences are never extracted.
 5. **Frontmatter**: YAML frontmatter is excluded from extraction.
 6. **Closed ATX**: `## Title ##` displays as `Title`.
 7. **Inline formatting**: rows display plain text with markdown markers stripped (`## **Bold** _title_` → `Bold title`).
 8. **Empty headings**: a heading marker with no text is omitted.
-9. **Identity**: each item is identified by its ordinal position in the document (1st, 2nd, 3rd…), NOT by its text. Duplicate heading texts or directive items are common and every occurrence remains independently navigable.
+9. **Identity**: each item is identified by its ordinal position in the full document sequence (1st, 2nd, 3rd…), NOT by its text. Filtering rows does not compact or renumber ordinals; duplicate heading texts or directive items remain independently navigable.
 10. **Filter Toggles**: header toggle buttons allow filtering Page Breaks or Spacers on/off in the sidebar panel. Both are activated by default.
 11. **Updates**: the list refreshes automatically as the document changes; no manual refresh action exists. Update lag consistent with the editor's serialization debounce is acceptable.
 
@@ -57,6 +57,8 @@ The document contents list is derived from the active document's current in-memo
 - One row per heading, in document order.
 - Indentation communicates level: H1 flush left, H2 indented one step, H3 indented two steps.
 - Single-line rows with ellipsis on overflow; hovering a truncated row reveals the full heading text.
+- Page-break and spacer rows have a hover/focus pencil when the active pane is editable. It opens a compact label dialog. Saving an empty value removes the optional label; editing a blank-line spacer converts that spacer into the equivalent explicit directive so the metadata has a source home.
+- The label is invisible in the editor canvas and reader-facing exports. It is preserved by source-oriented Copy as Markdown and AI export.
 
 ### 5.3 Empty and unavailable states
 
@@ -69,6 +71,7 @@ The document contents list is derived from the active document's current in-memo
 - **Focus mode**: the sidebar is hidden and locked (existing invariant); Contents is simply unavailable and must not produce errors or stale rendering when focus mode exits.
 - **Fullscreen**: behaves normally (sidebar remains usable).
 - **Read-only revision preview**: the panel remains usable; navigation still works (scrolling is allowed).
+- **Read-only revision preview**: label pencils are hidden and no Contents mutation is allowed.
 
 ## 6. Navigation Behavior
 
@@ -98,6 +101,7 @@ The document contents list is derived from the active document's current in-memo
 8. In read-only revision preview, navigation works; in focus mode, the panel is inaccessible without errors.
 9. Navigation never marks the document dirty.
 10. `npm run lint`, `npm run build`, and the focused test suite for this feature pass.
+11. Labels are editable only for spacers/page breaks in an editable active pane, display only in Contents, and do not alter reader-facing exports.
 
 ## 9. Out of Scope
 
@@ -113,4 +117,3 @@ The document contents list is derived from the active document's current in-memo
 - `mds/architecture/split-pane-coordination.md` — active pane model and pane-targeted actions.
 - `mds/architecture/document-contents-architecture.md` — subsystem design (extraction, ordinal identity, reveal, command path).
 - `mds/plan/done/document-contents-navigation-implementation-plan.md` — paired slice 1 implementation plan.
-

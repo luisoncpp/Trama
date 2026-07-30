@@ -1,14 +1,14 @@
 // @Architecture(descriptionShort="Shared directive parsing helpers for `trama:center`, `trama:spacer`, and")
+import { parseDirectiveLabelSuffix } from '../../src/shared/markdown-layout-directive-label.js'
 export type BookExportDirective =
   | { kind: 'pagebreak' }
   | { kind: 'centerStart' }
   | { kind: 'centerEnd' }
   | { kind: 'spacer'; lines: number }
 
-const PAGEBREAK_PATTERN = /^<!--\s*trama:pagebreak\s*-->$/
 const CENTER_START_PATTERN = /^<!--\s*trama:center:start\s*-->$/
 const CENTER_END_PATTERN = /^<!--\s*trama:center:end\s*-->$/
-const SPACER_PATTERN = /^<!--\s*trama:spacer\s+lines=(\d+)\s*-->$/
+const TRAMA_COMMENT_PATTERN = /^<!--\s*trama:([\s\S]*?)\s*-->$/
 
 const PAGEBREAK_HTML_CLASS_PATTERN = /^<(?:div|hr)\b[^>]*\bclass=(['"])[^'"]*\btrama-pagebreak\b[^'"]*\1[^>]*\/?>(?:<\/div>)?$/i
 const PAGEBREAK_HTML_DATA_PATTERN = /^<(?:div|hr)\b[^>]*\bdata-trama-directive=(['"])pagebreak\1[^>]*\/?>(?:<\/div>)?$/i
@@ -24,12 +24,21 @@ function clampSpacerLines(lines: number): number {
   return Math.max(1, Math.min(12, Math.floor(lines)))
 }
 
+function parseCanonicalCommentDirective(line: string): BookExportDirective | null {
+  const commentMatch = TRAMA_COMMENT_PATTERN.exec(line)
+  if (!commentMatch) return null
+
+  const parsedLabel = parseDirectiveLabelSuffix(commentMatch[1] ?? '', 0)
+  if (parsedLabel.base === 'pagebreak') return { kind: 'pagebreak' }
+  const spacerMatch = parsedLabel.base.match(/^spacer\s+lines=(\d+)$/)
+  return spacerMatch ? { kind: 'spacer', lines: clampSpacerLines(Number(spacerMatch[1])) } : null
+}
+
 export function parseDirectiveLine(line: string): BookExportDirective | null {
   const trimmed = line.trim()
 
-  if (PAGEBREAK_PATTERN.test(trimmed)) {
-    return { kind: 'pagebreak' }
-  }
+  const canonical = parseCanonicalCommentDirective(trimmed)
+  if (canonical) return canonical
 
   if (PAGEBREAK_HTML_CLASS_PATTERN.test(trimmed) || PAGEBREAK_HTML_DATA_PATTERN.test(trimmed)) {
     return { kind: 'pagebreak' }
@@ -48,11 +57,6 @@ export function parseDirectiveLine(line: string): BookExportDirective | null {
     return boundaryMatch[3].toLowerCase() === 'start'
       ? { kind: 'centerStart' }
       : { kind: 'centerEnd' }
-  }
-
-  const spacerMatch = trimmed.match(SPACER_PATTERN)
-  if (spacerMatch) {
-    return { kind: 'spacer', lines: clampSpacerLines(Number(spacerMatch[1])) }
   }
 
   const spacerDataMatch = trimmed.match(SPACER_HTML_DATA_PATTERN)

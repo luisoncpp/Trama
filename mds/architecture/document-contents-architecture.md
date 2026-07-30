@@ -1,6 +1,6 @@
 # Document Contents Navigation Architecture
 
-> **Last updated:** 2026-07-21. Status: slice 1 complete — parser, reveal path, and Contents rail panel implemented; all quality gates pass (lint, full suite 117 files / 951 tests, build).
+> **Last updated:** 2026-07-23. Status: Contents navigation plus invisible spacer/page-break labels implemented.
 > Spec: `mds/spec/document-contents-navigation-spec.md`
 
 Goal: explain how the Contents feature turns the active pane's markdown into a clickable heading index — extraction, heading identity, reveal mechanics, command path, and the state-subscription constraint that keeps typing cheap.
@@ -16,7 +16,7 @@ Quill document (per pane)
   → debounced serialization (editor-session-content)          [existing]
   → PaneDocumentState.content (placeholder markdown)
   → deriveActivePaneDocument → state.editorValue              [existing projection]
-  → DocumentContentsContext (narrow: editorValue, documentType, selectedPath)   [new]
+  → DocumentContentsContext (narrow: editorValue, documentType, selectedPath, canEdit)   [new]
   → parseDocumentHeadings() → DocumentHeading[]               [new pure parser]
   → SidebarContentsContent rows                               [new panel]
 
@@ -26,6 +26,12 @@ Row click
   → editorSessionRefs[activePane].current?.revealHeading()    [new EditorSession method]
   → scanQuillHeadings(editor) → ordinal clamp → quill index   [new helper]
   → setSelection + focus + centered scroll (settle re-assert)
+
+Directive label save
+  → actions.setDocumentContentsLabel({ ordinal, type, label })
+  → paneWorkspace.setLayoutDirectiveLabelInPane(activePane, target)
+  → live EditorSession Delta replacement, or source fallback for a blank-line spacer
+  → canonical `<!-- trama:spacer/pagebreak ... label="..." -->`
 ```
 
 ## Module layout (new deep module)
@@ -34,8 +40,9 @@ Row click
 
 | File | Responsibility |
 |------|----------------|
-| `index.ts` | Facade: `parseDocumentHeadings`, `scanQuillHeadings`, `revealQuillHeading`, types `DocumentHeading`, `HeadingRevealTarget` |
+| `index.ts` | Facade: parser, Quill scan/reveal, and source fallback for directive labels |
 | `private/document-headings-parser.ts` | Markdown → `DocumentHeading[]` (pure, unit-testable) |
+| `private/document-layout-label.ts` | Source-level label update; converts a labeled blank-line spacer into a canonical spacer directive |
 | `private/quill-heading-reveal.ts` | Quill delta scan + ordinal resolution + centered-scroll math |
 
 Consumers: `sidebar-contents-content.tsx` (parser) and `editor-session-lifecycle.ts` (reveal helpers). Neither imports the private files. `HeadingRevealTarget` is declared in `project-editor-types.ts` (the Electron build reaches that file via `src/shared/sidebar-utils.ts`, so it must stay free of Quill/DOM types) and re-exported by the facade; `editor-session-find-visual.ts` imports `computeCenteredScrollTop` from the facade, keeping one centering implementation (invariant 5).
@@ -47,18 +54,18 @@ Consumers: `sidebar-contents-content.tsx` (parser) and `editor-session-lifecycle
 - Strip YAML frontmatter before scanning.
 - Track fenced code blocks (` ``` ` and `~~~`); lines inside fences are never extracted.
 - ATX headings: `^(#{1,3})\s+` (a space is required after the marker; `#nospace` is not a heading). H4+ ignored.
-- Page breaks: `<!-- trama:pagebreak -->` or `<div data-trama-directive="pagebreak">` → `type: 'pagebreak'` (`⎘ Page Break`).
-- Spacers: `<!-- trama:spacer lines=N -->` or `<div data-trama-directive="spacer">` or consecutive blank lines (>= 2) → `type: 'spacer'` (`↕ Spacer (N lines)`).
+- Page breaks: `<!-- trama:pagebreak [label=JSON-string] -->` or `<div data-trama-directive="pagebreak">` → `type: 'pagebreak'`; `label`, when present, replaces only the Contents display text.
+- Spacers: `<!-- trama:spacer lines=N [label=JSON-string] -->` or `<div data-trama-directive="spacer">` or consecutive blank lines (>= 2) → `type: 'spacer'`; `label`, when present, replaces only the Contents display text.
 - Strip closing hashes (`## Title ##` → `Title`).
 - Strip inline markers from display text: `**`, `*`, `__`, `_`, `~~`, backticks.
 - Omit headings whose text is empty after stripping.
-- Output: `[{ level: 1|2|3, text, ordinal, type?: 'heading' | 'pagebreak' | 'spacer', lines?: number }]` where `ordinal` is the 0-based position in the full item list.
+- Output: `[{ level: 1|2|3, text, ordinal, type?: 'heading' | 'pagebreak' | 'spacer', lines?: number, label?: string }]` where `ordinal` is the 0-based position in the full item list. Filter toggles omit rows but never compact these document-global ordinals.
 
 ## Quill item identity
 
 - Quill stores `header` as a **line attribute on the newline op**, and layout directives as **block embed blots** (`LayoutDirectiveBlot` under blot name `LAYOUT_DIRECTIVE_BLOT_NAME = 'trama-directive'`).
 - `scanQuillHeadings(editor)` walks `editor.getContents().ops`, accumulating line-start indexes. It extracts headers, page break embeds, spacer embeds, and consecutive blank lines.
-- **Ordinal identity**: the parser list and the Quill list share identical document ordering, so panel row N maps to the Nth Quill item. This is the only robust key — duplicate texts are common and directive embeds shift raw offsets.
+- **Ordinal identity**: the parser list and the Quill list share identical document ordering, including currently filtered-out page breaks/spacers, so panel row N maps to its document-global Quill item. This is the only robust key — duplicate texts are common and directive embeds shift raw offsets.
 - **Drift tolerance** (spec §6.3): within the debounce window the two lists can disagree. Clamp the ordinal to `[0, count-1]`; never throw. Text is display-only plus a sanity fallback, never the primary key.
 
 ## Reveal mechanics
@@ -76,6 +83,7 @@ Consumers: `sidebar-contents-content.tsx` (parser) and `editor-session-lifecycle
 3. `PaneWorkspace.revealHeadingInPane(pane, target)` mirrors `flushPaneContent`: `getEditorSessionRefForPane(pane, this.editorSessionRefs).current?.revealHeading(target)`. The inactive pane's session is never touched.
 4. The core `EditorSession` interface (`project-editor-types.ts`) gains `revealHeading(target: HeadingRevealTarget): void` — keeping the minimal Electron-safe seam (see `mds/lessons-learned/editor-session-electron-type-seam.md`); the full renderer interface (`editor-session-types.ts`) inherits it. `HeadingRevealTarget` is a plain type (`{ ordinal, level, text }`) with no Quill imports, safe for the shared types file.
 5. Implemented in `EditorSessionImpl` (`editor-session-lifecycle.ts`) using the `document-contents` facade helpers; exposed through the orchestration facade (`editor-session-orchestration.ts`).
+6. Label updates use the same active-pane rule. A live directive is replaced atomically in Quill so its label never becomes editor text. A source-only blank-line spacer has no Quill embed, so `PaneWorkspace` applies the pure source fallback, marks that pane dirty through the normal content mutation, and the next value sync renders the explicit spacer embed.
 
 ## State subscription constraint (critical)
 
@@ -83,7 +91,7 @@ Do **NOT** add `editorValue` to `SidebarProjectState` or `useProjectEditorShellS
 
 Instead:
 
-- A new narrow `DocumentContentsContext` (`{ editorValue, documentType, selectedPath }`, memoized on those three values) is provided in `project-editor-view.tsx`, next to `SidebarStateProvider`.
+- A new narrow `DocumentContentsContext` (`{ editorValue, documentType, selectedPath, canEdit }`, memoized on those values) is provided in `project-editor-view.tsx`, next to `SidebarStateProvider`. `canEdit` is false while loading or viewing a read-only revision preview.
 - Only `SidebarContentsContent` consumes it. Context propagation bypasses the `memo()`'d `ProjectEditorSidebarShell` without re-rendering it (stable props at the call site — see `mds/lessons-learned/memo-boundaries-need-stable-props-at-the-call-site.md`).
 - The panel re-render on each flush is cheap: one `O(lines)` parse on a debounced cadence.
 
@@ -103,6 +111,8 @@ Instead:
 3. `editorValue`/`documentType` reach the panel **only** through the narrow `DocumentContentsContext`.
 4. Parser and Quill scan share one heading definition (levels 1–3); the parser ignores anything Quill would not render as a header line (fences, frontmatter). The two must not drift apart.
 5. Reveal scroll math is shared with the find/focus centering formula — one centering implementation, no copies.
+6. Labels are data, not editor text: labels are present in canonical comments and Contents only, and must be ignored by reader-facing export renderers.
+7. Filtered rows retain document-global ordinals; never use the filtered array index for reveal or mutation.
 
 ## Regression hotspots
 
@@ -113,11 +123,13 @@ Instead:
 | Scroll lands near the top or at a wrong offset | Current `scrollTop` omitted when converting live `getBounds` coordinates, or focus auto-scroll ran first | Add `container.scrollTop` in the centering formula and focus with `{ preventScroll: true }` |
 | Reveal jumps back after images load | layout shift after the first pass | 150 ms settle re-assert |
 | Panel test silently not running | `.test.tsx` excluded by the Vitest glob | tests must be `.test.ts` (see `mds/lessons-learned/vitest-include-pattern-can-skip-test-tsx-files.md`) |
+| Label edits the wrong item after a toggle | filter compacted ordinal identity | ensure parser and Quill scanner increment ordinal even for omitted item types |
+| Blank-line spacer label appears as text | source fallback was bypassed | use `setMarkdownLayoutDirectiveLabel`; it converts the blank run to one canonical spacer comment |
 
 ## Focused tests
 
 ```bash
-npm run test -- tests/document-contents-parser.test.ts tests/document-contents-reveal.test.ts tests/sidebar-contents-panel.test.ts
+npm run test -- tests/document-contents-parser.test.ts tests/document-contents-reveal.test.ts tests/sidebar-contents-panel.test.ts tests/markdown-layout-directives.test.ts
 # Regression neighbors:
 npm run test -- tests/project-editor-view-render-split.test.ts tests/sidebar-panels.test.ts tests/editor-session.test.ts
 ```

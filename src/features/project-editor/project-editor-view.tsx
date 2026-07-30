@@ -65,6 +65,28 @@ function ProjectEditorConflictOverlays({ model }: { model: ProjectEditorModel })
   )
 }
 
+function useDocumentContentsState(model: ProjectEditorModel): DocumentContentsState {
+  // model.state strips editorMeta (ProjectEditorState Omit), so derive the
+  // active-pane projection from the pane states via the single pure projector.
+  const { editorValue, editorMeta, selectedPath } = deriveActivePaneDocument(
+    model.state.workspaceLayout,
+    model.state.primaryPane,
+    model.state.secondaryPane,
+  )
+  const activePane = model.state.workspaceLayout.activePane === 'secondary'
+    ? model.state.secondaryPane
+    : model.state.primaryPane
+  return useMemo(
+    /* buildDocumentContentsState */ (): DocumentContentsState => ({
+      editorValue,
+      documentType: editorMeta.type,
+      selectedPath,
+      canEdit: selectedPath !== null && !model.state.loadingDocument && !activePane.revisionRail.previewReadOnly,
+    }),
+    [editorValue, editorMeta.type, selectedPath, model.state.loadingDocument, activePane.revisionRail.previewReadOnly] /*Inputs for buildDocumentContentsState*/,
+  )
+}
+
 function useProjectEditorViewState(model: ProjectEditorModel, props: Omit<ProjectEditorViewProps, 'model'>) {
   const shellState = useProjectEditorShellState(model)
   const setSidebarPanelWidth = model.actions.setSidebarPanelWidth
@@ -80,21 +102,7 @@ function useProjectEditorViewState(model: ProjectEditorModel, props: Omit<Projec
   )
   const sidebarStyle = buildSidebarStyle(sidebarWidthPx)
   const sidebarState = useMemo(() => buildSidebarProjectState(shellState), [shellState])
-  // model.state strips editorMeta (ProjectEditorState Omit), so derive the
-  // active-pane projection from the pane states via the single pure projector.
-  const { editorValue, editorMeta, selectedPath } = deriveActivePaneDocument(
-    model.state.workspaceLayout,
-    model.state.primaryPane,
-    model.state.secondaryPane,
-  )
-  const documentContentsState = useMemo(
-    /* buildDocumentContentsState */ (): DocumentContentsState => ({
-      editorValue,
-      documentType: editorMeta.type,
-      selectedPath,
-    }),
-    [editorValue, editorMeta.type, selectedPath] /*Inputs for buildDocumentContentsState*/,
-  )
+  const documentContentsState = useDocumentContentsState(model)
   const layoutProps = {
     model,
     shellState,

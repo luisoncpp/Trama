@@ -1,6 +1,7 @@
 // @Architecture(descriptionShort="Implements pane workspace for the writing workspace")
 import type { DocumentMeta } from '../../../shared/ipc'
 import type {
+  DocumentContentsLabelTarget,
   HeadingRevealTarget,
   PaneDocumentState,
   PaneNavigationHistoryState,
@@ -9,6 +10,7 @@ import type {
   WorkspaceLayoutState,
   WorkspacePane,
 } from '../project-editor-types'
+import { setMarkdownLayoutDirectiveLabel } from '../document-contents'
 import { PaneNavigation } from './pane-shared'
 import { buildActivePaneDocumentInfo, buildPaneDocumentInfo } from './pane-workspace-private/pane-workspace-document-info'
 import { PaneAutosave } from './pane-workspace-private/pane-workspace-autosave'
@@ -110,6 +112,22 @@ export class PaneWorkspace {
 
   revealHeadingInPane(pane: WorkspacePane, target: HeadingRevealTarget): void {
     getEditorSessionRefForPane(pane, this.editorSessionRefs).current?.revealHeading(target)
+  }
+
+  setLayoutDirectiveLabelInPane(pane: WorkspacePane, target: DocumentContentsLabelTarget): boolean {
+    if (getPaneState(pane, this.paneBindings).revisionRail.previewReadOnly) {
+      return false
+    }
+    const session = getEditorSessionRefForPane(pane, this.editorSessionRefs).current
+    if (session?.setLayoutDirectiveLabel(target)) {
+      session.flush()
+      return true
+    }
+
+    const nextContent = setMarkdownLayoutDirectiveLabel(getPaneState(pane, this.paneBindings).content, target)
+    if (nextContent === null) return false
+    this.updatePaneContent(pane, nextContent)
+    return true
   }
 
   async savePaneIfDirty(pane: WorkspacePane): Promise<void> {

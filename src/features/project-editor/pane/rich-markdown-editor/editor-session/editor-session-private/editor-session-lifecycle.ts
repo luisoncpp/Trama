@@ -1,7 +1,7 @@
 // @Architecture(descriptionShort="Core Quill lifecycle class (`EditorSessionImpl`): initialize Quill, apply markdown,")
 import type Quill from 'quill'
 import type TurndownService from 'turndown'
-import type { EditorSession as EditorSessionCore, HeadingRevealTarget, TagMatch } from '../../../../project-editor-types.js'
+import type { DocumentContentsLabelTarget, EditorSession as EditorSessionCore, HeadingRevealTarget, TagMatch } from '../../../../project-editor-types.js'
 import { revealQuillHeading } from '../../../../document-contents/index.js'
 import { WORKSPACE_CONTEXT_MENU_EVENT } from '../../../../../../shared/workspace-context-menu.js'
 import { createTramaTurndownService, TurndownServiceFlags } from '../../../../../../shared/turndown-service-factory.js'
@@ -9,6 +9,7 @@ import { createQuillEditor, syncEditorSpellcheck, applyMarkdownToEditor } from '
 import { registerWorkspaceCommandListener } from '../../rich-markdown-editor-commands.js'
 import { registerTypographyHandler } from '../../rich-markdown-editor-typography.js'
 import { EditorContentLoop } from './editor-session-content.js'
+import { setLayoutDirectiveLabel } from './layout-directive-label.js'
 
 export class EditorSessionImpl implements EditorSessionCore {
   private editor: Quill
@@ -60,6 +61,11 @@ export class EditorSessionImpl implements EditorSessionCore {
   revealHeading(target: HeadingRevealTarget): void {
     if (this.disposed) return
     revealQuillHeading(this.host, this.editor, target)
+  }
+
+  setLayoutDirectiveLabel(target: DocumentContentsLabelTarget): boolean {
+    if (this.disposed) return false
+    return setLayoutDirectiveLabel(this.editor, target)
   }
 
   getEditor(): Quill | null {

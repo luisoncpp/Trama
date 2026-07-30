@@ -1,6 +1,7 @@
 // @Architecture(descriptionShort="Registers Quill `BlockEmbed`-based layout directive blots (`center`, `spacer`,")
 import Quill from 'quill'
 import { LAYOUT_DIRECTIVE_BLOT_NAME, type LayoutDirectiveEmbedValue } from './layout-directive-types'
+import { normalizeDirectiveLabel } from '../../../../../../shared/markdown-layout-directive-label.js'
 
 const MIN_SPACER_LINES = 1
 const MAX_SPACER_LINES = 12
@@ -36,10 +37,19 @@ function applyCenterAttributes(node: HTMLElement, safeValue: LayoutDirectiveEmbe
 function applySpacerAttributes(node: HTMLElement, safeValue: LayoutDirectiveEmbedValue): void {
   node.classList.add('trama-spacer')
   node.setAttribute('data-trama-lines', String(safeValue.lines ?? 1))
+  applyLabelAttribute(node, safeValue.label)
 }
 
-function applyPagebreakAttributes(node: HTMLElement): void {
+function applyPagebreakAttributes(node: HTMLElement, safeValue: LayoutDirectiveEmbedValue): void {
   node.classList.add('trama-pagebreak')
+  applyLabelAttribute(node, safeValue.label)
+}
+
+function applyLabelAttribute(node: HTMLElement, label: string | undefined): void {
+  const normalized = normalizeDirectiveLabel(label)
+  if (normalized) {
+    node.setAttribute('data-trama-label', normalized)
+  }
 }
 
 function applyBrokenImageAttributes(node: HTMLElement, safeValue: LayoutDirectiveEmbedValue): void {
@@ -71,7 +81,7 @@ function buildDirectiveNode(node: HTMLElement, safeValue: LayoutDirectiveEmbedVa
   }
 
   if (directive === 'pagebreak') {
-    applyPagebreakAttributes(node)
+    applyPagebreakAttributes(node, safeValue)
     return node
   }
 
@@ -93,6 +103,7 @@ function readSpacerValue(domNode: HTMLElement): LayoutDirectiveEmbedValue {
   return {
     directive: 'spacer',
     lines: parseSafeSpacerLines(domNode.getAttribute('data-trama-lines')),
+    label: normalizeDirectiveLabel(domNode.getAttribute('data-trama-label')),
   }
 }
 
@@ -116,7 +127,9 @@ function readDirectiveValue(domNode: HTMLElement): LayoutDirectiveEmbedValue {
 
   if (directive === 'center') return readCenterValue(domNode)
   if (directive === 'spacer') return readSpacerValue(domNode)
-  if (directive === 'pagebreak') return { directive }
+  if (directive === 'pagebreak') {
+    return { directive, label: normalizeDirectiveLabel(domNode.getAttribute('data-trama-label')) }
+  }
   if (directive === 'broken-image') return readBrokenImageValue(domNode)
   if (directive === 'unknown') return readUnknownValue(domNode)
 
@@ -143,6 +156,7 @@ function createLayoutDirectiveBlot(QuillBlockEmbed: QuillBlockEmbedCtor): typeof
 }
 
 export function registerLayoutDirectiveBlots(): void {
+  if (isLayoutDirectiveBlotRegistered) return
   const QuillBlockEmbed = Quill.import('blots/block/embed') as unknown as QuillBlockEmbedCtor
   const LayoutDirectiveBlot = createLayoutDirectiveBlot(QuillBlockEmbed)
   Quill.register(LayoutDirectiveBlot as any, true)

@@ -1,5 +1,5 @@
 // @Architecture(descriptionShort="Private implementation detail for parent module")
-import type { FocusScope, HeadingRevealTarget, ProjectEditorActions, WorkspacePane } from '../project-editor-types'
+import type { DocumentContentsLabelTarget, FocusScope, HeadingRevealTarget, ProjectEditorActions, WorkspacePane } from '../project-editor-types'
 import type { DocumentMeta } from '../../../shared/ipc'
 import { buildGitHistoryActions } from '../git-history-actions'
 import * as workspaceActions from '../workspace-actions'
@@ -20,6 +20,7 @@ export function buildWorkspaceActions(params: ActionGroupParams): Pick<ProjectEd
   | 'updateEditorMeta'
   | 'updateEditorValue'
   | 'revealDocumentHeading'
+  | 'setDocumentContentsLabel'
   | 'saveNow'
   | 'revertChanges'
   | 'saveSnapshot'
@@ -99,6 +100,7 @@ function buildWorkspaceEditorActions({
     updateEditorMeta: (meta: DocumentMeta, pane?: WorkspacePane) => workspaceActions.updateEditorMeta(meta, pane, paneWorkspace),
     updateEditorValue: (value: string, pane?: WorkspacePane) => workspaceActions.updateEditorValue(value, pane, paneWorkspace),
     revealDocumentHeading: (target: HeadingRevealTarget) => workspaceActions.revealDocumentHeading(target, paneWorkspace),
+    setDocumentContentsLabel: (target: DocumentContentsLabelTarget) => workspaceActions.setDocumentContentsLabel(target, paneWorkspace),
     saveNow: (pane?: WorkspacePane) => workspaceActions.saveNow(pane, {
       workspace: paneWorkspace,
       uiState,

@@ -133,6 +133,18 @@ describe('document contents parser', () => {
     ])
   })
 
+  it('uses directive labels in place of generic page-break and spacer text', () => {
+    const markdown = [
+      '<!-- trama:pagebreak label="Part II" -->',
+      '<!-- trama:spacer lines=3 label="Scene transition" -->',
+    ].join('\n')
+
+    expect(parseDocumentHeadings(markdown)).toEqual([
+      { type: 'pagebreak', level: 1, label: 'Part II', text: 'Part II', ordinal: 0 },
+      { type: 'spacer', level: 1, lines: 3, label: 'Scene transition', text: 'Scene transition', ordinal: 1 },
+    ])
+  })
+
   it('extracts consecutive blank lines as spacers', () => {
     const markdown = ['# First', 'Some text', '', '', '## Second'].join('\n')
 
@@ -153,15 +165,14 @@ describe('document contents parser', () => {
 
     expect(parseDocumentHeadings(markdown, { includePageBreaks: false })).toEqual([
       { type: 'heading', level: 1, text: 'Intro', ordinal: 0 },
-      { type: 'spacer', level: 1, lines: 2, text: 'Spacer (2 lines)', ordinal: 1 },
-      { type: 'heading', level: 2, text: 'Chapter 1', ordinal: 2 },
+      { type: 'spacer', level: 1, lines: 2, text: 'Spacer (2 lines)', ordinal: 2 },
+      { type: 'heading', level: 2, text: 'Chapter 1', ordinal: 3 },
     ])
 
     expect(parseDocumentHeadings(markdown, { includeSpacers: false })).toEqual([
       { type: 'heading', level: 1, text: 'Intro', ordinal: 0 },
       { type: 'pagebreak', level: 1, text: 'Page Break', ordinal: 1 },
-      { type: 'heading', level: 2, text: 'Chapter 1', ordinal: 2 },
+      { type: 'heading', level: 2, text: 'Chapter 1', ordinal: 3 },
     ])
   })
 })
-

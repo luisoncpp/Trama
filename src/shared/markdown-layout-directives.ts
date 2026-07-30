@@ -1,5 +1,10 @@
 // @Architecture(descriptionShort="Shared contract or utility used across processes")
 export { serializeDirectiveArtifactNode } from './markdown-layout-directives-artifact-node.js'
+import {
+  escapeDirectiveHtmlAttribute,
+  parseDirectiveLabelSuffix,
+  serializeDirectiveLabelSuffix,
+} from './markdown-layout-directive-label.js'
 
 export type LayoutDirectiveType = 'center-start' | 'center-end' | 'spacer' | 'pagebreak' | 'unknown'
 
@@ -12,6 +17,7 @@ export interface LayoutDirective {
   type: LayoutDirectiveType
   line: number
   lines?: number
+  label?: string
   raw?: string
 }
 
@@ -27,7 +33,6 @@ interface DirectiveParseResult {
 
 const CENTER_START = '<!-- trama:center:start -->'
 const CENTER_END = '<!-- trama:center:end -->'
-const PAGEBREAK = '<!-- trama:pagebreak -->'
 const TRAMA_COMMENT = /^<!--\s*trama:([\s\S]*?)\s*-->$/
 const SPACER = /^<!--\s*trama:spacer(?:\s+lines=([^\s>]+))?\s*-->$/
 
@@ -41,15 +46,23 @@ function parseSpacerLine(value: string | undefined, line: number, warnings: Layo
 
 function parseLineDirective(lineText: string, line: number, warnings: LayoutDirectiveWarning[]): LayoutDirective | null {
   const trimmed = lineText.trim()
-  if (trimmed === CENTER_START) return { type: 'center-start', line }
-  if (trimmed === CENTER_END) return { type: 'center-end', line }
-  if (trimmed === PAGEBREAK) return { type: 'pagebreak', line }
-  const spacerMatch = trimmed.match(SPACER)
+  const commentMatch = trimmed.match(/^<!--\s*trama:([\s\S]*?)\s*-->$/)
+  if (!commentMatch) return null
+
+  const parsedLabel = parseDirectiveLabelSuffix(commentMatch[1] ?? '', line)
+  if (parsedLabel.warning) warnings.push({ line, message: parsedLabel.warning })
+  const directiveText = `<!-- trama:${parsedLabel.base} -->`
+  if (directiveText === CENTER_START) return { type: 'center-start', line }
+  if (directiveText === CENTER_END) return { type: 'center-end', line }
+  if (directiveText === '<!-- trama:pagebreak -->') return { type: 'pagebreak', line, label: parsedLabel.label }
+
+  const spacerMatch = directiveText.match(SPACER)
   if (spacerMatch) {
     return {
       type: 'spacer',
       line,
       lines: parseSpacerLine(spacerMatch[1], line, warnings),
+      label: parsedLabel.label,
     }
   }
   if (TRAMA_COMMENT.test(trimmed)) return { type: 'unknown', line, raw: trimmed }
@@ -106,9 +119,9 @@ export function serializeDirectiveComment(directive: LayoutDirective): string {
     case 'center-end':
       return CENTER_END
     case 'spacer':
-      return `<!-- trama:spacer lines=${directive.lines ?? 1} -->`
+      return `<!-- trama:spacer lines=${directive.lines ?? 1}${serializeDirectiveLabelSuffix(directive.label)} -->`
     case 'pagebreak':
-      return PAGEBREAK
+      return `<!-- trama:pagebreak${serializeDirectiveLabelSuffix(directive.label)} -->`
     case 'unknown':
       return directive.raw ?? '<!-- trama:unknown -->'
     default:
@@ -164,9 +177,15 @@ export function renderDirectiveArtifactsToMarkdown(markdown: string): {
       renderedLines.push('<div class="trama-layout-directive trama-center-boundary trama-center-end" data-trama-directive="center" data-trama-role="end"></div>')
     } else if (directive.type === 'spacer') {
       const safeLines = Number.isInteger(directive.lines) ? Math.min(12, Math.max(1, directive.lines ?? 1)) : 1
-      renderedLines.push(`<div class="trama-layout-directive trama-spacer trama-spacer-${safeLines}" data-trama-directive="spacer" data-trama-lines="${safeLines}"></div>`)
+      const label = directive.label
+        ? ` data-trama-label="${escapeDirectiveHtmlAttribute(directive.label)}"`
+        : ''
+      renderedLines.push(`<div class="trama-layout-directive trama-spacer trama-spacer-${safeLines}" data-trama-directive="spacer" data-trama-lines="${safeLines}"${label}></div>`)
     } else if (directive.type === 'pagebreak') {
-      renderedLines.push('<div class="trama-layout-directive trama-pagebreak" data-trama-directive="pagebreak" contenteditable="false"></div>')
+      const label = directive.label
+        ? ` data-trama-label="${escapeDirectiveHtmlAttribute(directive.label)}"`
+        : ''
+      renderedLines.push(`<div class="trama-layout-directive trama-pagebreak" data-trama-directive="pagebreak"${label} contenteditable="false"></div>`)
     } else {
       const encodedRaw = encodeRawDirective(directive.raw ?? '')
       renderedLines.push(`<div class="trama-layout-directive trama-directive-unknown" data-trama-directive="unknown" data-trama-raw="${encodedRaw}"></div>`)

@@ -77,12 +77,18 @@ describe('markdown-layout-directives', () => {
     const spacer = document.createElement('div')
     spacer.setAttribute('data-trama-directive', 'spacer')
     spacer.setAttribute('data-trama-lines', '2')
+    spacer.setAttribute('data-trama-label', 'Scene transition')
+
+    const pagebreak = document.createElement('div')
+    pagebreak.setAttribute('data-trama-directive', 'pagebreak')
+    pagebreak.setAttribute('data-trama-label', 'Part II')
 
     const unknown = document.createElement('div')
     unknown.setAttribute('data-trama-directive', 'unknown')
     unknown.setAttribute('data-trama-raw', encodeURIComponent('<!-- trama:custom mode=soft -->'))
 
-    expect(serializeDirectiveArtifactNode(spacer)).toBe('<!-- trama:spacer lines=2 -->')
+    expect(serializeDirectiveArtifactNode(spacer)).toBe('<!-- trama:spacer lines=2 label="Scene transition" -->')
+    expect(serializeDirectiveArtifactNode(pagebreak)).toBe('<!-- trama:pagebreak label="Part II" -->')
     expect(serializeDirectiveArtifactNode(unknown)).toBe('<!-- trama:custom mode=soft -->')
   })
 
@@ -91,5 +97,33 @@ describe('markdown-layout-directives', () => {
     const normalized = normalizeBlankLinesToSpacerDirectives(source)
 
     expect(normalized).toContain('<!-- trama:spacer lines=2 -->')
+  })
+
+  it('preserves labels on canonical spacer and page-break directives', () => {
+    const source = [
+      '<!-- trama:spacer lines=2 label="Scene transition" -->',
+      '<!-- trama:pagebreak label="Part II" -->',
+    ].join('\n')
+
+    const extracted = extractDirectives(source)
+    const rendered = renderDirectiveArtifactsToMarkdown(source)
+
+    expect(extracted.directives).toEqual([
+      { type: 'spacer', line: 1, lines: 2, label: 'Scene transition' },
+      { type: 'pagebreak', line: 2, label: 'Part II' },
+    ])
+    expect(rendered.markdownWithArtifacts).toContain('data-trama-label="Scene transition"')
+    expect(rendered.markdownWithArtifacts).toContain('data-trama-label="Part II"')
+  })
+
+  it('preserves special label characters across HTML artifacts and source serialization', () => {
+    const label = 'A & "B" <C>'
+    const rendered = renderDirectiveArtifactsToMarkdown(`<!-- trama:pagebreak label=${JSON.stringify(label)} -->`)
+    const pagebreak = document.createElement('div')
+    pagebreak.setAttribute('data-trama-directive', 'pagebreak')
+    pagebreak.setAttribute('data-trama-label', label)
+
+    expect(rendered.markdownWithArtifacts).toContain('data-trama-label="A &amp; &quot;B&quot; &lt;C&gt;"')
+    expect(serializeDirectiveArtifactNode(pagebreak)).toBe('<!-- trama:pagebreak label="A & \\"B\\" \\u003cC\\u003e" -->')
   })
 })

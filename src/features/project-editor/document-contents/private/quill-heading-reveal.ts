@@ -1,6 +1,7 @@
 // @Architecture(descriptionShort="Quill heading scan and ordinal-based centered reveal for Contents navigation")
 import type Quill from 'quill'
 import type { HeadingRevealTarget } from '../../project-editor-types.js'
+import { normalizeDirectiveLabel } from '../../../../shared/markdown-layout-directive-label.js'
 
 export interface QuillDocumentHeading {
   index: number
@@ -8,6 +9,10 @@ export interface QuillDocumentHeading {
   text: string
   type?: 'heading' | 'pagebreak' | 'spacer'
   lines?: number
+  label?: string
+  ordinal: number
+  sourceLength?: number
+  isBlankLineSpacer?: boolean
 }
 
 export interface ScanQuillHeadingsOptions {
@@ -15,10 +20,22 @@ export interface ScanQuillHeadingsOptions {
   includeSpacers?: boolean
 }
 
+interface QuillHeadingScanState {
+  headings: QuillDocumentHeading[]
+  lineStart: number
+  offset: number
+  lineText: string
+  blankCount: number
+  blankSeqStartIndex: number
+  skipEmbedNewline: boolean
+  nextOrdinal: number
+  includePageBreaks: boolean
+  includeSpacers: boolean
+}
+
 // Re-assert the reveal after layout settles: image hydration can shift layout
 // after the first pass and undo the reveal (editor-session-find-visual pattern).
 const REVEAL_SETTLE_DELAY_MS = 150
-const LAYOUT_DIRECTIVE_BLOT_NAME = 'trama-layout-directive'
 
 export function computeCenteredScrollTop(
   container: HTMLElement,
@@ -29,103 +46,123 @@ export function computeCenteredScrollTop(
   return Math.round(Math.max(0, Math.min(desired, maxScroll)))
 }
 
-function readDirectiveEmbed(insert: unknown): { directive?: string; lines?: number } | null {
+function readDirectiveEmbed(insert: unknown): { directive?: string; lines?: number; label?: string } | null {
   if (!insert || typeof insert !== 'object') return null
   const rec = insert as Record<string, unknown>
   const target = rec['trama-directive'] ?? rec['trama-layout-directive'] ?? rec['layout-directive'] ?? rec
   if (target && typeof target === 'object') {
-    return target as { directive?: string; lines?: number }
+    return target as { directive?: string; lines?: number; label?: string }
   }
   return null
+}
+
+function appendHeading(state: QuillHeadingScanState, item: Omit<QuillDocumentHeading, 'ordinal'>, included: boolean): void {
+  const withOrdinal = { ...item, ordinal: state.nextOrdinal }
+  state.nextOrdinal += 1
+  if (included) state.headings.push(withOrdinal)
+}
+
+function flushBlankLines(state: QuillHeadingScanState): void {
+  if (state.blankCount >= 2) {
+    appendHeading(state, {
+      index: state.blankSeqStartIndex,
+      level: 1,
+      lines: state.blankCount,
+      text: `Spacer (${state.blankCount} lines)`,
+      type: 'spacer',
+      sourceLength: state.blankCount,
+      isBlankLineSpacer: true,
+    }, state.includeSpacers)
+  }
+  state.blankCount = 0
+}
+
+function appendDirectiveEmbed(state: QuillHeadingScanState, insert: unknown): void {
+  const directive = readDirectiveEmbed(insert)
+  if (directive?.directive === 'pagebreak') {
+    const label = normalizeDirectiveLabel(directive.label)
+    appendHeading(state, {
+      index: state.offset,
+      level: 1,
+      ...(label ? { label } : {}),
+      text: label ?? 'Page Break',
+      type: 'pagebreak',
+      sourceLength: 1,
+    }, state.includePageBreaks)
+  } else if (directive?.directive === 'spacer') {
+    const lines = Number.isInteger(directive.lines) && (directive.lines ?? 0) >= 1 ? Math.min(12, directive.lines ?? 1) : 1
+    const label = normalizeDirectiveLabel(directive.label)
+    appendHeading(state, {
+      index: state.offset,
+      level: 1,
+      lines,
+      ...(label ? { label } : {}),
+      text: label ?? (lines > 1 ? `Spacer (${lines} lines)` : 'Spacer'),
+      type: 'spacer',
+      sourceLength: 1,
+    }, state.includeSpacers)
+  }
+}
+
+function finishTextLine(state: QuillHeadingScanState, header: unknown): void {
+  if (header === 1 || header === 2 || header === 3) {
+    flushBlankLines(state)
+    state.skipEmbedNewline = false
+    appendHeading(state, { index: state.lineStart, level: header, text: state.lineText, type: 'heading' }, true)
+  } else if (state.lineText.trim().length === 0) {
+    if (state.skipEmbedNewline) state.skipEmbedNewline = false
+    else {
+      if (state.blankCount === 0) state.blankSeqStartIndex = state.lineStart
+      state.blankCount += 1
+    }
+  } else {
+    flushBlankLines(state)
+    state.skipEmbedNewline = false
+  }
+}
+
+function scanTextInsert(state: QuillHeadingScanState, insert: string, header: unknown): void {
+  let rest = insert
+  while (rest.length > 0) {
+    const newlineAt = rest.indexOf('\n')
+    if (newlineAt === -1) {
+      state.lineText += rest
+      state.offset += rest.length
+      return
+    }
+    state.lineText += rest.slice(0, newlineAt)
+    finishTextLine(state, header)
+    state.offset += newlineAt + 1
+    state.lineStart = state.offset
+    state.lineText = ''
+    rest = rest.slice(newlineAt + 1)
+  }
 }
 
 export function scanQuillHeadings(
   editor: Quill,
   options?: ScanQuillHeadingsOptions,
 ): QuillDocumentHeading[] {
-  const includePageBreaks = options?.includePageBreaks ?? true
-  const includeSpacers = options?.includeSpacers ?? true
-
-  const headings: QuillDocumentHeading[] = []
-  let lineStart = 0
-  let offset = 0
-  let lineText = ''
-  let blankCount = 0
-  let blankSeqStartIndex = 0
-  let skipEmbedNewline = false
-
-  const flushBlankCount = (): void => {
-    if (includeSpacers && blankCount >= 2) {
-      headings.push({
-        index: blankSeqStartIndex,
-        level: 1,
-        lines: blankCount,
-        text: `Spacer (${blankCount} lines)`,
-        type: 'spacer',
-      })
-    }
-    blankCount = 0
+  const state: QuillHeadingScanState = {
+    headings: [], lineStart: 0, offset: 0, lineText: '', blankCount: 0, blankSeqStartIndex: 0,
+    skipEmbedNewline: false, nextOrdinal: 0,
+    includePageBreaks: options?.includePageBreaks ?? true,
+    includeSpacers: options?.includeSpacers ?? true,
   }
-
   for (const op of editor.getContents().ops ?? []) {
     if (typeof op.insert !== 'string') {
-      flushBlankCount()
-      const dirObj = readDirectiveEmbed(op.insert)
-      if (dirObj) {
-        if (dirObj.directive === 'pagebreak' && includePageBreaks) {
-          headings.push({ index: offset, level: 1, text: 'Page Break', type: 'pagebreak' })
-        } else if (dirObj.directive === 'spacer' && includeSpacers) {
-          const lines = Number.isInteger(dirObj.lines) && (dirObj.lines ?? 0) >= 1 ? Math.min(12, dirObj.lines ?? 1) : 1
-          headings.push({ index: offset, level: 1, lines, text: lines > 1 ? `Spacer (${lines} lines)` : 'Spacer', type: 'spacer' })
-        }
-      }
-      offset += 1
-      lineStart = offset
-      lineText = ''
-      skipEmbedNewline = true
+      flushBlankLines(state)
+      appendDirectiveEmbed(state, op.insert)
+      state.offset += 1
+      state.lineStart = state.offset
+      state.lineText = ''
+      state.skipEmbedNewline = true
       continue
     }
-
-    let rest = op.insert
-    while (rest.length > 0) {
-      const newlineAt = rest.indexOf('\n')
-      if (newlineAt === -1) {
-        lineText += rest
-        offset += rest.length
-        rest = ''
-        continue
-      }
-      lineText += rest.slice(0, newlineAt)
-      const header = op.attributes?.header
-
-      if (header === 1 || header === 2 || header === 3) {
-        flushBlankCount()
-        skipEmbedNewline = false
-        headings.push({ index: lineStart, level: header, text: lineText, type: 'heading' })
-      } else if (lineText.trim().length === 0) {
-        if (skipEmbedNewline) {
-          skipEmbedNewline = false
-        } else {
-          if (blankCount === 0) {
-            blankSeqStartIndex = lineStart
-          }
-          blankCount += 1
-        }
-      } else {
-        flushBlankCount()
-        skipEmbedNewline = false
-      }
-
-      offset += newlineAt + 1
-      lineStart = offset
-      lineText = ''
-      rest = rest.slice(newlineAt + 1)
-    }
+    scanTextInsert(state, op.insert, op.attributes?.header)
   }
-
-  flushBlankCount()
-
-  return headings
+  flushBlankLines(state)
+  return state.headings
 }
 
 function revealHeadingIndex(container: HTMLElement, editor: Quill, index: number): void {
@@ -157,8 +194,9 @@ export function revealQuillHeading(host: HTMLDivElement, editor: Quill, target: 
     return
   }
   const rawOrdinal = Number.isFinite(target.ordinal) ? Math.trunc(target.ordinal) : 0
-  const clampedOrdinal = Math.max(0, Math.min(rawOrdinal, headings.length - 1))
-  const headingIndex = headings[clampedOrdinal].index
+  const clampedOrdinal = Math.max(0, Math.min(rawOrdinal, headings[headings.length - 1].ordinal))
+  const headingIndex = headings.find((heading) => heading.ordinal === clampedOrdinal)?.index
+    ?? headings[headings.length - 1].index
 
   revealHeadingIndex(container, editor, headingIndex)
   window.setTimeout(() => {
@@ -167,4 +205,3 @@ export function revealQuillHeading(host: HTMLDivElement, editor: Quill, target: 
     }
   }, REVEAL_SETTLE_DELAY_MS)
 }
-
