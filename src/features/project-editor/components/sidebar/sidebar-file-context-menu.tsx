@@ -1,4 +1,6 @@
 // @Architecture(descriptionShort="Right-click context menu for file rows")
+import { SidebarContextMenuShell } from './sidebar-context-menu-shell'
+
 function getRevealMenuLabel(): string {
   if (typeof navigator !== 'undefined' && /Mac|iPhone|iPad|iPod/.test(navigator.platform)) {
     return 'Reveal in Finder'
@@ -22,32 +24,24 @@ export function SidebarFileContextMenu({ isOpen, position, onEditTags, onRename,
   }
 
   return (
-    <div class="sidebar-context-menu-layer" onClick={onClose} onContextMenu={(event) => event.preventDefault()}>
-      <div
-        class="sidebar-context-menu"
-        role="menu"
-        aria-label="File actions"
-        style={{ left: `${position.x}px`, top: `${position.y}px` }}
-        onClick={(event) => event.stopPropagation()}
+    <SidebarContextMenuShell position={position} ariaLabel="File actions" onClose={onClose}>
+      <button type="button" class="sidebar-context-menu__item" role="menuitem" onClick={onReveal}>
+        {getRevealMenuLabel()}
+      </button>
+      <button type="button" class="sidebar-context-menu__item" role="menuitem" onClick={onEditTags}>
+        Edit tags
+      </button>
+      <button type="button" class="sidebar-context-menu__item" role="menuitem" onClick={onRename}>
+        Rename
+      </button>
+      <button
+        type="button"
+        class="sidebar-context-menu__item sidebar-context-menu__item--danger"
+        role="menuitem"
+        onClick={onDelete}
       >
-        <button type="button" class="sidebar-context-menu__item" role="menuitem" onClick={onReveal}>
-          {getRevealMenuLabel()}
-        </button>
-        <button type="button" class="sidebar-context-menu__item" role="menuitem" onClick={onEditTags}>
-          Edit tags
-        </button>
-        <button type="button" class="sidebar-context-menu__item" role="menuitem" onClick={onRename}>
-          Rename
-        </button>
-        <button
-          type="button"
-          class="sidebar-context-menu__item sidebar-context-menu__item--danger"
-          role="menuitem"
-          onClick={onDelete}
-        >
-          Delete
-        </button>
-      </div>
-    </div>
+        Delete
+      </button>
+    </SidebarContextMenuShell>
   )
 }

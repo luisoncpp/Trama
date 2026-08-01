@@ -110,7 +110,7 @@ Map marker navigation reuses the same renderer tag index contract as wiki-tag li
 | `src/features/project-editor/components/sidebar/sidebar-footer-actions.tsx` | Split-button create affordance (`+ Article` default + chevron menu for `Create map`) |
 | `src/features/project-editor/components/sidebar/sidebar-create-dialog.tsx` | Shared create modal with map-image browse field in `map` mode |
 | `src/features/project-editor/components/sidebar/sidebar-dialog-hooks.ts` | Sidebar create-dialog state plus IPC-backed map-image browse action |
-| `src/features/project-editor/pane/map-editor/map-editor.tsx` | Pan/zoom, marker interactions, context menu, dialog orchestration |
+| `src/features/project-editor/pane/map-editor/map-editor.tsx` | Pan/zoom, marker interactions, context menu (via shared SidebarContextMenuShell viewport clamp), dialog orchestration |
 | `src/features/project-editor/pane/map-editor/map-editor-helpers.ts` | `mapConfig` normalization, asset URL resolution, tag lookup helpers |
 | `src/features/project-editor/pane/map-editor/map-markers-layer.tsx` | Marker overlay rendering and tooltips |
 | `src/features/project-editor/pane/map-editor/map-marker-dialog.tsx` | Marker create/edit modal |

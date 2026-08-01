@@ -24,7 +24,7 @@ The sidebar uses nested deep modules (see `mds/dev-workflow.md` § Deep Modules)
 | **Explorer body** | `sidebar-explorer-body/index.ts` | `SidebarExplorerBody` | `sidebar-explorer-body-private/*` — filter, tree area, dialogs wiring |
 | **Drop logic** | `sidebar-drop-logic/index.ts` | drop position + execution helpers | `sidebar-drop-logic/private/*` |
 
-Shared sidebar seams that stay at `components/sidebar/` root (imported by multiple modules or other features): `sidebar-path-scoping.ts`, `sidebar-section-roots.ts`, `sidebar-tree.tsx`, dialog components, context menus, and `use-scoped-sidebar-actions.ts`.
+Shared sidebar seams that stay at `components/sidebar/` root (imported by multiple modules or other features): `sidebar-path-scoping.ts`, `sidebar-section-roots.ts`, `sidebar-tree.tsx`, dialog components, context menus (`sidebar-context-menu-shell.tsx` + clamp helpers), and `use-scoped-sidebar-actions.ts`.
 
 ## Architecture overview
 
@@ -235,7 +235,12 @@ Two context menus rendered via overlay layer:
 
 Note: right-clicking a file row triggers file selection/open and then immediately shows the file context menu; the selection call is not awaited before the menu opens.
 
-Positioned absolutely at click coordinates. Click outside closes.
+Positioned with `position: fixed` at click coordinates (`clientX`/`clientY`), then measure-then-clamped into the window viewport by `SidebarContextMenuShell` + `clampContextMenuPosition` (8px padding). The same shell is reused by map and relationships chart menus so near-edge right-clicks do not clip items like Delete. Click outside closes.
+
+Shared files:
+- `clamp-context-menu-position.ts` ? pure clamp math
+- `use-clamped-context-menu-position.ts` ? `useLayoutEffect` measure + clamp
+- `sidebar-context-menu-shell.tsx` ? shared overlay + menu chrome
 
 ## Drag and drop reorder and move
 

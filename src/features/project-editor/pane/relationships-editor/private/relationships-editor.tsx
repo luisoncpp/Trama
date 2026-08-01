@@ -29,6 +29,7 @@ import { RelationshipsRegionDialog } from './relationships-region-dialog'
 import { RelationshipsRegionsLayer } from './relationships-regions-layer'
 import { RelationshipsNodesLayer } from './relationships-nodes-layer'
 import { RelationshipsEditorToolbar } from './relationships-editor-toolbar'
+import { SidebarContextMenuShell } from '../../../components/sidebar/sidebar-context-menu-shell'
 import { useRelationshipsRegionEditing } from './use-relationships-region-editing'
 import type { RelationshipLinkTemplate, RelationshipsEditorTool } from './relationships-editor-types'
 
@@ -63,7 +64,7 @@ function presetToTemplate(preset: RelationshipEdgePreset): RelationshipLinkTempl
 }
 
 function getHudSecondaryText(scale: number, activeTool: RelationshipsEditorTool, linkSourceId: string | null, linkTemplate: RelationshipLinkTemplate | null): string {
-  if (linkSourceId) return 'Click a character to link · Esc to cancel'
+  if (linkSourceId) return 'Click a character to link Â· Esc to cancel'
   if (activeTool === 'add-region') return 'Drag to draw a region'
   if (activeTool === 'add-relationship' && !linkTemplate) return 'Select a relationship type'
   if (activeTool === 'add-relationship') return 'Click two characters to link'
@@ -471,11 +472,13 @@ export function RelationshipsEditor({ meta, pane, layoutMode, readOnlyPreview = 
       </div>
       {notice ? <div class="relationships-editor__notice" role="status">{notice}</div> : null}
       {contextMenu ? (
-        <div class="sidebar-context-menu-layer" onClick={() => setContextMenu(null)}>
-          <div class="sidebar-context-menu" style={{ left: `${contextMenu.clientX}px`, top: `${contextMenu.clientY}px` }} onClick={(event) => event.stopPropagation()}>
-            {renderContextMenuItems()}
-          </div>
-        </div>
+        <SidebarContextMenuShell
+          position={{ x: contextMenu.clientX, y: contextMenu.clientY }}
+          ariaLabel="Relationships actions"
+          onClose={() => setContextMenu(null)}
+        >
+          {renderContextMenuItems()}
+        </SidebarContextMenuShell>
       ) : null}
       <RelationshipsNodeDialog
         open={nodeDialog !== null}

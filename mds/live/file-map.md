@@ -2,7 +2,7 @@
 
 Note for agents: each time you are asked to update the documentation, if you found a ts or tsx file not specified here, you have to add it.
 
-Mandatory doc navigation for new chats: start with `mds/START-HERE.md` — it provides the full bootstrap sequence and routes to all other docs.
+Mandatory doc navigation for new chats: start with `mds/START-HERE.md` â€” it provides the full bootstrap sequence and routes to all other docs.
 
 ## Root-level project files
 
@@ -50,7 +50,7 @@ Mandatory doc navigation for new chats: start with `mds/START-HERE.md` — it pr
 - `src/shared/menu-bar-alt-key.ts`
   - Detects bare Left Alt (not Alt+arrow shortcuts).
 - `src/features/project-editor/use-menu-bar-reveal-on-alt.ts`
-  - Renderer hook: Left Alt → `tramaApi.revealMenuBar()`.
+  - Renderer hook: Left Alt â†’ `tramaApi.revealMenuBar()`.
 - `electron/ipc.ts`
   - Thin IPC registration/orchestration.
 - `electron/ipc/spellcheck.ts`
@@ -106,7 +106,7 @@ Mandatory doc navigation for new chats: start with `mds/START-HERE.md` — it pr
 - `electron/services/document-image-persistence.ts`
   - Repository helper for markdown image persistence: rewrites embedded images to `res/*.png`, rehydrates local image links back to embedded PNG data URLs, degrades missing linked images to editor-only placeholders without failing document reads, and collects associated image paths for delete flows.
 - `electron/services/disk-content-adapter.ts`
-  - Main-process phase vocabulary for markdown images: `fromDiskRead` (disk → portable) and `toDiskWrite` (portable → disk + file writes). Thin rename/group over `document-image-persistence.ts`.
+  - Main-process phase vocabulary for markdown images: `fromDiskRead` (disk â†’ portable) and `toDiskWrite` (portable â†’ disk + file writes). Thin rename/group over `document-image-persistence.ts`.
 - `electron/services/frontmatter.ts`
   - YAML frontmatter parse/serialize.
 - `electron/services/index-service.ts`
@@ -152,9 +152,9 @@ Mandatory doc navigation for new chats: start with `mds/START-HERE.md` — it pr
 - `electron/services/book-export-directives.ts`
   - Shared directive parsing helpers for `trama:center`, `trama:spacer`, and `trama:pagebreak`; `replaceDirectivesForPdfPrint` (omits pagebreak HTML in segment bodies); `stripLeadingPagebreakAndBlankLines`.
 - `electron/services/book-export-inline-markdown.ts`
-  - Shared inline emphasis parser for DOCX: `marked.lexer()` → `{ text, bold, italic }` runs (`**`, `__`, `*`, `_`, links, legacy `<strong>`/`<em>`). PDF uses `marked.parse()` in segment HTML.
+  - Shared inline emphasis parser for DOCX: `marked.lexer()` â†’ `{ text, bold, italic }` runs (`**`, `__`, `*`, `_`, links, legacy `<strong>`/`<em>`). PDF uses `marked.parse()` in segment HTML.
 - `electron/services/book-export-pdf-segments.ts`
-  - Pure segment builder for PDF export: corkboard-ordered `BookExportChapter[]` → `PdfExportSegment[]` with inter-document gaps and author page break boundaries (`buildPdfExportSegments`).
+  - Pure segment builder for PDF export: corkboard-ordered `BookExportChapter[]` â†’ `PdfExportSegment[]` with inter-document gaps and author page break boundaries (`buildPdfExportSegments`).
 - `electron/services/book-export-pdf-print.css`
   - Print stylesheet for PDF segment HTML (`@page` A4 + ~50pt margins, Times New Roman, image max-height for covers, zero `p` margins). Copied to `dist-electron` by `scripts/copy-electron-assets.mjs` on `build:electron`.
 - `electron/services/book-export-pdf-html.ts`
@@ -172,7 +172,7 @@ Mandatory doc navigation for new chats: start with `mds/START-HERE.md` — it pr
 - `electron/services/book-export-pdf-merge.ts`
   - Linear in-memory PDF segment merge via `pdf-lib` `copyPages` (`mergePdfSegments`).
 - `electron/services/book-export-pdf-renderer.ts`
-  - PDF book orchestrator: `buildPdfExportSegments` → segment HTML → print surface → `mergePdfSegments` (`renderPdfBook`). Segment HTML must stay in temp files only; writing debug HTML into the repo root triggers Vite reloads and wipes renderer export/toast state during dev.
+  - PDF book orchestrator: `buildPdfExportSegments` â†’ segment HTML â†’ print surface â†’ `mergePdfSegments` (`renderPdfBook`). Segment HTML must stay in temp files only; writing debug HTML into the repo root triggers Vite reloads and wipes renderer export/toast state during dev.
 - `tests/book-export-pdf-merge.test.ts`
   - Merge order and page-count tests for `mergePdfSegments`.
 - `tests/book-export-pdf-segments.test.ts`
@@ -194,16 +194,16 @@ Mandatory doc navigation for new chats: start with `mds/START-HERE.md` — it pr
   - CSS import manifest only. Owns the ordered `@import` chain for `src/styles/01-10-*.css` after `@import 'tailwindcss'`.
 - `src/styles/`
   - Physical CSS ownership split for the renderer shell, imported in numeric order from `src/index.css`.
-  - `01-theme-tokens.css` — app theme tokens and light-theme overrides.
-  - `02-base-reset.css` — global base/reset rules.
-  - `03-app-shell-layout.css` — editor shell/app/workspace structural layout.
-  - `04-focus-mode-layout-overrides.css` — grid-safe focus-mode sidebar hiding rules.
-  - `05-sidebar-layout.css` — sidebar shell/rail structural layout.
-  - `06-split-pane-layout.css` — split pane tracks, headers, divider, body shell.
-  - `07-editor-fill-contract.css` — named editor fill contract and editor host surfaces.
-  - `08-component-cosmetics.css` — non-Quill component cosmetics, dialogs, trees, revisions, conflict UI.
-  - `09-quill-theme-overrides.css` — global `.ql-*` and related rich-editor styling; must stay late in the cascade.
-  - `10-responsive.css` — all media queries, including the `900px` sidebar breakpoint.
+  - `01-theme-tokens.css` â€” app theme tokens and light-theme overrides.
+  - `02-base-reset.css` â€” global base/reset rules.
+  - `03-app-shell-layout.css` â€” editor shell/app/workspace structural layout.
+  - `04-focus-mode-layout-overrides.css` â€” grid-safe focus-mode sidebar hiding rules.
+  - `05-sidebar-layout.css` â€” sidebar shell/rail structural layout.
+  - `06-split-pane-layout.css` â€” split pane tracks, headers, divider, body shell.
+  - `07-editor-fill-contract.css` â€” named editor fill contract and editor host surfaces.
+  - `08-component-cosmetics.css` â€” non-Quill component cosmetics, dialogs, trees, revisions, conflict UI.
+  - `09-quill-theme-overrides.css` â€” global `.ql-*` and related rich-editor styling; must stay late in the cascade.
+  - `10-responsive.css` â€” all media queries, including the `900px` sidebar breakpoint.
 - `src/spellcheck/use-spellcheck-settings.ts`
   - Renderer hook for spellcheck preferences: boot-time sync against Electron session, local persistence, enable/ disable, language updates, and optimistic UI updates with rollback on IPC failure.
 - `src/features/project-editor/use-project-editor.ts`
@@ -245,41 +245,41 @@ Mandatory doc navigation for new chats: start with `mds/START-HERE.md` — it pr
   - Pure helpers for folder-prefix path remap (`isPathInsideFolder`, `remapFolderPrefix`, layout remap).
 - `src/features/project-editor/project-editor-logic/`
   - Deep module for pure workspace helpers: layout persistence, pane projection, conflict copy paths, external-event tree refresh.
-  - `index.ts` — public facade re-exporting all helpers.
-  - `private/workspace-layout.ts` — `WORKSPACE_LAYOUT_STORAGE_KEY`, create/normalize/restore/reconcile layout state.
-  - `private/active-pane.ts` — `deriveActivePaneDocument`, `canSelectFile`, `resolvePreferredFile`.
-  - `private/conflict-copy.ts` — `buildConflictCopyPath`.
-  - `private/external-events.ts` — `shouldRefreshTreeOnExternalEvent`. Do not import from `private/` directly.
+  - `index.ts` â€” public facade re-exporting all helpers.
+  - `private/workspace-layout.ts` â€” `WORKSPACE_LAYOUT_STORAGE_KEY`, create/normalize/restore/reconcile layout state.
+  - `private/active-pane.ts` â€” `deriveActivePaneDocument`, `canSelectFile`, `resolvePreferredFile`.
+  - `private/conflict-copy.ts` â€” `buildConflictCopyPath`.
+  - `private/external-events.ts` â€” `shouldRefreshTreeOnExternalEvent`. Do not import from `private/` directly.
 - `src/features/project-editor/workspace-actions.ts`
   - Deep module for workspace layout, pane activation, focus, fullscreen, editor view, save/revert actions.
   - Revert path flushes pending editor DOM through `PaneWorkspace` before reloading from disk.
-  - Plain functions — no hooks. Caller applies setters.
+  - Plain functions â€” no hooks. Caller applies setters.
   - Pane-history navigation delegates to `workspace-actions/private/pane-history.ts`.
 - `src/features/project-editor/workspace-actions/private/`
-  - `view-modes.ts` — fullscreen, focus-mode, zoom helpers re-exported from workspace-actions.
-  - `pane-history.ts` — per-pane history navigation: `openPreviousInPaneHistory`, `openNextInPaneHistory`, and internal `openHistoryPathInPane`. Do not import from `private/` directly.
-  - `document-navigation.ts` — `revealDocumentHeading`: resolves `activePane` from layout state and delegates to `PaneWorkspace.revealHeadingInPane`. Do not import from `private/` directly.
+  - `view-modes.ts` â€” fullscreen, focus-mode, zoom helpers re-exported from workspace-actions.
+  - `pane-history.ts` â€” per-pane history navigation: `openPreviousInPaneHistory`, `openNextInPaneHistory`, and internal `openHistoryPathInPane`. Do not import from `private/` directly.
+  - `document-navigation.ts` â€” `revealDocumentHeading`: resolves `activePane` from layout state and delegates to `PaneWorkspace.revealHeadingInPane`. Do not import from `private/` directly.
 - `src/features/project-editor/sidebar-file-actions/`
   - Deep module for sidebar UI and file/folder CRUD.
-  - `index.ts` — public facade re-exporting all actions.
-  - `private/` — implementation helpers (sidebar UI, project picker, file select/create/crud/move, folder crud). Do not import from `private/` directly.
+  - `index.ts` â€” public facade re-exporting all actions.
+  - `private/` â€” implementation helpers (sidebar UI, project picker, file select/create/crud/move, folder crud). Do not import from `private/` directly.
 - `src/features/project-editor/conflict-actions.ts`
   - Deep module for external-edit conflict resolution (reload, keep, save-as-copy, compare, close-compare).
-  - Plain functions — no hooks.
+  - Plain functions â€” no hooks.
 - `src/features/project-editor/open-project-types.ts`
   - Shared `OpenProjectOptions` type used by the project editor Module, conflict flow, and sidebar file/folder adapters.
 - `src/features/project-editor/project-editor-private/`
   - Private implementation directory for the `use-project-editor.ts` seam. Do not import from it outside `use-project-editor.ts` and `use-project-editor-effects.ts`.
-  - `state.ts` — private state assembly: core state, persisted layout/sidebar state, active-pane projection, visible-files derivation, setters, and `paneBindings`.
-  - `actions.ts` — private action assembly: clear/load/save/open plus flat `ProjectEditorActions` composition over the deep Modules via `action-group-types.ts`, `sidebar-action-group.ts`, `workspace-action-group.ts`, and `conflict-action-group.ts`.
-  - `action-group-memos.ts` — memoized sidebar/workspace/conflict action-group hooks so the flat action surface only rebuilds when each domain's real inputs change.
-  - `open-project.ts` — private open-project orchestration: snapshot apply, layout reconcile, preferred-pane handling, inactive-pane preload.
-  - `action-group-types.ts` — shared `ProjectEditorActionSetters` and `ActionGroupParams` types used by the action-group files.
-  - `sidebar-action-group.ts` — delegates sidebar UI and file/folder CRUD actions to `sidebar-file-actions`.
-  - `workspace-action-group.ts` — delegates workspace/layout and editor-view actions to `workspace-actions`.
-  - `conflict-action-group.ts` — delegates conflict-resolution actions to `conflict-actions`.
-  - `state-builders.ts` — memoized sub-state hooks: `useProjectEditorSubStates`, `useProjectEditorBindings`.
-  - `state-values.ts` — `useProjectEditorValues` memoized projection.
+  - `state.ts` â€” private state assembly: core state, persisted layout/sidebar state, active-pane projection, visible-files derivation, setters, and `paneBindings`.
+  - `actions.ts` â€” private action assembly: clear/load/save/open plus flat `ProjectEditorActions` composition over the deep Modules via `action-group-types.ts`, `sidebar-action-group.ts`, `workspace-action-group.ts`, and `conflict-action-group.ts`.
+  - `action-group-memos.ts` â€” memoized sidebar/workspace/conflict action-group hooks so the flat action surface only rebuilds when each domain's real inputs change.
+  - `open-project.ts` â€” private open-project orchestration: snapshot apply, layout reconcile, preferred-pane handling, inactive-pane preload.
+  - `action-group-types.ts` â€” shared `ProjectEditorActionSetters` and `ActionGroupParams` types used by the action-group files.
+  - `sidebar-action-group.ts` â€” delegates sidebar UI and file/folder CRUD actions to `sidebar-file-actions`.
+  - `workspace-action-group.ts` â€” delegates workspace/layout and editor-view actions to `workspace-actions`.
+  - `conflict-action-group.ts` â€” delegates conflict-resolution actions to `conflict-actions`.
+  - `state-builders.ts` â€” memoized sub-state hooks: `useProjectEditorSubStates`, `useProjectEditorBindings`.
+  - `state-values.ts` â€” `useProjectEditorValues` memoized projection.
 - `src/features/project-editor/use-project-editor-fullscreen-effect.ts`
   - Renderer subscription to native fullscreen state changes.
 - `src/features/project-editor/use-project-editor-shortcuts-effect.ts`
@@ -351,50 +351,50 @@ Mandatory doc navigation for new chats: start with `mds/START-HERE.md` — it pr
   - Keeps core operations (clear, load, save, open) and builds the flat `ProjectEditorActions` surface directly over the deep Modules (`workspace-actions`, `sidebar-file-actions`, `conflict-actions`).
   - Load path converts portable markdown to editor-internal placeholders via `DocumentContentSession.forEditorLoad`; save path hydrates via `DocumentContentSession.forIpcSave`.
 - `src/features/project-editor/use-project-editor-autosave-effect.ts`
-  - Minimal Preact adapter: detects dirty → calls `paneWorkspace.scheduleAutosave`, detects clean/unmount → calls `paneWorkspace.cancelAutosave`. Timer logic lives in `PaneWorkspace`.
+  - Minimal Preact adapter: detects dirty â†’ calls `paneWorkspace.scheduleAutosave`, detects clean/unmount â†’ calls `paneWorkspace.cancelAutosave`. Timer logic lives in `PaneWorkspace`.
 - `src/features/project-editor/pane/`
   - Private module for pane coordination. All pane state, flush, save, and autosave access goes through this module.
-  - `pane/index.ts` — barrel exporting `PaneWorkspace`, `usePaneWorkspace`, navigation helpers, and public types
-  - `pane/pane-shared.ts` — cycle-safe secondary facade for `PaneNavigation`, navigation history helpers, and snapshot compare logging; consumed by `PaneWorkspace` without importing `pane/index.ts`
-  - `pane/pane-workspace.ts` — coordinator class with read methods (`getPaneDocument`, `isPaneDirty`) and write methods (`savePaneNow`, `preparePaneExit`, `preparePaneRevert`, `saveAllDirtyPanes`, `scheduleAutosave`, `updatePaneContent`, etc.); `savePaneIfDirty` and `markPaneSaved` are internal.
-  - `pane/pane-workspace-private/pane-workspace-bindings.ts` — pane/editor-session ref accessors and `updatePaneState` helper; consumed only by `PaneWorkspace` and sibling private modules.
-  - `pane/pane-workspace-private/pane-workspace-init.ts` — constructor arg resolution for navigation history vs saved-content map; consumed only by `PaneWorkspace`.
-  - `pane/pane-workspace-private/pane-workspace-mutations.ts` — document state mutations (load, clear, meta, revision rail, dirty/saved markers); consumed only by `PaneWorkspace`.
-  - `pane/pane-workspace-private/pane-workspace-exit.ts` — Pane exit intent types and pure helpers (`savePaneNowIntent`, `preparePaneExitIntent`, `preparePaneRevertIntent`); consumed by `PaneWorkspace`.
+  - `pane/index.ts` â€” barrel exporting `PaneWorkspace`, `usePaneWorkspace`, navigation helpers, and public types
+  - `pane/pane-shared.ts` â€” cycle-safe secondary facade for `PaneNavigation`, navigation history helpers, and snapshot compare logging; consumed by `PaneWorkspace` without importing `pane/index.ts`
+  - `pane/pane-workspace.ts` â€” coordinator class with read methods (`getPaneDocument`, `isPaneDirty`) and write methods (`savePaneNow`, `preparePaneExit`, `preparePaneRevert`, `saveAllDirtyPanes`, `scheduleAutosave`, `updatePaneContent`, etc.); `savePaneIfDirty` and `markPaneSaved` are internal.
+  - `pane/pane-workspace-private/pane-workspace-bindings.ts` â€” pane/editor-session ref accessors and `updatePaneState` helper; consumed only by `PaneWorkspace` and sibling private modules.
+  - `pane/pane-workspace-private/pane-workspace-init.ts` â€” constructor arg resolution for navigation history vs saved-content map; consumed only by `PaneWorkspace`.
+  - `pane/pane-workspace-private/pane-workspace-mutations.ts` â€” document state mutations (load, clear, meta, revision rail, dirty/saved markers); consumed only by `PaneWorkspace`.
+  - `pane/pane-workspace-private/pane-workspace-exit.ts` â€” Pane exit intent types and pure helpers (`savePaneNowIntent`, `preparePaneExitIntent`, `preparePaneRevertIntent`); consumed by `PaneWorkspace`.
   - `loadPaneDocument()` increments pane `reloadVersion` so disk reloads/removals of dirty DOM advance the editor force-apply signal.
-  - `pane/pane-workspace-types.ts` — extracted `PaneWorkspace` public info/binding types.
-  - `pane/pane-workspace-private/pane-workspace-document-info.ts` — pure builders for active-pane and pane document projections.
-  - `pane/pane-workspace-revision-state.ts` — pure pane revision-rail state transitions (`Current` label, preview exit, preview apply, load sync).
-  - `pane/pane-workspace-private/pane-workspace-autosave.ts` — `PaneAutosave` class extracted from `PaneWorkspace`: isolated timer management for autosave scheduling with `schedule(delay, shouldFire, onFire)` and `cancel()`.
-  - `pane/pane-workspace-snapshot.ts` — `PaneSnapshotTracker` class extracted from `PaneWorkspace`: owns the last-saved-content map, provides `get`/`set`, exact-match snapshot comparison against external content, and a `destroy` lifecycle for externally-owned maps.
-  - `pane/map-editor/map-editor-types.ts` — Shared types extracted from `map-editor-helpers.ts`: `MapMarker`, `MapConfig`, `MapAssetResult`.
-  - `pane/map-editor/map-config-serialization.ts` — Config serialization extracted from `map-editor-helpers.ts`: `getMapConfig`, `withMapConfig`, plus private `normalizeMarker` and `isRecord`.
-  - `pane/relationships-editor/` — Deep module for the relationships-chart pane surface. `index.ts` is the thin public facade (exports only `RelationshipsEditor`); `private/` holds the implementation. Do not import from `private/` outside this module (tests white-box it, matching the `editor-session-private` precedent).
-  - `pane/relationships-editor/index.ts` — Public facade re-exporting `RelationshipsEditor` as the sole external seam consumed by `editor-panel.tsx`.
-  - `pane/relationships-editor/private/relationships-editor.tsx` — Relationships chart editor: pan/zoom, toolbar tool modes (select, region, add, remove), node/region drag, linking, context menus, dialog orchestration.
-  - `pane/relationships-editor/private/relationships-editor-toolbar.tsx` — Toolbar with Select/Move, Region draw, Add relationship (preset sub-toolbar + custom type), and Remove relationship tools.
-  - `pane/relationships-editor/private/relationships-editor-types.ts` — Node/edge/preset/region/config interfaces plus editor tool types.
-  - `pane/relationships-editor/private/relationships-config-serialization.ts` — `relationshipsConfig` normalization and meta write-back; owns `normalizeEmojis` and the `MAX_NODE_EMOJIS` / `MAX_EMOJI_CODE_POINTS` caps.
-  - `pane/relationships-editor/private/relationships-editor-helpers.ts` — Node/region id slugs, `resolveAutoNodeTag`, edge/region geometry, dash arrays, stage constants; re-exports map tag/clamp helpers and emoji normalization constants.
-  - `pane/relationships-editor/private/relationships-emoji-data.ts` — Curated static emoji category grid (faces, hands, hearts, people, animals, food, objects, places) backing the picker; no runtime deps.
-  - `pane/relationships-editor/private/relationships-emoji-helpers.ts` — Pure emoji helpers: `toggleNodeEmoji` (add/remove dedupe + cap) and `filterEmojiCategories` (search).
-  - `pane/relationships-editor/private/relationships-emoji-picker.tsx` — Portaled emoji picker popover (category sections + search, toggle-on-click, viewport-aware positioning, ESC close).
-  - `pane/relationships-editor/private/relationships-regions-layer.tsx` — Labeled region rectangles with edge/corner resize handles, header drag-to-move, and separate label/body context targets.
-  - `pane/relationships-editor/private/relationships-region-dialog.tsx` — Region create/rename modal (label + color).
-  - `pane/relationships-editor/private/use-relationships-region-editing.ts` — Region draw/move/resize interaction state and config mutation helpers.
-  - `pane/relationships-editor/private/relationships-region-editing-helpers.ts` — Pure region save/move/resize/draw geometry helpers for the editing hook.
-  - `pane/relationships-editor/private/relationships-region-pointer-handlers.ts` — Region move/resize/draw pointer handlers wired by the editing hook.
-  - `pane/relationships-editor/private/relationships-nodes-layer.tsx` — Node pill overlay, tooltips, and emoji decoration chips with a hover "+" add button.
-  - `pane/relationships-editor/private/relationships-edges-layer.tsx` — SVG edge rendering with arrow markers and click-to-remove hit targets.
-  - `pane/relationships-editor/private/relationships-node-dialog.tsx` — Character create/edit modal; add-mode **Auto** tag checkbox with live preview against `tagIndex`.
-  - `pane/relationships-editor/private/relationships-edge-dialog.tsx` — Relationship create/edit modal with preset apply/save; template mode for custom toolbar types.
-  - `pane/pane-navigation.ts` — `PaneNavigation` class extracted from `PaneWorkspace`: owns per-pane session history stack helpers (`recordPaneNavigation`, `getPreviousPathInPaneHistory`, `getNextPathInPaneHistory`, `stepPaneNavigationHistory`, `clearNavigationHistory`).
-  - `pane/pane-navigation-state.ts` — pure helpers for navigation history state: `getEmptyNavigationHistory`, `getHistoryForPane`, `createNavigationHistoryStore`.
-  - `pane/pane-editor.tsx` — `PaneEditor` component extracted from `workspace-editor-panels.tsx`.
+  - `pane/pane-workspace-types.ts` â€” extracted `PaneWorkspace` public info/binding types.
+  - `pane/pane-workspace-private/pane-workspace-document-info.ts` â€” pure builders for active-pane and pane document projections.
+  - `pane/pane-workspace-revision-state.ts` â€” pure pane revision-rail state transitions (`Current` label, preview exit, preview apply, load sync).
+  - `pane/pane-workspace-private/pane-workspace-autosave.ts` â€” `PaneAutosave` class extracted from `PaneWorkspace`: isolated timer management for autosave scheduling with `schedule(delay, shouldFire, onFire)` and `cancel()`.
+  - `pane/pane-workspace-snapshot.ts` â€” `PaneSnapshotTracker` class extracted from `PaneWorkspace`: owns the last-saved-content map, provides `get`/`set`, exact-match snapshot comparison against external content, and a `destroy` lifecycle for externally-owned maps.
+  - `pane/map-editor/map-editor-types.ts` â€” Shared types extracted from `map-editor-helpers.ts`: `MapMarker`, `MapConfig`, `MapAssetResult`.
+  - `pane/map-editor/map-config-serialization.ts` â€” Config serialization extracted from `map-editor-helpers.ts`: `getMapConfig`, `withMapConfig`, plus private `normalizeMarker` and `isRecord`.
+  - `pane/relationships-editor/` â€” Deep module for the relationships-chart pane surface. `index.ts` is the thin public facade (exports only `RelationshipsEditor`); `private/` holds the implementation. Do not import from `private/` outside this module (tests white-box it, matching the `editor-session-private` precedent).
+  - `pane/relationships-editor/index.ts` â€” Public facade re-exporting `RelationshipsEditor` as the sole external seam consumed by `editor-panel.tsx`.
+  - `pane/relationships-editor/private/relationships-editor.tsx` â€” Relationships chart editor: pan/zoom, toolbar tool modes (select, region, add, remove), node/region drag, linking, context menus, dialog orchestration.
+  - `pane/relationships-editor/private/relationships-editor-toolbar.tsx` â€” Toolbar with Select/Move, Region draw, Add relationship (preset sub-toolbar + custom type), and Remove relationship tools.
+  - `pane/relationships-editor/private/relationships-editor-types.ts` â€” Node/edge/preset/region/config interfaces plus editor tool types.
+  - `pane/relationships-editor/private/relationships-config-serialization.ts` â€” `relationshipsConfig` normalization and meta write-back; owns `normalizeEmojis` and the `MAX_NODE_EMOJIS` / `MAX_EMOJI_CODE_POINTS` caps.
+  - `pane/relationships-editor/private/relationships-editor-helpers.ts` â€” Node/region id slugs, `resolveAutoNodeTag`, edge/region geometry, dash arrays, stage constants; re-exports map tag/clamp helpers and emoji normalization constants.
+  - `pane/relationships-editor/private/relationships-emoji-data.ts` â€” Curated static emoji category grid (faces, hands, hearts, people, animals, food, objects, places) backing the picker; no runtime deps.
+  - `pane/relationships-editor/private/relationships-emoji-helpers.ts` â€” Pure emoji helpers: `toggleNodeEmoji` (add/remove dedupe + cap) and `filterEmojiCategories` (search).
+  - `pane/relationships-editor/private/relationships-emoji-picker.tsx` â€” Portaled emoji picker popover (category sections + search, toggle-on-click, viewport-aware positioning, ESC close).
+  - `pane/relationships-editor/private/relationships-regions-layer.tsx` â€” Labeled region rectangles with edge/corner resize handles, header drag-to-move, and separate label/body context targets.
+  - `pane/relationships-editor/private/relationships-region-dialog.tsx` â€” Region create/rename modal (label + color).
+  - `pane/relationships-editor/private/use-relationships-region-editing.ts` â€” Region draw/move/resize interaction state and config mutation helpers.
+  - `pane/relationships-editor/private/relationships-region-editing-helpers.ts` â€” Pure region save/move/resize/draw geometry helpers for the editing hook.
+  - `pane/relationships-editor/private/relationships-region-pointer-handlers.ts` â€” Region move/resize/draw pointer handlers wired by the editing hook.
+  - `pane/relationships-editor/private/relationships-nodes-layer.tsx` â€” Node pill overlay, tooltips, and emoji decoration chips with a hover "+" add button.
+  - `pane/relationships-editor/private/relationships-edges-layer.tsx` â€” SVG edge rendering with arrow markers and click-to-remove hit targets.
+  - `pane/relationships-editor/private/relationships-node-dialog.tsx` â€” Character create/edit modal; add-mode **Auto** tag checkbox with live preview against `tagIndex`.
+  - `pane/relationships-editor/private/relationships-edge-dialog.tsx` â€” Relationship create/edit modal with preset apply/save; template mode for custom toolbar types.
+  - `pane/pane-navigation.ts` â€” `PaneNavigation` class extracted from `PaneWorkspace`: owns per-pane session history stack helpers (`recordPaneNavigation`, `getPreviousPathInPaneHistory`, `getNextPathInPaneHistory`, `stepPaneNavigationHistory`, `clearNavigationHistory`).
+  - `pane/pane-navigation-state.ts` â€” pure helpers for navigation history state: `getEmptyNavigationHistory`, `getHistoryForPane`, `createNavigationHistoryStore`.
+  - `pane/pane-editor.tsx` â€” `PaneEditor` component extracted from `workspace-editor-panels.tsx`.
   - Wires pane-local revision rail state, preview-mode props, and explicit pane-targeted revision actions into `EditorPanel`.
-  - `pane/pane-title.ts` — `toPaneTitle` helper for deriving display labels from pane paths.
-  - `pane/snapshot-compare-logger.ts` — `logSnapshotComparison` helper for diagnosing false-positive external-change conflicts
-  - `pane/use-pane-workspace.ts` — factory hook that encapsulates Preact setter injection, creating a `PaneWorkspace` instance via `useMemo`
+  - `pane/pane-title.ts` â€” `toPaneTitle` helper for deriving display labels from pane paths.
+  - `pane/snapshot-compare-logger.ts` â€” `logSnapshotComparison` helper for diagnosing false-positive external-change conflicts
+  - `pane/use-pane-workspace.ts` â€” factory hook that encapsulates Preact setter injection, creating a `PaneWorkspace` instance via `useMemo`
 - `src/features/project-editor/use-project-editor-external-events-effect.ts`
   - Subscribes to external file events (watcher) and handles reloads/conflicts/tree refresh.
 - `src/features/project-editor/use-project-editor-context-menu-effect.ts`
@@ -410,7 +410,7 @@ Mandatory doc navigation for new chats: start with `mds/START-HERE.md` — it pr
   - Plain functions. Callers pass setters/state and apply results.
 - `src/features/project-editor/sidebar-file-actions/`
   - Deep module for sidebar UI and file/folder CRUD.
-  - `index.ts` — public facade. `private/` — implementation helpers.
+  - `index.ts` â€” public facade. `private/` â€” implementation helpers.
 - `src/features/project-editor/conflict-actions.ts`
   - Deep module for external-edit conflict resolution.
   - Plain functions. Callers pass setters/state and apply results.
@@ -450,7 +450,7 @@ Mandatory doc navigation for new chats: start with `mds/START-HERE.md` — it pr
 - `src/features/project-editor/components/zulu-import-dialog-private/zulu-import-dialog-body.tsx`
   - ZuluPad import dialog body: file info display, folder/tag configuration form, actions row, and preview/execute sub-components (extracted from `zulu-import-dialog.tsx`).
 - `src/features/project-editor/components/zulu-import-dialog-private/zulu-import-dialog-state.ts`
-  - ZuluPad import dialog state hook: `useZuluImportDialogState` — file data, target folder, tag mode, preview, loading/importing/selecting file states (extracted from `zulu-import-dialog.tsx`).
+  - ZuluPad import dialog state hook: `useZuluImportDialogState` â€” file data, target folder, tag mode, preview, loading/importing/selecting file states (extracted from `zulu-import-dialog.tsx`).
 - `src/features/project-editor/components/zulu-import-dialog-private/zulu-import-dialog-logic.ts`
   - ZuluPad import dialog logic hooks: `useZuluImportDialogActions` (select file, preview, execute) and `useZuluImportDialogLifecycle` (Escape key listener) (extracted from `zulu-import-dialog.tsx`).
 - `src/features/project-editor/pane/rich-markdown-editor/rich-markdown-editor.tsx`
@@ -530,7 +530,7 @@ Mandatory doc navigation for new chats: start with `mds/START-HERE.md` — it pr
 - `src/features/project-editor/pane/rich-markdown-editor/rich-markdown-editor-commands.ts`
   - Handles workspace commands and blocks markdown paste while revision preview is read-only.
 - `src/features/project-editor/pane/rich-markdown-editor/rich-markdown-editor-typography.ts`
-  - Smart typography auto-replacement on user input: `--` → `—`, `<<` → `«`, `>>` → `»`. Each substitution is isolated as its own Ctrl+Z undo entry via `history.cutoff()`.
+  - Smart typography auto-replacement on user input: `--` â†’ `â€”`, `<<` â†’ `Â«`, `>>` â†’ `Â»`. Each substitution is isolated as its own Ctrl+Z undo entry via `history.cutoff()`.
 - `src/features/project-editor/pane/rich-markdown-editor/rich-markdown-editor-value-sync.ts`
   - Canonical editor-value helpers: normalize image-bearing markdown into placeholder form and compare equivalent external/editor values without triggering destructive re-renders.
 - `src/features/project-editor/document-content/document-content-session.ts`
@@ -540,20 +540,20 @@ Mandatory doc navigation for new chats: start with `mds/START-HERE.md` — it pr
 - `src/features/project-editor/document-content/document-content-session-private/document-content-broken-track.ts`
   - Broken-image phase wrappers: preserve broken comments on serialize, expand them for save, render them for the editor.
 - `src/features/project-editor/document-contents/index.ts`
-  - Deep module public facade for the Contents navigation feature — re-exports parser, label-source fallback, Quill reveal helpers (`scanQuillHeadings`, `revealQuillHeading`, `computeCenteredScrollTop`), Contents types, and `HeadingRevealTarget` (declared in `project-editor-types.ts` for the Electron seam).
+  - Deep module public facade for the Contents navigation feature â€” re-exports parser, label-source fallback, Quill reveal helpers (`scanQuillHeadings`, `revealQuillHeading`, `computeCenteredScrollTop`), Contents types, and `HeadingRevealTarget` (declared in `project-editor-types.ts` for the Electron seam).
 - `src/features/project-editor/document-contents/private/document-headings-parser.ts`
-  - Pure markdown ATX heading and layout directive extraction (H1–H3, labeled/unlabeled pagebreaks and spacers, and blank lines >= 2): strips YAML frontmatter, tracks fences, strips closing hashes and inline markers, omits empty headings, and retains document-global 0-based ordinals when filters omit rows.
+  - Pure markdown ATX heading and layout directive extraction (H1â€“H3, labeled/unlabeled pagebreaks and spacers, and blank lines >= 2): strips YAML frontmatter, tracks fences, strips closing hashes and inline markers, omits empty headings, and retains document-global 0-based ordinals when filters omit rows.
 - `src/features/project-editor/document-contents/private/document-layout-label.ts`
   - Pure source-level Contents label mutation. Preserves canonical directives and converts a selected blank-line spacer to a labeled explicit spacer directive.
 - `src/features/project-editor/document-contents/private/quill-heading-reveal.ts`
-  - Quill document content scan (`header` line attributes + layout directive embed blots `LayoutDirectiveBlot` + blank lines → `{ index, level, text, type, lines, label, ordinal }`), ordinal clamp, and centered-scroll reveal with 150 ms settle re-assert. Hosts `computeCenteredScrollTop`, the single centering implementation shared with `editor-session-find-visual.ts`.
+  - Quill document content scan (`header` line attributes + layout directive embed blots `LayoutDirectiveBlot` + blank lines â†’ `{ index, level, text, type, lines, label, ordinal }`), ordinal clamp, and centered-scroll reveal with 150 ms settle re-assert. Hosts `computeCenteredScrollTop`, the single centering implementation shared with `editor-session-find-visual.ts`.
 - `src/features/project-editor/pane/rich-markdown-editor/editor-session/editor-session-private/layout-directive-label.ts`
   - Atomically replaces a live spacer/pagebreak embed with the requested Contents-only label while preserving selection and keeping label text out of the editor.
 
 ### Sidebar components
 
 - `src/features/project-editor/components/sidebar/sidebar-panel/index.ts`
-  - Deep module public facade — exports `SidebarPanel` and `formatProjectRootBreadcrumbLabel` (used by project-root breadcrumb).
+  - Deep module public facade â€” exports `SidebarPanel` and `formatProjectRootBreadcrumbLabel` (used by project-root breadcrumb).
 - `src/features/project-editor/components/sidebar/sidebar-panel/private/sidebar-panel.tsx`
   - Sidebar shell/orchestrator. Consumes `effectiveCollapsed` from the layout seam; composes rail + section body.
 - `src/features/project-editor/components/sidebar/sidebar-panel/private/sidebar-panel-body.tsx`
@@ -571,7 +571,7 @@ Mandatory doc navigation for new chats: start with `mds/START-HERE.md` — it pr
 - `src/features/project-editor/components/sidebar/sidebar-panel/private/sidebar-search-content.tsx`
   - Global search section body (query controls, status, result list) following the custom panel content pattern.
 - `src/features/project-editor/components/sidebar/sidebar-panel/private/sidebar-contents-content.tsx`
-  - Contents section body: headings (H1–H3), page breaks, and spacers with filters, level indentation, and click → `revealDocumentHeading`. Writable directive rows open the label dialog; it parses via the `document-contents` facade on each debounced flush.
+  - Contents section body: headings (H1â€“H3), page breaks, and spacers with filters, level indentation, and click â†’ `revealDocumentHeading`. Writable directive rows open the label dialog; it parses via the `document-contents` facade on each debounced flush.
 - `src/features/project-editor/components/sidebar/sidebar-panel/private/sidebar-contents-label-dialog.tsx`
   - Compact controlled dialog for adding/removing a Contents-only spacer/page-break label.
 - `src/features/project-editor/components/sidebar/sidebar-panel/private/sidebar-settings.tsx`
@@ -585,7 +585,7 @@ Mandatory doc navigation for new chats: start with `mds/START-HERE.md` — it pr
 - `src/features/project-editor/components/sidebar/sidebar-section-scope-context.tsx`
   - Tiny Preact context providing `sectionConfig.root` to scoped action consumers inside `renderExplorer`.
 - `src/features/project-editor/components/sidebar/sidebar-state-context.tsx`
-  - `SidebarProjectState` context + `buildSidebarProjectState` (deliberately excludes `editorValue` to keep typing off the sidebar — see keystroke-churn plan).
+  - `SidebarProjectState` context + `buildSidebarProjectState` (deliberately excludes `editorValue` to keep typing off the sidebar â€” see keystroke-churn plan).
 - `src/features/project-editor/components/sidebar/sidebar-section-roots.ts`
   - `ContentSidebarSection` (sections backed by folder roots) and `SIDEBAR_SECTION_CONFIG` titles/roots; `contents` is excluded like `search`/`settings`/`transfer`.
 - `src/features/project-editor/components/sidebar/document-contents-context.tsx`
@@ -630,6 +630,12 @@ Mandatory doc navigation for new chats: start with `mds/START-HERE.md` — it pr
   - Explorer header with filter, collapse, and create-folder/file actions.
 - `src/features/project-editor/components/sidebar/sidebar-explorer-empty-state.tsx`
   - Empty-state placeholder when no files match the filter.
+- `src/features/project-editor/components/sidebar/clamp-context-menu-position.ts`
+  - Pure viewport clamp math for fixed context menus.
+- `src/features/project-editor/components/sidebar/use-clamped-context-menu-position.ts`
+  - Measures menu size after layout and applies viewport clamp.
+- `src/features/project-editor/components/sidebar/sidebar-context-menu-shell.tsx`
+  - Shared fixed overlay + menu chrome with viewport clamp; used by sidebar/map/relationships menus.
 - `src/features/project-editor/components/sidebar/sidebar-file-context-menu.tsx`
   - Right-click context menu for file rows.
 - `src/features/project-editor/components/sidebar/sidebar-folder-context-menu.tsx`
@@ -757,9 +763,9 @@ Mandatory doc navigation for new chats: start with `mds/START-HERE.md` — it pr
 - `tests/document-contents-parser.test.ts`
   - Heading extraction contract coverage: frontmatter, ```/~~~ fences, closed ATX, inline formatting, empty headings, duplicates, H4 ignored, `#nospace` rejected, ordinal sequence.
 - `tests/document-contents-reveal.test.ts`
-  - Real-Quill reveal coverage: scan order/duplicates, parser↔scan alignment, ordinal resolution + clamp, caret/focus, read-only preview skip-focus, no-dirty, and `revealDocumentHeading` active-pane targeting.
+  - Real-Quill reveal coverage: scan order/duplicates, parserâ†”scan alignment, ordinal resolution + clamp, caret/focus, read-only preview skip-focus, no-dirty, and `revealDocumentHeading` active-pane targeting.
 - `tests/sidebar-contents-panel.test.ts`
-  - Contents panel wiring: spec §5.3 states (blank/no-headings/map/relationships), row order + level indentation + tooltips, live refresh on value change, click dispatch with correct ordinal (incl. duplicates), rail item + `SidebarPanelBody` branch integration.
+  - Contents panel wiring: spec Â§5.3 states (blank/no-headings/map/relationships), row order + level indentation + tooltips, live refresh on value change, click dispatch with correct ordinal (incl. duplicates), rail item + `SidebarPanelBody` branch integration.
 - `tests/ai-export-service.test.ts`
   - Export formatter service coverage (multi-file output, frontmatter toggle, path hardening, missing file behavior).
 - `tests/ai-export-ipc-handler.test.ts`

@@ -207,7 +207,7 @@ See `mds/lessons-learned/find-bar-toolbar-click-blocked.md`.
 #### Symptom
 
 - The topmost icons in the sidebar rail (Manuscript explorer, Outline, Lore, Import/Export, Settings) only respond to clicks in their lower half. The upper ~18px of each 40px-tall button is consumed as a window-drag gesture.
-- The `←` back button in the revisions rail (right side, opens via right-click → `See Revisions`) only responds in its lower part.
+- The `â†` back button in the revisions rail (right side, opens via right-click â†’ `See Revisions`) only responds in its lower part.
 
 #### Root cause
 
@@ -224,8 +224,8 @@ See `mds/lessons-learned/sidebar-rail-and-revisions-back-blocked-by-drag-strip.m
 ### Quick checks
 
 1. Run `npm run test -- tests/overlay-titlebar-drag-region.test.ts` and confirm the new CSS rules are detected.
-2. In app (Windows, overlay titlebar): click the **upper** half of the topmost sidebar rail icon — the section should switch.
-3. Open **See Revisions** for any document, then click the **upper** half of the `←` back button — the rail should close.
+2. In app (Windows, overlay titlebar): click the **upper** half of the topmost sidebar rail icon â€” the section should switch.
+3. Open **See Revisions** for any document, then click the **upper** half of the `â†` back button â€” the rail should close.
 
 ## 12) Native menu bar does not appear on Alt (Windows overlay titlebar)
 
@@ -235,19 +235,19 @@ See `mds/lessons-learned/sidebar-rail-and-revisions-back-blocked-by-drag-strip.m
 
 ### Root cause seen
 
-- `autoHideMenuBar: true` is set in `electron/window-config.ts`, but Electron’s built-in Alt toggle is unreliable with `titleBarStyle: 'hidden'` (and was briefly regressed in Electron 39.7+).
+- `autoHideMenuBar: true` is set in `electron/window-config.ts`, but Electronâ€™s built-in Alt toggle is unreliable with `titleBarStyle: 'hidden'` (and was briefly regressed in Electron 39.7+).
 
 ### Current fix
 
 - Renderer: `use-menu-bar-reveal-on-alt.ts` listens for bare Left Alt and calls `tramaApi.revealMenuBar()`.
-- Main: `electron/main-process/menu-bar-auto-hide.ts` — on Win32 opens `Menu.popup()`; on other platforms toggles the native menu bar.
+- Main: `electron/main-process/menu-bar-auto-hide.ts` â€” on Win32 opens `Menu.popup()`; on other platforms toggles the native menu bar.
 - **Note:** Menu-bar debugging logs appear in the **terminal running Electron** (`npm run dev`), not in the renderer DevTools console.
 
 ### Quick checks
 
 1. Run `npm run test -- tests/menu-bar-alt-key.test.ts tests/menu-bar-auto-hide.test.ts`.
-2. Restart `npm run dev`, press **Left Alt** — a menu with File / Edit / View should open (Win32: popup at top-left; macOS/Linux: native strip).
-3. On macOS/Linux, click in the editor — the menu bar should hide again.
+2. Restart `npm run dev`, press **Left Alt** â€” a menu with File / Edit / View should open (Win32: popup at top-left; macOS/Linux: native strip).
+3. On macOS/Linux, click in the editor â€” the menu bar should hide again.
 
 ## 13) Split-pane dirty flag appears in wrong pane
 
@@ -278,12 +278,12 @@ See `mds/lessons-learned/sidebar-rail-and-revisions-back-blocked-by-drag-strip.m
 
 - For split-editor callbacks, prefer pane-targeted actions over globally inferred pane state.
 
-## 14) Book export PDF — blank page, wrong margins, or layout surprises
+## 14) Book export PDF â€” blank page, wrong margins, or layout surprises
 
 ### Symptom
 
 - PDF starts with a blank page (often on cover/portada segments).
-- `printToPDF` throws “margins must be less than or equal to pageSize”.
+- `printToPDF` throws â€œmargins must be less than or equal to pageSizeâ€.
 - PDF layout differs from Chrome print preview of a saved segment HTML file.
 
 ### Root causes seen
@@ -295,7 +295,7 @@ See `mds/lessons-learned/sidebar-rail-and-revisions-back-blocked-by-drag-strip.m
 
 ### Current fix
 
-- Pipeline: HTML **PDF export segments** → `printToPDF` → linear `pdf-lib` merge ([ADR 0004](../adr/0004-book-pdf-via-html-print-segments.md)).
+- Pipeline: HTML **PDF export segments** â†’ `printToPDF` â†’ linear `pdf-lib` merge ([ADR 0004](../adr/0004-book-pdf-via-html-print-segments.md)).
 - `normalizePdfPrintChapterBody` unwraps `<p><img>`; print CSS caps image height and zeroes `p` margins in chapters.
 - `printToPDF({ printBackground: true, preferCSSPageSize: true })` with margins only in `@page` inside `book-export-pdf-print.css`.
 
@@ -304,7 +304,7 @@ See `mds/lessons-learned/sidebar-rail-and-revisions-back-blocked-by-drag-strip.m
 1. Read `mds/architecture/book-export-architecture.md` (Export PDF + playbook) and `mds/lessons-learned/book-export-pdf-print-surface.md`.
 2. Run `npm run test -- tests/book-export`.
 3. After CSS changes: `npm run build:electron`, then re-export.
-4. To inspect segment HTML before cleanup: pause during export or copy from `%TEMP%\trama-book-export-<random>\segment-000.html` (Windows); open in Chrome → Print preview should match segment 0 PDF.
+4. To inspect segment HTML before cleanup: pause during export or copy from `%TEMP%\trama-book-export-<random>\segment-000.html` (Windows); open in Chrome â†’ Print preview should match segment 0 PDF.
 
 ## 15) App window closes but the Electron process keeps running (need Ctrl+C to exit)
 
@@ -354,13 +354,13 @@ See `mds/lessons-learned/sidebar-rail-and-revisions-back-blocked-by-drag-strip.m
 2. Confirm the toast appears after export completes.
 3. Run `npm run test -- tests/book-export-renderers.test.ts`.
 
-## 17) Fallow false positives — how to triage dead-code reports fast
+## 17) Fallow false positives â€” how to triage dead-code reports fast
 
 `npx fallow dead-code` flags symbols unreachable from its entry-point graph. Many are real dead code. But fallow cannot see runtime wiring (Electron preloads, HTML script/link tags, `ref.current?.method()` dispatch, CSS loaded from disk at runtime), so it regularly raises false positives.
 
 The goal is to triage a full report in under a minute. The cheat-sheet below catches the 4 most common patterns without reading every flagged file.
 
-### Pattern A — "Unused file" where the consumer is not source code
+### Pattern A â€” "Unused file" where the consumer is not source code
 
 **Symptom:** File is marked unused, but the file *is* needed at runtime.
 
@@ -383,7 +383,7 @@ git grep -rn "$(basename THE_FILE)" help/ -- "*.html"
 **Verdict:** If any of those hits, the file is live. These 6 are **permanent false positives** in this repo:
 `electron/help-preload.cts`, `electron/preload.cts`, `electron/services/book-export-pdf-print.css`, `help/shared/help-nav.js`, `help/shared/help-theme.js`, `help/shared/help.css`.
 
-### Pattern B — "Unused class member" with ref-dispatch callers
+### Pattern B â€” "Unused class member" with ref-dispatch callers
 
 **Symptom:** A method flagged as unused on a class, but the class is instantiated and methods are called via `ref.current.methodName()` or a dependency-injected interface.
 
@@ -399,9 +399,9 @@ git grep -n "\. METHOD_NAME(" -- src/
 
 **Verdict:** If `git grep` finds the method name called outside the class definition, fallow can't trace the call because it goes through a mutable reference (`ref.current`) or a plain-object dispatch, not a static import. These are **false positives**.
 
-### Pattern C — "Unlisted dependency" that is actually transitive
+### Pattern C â€” "Unlisted dependency" that is actually transitive
 
-**Symptom:** Package imported in code but missing from `package.json` dependencies. You'd think it's a bug — but `node_modules` resolves it anyway via a parent dependency.
+**Symptom:** Package imported in code but missing from `package.json` dependencies. You'd think it's a bug â€” but `node_modules` resolves it anyway via a parent dependency.
 
 **Check this fast:**
 
@@ -415,11 +415,11 @@ git grep -n "from 'THE_PACKAGE'" -- tests/        # test-only?
 ```
 
 **Verdict:**
-- If production code imports it → add to `dependencies`.
-- If only tests import it → add to `devDependencies`.
-- If it's already satisfied transitively → add it anyway (declares the direct dependency).
+- If production code imports it â†’ add to `dependencies`.
+- If only tests import it â†’ add to `devDependencies`.
+- If it's already satisfied transitively â†’ add it anyway (declares the direct dependency).
 
-### Pattern D — "Unused export" consumed only in the same file or only in tests
+### Pattern D â€” "Unused export" consumed only in the same file or only in tests
 
 **Symptom:** An exported function/type is flagged because no other *source file* imports it. But the function is called inside its own module, or only tested.
 
@@ -428,16 +428,35 @@ git grep -n "from 'THE_PACKAGE'" -- tests/        # test-only?
 ```bash
 # Exported but never imported externally?
 git grep -n "SYMBOL_NAME" -- src/
-# If the only hit is the definition file → remove `export`.
-# If also hit in tests/ → test-only; remove `export` and update the test import.
+# If the only hit is the definition file â†’ remove `export`.
+# If also hit in tests/ â†’ test-only; remove `export` and update the test import.
 ```
 
-**Verdict:** Remove `export` if truly internal. If the test needs it, the test already imports from the same module — it can still access it unexported (tests import from source, not a public barrel).
+**Verdict:** Remove `export` if truly internal. If the test needs it, the test already imports from the same module â€” it can still access it unexported (tests import from source, not a public barrel).
 
 ### Pre-flight one-liner before digging deeper
 
 ```bash
-npx fallow dead-code 2>&1 | grep -E "✗|●|Unlisted"
+npx fallow dead-code 2>&1 | grep -E "âœ—|â—|Unlisted"
 ```
 
-If the count at the bottom (`✗ N files · M exports · ...`) includes the 6 known-OK files and 4 known ref-dispatch methods, the report is already clean of actionable items. Otherwise triage one category at a time with the patterns above.
+If the count at the bottom (`âœ— N files Â· M exports Â· ...`) includes the 6 known-OK files and 4 known ref-dispatch methods, the report is already clean of actionable items. Otherwise triage one category at a time with the patterns above.
+
+## Context menu clipped at window edge
+
+### Symptom
+
+- Right-click near the bottom of the sidebar (or map/relationships chart) and the last items (e.g. Delete) are cut off.
+
+### Root cause
+
+- Menu was placed at raw `clientX`/`clientY` with `position: fixed` and no viewport clamp; Electron clips content outside the BrowserWindow.
+
+### Current fix
+
+- `SidebarContextMenuShell` measures then clamps via `clampContextMenuPosition`.
+
+### Quick checks
+
+- `npm run test -- tests/clamp-context-menu-position.test.ts`
+- Right-click the last visible sidebar file near the window bottom and confirm Delete is fully visible.

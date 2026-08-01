@@ -6,6 +6,7 @@ import type { WorkspaceLayoutMode, WorkspacePane } from '../../project-editor-ty
 import { clampMapValue, getMapConfig, resolveMapAssetUrl, resolveMarkerDestination, withMapConfig, type MapMarker } from './map-editor-helpers'
 import { MapMarkerDialog } from './map-marker-dialog'
 import { MapMarkersLayer } from './map-markers-layer'
+import { SidebarContextMenuShell } from '../../components/sidebar/sidebar-context-menu-shell'
 
 interface MapEditorProps {
   projectRoot: string
@@ -152,7 +153,35 @@ export function MapEditor({ projectRoot, meta, pane, layoutMode, readOnlyPreview
         </div>
       </div>
       {notice ? <div class="map-editor__notice" role="status">{notice}</div> : null}
-      {contextMenu ? <div class="sidebar-context-menu-layer" onClick={() => setContextMenu(null)}><div class="sidebar-context-menu" style={{ left: `${contextMenu.clientX}px`, top: `${contextMenu.clientY}px` }} onClick={(event) => event.stopPropagation()}>{contextMenu.markerIndex === null ? <button type="button" class="sidebar-context-menu__item" onClick={() => { if (contextMenu.marker) { setDialogState({ mode: 'add', markerIndex: null, marker: contextMenu.marker }) } setContextMenu(null) }}>Add a marker</button> : [<button key="edit" type="button" class="sidebar-context-menu__item" onClick={() => { if (contextMenu.marker) { setDialogState({ mode: 'edit', markerIndex: contextMenu.markerIndex, marker: contextMenu.marker }) } setContextMenu(null) }}>Edit marker</button>, <button key="delete" type="button" class="sidebar-context-menu__item sidebar-context-menu__item--danger" onClick={() => { updateMarkers(mapConfig.markers.filter((_, index) => index !== contextMenu.markerIndex)); setContextMenu(null) }}>Delete marker</button>]}</div></div> : null}
+      {contextMenu ? (
+        <SidebarContextMenuShell
+          position={{ x: contextMenu.clientX, y: contextMenu.clientY }}
+          ariaLabel="Map actions"
+          onClose={() => setContextMenu(null)}
+        >
+          {contextMenu.markerIndex === null ? (
+            <button type="button" class="sidebar-context-menu__item" onClick={() => {
+              if (contextMenu.marker) {
+                setDialogState({ mode: 'add', markerIndex: null, marker: contextMenu.marker })
+              }
+              setContextMenu(null)
+            }}>Add a marker</button>
+          ) : (
+            <>
+              <button key="edit" type="button" class="sidebar-context-menu__item" onClick={() => {
+                if (contextMenu.marker) {
+                  setDialogState({ mode: 'edit', markerIndex: contextMenu.markerIndex, marker: contextMenu.marker })
+                }
+                setContextMenu(null)
+              }}>Edit marker</button>
+              <button key="delete" type="button" class="sidebar-context-menu__item sidebar-context-menu__item--danger" onClick={() => {
+                updateMarkers(mapConfig.markers.filter((_, index) => index !== contextMenu.markerIndex))
+                setContextMenu(null)
+              }}>Delete marker</button>
+            </>
+          )}
+        </SidebarContextMenuShell>
+      ) : null}
       <MapMarkerDialog open={dialogState !== null} marker={dialogState?.marker ?? null} title={dialogState?.mode === 'edit' ? 'Edit marker' : 'Add marker'} readOnly={readOnlyPreview} onClose={() => { setDialogState(null); setContextMenu(null) }} onSave={(nextMarker) => { const nextMarkers = dialogState?.mode === 'add' ? [...mapConfig.markers, nextMarker] : mapConfig.markers.map((marker, index) => index === dialogState?.markerIndex ? nextMarker : marker); updateMarkers(nextMarkers); setDialogState(null); setContextMenu(null) }} />
     </div>
   )

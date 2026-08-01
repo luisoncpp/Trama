@@ -4,9 +4,9 @@ Knowledge that helps future development: effective strategies, counter-intuitive
 
 ## When to Read
 
-- Before starting a new feature in an unfamiliar area — scan the index for relevant patterns.
-- When a design decision feels uncertain — check if a similar situation was encountered before.
-- When something that "should work" isn't working — the index may surface a known gotcha.
+- Before starting a new feature in an unfamiliar area â€” scan the index for relevant patterns.
+- When a design decision feels uncertain â€” check if a similar situation was encountered before.
+- When something that "should work" isn't working â€” the index may surface a known gotcha.
 
 ## When to Add
 
@@ -27,6 +27,7 @@ Avoid: "bug description + fix". Prefer: "what I learned that applies to future w
 
 | File | Topic | Date |
 |------|-------|------|
+| `fixed-context-menus-need-viewport-clamp.md` | Fixed `position:fixed` context menus must measure then clamp to `window.inner*` or near-edge clicks clip | 2026-08-01 |
 | `filtered-contents-ordinals-must-stay-document-global.md` | Contents filters must not compact ordinal identity used by Quill reveal and directive mutations | 2026-07-23 |
 | `global-find-preset-refresh-after-query-commit.md` | Global search presets must refresh matches after the preset query/options commit and after reveal bounds settle | 2026-07-09 |
 | `editor-session-electron-type-seam.md` | Split the `EditorSession` interface: a minimal contract in shared types for the Electron build, extended in the renderer module for the full Quill/DOM surface | 2026-06-15 |
@@ -93,11 +94,11 @@ Avoid: "bug description + fix". Prefer: "what I learned that applies to future w
 | `focus-mode-css-vars-sync-init.md` | Focus mode CSS vars need synchronous init; RAF-only event updates miss initial render state | 2026-04-20 |
 | `css-patch-corruption.md` | CSS patch tool can inject rules inside open blocks; use large anchors, validate after each edit | 2026-04-04 |
 | `index-reorder-payload-id-vs-path.md` | Reorder payloads for `.trama.index.json` must use same key/value identity model as reconciliation and downstream readers | 2026-04-19 |
-| `shared-sentinel-scope-root.md` | Shared `SCOPED_ROOT_KEY = ''` sentinel for section-root scope in `scopeCorkboardOrder` and `sortTreeRowsByOrder` — avoids silent ordering failure when only one file is updated | 2026-04-30 |
-| `corkboard-order-path-scoping.md` | `corkboardOrder` keys are project-relative; sidebar tree uses section-relative paths — conversion must happen at the boundary (`sidebar-panel-body.tsx`) | 2026-04-21 |
+| `shared-sentinel-scope-root.md` | Shared `SCOPED_ROOT_KEY = ''` sentinel for section-root scope in `scopeCorkboardOrder` and `sortTreeRowsByOrder` â€” avoids silent ordering failure when only one file is updated | 2026-04-30 |
+| `corkboard-order-path-scoping.md` | `corkboardOrder` keys are project-relative; sidebar tree uses section-relative paths â€” conversion must happen at the boundary (`sidebar-panel-body.tsx`) | 2026-04-21 |
 | `sidebar-path-brands-deepen-the-seam.md` | Path scoping only becomes safe when the seam owns branded section-relative/project-relative types, not plain strings | 2026-05-08 |
 | `quill-getbounds-multiline-wrap.md` | Quill `getBounds()` returns a single bounding rect for wrapped ranges; use `Range.getClientRects()` via `editor.scroll.leaf()` for per-line geometry | 2026-05-01 |
-| `tag-overlay-stale-bounds-on-layout-change.md` | Quill `getBounds()` results are layout-dependent; never cache them across renders — compute fresh at render or event time | 2026-04-21 |
+| `tag-overlay-stale-bounds-on-layout-change.md` | Quill `getBounds()` results are layout-dependent; never cache them across renders â€” compute fresh at render or event time | 2026-04-21 |
 | `find-overlay-scroll-stale-bounds.md` | Find overlay highlight must recompute bounds on every scroll; same stale-bounds pattern as tags, plus `getBoundingClientRect()` over `offsetTop/offsetLeft` | 2026-04-22 |
 | `cross-folder-drag-drop-two-ipcs.md` | For cross-folder file drop + reorder, calling two existing IPCs sequentially (`moveFile` then `reorderFiles`) is simpler than creating a combined IPC; avoids touching backend contracts and keeps frontend logic testable in pure helpers | 2026-04-22 |
 | `focus-mode-quill-selection-desync.md` | Programmatic scroll (`container.scrollTop`) desynchronizes Quill's internal selection; preserve selection before scroll and restore after with `'silent'` flag | 2026-04-23 |
@@ -114,11 +115,11 @@ Avoid: "bug description + fix". Prefer: "what I learned that applies to future w
 | `awaitable-save-actions.md` | UI save actions that wrap async persistence should return a Promise so tests and chained flows can observe post-save pane state deterministically | 2026-05-03 |
 | `editor-onchange-image-hydration.md` | Pane state must stay editor-internal (placeholder markdown); hydrate images only at the save boundary via `DocumentContentSession.forIpcSave`, or parent/editor canonical comparison drifts and Quill re-renders destructively | 2026-04-28 |
 | `editor-value-sync-canonical-api.md` | Canonical editor-value comparison should live behind one named API so image placeholder equivalence is reused consistently across lifecycle hooks | 2026-04-28 |
-| `projected-state-vs-pane-target-state.md` | Active pane projection (`selectedPath`, `isDirty`, etc.) lives in one pure function — `deriveActivePaneDocument` — not copied across three modules | 2026-05-02 |
+| `projected-state-vs-pane-target-state.md` | Active pane projection (`selectedPath`, `isDirty`, etc.) lives in one pure function â€” `deriveActivePaneDocument` â€” not copied across three modules | 2026-05-02 |
 | `windows-chokidar-handle-readdir-stale.md` | Windows: chokidar's `ReadDirectoryChangesW` handle keeps deleted directory entries visible to `readdir`; must `watcher.close()` before `scanProject` in `handleOpenProject` | 2026-04-29 |
 | `pane-persistence-single-source-of-truth.md` | `useProjectEditorPanePersistence` must be instantiated once in `useProjectEditor` and passed down; creating it in both `useProjectEditorActions` and `useProjectEditor` produces two `saveDocumentNow` closures that diverge and cause save-before-switch bugs | 2026-04-30 |
 | `sub-state-memoization-prevents-render-cascades.md` | Decompose large state objects into focused memoized sub-states; action hooks should depend only on the slices they read, not a monolithic `values` object | 2026-05-01 |
-| `ref-mutation-no-trigger-rerender.md` | Mutar `ref.current` en un effect no dispara re-render; si el consumer del ref solo corre en fase render, se necesita un state setter explícito (ej: tag overlay dirty flag tras cambio de documento) | 2026-05-01 |
+| `ref-mutation-no-trigger-rerender.md` | Mutar `ref.current` en un effect no dispara re-render; si el consumer del ref solo corre en fase render, se necesita un state setter explÃ­cito (ej: tag overlay dirty flag tras cambio de documento) | 2026-05-01 |
 | `conflict-actions-need-real-document-state.md` | Passing a stub `documentState` with `selectedPath: null` to conflict action hooks silently breaks flows like save-as-copy because the action returns early on null checks; derive the real document state from pane + layout when wiring secondary actions | 2026-05-01 |
 | `document-image-links-need-readtime-hydration.md` | Saving markdown with `res/*.png` links still requires read-time hydration back to embedded data URLs so the editor's placeholder/image-cache model stays canonical | 2026-05-10 |
 | `dirty-flag-should-not-rewrite-pane-content.md` | Immediate dirty signals and debounced content updates must be separate pane mutations; dirty-only calls should become a no-op once already dirty | 2026-05-27 |
@@ -127,7 +128,7 @@ Avoid: "bug description + fix". Prefer: "what I learned that applies to future w
 | `book-export-preprocess-images-before-renderers.md` | Book export image handling is more reliable when local markdown paths are converted once before renderer dispatch instead of being re-resolved independently per format | 2026-05-10 |
 | `inline-images-in-pdf-docx-export.md` | Inline images within paragraph text (e.g., `text ![](img.png) more text`) are silently dropped in PDF/DOCX unless line parsing uses segment-based detection instead of whole-line classification | 2026-05-10 |
 | `layout-component-prevents-micro-file-proliferation.md` | Lint-driven atomization (`max-lines: 200`) can produce shallow modules; a layout component like `SettingsField` restores depth by owning the repeated wrapper structure, letting inner components stay pure control logic | 2026-05-16 |
-| `shallow-hook-fragmentation-to-deep-modules.md` | ~15 tiny hook files with interfaces larger than implementations failed the deletion test; collapsing into 2–3 cohesive plain modules restores locality and leverage | 2026-05-20 |
+| `shallow-hook-fragmentation-to-deep-modules.md` | ~15 tiny hook files with interfaces larger than implementations failed the deletion test; collapsing into 2â€“3 cohesive plain modules restores locality and leverage | 2026-05-20 |
 | `instance-state-must-survive-hook-recreation.md` | State stored inside hook-created instances (e.g., `useMemo`) is destroyed on every dependency change; lift long-lived state to stable refs outside the instance lifecycle | 2026-05-19 |
 | `pane-history-needs-stable-store.md` | Session navigation history cannot live inside recreated `PaneWorkspace` instances; keep it in a stable ref and reset it only in explicit open/clear flows | 2026-05-21 |
 | `pane-history-initial-seeding-belongs-in-open-project.md` | Initial pane-history entries must be seeded inside `openProject()` after reset; path-based effects can miss the restore when persisted paths do not change | 2026-05-27 |
@@ -162,11 +163,11 @@ Avoid: "bug description + fix". Prefer: "what I learned that applies to future w
 | `focus-mode-css-vars-sync-init.md` | Focus mode CSS vars need synchronous init; RAF-only event updates miss initial render state | 2026-04-20 |
 | `css-patch-corruption.md` | CSS patch tool can inject rules inside open blocks; use large anchors, validate after each edit | 2026-04-04 |
 | `index-reorder-payload-id-vs-path.md` | Reorder payloads for `.trama.index.json` must use same key/value identity model as reconciliation and downstream readers | 2026-04-19 |
-| `shared-sentinel-scope-root.md` | Shared `SCOPED_ROOT_KEY = ''` sentinel for section-root scope in `scopeCorkboardOrder` and `sortTreeRowsByOrder` — avoids silent ordering failure when only one file is updated | 2026-04-30 |
-| `corkboard-order-path-scoping.md` | `corkboardOrder` keys are project-relative; sidebar tree uses section-relative paths — conversion must happen at the boundary (`sidebar-panel-body.tsx`) | 2026-04-21 |
+| `shared-sentinel-scope-root.md` | Shared `SCOPED_ROOT_KEY = ''` sentinel for section-root scope in `scopeCorkboardOrder` and `sortTreeRowsByOrder` â€” avoids silent ordering failure when only one file is updated | 2026-04-30 |
+| `corkboard-order-path-scoping.md` | `corkboardOrder` keys are project-relative; sidebar tree uses section-relative paths â€” conversion must happen at the boundary (`sidebar-panel-body.tsx`) | 2026-04-21 |
 | `sidebar-path-brands-deepen-the-seam.md` | Path scoping only becomes safe when the seam owns branded section-relative/project-relative types, not plain strings | 2026-05-08 |
 | `quill-getbounds-multiline-wrap.md` | Quill `getBounds()` returns a single bounding rect for wrapped ranges; use `Range.getClientRects()` via `editor.scroll.leaf()` for per-line geometry | 2026-05-01 |
-| `tag-overlay-stale-bounds-on-layout-change.md` | Quill `getBounds()` results are layout-dependent; never cache them across renders — compute fresh at render or event time | 2026-04-21 |
+| `tag-overlay-stale-bounds-on-layout-change.md` | Quill `getBounds()` results are layout-dependent; never cache them across renders â€” compute fresh at render or event time | 2026-04-21 |
 | `find-overlay-scroll-stale-bounds.md` | Find overlay highlight must recompute bounds on every scroll; same stale-bounds pattern as tags, plus `getBoundingClientRect()` over `offsetTop/offsetLeft` | 2026-04-22 |
 | `cross-folder-drag-drop-two-ipcs.md` | For cross-folder file drop + reorder, calling two existing IPCs sequentially (`moveFile` then `reorderFiles`) is simpler than creating a combined IPC; avoids touching backend contracts and keeps frontend logic testable in pure helpers | 2026-04-22 |
 | `focus-mode-quill-selection-desync.md` | Programmatic scroll (`container.scrollTop`) desynchronizes Quill's internal selection; preserve selection before scroll and restore after with `'silent'` flag | 2026-04-23 |
@@ -183,11 +184,11 @@ Avoid: "bug description + fix". Prefer: "what I learned that applies to future w
 | `awaitable-save-actions.md` | UI save actions that wrap async persistence should return a Promise so tests and chained flows can observe post-save pane state deterministically | 2026-05-03 |
 | `editor-onchange-image-hydration.md` | Pane state must stay editor-internal (placeholder markdown); hydrate images only at the save boundary via `DocumentContentSession.forIpcSave`, or parent/editor canonical comparison drifts and Quill re-renders destructively | 2026-04-28 |
 | `editor-value-sync-canonical-api.md` | Canonical editor-value comparison should live behind one named API so image placeholder equivalence is reused consistently across lifecycle hooks | 2026-04-28 |
-| `projected-state-vs-pane-target-state.md` | Active pane projection (`selectedPath`, `isDirty`, etc.) lives in one pure function — `deriveActivePaneDocument` — not copied across three modules | 2026-05-02 |
+| `projected-state-vs-pane-target-state.md` | Active pane projection (`selectedPath`, `isDirty`, etc.) lives in one pure function â€” `deriveActivePaneDocument` â€” not copied across three modules | 2026-05-02 |
 | `windows-chokidar-handle-readdir-stale.md` | Windows: chokidar's `ReadDirectoryChangesW` handle keeps deleted directory entries visible to `readdir`; must `watcher.close()` before `scanProject` in `handleOpenProject` | 2026-04-29 |
 | `pane-persistence-single-source-of-truth.md` | `useProjectEditorPanePersistence` must be instantiated once in `useProjectEditor` and passed down; creating it in both `useProjectEditorActions` and `useProjectEditor` produces two `saveDocumentNow` closures that diverge and cause save-before-switch bugs | 2026-04-30 |
 | `sub-state-memoization-prevents-render-cascades.md` | Decompose large state objects into focused memoized sub-states; action hooks should depend only on the slices they read, not a monolithic `values` object | 2026-05-01 |
-| `ref-mutation-no-trigger-rerender.md` | Mutar `ref.current` en un effect no dispara re-render; si el consumer del ref solo corre en fase render, se necesita un state setter explícito (ej: tag overlay dirty flag tras cambio de documento) | 2026-05-01 |
+| `ref-mutation-no-trigger-rerender.md` | Mutar `ref.current` en un effect no dispara re-render; si el consumer del ref solo corre en fase render, se necesita un state setter explÃ­cito (ej: tag overlay dirty flag tras cambio de documento) | 2026-05-01 |
 | `conflict-actions-need-real-document-state.md` | Passing a stub `documentState` with `selectedPath: null` to conflict action hooks silently breaks flows like save-as-copy because the action returns early on null checks; derive the real document state from pane + layout when wiring secondary actions | 2026-05-01 |
 | `document-image-links-need-readtime-hydration.md` | Saving markdown with `res/*.png` links still requires read-time hydration back to embedded data URLs so the editor's placeholder/image-cache model stays canonical | 2026-05-10 |
 | `dirty-flag-should-not-rewrite-pane-content.md` | Immediate dirty signals and debounced content updates must be separate pane mutations; dirty-only calls should become a no-op once already dirty | 2026-05-27 |
@@ -196,7 +197,7 @@ Avoid: "bug description + fix". Prefer: "what I learned that applies to future w
 | `book-export-preprocess-images-before-renderers.md` | Book export image handling is more reliable when local markdown paths are converted once before renderer dispatch instead of being re-resolved independently per format | 2026-05-10 |
 | `inline-images-in-pdf-docx-export.md` | Inline images within paragraph text (e.g., `text ![](img.png) more text`) are silently dropped in PDF/DOCX unless line parsing uses segment-based detection instead of whole-line classification | 2026-05-10 |
 | `layout-component-prevents-micro-file-proliferation.md` | Lint-driven atomization (`max-lines: 200`) can produce shallow modules; a layout component like `SettingsField` restores depth by owning the repeated wrapper structure, letting inner components stay pure control logic | 2026-05-16 |
-| `shallow-hook-fragmentation-to-deep-modules.md` | ~15 tiny hook files with interfaces larger than implementations failed the deletion test; collapsing into 2–3 cohesive plain modules restores locality and leverage | 2026-05-20 |
+| `shallow-hook-fragmentation-to-deep-modules.md` | ~15 tiny hook files with interfaces larger than implementations failed the deletion test; collapsing into 2â€“3 cohesive plain modules restores locality and leverage | 2026-05-20 |
 | `instance-state-must-survive-hook-recreation.md` | State stored inside hook-created instances (e.g., `useMemo`) is destroyed on every dependency change; lift long-lived state to stable refs outside the instance lifecycle | 2026-05-19 |
 | `pane-history-needs-stable-store.md` | Session navigation history cannot live inside recreated `PaneWorkspace` instances; keep it in a stable ref and reset it only in explicit open/clear flows | 2026-05-21 |
 | `pane-history-initial-seeding-belongs-in-open-project.md` | Initial pane-history entries must be seeded inside `openProject()` after reset; path-based effects can miss the restore when persisted paths do not change | 2026-05-27 |
