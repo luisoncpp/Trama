@@ -87,6 +87,13 @@ describe('document contents parser', () => {
     ])
   })
 
+  it('unescapes turndown list-marker escapes in numbered headings', () => {
+    expect(parseDocumentHeadings('# 1\\. El texto\n## 2\\. El otro')).toEqual([
+      { type: 'heading', level: 1, text: '1. El texto', ordinal: 0 },
+      { type: 'heading', level: 2, text: '2. El otro', ordinal: 1 },
+    ])
+  })
+
   it('omits headings whose text is empty after stripping', () => {
     const markdown = ['# ', '## ** **', '### ###', '# Kept'].join('\n')
 

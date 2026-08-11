@@ -31,6 +31,11 @@ const FRONTMATTER_DELIMITER = '---'
 const ATX_HEADING_REGEX = /^(#{1,3})\s+(.*)$/
 const CLOSING_HASHES_REGEX = /(^|\s)#+\s*$/
 const INLINE_MARKERS_REGEX = /[*_~`]/g
+const MARKDOWN_INLINE_ESCAPE_REGEX = /\\([\\`*_{}[\]()#+\-.!])/g
+
+function unescapeMarkdownInline(text: string): string {
+  return text.replace(MARKDOWN_INLINE_ESCAPE_REGEX, '$1')
+}
 const FENCE_OPEN_REGEX = /^ {0,3}(`{3,}|~{3,})/
 const FENCE_CLOSE_REGEX = /^ {0,3}(`+|~+)\s*$/
 
@@ -70,7 +75,7 @@ function matchHeading(line: string): Omit<DocumentHeading, 'ordinal'> | null {
     return null
   }
   const withoutClosing = match[2].replace(CLOSING_HASHES_REGEX, '')
-  const text = withoutClosing.replace(INLINE_MARKERS_REGEX, '').trim()
+  const text = unescapeMarkdownInline(withoutClosing.replace(INLINE_MARKERS_REGEX, '')).trim()
   if (!text) {
     return null
   }
