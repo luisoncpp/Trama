@@ -16,6 +16,8 @@ If work touches AI import/export, also read `mds/architecture/ai-import-export-a
   - Builds renderer and Electron outputs.
 - `npm run lint`
   - Runs ESLint with `--max-warnings 0`.
+- `npm run check`
+  - Runs TypeScript (`tsc`), the full test suite, lint, and `fallow audit`. Run after finishing each task.
 - `npm run test`
   - Runs full Vitest suite.
   - **Note**: In sandboxed agent environments (e.g., Qwen Code), `npm test` may fail due to environment restrictions. Use the PowerShell script instead:
@@ -52,7 +54,7 @@ If work touches AI import/export, also read `mds/architecture/ai-import-export-a
 3. Validate core flow for touched area (editor/sidebar/IPC).
 4. If the behavior path is hard to follow, open the matching doc in `mds/flows/` before changing code.
 5. Run `npm run lint` and focused tests while iterating.
-6. Run tests with `npm run test` before finishing (mandatory unless you only modified mds).
+6. Run `npm run check` before finishing each task (mandatory unless you only modified mds).
 7. Run `npm run build` for final compile confidence.
 8. Run `npm run test:smoke` when touching preload/window/IPC startup paths.
 9. Update the documentation (see mandatory checklist below)

@@ -128,25 +128,36 @@ function matchPageBreak(line: string): Omit<DocumentHeading, 'ordinal'> | null {
   return null
 }
 
-function matchSpacerDirective(line: string): Omit<DocumentHeading, 'ordinal'> | null {
-  const trimmed = line.trim()
+function normalizeSpacerLines(raw: string | undefined): number {
+  const linesVal = Number.parseInt(raw ?? '1', 10)
+  return Number.isInteger(linesVal) && linesVal >= 1 ? Math.min(12, linesVal) : 1
+}
+
+function spacerFallbackText(lines: number): string {
+  return lines > 1 ? `Spacer (${lines} lines)` : 'Spacer'
+}
+
+function matchSpacerComment(trimmed: string): Omit<DocumentHeading, 'ordinal'> | null {
   const comment = extractCommentDirective(trimmed)
   const commentMatch = comment?.base.match(/^spacer(?:\s+lines=([^\s>]+))?$/)
-  if (commentMatch) {
-    const linesVal = Number.parseInt(commentMatch[1] ?? '1', 10)
-    const lines = Number.isInteger(linesVal) && linesVal >= 1 ? Math.min(12, linesVal) : 1
-    const fallback = lines > 1 ? `Spacer (${lines} lines)` : 'Spacer'
-    return layoutItem('spacer', fallback, comment?.label, lines)
+  if (!commentMatch) {
+    return null
   }
-  if (SPACER_DIV_REGEX.test(line)) {
-    const linesMatch = SPACER_LINES_ATTR_REGEX.exec(line)
-    const linesVal = linesMatch ? Number.parseInt(linesMatch[1], 10) : 1
-    const lines = Number.isInteger(linesVal) && linesVal >= 1 ? Math.min(12, linesVal) : 1
-    const label = extractHtmlLabel(line)
-    const fallback = lines > 1 ? `Spacer (${lines} lines)` : 'Spacer'
-    return layoutItem('spacer', fallback, label, lines)
+  const lines = normalizeSpacerLines(commentMatch[1])
+  return layoutItem('spacer', spacerFallbackText(lines), comment?.label, lines)
+}
+
+function matchSpacerHtml(line: string): Omit<DocumentHeading, 'ordinal'> | null {
+  if (!SPACER_DIV_REGEX.test(line)) {
+    return null
   }
-  return null
+  const linesMatch = SPACER_LINES_ATTR_REGEX.exec(line)
+  const lines = normalizeSpacerLines(linesMatch?.[1])
+  return layoutItem('spacer', spacerFallbackText(lines), extractHtmlLabel(line), lines)
+}
+
+function matchSpacerDirective(line: string): Omit<DocumentHeading, 'ordinal'> | null {
+  return matchSpacerComment(line.trim()) ?? matchSpacerHtml(line)
 }
 
 function appendItem(

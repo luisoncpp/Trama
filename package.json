@@ -11,13 +11,15 @@
     "dev": "npm run build:electron && npm run dev:desktop",
     "dev:renderer": "vite",
     "dev:electron": "cross-env VITE_DEV_SERVER_URL=http://localhost:5173 electron dist-electron/electron/main.js",
-    "dev:desktop": "concurrently --names \"renderer,electron\" --success \"command-electron\" --kill-others \"npm run dev:renderer\" \"wait-on http-get://localhost:5173 --timeout 30000 && npm run dev:electron\"",
+    "dev:desktop": "concurrently --names \"renderer,electron\" --success \"command-electron\" --kill-others \"npm run dev:renderer\" \"node scripts/wait-for-vite.mjs && npm run dev:electron\"",
     "build": "tsc -b && vite build && npm run build:electron",
     "build:electron": "tsc -p tsconfig.electron.json && node scripts/copy-electron-assets.mjs",
     "pack:win": "npm run build && electron-builder --win --dir",
     "dist:win": "npm run build && electron-builder --win nsis",
     "preview": "vite preview",
     "lint": "eslint . --max-warnings 0",
+    "typecheck": "tsc -b --noEmit && tsc -p tsconfig.electron.json --noEmit",
+    "check": "npm run typecheck && npm run test && npm run lint && fallow audit",
     "test": "vitest run --pool 2",
     "test:smoke": "npm run build && vitest run tests/electron-smoke.test.ts",
     "help:screenshots": "npm run build && node scripts/capture-help-screenshots.mjs"
@@ -32,6 +34,7 @@
     "preact": "^10.29.0",
     "quill": "^2.0.3",
     "quill-delta": "^5.1.0",
+    "tailwindcss": "^4.2.2",
     "turndown": "^7.2.4",
     "yaml": "^2.8.3",
     "zod": "^3.24.2"
@@ -52,11 +55,9 @@
     "jsdom": "^29.0.2",
     "jszip": "^3.10.1",
     "postcss": "^8.5.8",
-    "tailwindcss": "^4.2.2",
     "typescript": "~5.9.3",
     "vite": "^8.0.1",
-    "vitest": "^4.1.2",
-    "wait-on": "^9.0.10"
+    "vitest": "^4.1.2"
   },
   "build": {
     "appId": "com.trama.desktop",
