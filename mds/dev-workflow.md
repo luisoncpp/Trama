@@ -17,7 +17,11 @@ If work touches AI import/export, also read `mds/architecture/ai-import-export-a
 - `npm run lint`
   - Runs ESLint with `--max-warnings 0`.
 - `npm run check`
-  - Runs TypeScript (`tsc`), the full test suite, lint, and `fallow audit`. Run after finishing each task.
+  - Runs TypeScript (`tsc`), the full test suite, lint, and `fallow audit`. **Mandatory before finishing any code task** — do not skip `fallow audit` even when tests and lint pass.
+- `fallow audit`
+  - Standalone health gate (also runs as the last step of `npm run check`). Fails on complexity, dead-code, or duplication findings above threshold in changed files vs merge-base.
+  - Use `fallow explain <issue label>` when triaging a finding.
+  - CSS styling candidates are informational; complexity findings in changed TS/TSX are blocking.
 - `npm run test`
   - Runs full Vitest suite.
   - **Note**: In sandboxed agent environments (e.g., Qwen Code), `npm test` may fail due to environment restrictions. Use the PowerShell script instead:
@@ -54,7 +58,7 @@ If work touches AI import/export, also read `mds/architecture/ai-import-export-a
 3. Validate core flow for touched area (editor/sidebar/IPC).
 4. If the behavior path is hard to follow, open the matching doc in `mds/flows/` before changing code.
 5. Run `npm run lint` and focused tests while iterating.
-6. Run `npm run check` before finishing each task (mandatory unless you only modified mds).
+6. Run `npm run check` before finishing each task (mandatory unless you only modified mds). **All four steps must pass** — typecheck, tests, lint, and `fallow audit`. If `fallow audit` reports complexity or dead-code findings, fix them in the same task; do not defer.
 7. Run `npm run build` for final compile confidence.
 8. Run `npm run test:smoke` when touching preload/window/IPC startup paths.
 9. Update the documentation (see mandatory checklist below)
@@ -100,6 +104,16 @@ Good candidates:
 - Type query and verify active match highlight appears in the document.
 - Press Enter / Shift+Enter and verify next/previous navigation updates counter and highlight.
 - Verify typing keeps focus in find input (no focus steal to editor).
+- With find bar open, click into the editor and type text that matches the query; focus must stay in the editor.
+
+## Fallow audit (mandatory gate)
+
+Run `fallow audit` (or `npm run check`) before reporting any code task done.
+
+- **Blocking:** complexity, dead-code, or duplication findings above threshold in changed files.
+- **Informational:** CSS styling candidates (token sprawl, etc.) — triage but not required to fix unless you touched styles.
+- **Triage:** `fallow explain <label>` for context; see `mds/lessons-learned/fallow-false-positives.md` for known false positives in dead-code reports.
+- **While iterating:** if only find/editor files changed, `fallow audit` scopes to merge-base diff and is fast enough to run after each refactor pass.
 
 ## Split-pane dirty/unsaved manual checks
 

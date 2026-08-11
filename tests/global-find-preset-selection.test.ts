@@ -279,23 +279,26 @@ describe('global find preset selection', () => {
     await sleep(80)
 
     const editor = getQuillInstance(root)
-    const setSelectionSpy = vi.spyOn(editor, 'setSelection')
+    const getBoundsSpy = vi.spyOn(editor, 'getBounds').mockImplementation(() => ({
+      top: 10,
+      left: 10,
+      width: 50,
+      height: 20,
+    } as any))
 
     act(() => {
       postGlobalFindRequest({ path: 'book/a.md', query: 'target', options: { caseSensitive: false, wholeWord: false } })
     })
     await sleep(30)
 
-    const countTargetReveals = () =>
-      (setSelectionSpy.mock.calls as unknown[][]).filter(
-        (call) => call[0] === TARGET_RANGE[0] && call[1] === TARGET_RANGE[1],
-      ).length
-
-    const callsAfterFirstPass = countTargetReveals()
+    const callsAfterFirstPass = getBoundsSpy.mock.calls.length
     expect(callsAfterFirstPass).toBeGreaterThan(0)
 
-    // The settle pass (150ms) must re-assert the same reveal to survive late layout shifts.
+    // The settle pass (150ms) must re-assert scroll/bounds to survive late layout shifts,
+    // even when the find bar already has focus.
     await sleep(200)
-    expect(countTargetReveals()).toBeGreaterThan(callsAfterFirstPass)
+    expect(getBoundsSpy.mock.calls.length).toBeGreaterThan(callsAfterFirstPass)
+
+    getBoundsSpy.mockRestore()
   })
 })

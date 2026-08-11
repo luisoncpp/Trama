@@ -167,17 +167,20 @@ When things break after refactors, run the recovery sequence per `mds/dev-workfl
 
 - Ctrl/Cmd+F opens the floating find bar, but active match is not visually obvious in editor.
 - Typing in the find input steals focus back to editor after each character.
+- Find bar is open and typing in the editor body moves focus back to the find input (especially when the typed text matches the query).
 
 ### Root causes seen
 
 - Selection updates can move focus to Quill if `editor.focus()` or user-source selection APIs are used in the find loop.
 - Updating active match and overlay from unstable callbacks can trigger repeated effects and flaky behavior.
+- `useActiveMatchOverlayEffect()` runs on every `state.matches` change, including content-mutation refreshes while the user is editing. Unconditional `keepFindFocus()` in that effect steals focus from the editor.
 
 ### Current fix
 
 - Keep find input focused while searching; avoid explicit editor focus in query-update flow.
 - Use silent selection updates for active match and a separate visual overlay (`editor-find-highlight`) to make the match visible.
-- Keep find modules split (`rich-markdown-editor-find.tsx`, `rich-markdown-editor-find-overlay.tsx`, `rich-markdown-editor-find-visual.ts`) to satisfy lint limits.
+- Only call `revealActiveMatch()` and `keepFindFocus()` from the overlay effect when focus is inside `.editor-findbar` (`isFindBarFocused()`). Content-mutation refreshes update bounds without touching editor focus.
+- Keep find modules split (`rich-markdown-editor-find.tsx`, `rich-markdown-editor-find-overlay.tsx`, `editor-session-find-visual.ts`) to satisfy lint limits.
 
 ### Find bar buttons not clickable (Windows overlay titlebar)
 

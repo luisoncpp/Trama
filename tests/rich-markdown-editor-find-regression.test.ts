@@ -3,6 +3,7 @@ import { h, render } from 'preact'
 import { act } from 'preact/test-utils'
 import Quill from 'quill'
 import { getActiveMatchBounds } from '../src/features/project-editor/pane/rich-markdown-editor/editor-session/editor-session-private/editor-session-find-visual'
+import { isEditorBodyFocused, isFindBarFocused } from '../src/features/project-editor/pane/rich-markdown-editor/editor-session/editor-session-private/editor-session-find-focus'
 import { RichMarkdownEditor } from '../src/features/project-editor/pane/rich-markdown-editor/rich-markdown-editor'
 
 function sleep(ms: number) {
@@ -111,6 +112,88 @@ describe('getActiveMatchBounds', () => {
 
     expect(result).toBeNull()
     expect(getBounds).not.toHaveBeenCalled()
+  })
+})
+
+describe('isFindBarFocused', () => {
+  it('returns true when the find input or a find bar control is focused', () => {
+    const findbar = document.createElement('div')
+    findbar.className = 'editor-findbar'
+    const input = document.createElement('input')
+    const button = document.createElement('button')
+    findbar.append(input, button)
+    document.body.append(findbar)
+
+    const inputRef = { current: input }
+
+    input.focus()
+    expect(isFindBarFocused(inputRef)).toBe(true)
+
+    button.focus()
+    expect(isFindBarFocused(inputRef)).toBe(true)
+
+    findbar.remove()
+  })
+
+  it('returns false when focus is outside the find bar', () => {
+    const findbar = document.createElement('div')
+    findbar.className = 'editor-findbar'
+    const input = document.createElement('input')
+    const editor = document.createElement('div')
+    findbar.append(input)
+    document.body.append(findbar, editor)
+
+    const inputRef = { current: input }
+
+    editor.focus()
+    expect(isFindBarFocused(inputRef)).toBe(false)
+
+    findbar.remove()
+    editor.remove()
+  })
+})
+
+describe('isEditorBodyFocused', () => {
+  it('returns true when focus is inside the editor body but outside the find bar', () => {
+    const host = document.createElement('div')
+    const findbar = document.createElement('div')
+    findbar.className = 'editor-findbar'
+    const input = document.createElement('input')
+    const editorRoot = document.createElement('div')
+    editorRoot.className = 'ql-editor'
+    editorRoot.setAttribute('contenteditable', 'true')
+    findbar.append(input)
+    host.append(findbar, editorRoot)
+    document.body.append(host)
+
+    const hostRef = { current: host }
+    const inputRef = { current: input }
+
+    editorRoot.focus()
+    expect(isEditorBodyFocused(hostRef, inputRef)).toBe(true)
+
+    host.remove()
+  })
+
+  it('returns false when focus is in the find bar', () => {
+    const host = document.createElement('div')
+    const findbar = document.createElement('div')
+    findbar.className = 'editor-findbar'
+    const input = document.createElement('input')
+    const editorRoot = document.createElement('div')
+    editorRoot.className = 'ql-editor'
+    editorRoot.setAttribute('contenteditable', 'true')
+    findbar.append(input)
+    host.append(findbar, editorRoot)
+    document.body.append(host)
+
+    const hostRef = { current: host }
+    const inputRef = { current: input }
+
+    input.focus()
+    expect(isEditorBodyFocused(hostRef, inputRef)).toBe(false)
+
+    host.remove()
   })
 })
 
@@ -251,6 +334,161 @@ describe('RichMarkdownEditor find scroll regression', () => {
     expect(root.querySelector('.editor-find-highlight')).toBeTruthy()
 
     getBoundsSpy.mockRestore()
+  })
+
+  it('mantiene el foco en el input de busqueda mientras se escribe la consulta', async () => {
+    act(() => {
+      render(
+        h(RichMarkdownEditor, {
+          documentId: 'find-input-focus',
+          value: 'alpha beta gamma',
+          disabled: false,
+          onChange: () => {},
+          historyBackDisabled: true,
+          onHistoryBack: noop,
+          saveDisabled: false,
+          saveLabel: 'Guardar',
+          onSaveNow: () => {},
+          revertDisabled: true,
+          revertLabel: '',
+          onRevertNow: noop,
+          syncState: 'clean',
+          syncStateLabel: 'Sin cambios',
+        }),
+        root,
+      )
+    })
+
+    await sleep(80)
+
+    const editor = getQuillInstance(root)
+
+    act(() => {
+      editor.focus()
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'f', ctrlKey: true, bubbles: true }))
+    })
+    await sleep(30)
+
+    const findInput = root.querySelector('.editor-findbar__input') as HTMLInputElement
+    expect(document.activeElement).toBe(findInput)
+
+    for (const char of 'beta') {
+      act(() => {
+        findInput.value += char
+        findInput.dispatchEvent(new Event('input', { bubbles: true }))
+      })
+      await sleep(200)
+      expect(document.activeElement).toBe(findInput)
+    }
+  })
+
+  it('no roba foco del editor cuando el contenido muta con la barra de busqueda abierta', async () => {
+    act(() => {
+      render(
+        h(RichMarkdownEditor, {
+          documentId: 'find-focus-regression',
+          value: 'alpha beta',
+          disabled: false,
+          onChange: () => {},
+          historyBackDisabled: true,
+          onHistoryBack: noop,
+          saveDisabled: false,
+          saveLabel: 'Guardar',
+          onSaveNow: () => {},
+          revertDisabled: true,
+          revertLabel: '',
+          onRevertNow: noop,
+          syncState: 'clean',
+          syncStateLabel: 'Sin cambios',
+        }),
+        root,
+      )
+    })
+
+    await sleep(80)
+
+    const editor = getQuillInstance(root)
+    const editorRoot = root.querySelector('.ql-editor') as HTMLElement
+
+    act(() => {
+      editor.focus()
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'f', ctrlKey: true, bubbles: true }))
+    })
+    await sleep(30)
+
+    const findInput = root.querySelector('.editor-findbar__input') as HTMLInputElement
+    act(() => {
+      findInput.value = 'beta'
+      findInput.dispatchEvent(new Event('input', { bubbles: true }))
+    })
+    await sleep(30)
+
+    act(() => {
+      editorRoot.focus()
+      editor.insertText(editor.getLength() - 1, ' beta', 'user')
+    })
+    await sleep(200)
+
+    expect(document.activeElement).toBe(editorRoot)
+    expect(document.activeElement).not.toBe(findInput)
+  })
+
+  it('mantiene el foco en el editor al escribir tras buscar y volver al documento', async () => {
+    act(() => {
+      render(
+        h(RichMarkdownEditor, {
+          documentId: 'find-then-edit-focus',
+          value: 'alpha beta',
+          disabled: false,
+          onChange: () => {},
+          historyBackDisabled: true,
+          onHistoryBack: noop,
+          saveDisabled: false,
+          saveLabel: 'Guardar',
+          onSaveNow: () => {},
+          revertDisabled: true,
+          revertLabel: '',
+          onRevertNow: noop,
+          syncState: 'clean',
+          syncStateLabel: 'Sin cambios',
+        }),
+        root,
+      )
+    })
+
+    await sleep(80)
+
+    const editor = getQuillInstance(root)
+    const editorRoot = root.querySelector('.ql-editor') as HTMLElement
+
+    act(() => {
+      editor.focus()
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'f', ctrlKey: true, bubbles: true }))
+    })
+    await sleep(30)
+
+    const findInput = root.querySelector('.editor-findbar__input') as HTMLInputElement
+    for (const char of 'beta') {
+      act(() => {
+        findInput.value += char
+        findInput.dispatchEvent(new Event('input', { bubbles: true }))
+      })
+      await sleep(30)
+    }
+
+    act(() => {
+      editorRoot.focus()
+    })
+    await sleep(30)
+
+    for (let i = 0; i < 3; i += 1) {
+      act(() => {
+        editor.insertText(editor.getLength() - 1, ' x', 'user')
+      })
+      await sleep(200)
+      expect(document.activeElement).toBe(editorRoot)
+      expect(document.activeElement).not.toBe(findInput)
+    }
   })
 })
 

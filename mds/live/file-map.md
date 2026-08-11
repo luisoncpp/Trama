@@ -471,13 +471,23 @@ Mandatory doc navigation for new chats: start with `mds/START-HERE.md` â€” 
 - `src/features/project-editor/pane/rich-markdown-editor/editor-session/editor-session-private/editor-session-orchestration.ts`
   - Lifecycle effects, feature hooks (find, focus, tags, zoom, toolbar), and public `EditorSession` facade assembly for `useEditorSession`.
 - `src/features/project-editor/pane/rich-markdown-editor/editor-session/editor-session-private/editor-session-find.tsx`
-  - In-document find controller; suppresses replace affordances during read-only revision preview.
+  - In-document find controller entry hook (`useRichEditorFind`); wires search state, bar actions, and overlay view.
+- `src/features/project-editor/pane/rich-markdown-editor/editor-session/editor-session-private/editor-session-find-hooks.ts`
+  - Find bar lifecycle hooks: shortcuts, scroll bounds tracking, open/close actions, content-mutation effect wiring, and replace presentation resolver.
+- `src/features/project-editor/pane/rich-markdown-editor/editor-session/editor-session-private/editor-session-find-overlay-view.tsx`
+  - Find bar overlay view: binds search state to `FindOverlay` presentation props.
 - `src/features/project-editor/pane/rich-markdown-editor/editor-session/editor-session-private/editor-session-find-overlay.tsx`
   - Floating find UI with preview-aware replace toggle visibility.
 - `src/features/project-editor/pane/rich-markdown-editor/editor-session/editor-session-private/editor-session-find-state.ts`
   - Shared find/replace state helpers: search state hook (`useSearchState`), replace actions hook (`useReplaceActions`), Quill text helpers, and keyboard modifier detection.
+- `src/features/project-editor/pane/rich-markdown-editor/editor-session/editor-session-private/editor-session-find-focus.ts`
+  - Find bar focus helpers: detect whether focus is in the find bar or editor body, and restore find input without stealing editor focus.
+- `src/features/project-editor/pane/rich-markdown-editor/editor-session/editor-session-private/editor-session-find-overlay-effect.ts`
+  - Active-match overlay effect: reveals matches on query/navigation changes while treating content-mutation refreshes as bounds-only updates.
+- `src/features/project-editor/pane/rich-markdown-editor/editor-session/editor-session-private/editor-session-find-reveal.ts`
+  - Find match reveal helpers: scroll to the active match without stealing find-bar focus.
 - `src/features/project-editor/pane/rich-markdown-editor/editor-session/editor-session-private/editor-session-find-visual.ts`
-  - Active-match visual sync helpers: computes Quill bounds and keeps highlighted match visible while preserving input focus.
+  - Active-match bounds helpers: computes Quill bounds for the highlighted match overlay.
 - `src/features/project-editor/pane/rich-markdown-editor/editor-session/editor-session-private/editor-session-focus.ts`
   - Focus-mode hook orchestration: applies emphasis classes and wires scroll centering, selection tracking, and listener setup.
 - `src/features/project-editor/pane/rich-markdown-editor/editor-session/editor-session-private/editor-session-focus-helpers.ts`

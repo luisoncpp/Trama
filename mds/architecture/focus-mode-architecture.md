@@ -261,6 +261,17 @@ The ESC handler lives in `use-project-editor-shortcuts-effect.ts`. It checks for
 
 ---
 
+## Focus mode notes (important)
+
+- The stable fix is hybrid rendering:
+  - Primary: `::highlight(trama-focus-scope)` (true text-level emphasis).
+  - Fallback: geometric overlay only when Highlights API is unavailable.
+- Keep `paragraph` logic separate from inline scopes (`line`, `sentence`).
+- Do not move focus rendering internals back into `rich-markdown-editor.tsx`; keep them in dedicated hook/helpers to preserve lint compliance and maintainability.
+- Sidebar hidden via `display:none` + grid switch to `1fr` column. Do NOT use `--sidebar-width: 0px` alone — `display:none` removes the sidebar from the grid, auto-placing the editor in column 1 (which would be 0px). Always pair `display:none` with `grid-template-columns: 1fr`.
+- Scrollbar dimmed during focus via `::-webkit-scrollbar-thumb` with `color-mix(in oklab, var(--border-strong) 45%, transparent)`.
+
+
 ## References
 
 - Rich markdown editor architecture: `mds/architecture/rich-markdown-editor-core-architecture.md`
