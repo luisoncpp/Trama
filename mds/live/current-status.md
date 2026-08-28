@@ -27,6 +27,7 @@ Contents labels are implemented for spacers and page breaks. The canonical backw
 **Next step:** Folder move/reparent reintroduced in dedicated slice after merge.
 
 - Document content session refactor implemented: image/broken-image phase orchestration now lives in `DocumentContentSession` (renderer) and `DiskContentAdapter` (main process); pane state is editor-internal end-to-end and `forIpcSave` is the single save-time hydration point.
+- **Document order** (index `corkboardOrder`) is owned by `src/shared/document-order/`. Folder rename remaps order keys and path identities before reconcile regroups, so sidebar/export/staging keep custom order.
 
 ## Reliability
 

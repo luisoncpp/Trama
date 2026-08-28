@@ -47,6 +47,43 @@ describe('index reconciliation', () => {
     expect(persisted.corkboardOrder['']).toEqual(['scene-b', 'scene-a', 'scene-c'])
   })
 
+  it('carries document order across a folder rename remap', async () => {
+    const projectRoot = await mkdtemp(path.join(os.tmpdir(), 'trama-index-'))
+    const indexPath = path.join(projectRoot, '.trama.index.json')
+
+    await writeFile(
+      indexPath,
+      JSON.stringify(
+        {
+          version: '1.0.0',
+          corkboardOrder: {
+            'book/old-ch': ['book/old-ch/b.md', 'book/old-ch/a.md'],
+          },
+          cache: {
+            'book/old-ch/a.md': { name: 'A' },
+            'book/old-ch/b.md': { name: 'B' },
+          },
+        },
+        null,
+        2,
+      ),
+      'utf8',
+    )
+
+    const service = new IndexService(projectRoot)
+    const next = await service.reconcileIndex(
+      ['book/new-ch/a.md', 'book/new-ch/b.md'],
+      {
+        'book/new-ch/a.md': { name: 'A' },
+        'book/new-ch/b.md': { name: 'B' },
+      },
+      { renamedFolders: [{ from: 'book/old-ch', to: 'book/new-ch' }] },
+    )
+
+    expect(next.corkboardOrder['book/new-ch']).toEqual(['book/new-ch/b.md', 'book/new-ch/a.md'])
+    expect(next.corkboardOrder['book/old-ch']).toBeUndefined()
+  })
+
   it('updateCache only updates cache entries without rebuilding corkboardOrder', async () => {
     const projectRoot = await mkdtemp(path.join(os.tmpdir(), 'trama-index-'))
     const indexPath = path.join(projectRoot, '.trama.index.json')

@@ -1,6 +1,10 @@
 // @Architecture(descriptionShort="Book export ordering logic: derives base order from tree and applies per-folder")
-import path from 'node:path'
 import type { ProjectIndex, TreeItem } from '../../src/shared/ipc.js'
+import {
+  folderKeyFromDocumentPath,
+  orderIdentityFromCache,
+  rankSortByOrder,
+} from '../../src/shared/document-order/index.js'
 
 function flattenFileOrder(tree: TreeItem[]): string[] {
   const ordered: string[] = []
@@ -22,54 +26,17 @@ function flattenFileOrder(tree: TreeItem[]): string[] {
   return ordered
 }
 
-function folderFromPath(relativePath: string): string {
-  const folder = path.posix.dirname(relativePath)
-  return folder === '.' ? '' : folder
-}
-
-function idFromIndex(index: ProjectIndex, filePath: string): string {
-  const meta = index.cache[filePath]
-  if (meta && typeof meta.id === 'string' && meta.id.trim()) {
-    return meta.id
-  }
-
-  return filePath
-}
-
 function sortFolderByIndex(folderFilesInBaseOrder: string[], index: ProjectIndex): string[] {
   if (folderFilesInBaseOrder.length === 0) {
     return []
   }
 
-  const folder = folderFromPath(folderFilesInBaseOrder[0])
-  const explicitOrder = index.corkboardOrder[folder] ?? []
-  if (explicitOrder.length === 0) {
-    return folderFilesInBaseOrder
-  }
-
-  const rankById = new Map<string, number>()
-  for (let i = 0; i < explicitOrder.length; i++) {
-    rankById.set(explicitOrder[i], i)
-  }
-
-  return [...folderFilesInBaseOrder].sort((left, right) => {
-    const leftRank = rankById.get(idFromIndex(index, left))
-    const rightRank = rankById.get(idFromIndex(index, right))
-
-    if (leftRank != null && rightRank != null) {
-      return leftRank - rightRank
-    }
-
-    if (leftRank != null) {
-      return -1
-    }
-
-    if (rightRank != null) {
-      return 1
-    }
-
-    return 0
-  })
+  const folder = folderKeyFromDocumentPath(folderFilesInBaseOrder[0])
+  return rankSortByOrder(
+    folderFilesInBaseOrder,
+    index.corkboardOrder[folder] ?? [],
+    (filePath) => orderIdentityFromCache(index.cache, filePath),
+  )
 }
 
 export function orderBookFilesByIndex(baseTree: TreeItem[], index: ProjectIndex): string[] {
@@ -77,7 +44,7 @@ export function orderBookFilesByIndex(baseTree: TreeItem[], index: ProjectIndex)
   const byFolder = new Map<string, string[]>()
 
   for (const filePath of baseFileOrder) {
-    const folder = folderFromPath(filePath)
+    const folder = folderKeyFromDocumentPath(filePath)
     const list = byFolder.get(folder) ?? []
     list.push(filePath)
     byFolder.set(folder, list)
@@ -87,7 +54,7 @@ export function orderBookFilesByIndex(baseTree: TreeItem[], index: ProjectIndex)
   const consumed = new Set<string>()
 
   for (const filePath of baseFileOrder) {
-    const folder = folderFromPath(filePath)
+    const folder = folderKeyFromDocumentPath(filePath)
     if (consumed.has(folder)) {
       continue
     }

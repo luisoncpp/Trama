@@ -1,6 +1,6 @@
 # Project Index Architecture (`.trama.index.json`)
 
-> **Last updated:** 2026-05-20
+> **Last updated:** 2026-08-27
 
 ## Purpose
 
@@ -53,7 +53,7 @@ Reads `.trama.index.json` from the project root. Validates parsed fields: `versi
 
 Serializes the index to `.trama.index.json` with 2-space indentation.
 
-### `reconcileIndex(markdownFiles: string[], metaByPath: Record<string, DocumentMeta>): Promise<ProjectIndex>`
+### `reconcileIndex(markdownFiles, metaByPath, remaps?): Promise<ProjectIndex>`
 
 This is the full-rebuild function. It runs on **initial project open** and when no incremental cache is available. It rebuilds both `cache` and `corkboardOrder` from scratch.
 
@@ -62,7 +62,8 @@ This is the full-rebuild function. It runs on **initial project open** and when 
 1. Load the current index from disk.
 2. Build a new `cache` from the provided `markdownFiles` and `metaByPath`. If a file's meta is not available in the new scan, fall back to the cached value (`metaByPath[filePath] ?? current.cache[filePath] ?? {}`).
 3. Build `corkboardOrder`:
-   - Group all current document IDs by their folder path.
+   - If `remaps` is provided (folder/file renames from `openProject` incremental update), run `remapDocumentOrder()` first so previous **Document order** is keyed by the new folder paths.
+   - Group all current **Order identity** values by their folder path (`src/shared/document-order/`).
    - For each folder, take the previous order and **keep only IDs that still exist**.
    - **Append new IDs** (files not in the previous order) at the end.
 4. (Dead code) A rescue loop iterates `current.cache` and re-adds entries where the path is in `existingPaths` but missing from `next.cache`. Since step 2 already adds all `markdownFiles` to `next.cache`, this condition is never satisfied and the loop is a no-op.
@@ -74,8 +75,8 @@ This is the full-rebuild function. It runs on **initial project open** and when 
 |----------|----------|
 | File deleted externally | ID removed from `corkboardOrder`, entry removed from `cache` |
 | File created internally | ID appended to end of folder's `corkboardOrder`, meta added to `cache` |
-| File renamed | Old entry removed from `cache`, new entry added; ID preserved if `meta.id` exists |
-| Folder renamed | `cache` paths updated (filesystem scan finds new paths); `corkboardOrder` old folder key entry dropped, IDs appear under new project-relative folder key in **filesystem scan order** (custom order is NOT carried over — `current.corkboardOrder[newFolderKey]` does not exist) |
+| File renamed | Old entry removed from `cache`, new entry added; ID preserved if `meta.id` exists. Path-valued **Order identity** entries are remapped when `renamedFiles` is passed into `reconcileIndex`. |
+| Folder renamed | `cache` paths updated by incremental updater; `corkboardOrder` keys and path-valued identities are remapped via `remapDocumentOrder` **before** regrouping. Custom **Document order** is carried to the new folder key. |
 | External file added (watcher) | Reconciliation appends it to `corkboardOrder` and `cache` |
 
 ### `updateCache(changedFiles: string[], metaByPath: Record<string, DocumentMeta>): Promise<ProjectIndex>`
@@ -179,12 +180,14 @@ markInternalWrite(result.renamedTo)
 
 ## ID resolution
 
-The `idFromMeta(meta, filePath)` function determines the document ID:
+**Order identity** lives in `src/shared/document-order/` (`orderIdentity`):
 
 1. If `meta.id` is a non-empty string → use it.
 2. Otherwise → fall back to `filePath` (the relative path).
 
-This means documents without an explicit `id` in their frontmatter use their **current project-relative path** as the fallback identifier. That fallback changes on rename, so it is only stable while the path stays unchanged.
+This means documents without an explicit `id` in their frontmatter use their **current project-relative path** as the fallback identifier. That fallback changes on rename, so path identities must be remapped (same module, `remapDocumentOrder`) before reconcile regroups folders.
+
+Book export (`book-export-order.ts`) and Staging Basket sort (`relative-path-hardening.ts`) import the same rank-sort and identity helpers. They must not reimplement folder-key or identity rules.
 
 ## CorkboardOrder key scoping
 
@@ -220,22 +223,31 @@ This means documents without an explicit `id` in their frontmatter use their **c
 | Stale IDs after rename without explicit `id` | Reconciliation uses current `meta.id` or path; old path entries are pruned |
 | Watcher-triggered reconciliation loop | `markInternalWrite()` prevents re-processing internal mutations |
 | Corrupted index file | `loadIndex()` catches parse errors and returns a safe default |
-| CorkboardOrder value mismatch (meta.id vs path) | Reorder writes project-relative paths; reconciliation writes document IDs (preferring `meta.id`). For files without `meta.id` both use the same path. Reconciliation overwrites reorder values on next run, so custom order is preserved only until the next file mutation. |
-| Folder rename loses custom order | Reconciliation creates new folder key with no previous order; files appear in filesystem scan order |
+| CorkboardOrder value mismatch (meta.id vs path) | Reorder writes project-relative paths; reconciliation writes **Order identity** (preferring `meta.id`). For files without `meta.id` both use the same path. Reconciliation overwrites reorder values on next run, so custom order is preserved only until the next file mutation. |
+| Folder rename loses custom order | `reconcileIndex` remaps `corkboardOrder` with `remapDocumentOrder` before regrouping when `openProject` passes `renamedFolders` / `renamedFiles` |
 | Cache invalidation on project switch | `getProjectCache` returns `null` when `rootPath` changes, forcing a full scan |
 
 ## Current test coverage
 
 - `tests/order-handlers.test.ts` verifies `handleReorderFiles()` with project-relative payloads.
 - `tests/sidebar-tree.test.ts` verifies `sortTreeRowsByOrder()` and `scopeCorkboardOrder()` with section-relative keys and values.
-- `tests/index-reconciliation.test.ts` verifies `reconcileIndex` and `updateCache` behavior.
+- `tests/index-reconciliation.test.ts` verifies `reconcileIndex` and `updateCache` behavior, including folder-rename order remap.
+- `tests/document-order.test.ts` verifies the shared **Document order** module in isolation.
 - `tests/incremental-project-updater.test.ts` verifies pure incremental tree/meta mutations.
 - `tests/incremental-open-project.test.ts` verifies `handleOpenProject` with incremental params: cache hits, cache invalidation on root change, and empty-incremental reorder path.
+
+## Fast debug playbook
+
+1. Confirm `openProject` incremental payload includes `renamedFolders` / `renamedFiles` (`sidebar-file-actions/private/folder-crud.ts`).
+2. Confirm `handleOpenProject` passes that object into `IndexService.reconcileIndex` as `remaps`.
+3. If order still resets, inspect `.trama.index.json` keys (project-relative folder paths) vs **Order identity** values (`meta.id` vs path).
+4. Run `npm run test -- tests/document-order.test.ts tests/index-reconciliation.test.ts tests/book-export-order.test.ts`.
 
 ## Related files
 
 | File | Role |
 |------|------|
+| `src/shared/document-order/` | Canonical **Document order**: folder keys, **Order identity**, rank-sort, keep+append, rename remap |
 | `electron/services/index-service.ts` | Core index logic (load/save/reconcile/updateCache) |
 | `electron/services/project-state-cache.ts` | In-memory cache for `tree`, `markdownFiles`, `metaByPath` |
 | `electron/services/incremental-project-updater.ts` | Pure logic to mutate cached state for file/folder CRUD |
@@ -247,7 +259,7 @@ This means documents without an explicit `id` in their frontmatter use their **c
 | `electron/ipc/handlers/project-handlers/project-open-handler.ts` | Project open with full-scan vs incremental branch |
 | `electron/ipc-runtime.ts` | Active project state + service lifecycle |
 | `electron/services/watcher-service.ts` | Chokidar wrapper + internal/external write classification; ignores `.trama.index.json` |
-| `electron/services/book-export-order.ts` | Book export ordering — reads project-relative `corkboardOrder` keys |
+| `electron/services/book-export-order.ts` | Book export ordering — reads project-relative `corkboardOrder` keys via shared rank-sort |
 | `src/shared/ipc.ts` | Schema definitions (`projectIndexSchema`, `documentMetaSchema`, `incrementalUpdateSchema`) |
 | `src/features/project-editor/components/sidebar/sidebar-path-scoping.ts` | Canonical path seam: `scopeCorkboardOrder()`, `buildScopedReorderHandler()`, `getScopedFiles()` |
 | `src/features/project-editor/components/sidebar/sidebar-panel-body.tsx` | Thin adapter that routes sidebar callbacks through the canonical path seam |

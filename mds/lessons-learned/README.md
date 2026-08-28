@@ -27,6 +27,7 @@ Avoid: "bug description + fix". Prefer: "what I learned that applies to future w
 
 | File | Topic | Date |
 |------|-------|------|
+| `remap-document-order-before-reconcile-regroup.md` | Folder rename remaps **Document order** before reconcile regroups by new folder keys | 2026-08-27 |
 | `find-shortcut-scope-includes-find-bar-sibling.md` | Find-bar is a sibling of the Quill host; Ctrl+F scope must include it or native find swallows Ctrl+S | 2026-08-26 |
 | `fixed-context-menus-need-viewport-clamp.md` | Fixed `position:fixed` context menus must measure then clamp to `window.inner*` or near-edge clicks clip | 2026-08-01 |
 | `filtered-contents-ordinals-must-stay-document-global.md` | Contents filters must not compact ordinal identity used by Quill reveal and directive mutations | 2026-07-23 |

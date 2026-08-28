@@ -111,6 +111,7 @@ Mandatory doc navigation for new chats: start with `mds/START-HERE.md` â€” 
   - YAML frontmatter parse/serialize.
 - `electron/services/index-service.ts`
   - `.trama.index.json` load/save/reconcile/updateCache.
+  - Reconcile remaps **Document order** via `src/shared/document-order/` before regrouping folder keys.
   - Architecture: `mds/architecture/project-index-architecture.md`.
 - `electron/services/git-history-service.ts`
   - Local Git history orchestrator: repository discovery/init, scoped snapshot staging+commit, revision listing, preview reads, historical restore.
@@ -146,7 +147,7 @@ Mandatory doc navigation for new chats: start with `mds/START-HERE.md` â€” 
 - `electron/services/book-export-image-source-transform.ts`
   - Shared markdown image-source rewriting helpers: converts local image references to embedded data URLs during chapter build and rewrites sources to EPUB-compatible `file://` URLs when packaging.
 - `electron/services/book-export-order.ts`
-  - Book export ordering logic: derives base order from tree and applies per-folder `corkboardOrder` from index with stable fallback.
+  - Book export ordering logic: derives base order from tree and applies per-folder **Document order** through `src/shared/document-order/`.
 - `electron/services/book-export-sanitize.ts`
   - Book export sanitize pipeline: strips frontmatter for all formats, strips HTML comments only for markdown output, and normalizes line endings/trailing whitespace.
 - `electron/services/book-export-directives.ts`
@@ -190,6 +191,14 @@ Mandatory doc navigation for new chats: start with `mds/START-HERE.md` â€” 
 
 - `src/app.tsx`
   - Top-level app composition.
+- `src/shared/document-order/index.ts`
+  - Public **Document order** seam: folder keys, **Order identity**, rank-sort, reconcile keep+append, and folder/file rename remap.
+- `src/shared/document-order/private/document-order-identity.ts`
+  - `folderKeyFromDocumentPath`, `orderIdentity`, `orderIdentityFromCache`.
+- `src/shared/document-order/private/document-order-rank.ts`
+  - `rankSortByOrder`, `reconcileFolderOrder`, and `rebuildDocumentOrder`.
+- `src/shared/document-order/private/document-order-remap.ts`
+  - `remapDocumentOrder` for folder-key and path-identity remaps.
 - `src/index.css`
   - CSS import manifest only. Owns the ordered `@import` chain for `src/styles/01-10-*.css` after `@import 'tailwindcss'`.
 - `src/styles/`
@@ -763,7 +772,9 @@ Mandatory doc navigation for new chats: start with `mds/START-HERE.md` â€” 
 - `tests/workspace-keyboard-shortcuts.test.ts`
 - `tests/frontmatter-parser.test.ts`
 - `tests/index-reconciliation.test.ts`
-  - Reconciliation and `updateCache` behavior tests.
+  - Reconciliation and `updateCache` behavior tests, including folder-rename **Document order** remap.
+- `tests/document-order.test.ts`
+  - Shared **Document order** module: folder keys, **Order identity**, rank-sort, reconcile, and rename remap.
 - `tests/incremental-project-updater.test.ts`
   - Unit tests for `incremental-project-updater.ts`: file/folder create, delete, rename operations on cached tree state.
 - `tests/incremental-open-project.test.ts`

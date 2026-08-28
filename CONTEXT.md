@@ -65,6 +65,14 @@ Unrelated staged or unstaged repository changes are not part of a **Snapshot**.
 The content Trama owns inside a **Project**: `book/`, `outline/`, `lore/`, `res/`, and the root `.trama.index.json` file.
 _Avoid_: Whole repository, whole worktree
 
+**Document order**:
+The user-defined sequence of documents inside one folder of **Trama-managed project content**. It is persisted in `.trama.index.json` as `corkboardOrder` (project-relative folder key → ordered **Order identity** list). Sidebar, book export, and the **Staging Basket** all read this sequence; they do not invent a second ranking.
+_Avoid_: Corkboard (the cancelled board UI), filesystem order, export-only order
+
+**Order identity**:
+The stable key for one document inside **Document order**: frontmatter `id` when that field is a non-empty string, otherwise the project-relative file path.
+_Avoid_: Always path, always id, row filename
+
 **Map Document**:
 A writing document of type `map` stored as a standard `.md` file, whose metadata configuration (frontmatter) defines a background image and interactive points (markers) with destination tag links, and whose contents are rendered visually as an interactive zoomable/pannable map layer instead of a text editor.
 _Avoid_: JSON document, standalone image map
@@ -180,3 +188,7 @@ Domain expert: No. Unsaved changes are not the same as uncommitted changes; the 
 Developer: When exporting several book files with no pagebreak between them, should HTML leave no gap?
 
 Domain expert: No. Every book format should apply the **Inter-document gap** unless an **Author page break** already ended the prior document. If HTML export skips that gap, treat it as a bug, not the standard.
+
+Developer: If I rename a folder, should sidebar order and book export order reshuffle to filesystem order?
+
+Domain expert: No. **Document order** for that folder should follow the renamed key and remapped path identities. **Order identity** values that are frontmatter ids stay the same.

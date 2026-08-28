@@ -55,7 +55,7 @@ User drags file
 onReorderFiles [use-project-editor-ui-actions.ts]
   → window.tramaApi.reorderFiles({ folderPath, orderedIds })
   → handleReorderFiles [electron/ipc/handlers/project-handlers/order-handlers.ts]
-    → IndexService.updateFolderOrder()
+    → persistFolderOrder() on IndexService
     → persist to .trama.index.json
   → openProject(rootPath)  [use-project-editor-ui-actions.ts]
     → refreshes snapshot including corkboardOrder
@@ -233,7 +233,7 @@ SidebarTree
 | `src/features/project-editor/use-project-editor-folder-actions.ts` | `useProjectEditorFolderActions` (rename, delete, move) |
 | `electron/ipc/handlers/project-handlers/order-handlers.ts` | `handleReorderFiles`, `handleMoveFile` |
 | `electron/ipc/handlers/project-handlers/folder-handlers.ts` | `handleRenameFolder`, `handleDeleteFolder`, `handleMoveFolder` |
-| `electron/services/index-service.ts` | `IndexService.updateFolderOrder()` |
+| `electron/services/index-service.ts` | `persistFolderOrder()` |
 
 ## Slices
 

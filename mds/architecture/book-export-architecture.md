@@ -12,7 +12,7 @@ Términos de dominio compartidos: `CONTEXT.md` (sección Book export). Decisión
 
 ```
 book-export-service.ts          — Orquestador: compila capítulos, sanitiza, dispatch por formato
-├── book-export-order.ts        — Ordena archivos por índice corkboardOrder
+├── book-export-order.ts        — Ordena archivos por **Document order** (`src/shared/document-order/`)
 ├── book-export-sanitize.ts     — Elimina frontmatter, normaliza saltos
 ├── book-export-directives.ts   — Parsea directivas layout; `replaceDirectivesForPdfPrint`, `stripLeadingPagebreakAndBlankLines`
 ├── book-export-image-utils.ts  — Resolve paths, carga bytes, parsea data URLs, lee dimensiones PNG/JPEG, escala para DOCX, extrae referencias markdown

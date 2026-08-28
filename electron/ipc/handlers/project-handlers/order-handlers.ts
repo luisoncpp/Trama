@@ -8,6 +8,7 @@ import {
 } from '../../../../src/shared/ipc.js'
 import { errorEnvelope } from '../../../ipc-errors.js'
 import { getActiveIndexService, getActiveProjectRoot, markInternalWrite } from '../../../ipc-runtime.js'
+import { persistFolderOrder } from '../../../services/index-service.js'
 import { documentRepository } from './shared.js'
 
 export async function handleReorderFiles(rawPayload: unknown): Promise<IpcEnvelope<ReorderFilesResponse>> {
@@ -22,7 +23,7 @@ export async function handleReorderFiles(rawPayload: unknown): Promise<IpcEnvelo
       return errorEnvelope('NO_ACTIVE_PROJECT', 'No active project. Open a project first.')
     }
 
-    await indexService.updateFolderOrder(payload.data.folderPath, payload.data.orderedIds)
+    await persistFolderOrder(indexService, payload.data.folderPath, payload.data.orderedIds)
 
     return {
       ok: true,

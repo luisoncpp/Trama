@@ -1,5 +1,9 @@
 // @Architecture(descriptionShort="Private implementation detail for parent module")
 import { isRelevantPath } from '../../../../../shared/project-sections'
+import {
+  orderIdentityFromCache,
+  rankSortByOrder,
+} from '../../../../../shared/document-order'
 import type { ProjectSnapshot, TreeItem, ProjectIndex } from '../../../../../shared/ipc'
 
 export type StagingHardenReport = {
@@ -117,14 +121,6 @@ export function formatStagingSkipMessage(report: StagingHardenReport): string | 
   return `Skipped: ${parts.join(', ')}.`
 }
 
-function idFromIndex(index: ProjectIndex, filePath: string): string {
-  const meta = index.cache[filePath]
-  if (meta && typeof meta.id === 'string' && meta.id.trim()) {
-    return meta.id
-  }
-  return filePath
-}
-
 function sortTreeItems(items: TreeItem[], index: ProjectIndex, parentPath: string): TreeItem[] {
   const folders = items.filter((item) => item.type === 'folder')
   const files = items.filter((item) => item.type === 'file')
@@ -146,31 +142,14 @@ function sortTreeItems(items: TreeItem[], index: ProjectIndex, parentPath: strin
     folders.sort((a, b) => a.title.localeCompare(b.title, 'es'))
   }
 
-  const explicitOrder = index.corkboardOrder[parentPath] ?? []
-  const rankById = new Map<string, number>()
-  for (let i = 0; i < explicitOrder.length; i++) {
-    rankById.set(explicitOrder[i], i)
-  }
+  const rankedFiles = rankSortByOrder(
+    files,
+    index.corkboardOrder[parentPath] ?? [],
+    (file) => orderIdentityFromCache(index.cache, file.path),
+    (left, right) => left.title.localeCompare(right.title, 'es'),
+  )
 
-  files.sort((left, right) => {
-    const leftId = idFromIndex(index, left.path)
-    const rightId = idFromIndex(index, right.path)
-    const leftRank = rankById.get(leftId)
-    const rightRank = rankById.get(rightId)
-
-    if (leftRank != null && rightRank != null) {
-      return leftRank - rightRank
-    }
-    if (leftRank != null) {
-      return -1
-    }
-    if (rightRank != null) {
-      return 1
-    }
-    return left.title.localeCompare(right.title, 'es')
-  })
-
-  return [...folders, ...files]
+  return [...folders, ...rankedFiles]
 }
 
 function getSortedFilePaths(tree: TreeItem[], index: ProjectIndex): string[] {

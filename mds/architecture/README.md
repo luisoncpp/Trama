@@ -70,7 +70,7 @@ This index was last rebuilt on 2026-04-23. At that time, lessons-learned were cl
 | Follow editor typing behavior step-by-step | `mds/flows/rich-editor-typing-flow.md` → `src/features/project-editor/components/rich-markdown-editor-core.ts` → `src/features/project-editor/components/rich-markdown-editor-quill.ts` |
 | Follow split-pane activation behavior step-by-step | `mds/flows/switch-pane-flow.md` → `src/features/project-editor/workspace-actions.ts` → `src/features/project-editor/project-editor-private/state.ts` |
 | Change pane document history behavior | `mds/flows/pane-history-navigation-flow.md` → `src/features/project-editor/pane/pane-workspace.ts` → `src/features/project-editor/workspace-actions.ts` → `src/features/project-editor/use-project-editor.ts` |
-| Change filesystem/repo layer | `electron/services/document-repository.ts` → `electron/ipc/handlers/project-handlers/document-handlers.ts` |
+| Change document order / corkboardOrder | `mds/architecture/project-index-architecture.md` → `src/shared/document-order/` → `electron/services/index-service.ts` → `tests/document-order.test.ts` |
 | Add a test | `tests/` + `mds/dev-workflow.md` (checklist) |
 | Understand split pane coordination | `mds/architecture/split-pane-coordination.md` (canonical: per-pane state contracts, two-layer model, pane-targeted action rules) |
 | Debug split-pane issues | `mds/architecture/split-pane-coordination.md` → `src/features/project-editor/pane/workspace-editor-panels.tsx` → `src/features/project-editor/workspace-actions.ts` → `tests/project-editor-conflict-flow.test.ts` |

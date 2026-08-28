@@ -43,7 +43,11 @@ export async function handleOpenProject(rawPayload: unknown): Promise<IpcEnvelop
     }
 
     const indexService = new IndexService(projectRoot)
-    const index = await indexService.reconcileIndex(markdownFiles, metaByPath)
+    const index = await indexService.reconcileIndex(
+      markdownFiles,
+      metaByPath,
+      payload.data.incrementalUpdate,
+    )
 
     setActiveProject(projectRoot, indexService, markdownFiles, metaByPath)
 
