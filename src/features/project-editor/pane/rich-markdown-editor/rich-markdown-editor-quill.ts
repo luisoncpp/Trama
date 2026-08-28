@@ -4,6 +4,7 @@ import TurndownService from 'turndown'
 import { marked } from 'marked'
 import { renderDirectiveArtifactsToMarkdown } from '../../../../shared/markdown-layout-directives'
 import { LayoutDirectiveController } from './editor-session/editor-session-internals'
+import { createSelectAllKeyboardBinding } from './editor-session/editor-session-private/editor-session-select-all'
 import {
   hydrateMarkdownImages,
   renderBrokenImageCommentsAsHtml,
@@ -38,7 +39,10 @@ export function createQuillEditor(host: HTMLDivElement): Quill {
         userOnly: true,
       },
       keyboard: {
-        bindings: LayoutDirectiveController.getKeyboardBindings(),
+        bindings: {
+          ...LayoutDirectiveController.getKeyboardBindings(),
+          ...createSelectAllKeyboardBinding(),
+        },
       },
     },
   })

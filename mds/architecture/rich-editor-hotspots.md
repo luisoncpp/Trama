@@ -34,6 +34,8 @@ This is not the canonical full architecture guide. For the full subsystem design
 | Quill lifecycle / re-init | Cursor jumps, editor remounts unexpectedly, runtime toggle acts like full re-create | `src/features/project-editor/pane/rich-markdown-editor/editor-session/editor-session-private/editor-session-lifecycle.ts` -> `mds/lessons-learned/rich-editor-effect-deps-remount.md` |
 | Focus-mode geometry / scroll | Active line is miscentered, EOF spacing behaves strangely, selection desync after scroll | `src/features/project-editor/pane/rich-markdown-editor/editor-session/editor-session-private/editor-session-focus-scroll.ts` -> `src/features/project-editor/pane/rich-markdown-editor/editor-session/editor-session-private/editor-session-focus-geometry.ts` |
 | Workspace command bridge | Context-menu command or editor command does nothing | `src/shared/workspace-context-menu.ts` -> `src/features/project-editor/pane/rich-markdown-editor/rich-markdown-editor-commands.ts` |
+| Contextmenu selection vs center embeds | Selection highlight vanishes on right-click when the range includes a leading `center:start` (Ctrl+A / select-to-start after centering the first row) | `src/features/project-editor/pane/rich-markdown-editor/editor-session/editor-session-private/editor-session-contextmenu-selection.ts` -> `mds/lessons-learned/quill-contextmenu-selection-collapses-on-center-embeds.md` |
+| Find / save shortcuts | Ctrl+S does nothing while the local find field is focused, or a second Ctrl+F opens native find | `mds/architecture/keyboard-shortcuts-architecture.md` -> `editor-session-find-focus.ts` -> `use-project-editor-shortcuts-effect.ts` |
 
 ## 1. Debounced serialization
 
@@ -191,6 +193,27 @@ Commands may be wired correctly in the native menu but not in the renderer, or v
 - renderer and native menu must agree on the `WorkspaceContextCommand` union
 - command routing must use `WORKSPACE_CONTEXT_MENU_EVENT`
 
+## 8. Contextmenu selection vs center embeds
+
+### Why it is fragile
+
+Center boundaries are `contenteditable=false` BlockEmbeds. Native right-click can collapse a browser range that includes them; Quill’s `mouseup` → `update()` then clears the highlight. Opening the Electron menu does not restore Quill’s range.
+
+### Main files
+
+- `src/features/project-editor/pane/rich-markdown-editor/editor-session/editor-session-private/editor-session-contextmenu-selection.ts`
+- `src/features/project-editor/pane/rich-markdown-editor/editor-session/editor-session-private/editor-session-lifecycle.ts`
+- `electron/main-process/context-menu.ts`
+- `mds/lessons-learned/quill-contextmenu-selection-collapses-on-center-embeds.md`
+
+### Invariants
+
+- non-collapsed Quill selections must survive native `contextmenu` when the range includes layout-directive embeds
+- stash from `lastRange`/`savedRange` (never `getSelection()`, which re-syncs from a collapsed native range)
+- Select All in the editor must go through Quill (`selectAllInEditor`), not Electron `{ role: 'selectAll' }`
+- restore with `'silent'` `setSelection` across mouseup sync and Electron `menu.popup`
+- caret-only right-clicks must not invent a selection
+
 ## Fast routing by symptom
 
 | Symptom | Start here |
@@ -204,6 +227,7 @@ Commands may be wired correctly in the native menu but not in the renderer, or v
 | "Tag underlines distort on typing" | Tag overlay positions → `editor-session-tag-overlay.ts` recalc via `subscribeContentMutated()` |
 | "Images disappear after edit / placeholder leaks into parent state" | Image pipeline → `mds/architecture/image-handling-architecture.md` → `src/features/project-editor/document-content/document-content-session.ts` |
 | "Context menu command does nothing" | Workspace command bridge |
+| "Selection highlight vanishes on right-click after centering first row" | Contextmenu selection vs center embeds |
 
 ## Related docs
 

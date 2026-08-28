@@ -4,6 +4,7 @@ import TurndownService from 'turndown'
 import { marked } from 'marked'
 import { WORKSPACE_CONTEXT_MENU_EVENT, type WorkspaceContextCommand } from '../../../../shared/workspace-context-menu'
 import { renderDirectiveArtifactsToMarkdown } from '../../../../shared/markdown-layout-directives'
+import { selectAllInEditor } from './editor-session/editor-session-private/editor-session-select-all'
 import { serializeEditorMarkdownFromRef } from './rich-markdown-editor-quill'
 
 function getCopySourceHtml(editor: Quill): string {
@@ -23,8 +24,18 @@ export function registerWorkspaceCommandListener(
     const customEvent = event as CustomEvent<WorkspaceContextCommand | undefined>
     const command = customEvent.detail
     if (!command) return
-    if (command.type !== 'paste-markdown' && command.type !== 'copy-as-markdown') return
+    if (
+      command.type !== 'paste-markdown'
+      && command.type !== 'copy-as-markdown'
+      && command.type !== 'select-all'
+    ) {
+      return
+    }
     if (!editor.hasFocus()) return
+    if (command.type === 'select-all') {
+      selectAllInEditor(editor)
+      return
+    }
     if (command.type === 'paste-markdown' && editor.root.getAttribute('data-readonly-preview') === 'true') return
     try {
       if (command.type === 'paste-markdown') {

@@ -465,7 +465,11 @@ Mandatory doc navigation for new chats: start with `mds/START-HERE.md` â€” 
 - `src/features/project-editor/pane/rich-markdown-editor/editor-session/editor-session-types.ts`
   - Full `EditorSession` interface exported for rich-editor consumers; extends the minimal `EditorSession` in `project-editor-types.ts`.
 - `src/features/project-editor/pane/rich-markdown-editor/editor-session/editor-session-private/editor-session-lifecycle.ts`
-  - Core Quill lifecycle class (`EditorSessionImpl`): initialize Quill, apply markdown, enable/disable, spellcheck, typography, workspace commands; delegates inbound/outbound value to `EditorContentLoop`.
+  - Core Quill lifecycle class (`EditorSessionImpl`): initialize Quill, apply markdown, enable/disable, spellcheck, typography, workspace commands, contextmenu selection preserve; delegates inbound/outbound value to `EditorContentLoop`.
+- `src/features/project-editor/pane/rich-markdown-editor/editor-session/editor-session-private/editor-session-contextmenu-selection.ts`
+  - Preserves non-collapsed Quill selection across native right-click when the range includes layout-directive BlockEmbeds; stashes `lastRange`/`savedRange` (not `getSelection()`) and silent-restores across Quill sync + Electron `menu.popup`.
+- `src/features/project-editor/pane/rich-markdown-editor/editor-session/editor-session-private/editor-session-select-all.ts`
+  - Quill-owned select-all (`setSelection(0, length - 1)`) plus Ctrl/Cmd+A keyboard binding so Electron native SelectAll does not own the editor range.
 - `src/features/project-editor/pane/rich-markdown-editor/editor-session/editor-session-private/editor-session-content.ts`
   - **Editor content loop**: debounced flush, canonical value tracking, external apply with equivalence skip and `forceApplyVersion`, and the `isApplyingExternalValue` apply-lock. Pane `content` stays editor-internal (placeholder markdown); hydration only happens at the `forIpcSave` boundary.
 - `src/features/project-editor/pane/rich-markdown-editor/editor-session/editor-session-private/editor-session-orchestration.ts`
@@ -481,7 +485,7 @@ Mandatory doc navigation for new chats: start with `mds/START-HERE.md` â€” 
 - `src/features/project-editor/pane/rich-markdown-editor/editor-session/editor-session-private/editor-session-find-state.ts`
   - Shared find/replace state helpers: search state hook (`useSearchState`), replace actions hook (`useReplaceActions`), Quill text helpers, and keyboard modifier detection.
 - `src/features/project-editor/pane/rich-markdown-editor/editor-session/editor-session-private/editor-session-find-focus.ts`
-  - Find bar focus helpers: detect whether focus is in the find bar or editor body, and restore find input without stealing editor focus.
+  - Find bar focus helpers: detect whether focus is in the find bar or editor body, restore find input without stealing editor focus, decide whether Ctrl+F/H is in scope for this pane (`isFindShortcutInScope`), and intercept those shortcuts (`handleFindReplaceShortcut`).
 - `src/features/project-editor/pane/rich-markdown-editor/editor-session/editor-session-private/editor-session-find-overlay-effect.ts`
   - Active-match overlay effect: reveals matches on query/navigation changes while treating content-mutation refreshes as bounds-only updates.
 - `src/features/project-editor/pane/rich-markdown-editor/editor-session/editor-session-private/editor-session-find-reveal.ts`
@@ -553,6 +557,8 @@ Mandatory doc navigation for new chats: start with `mds/START-HERE.md` â€” 
   - Deep module public facade for the Contents navigation feature â€” re-exports parser, label-source fallback, Quill reveal helpers (`scanQuillHeadings`, `revealQuillHeading`, `computeCenteredScrollTop`), Contents types, and `HeadingRevealTarget` (declared in `project-editor-types.ts` for the Electron seam).
 - `src/features/project-editor/document-contents/private/document-headings-parser.ts`
   - Pure markdown ATX heading and layout directive extraction (H1â€“H3, labeled/unlabeled pagebreaks and spacers, and blank lines >= 2): strips YAML frontmatter, tracks fences, strips closing hashes and inline markers, omits empty headings, and retains document-global 0-based ordinals when filters omit rows.
+- `src/features/project-editor/document-contents/private/document-headings-layout-items.ts`
+  - Page-break and spacer directive matchers used by `document-headings-parser.ts` (comment + HTML forms, labels, spacer line counts).
 - `src/features/project-editor/document-contents/private/document-layout-label.ts`
   - Pure source-level Contents label mutation. Preserves canonical directives and converts a selected blank-line spacer to a labeled explicit spacer directive.
 - `src/features/project-editor/document-contents/private/quill-heading-reveal.ts`
@@ -810,6 +816,8 @@ Mandatory doc navigation for new chats: start with `mds/START-HERE.md` â€” 
   - Center-range and center toggle coverage: boundary extraction from Delta ops, center segment derivation (single/multiple/malformed), line-range selection normalization, inside-center split/left-only toggle behavior, outside-center insertion, adjacent-segment extension, and no-nesting idempotence checks.
 - `tests/rich-markdown-editor-center-delete-boundary.test.ts`
   - Slice 3 center seam deletion coverage: Backspace/Delete around `center:start`/`center:end` shift the nearest boundary across the seam and leave unrelated deletes to Quill's default behavior.
+- `tests/rich-markdown-editor-contextmenu-selection.test.ts`
+  - Selection preserve across native contextmenu when the range includes leading center BlockEmbeds; Quill-owned select-all + right-mousedown restore; selection-change re-apply; workspace `select-all` command; unregister cleanup.
 - `tests/ai-import-service.test.ts`
   - Import service coverage: replace mode overwrites existing file content, append mode appends with separator, preview correctly classifies new vs existing files.
 - `tests/ai-import-ipc-handler.test.ts`

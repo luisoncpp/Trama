@@ -56,7 +56,7 @@ export function useRichEditorFind({
   editorDisabled = false,
 }: UseRichEditorFindParams) {
   const [replaceValue, setReplaceValue] = useState('')
-  const { state, updateMatches, applySearch, refreshMatches, setMatches, jumpMatch, selectMatch, stateRef } =
+  const { state, updateMatches, applySearch, refreshMatches, setMatches, jumpMatch, stateRef } =
     useSearchState(editorRef)
   const inputRef = useRef<HTMLInputElement | null>(null)
   const keepFindFocus = useCallback(buildKeepFindFocus(hostRef, inputRef), [hostRef])
@@ -64,7 +64,7 @@ export function useRichEditorFind({
   const barActions = useFindBarActions({ inputRef, jumpMatch, keepFindFocus })
   const handleOpenReplace = readOnlyPreview ? barActions.openFind : barActions.openReplace
   const replaceActions = useReplaceActions({
-    editorRef, stateRef, replaceValue, keepFindFocus, setMatches, selectMatch,
+    editorRef, stateRef, replaceValue, keepFindFocus, setMatches,
   })
   const toggleFindOption = buildToggleFindOption({ stateRef, applySearch, keepFindFocus })
 

@@ -9,6 +9,7 @@ import { createQuillEditor, syncEditorSpellcheck, applyMarkdownToEditor } from '
 import { registerWorkspaceCommandListener } from '../../rich-markdown-editor-commands.js'
 import { registerTypographyHandler } from '../../rich-markdown-editor-typography.js'
 import { EditorContentLoop } from './editor-session-content.js'
+import { registerContextMenuSelectionPreserve } from './editor-session-contextmenu-selection.js'
 import { setLayoutDirectiveLabel } from './layout-directive-label.js'
 
 export class EditorSessionImpl implements EditorSessionCore {
@@ -19,6 +20,7 @@ export class EditorSessionImpl implements EditorSessionCore {
   private contentLoop: EditorContentLoop
   private onChangeRef: { current: (value: string) => void }
   private workspaceHandler: (event: Event) => void
+  private unregisterContextMenuSelectionPreserve: () => void
   private contentMutatedSubscribers = new Set<() => void>()
   private disposed = false
 
@@ -50,6 +52,7 @@ export class EditorSessionImpl implements EditorSessionCore {
     })
 
     this.workspaceHandler = registerWorkspaceCommandListener(this.editor, this.turndownRef)
+    this.unregisterContextMenuSelectionPreserve = registerContextMenuSelectionPreserve(this.editor)
     registerTypographyHandler(this.editor)
   }
 
@@ -117,6 +120,7 @@ export class EditorSessionImpl implements EditorSessionCore {
     if (this.disposed) return
     this.disposed = true
     this.contentLoop.dispose()
+    this.unregisterContextMenuSelectionPreserve()
     window.removeEventListener(WORKSPACE_CONTEXT_MENU_EVENT, this.workspaceHandler as EventListener)
   }
 

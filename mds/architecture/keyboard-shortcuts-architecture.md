@@ -46,8 +46,8 @@ use-project-editor.ts
 | Shortcut | Where | What it does |
 |----------|-------|-------------|
 | `Ctrl/Cmd + R` | Electron `main.ts` `before-input-event` | Reload project (intercepted from Electron native reload) |
-| `Ctrl/Cmd + F` | `rich-markdown-editor-find.tsx` | Open in-document find bar |
-| `Ctrl/Cmd + H` | `rich-markdown-editor-find-state.ts` | Open in-document find + replace |
+| `Ctrl/Cmd + F` | `editor-session-find-hooks.ts` | Open in-document find bar |
+| `Ctrl/Cmd + H` | `editor-session-find-hooks.ts` | Open in-document find + replace |
 
 ## Renderer vs Electron-Native Shortcuts
 
@@ -97,9 +97,21 @@ This dual approach ensures compatibility with both US English (where `+` require
 
 All shortcuts respect these guard conditions:
 
-1. **Form field exclusion** — `isFormFieldTarget()` blocks shortcuts when focus is inside `<input>`, `<textarea>`, or `<select>`
+1. **Form field exclusion** — `isFormFieldTarget()` blocks shortcuts when focus is inside `<input>`, `<textarea>`, or `<select>`, except `Ctrl/Cmd + S` which still saves the active document
 2. **Modal exclusion** — `hasOpenModal()` blocks Escape when a dialog with `aria-modal="true"` is open
 3. **Modifier exclusion** — zoom and save shortcuts require `!event.altKey`; history navigation intentionally uses bare `Alt + Left/Right`
+
+## Find shortcut scope
+
+`Ctrl/Cmd + F` and `Ctrl/Cmd + H` are registered per editor pane in `useFindShortcutEffect`. They must fire when:
+
+1. The Quill editor reports focus, or
+2. The event target is inside that pane's Quill host, or
+3. The event target is inside that pane's `.editor-findbar`
+
+The find bar is a **sibling** of the Quill host, both children of `.rich-editor-shell`. `host.contains(findInput)` is therefore always false. If the listener only checks host containment, a second `Ctrl+F` while the local find field is focused is not `preventDefault`'d and Chromium can consume later shortcuts such as `Ctrl+S`.
+
+`isFindShortcutInScope()` in `editor-session-find-focus.ts` is the shared scope check. It looks up `:scope > .editor-findbar` on the host's parent so split-pane listeners do not steal each other's find bars.
 
 ## Key Files
 
@@ -111,5 +123,29 @@ All shortcuts respect these guard conditions:
 | `src/features/project-editor/use-project-editor-layout-actions.ts` | Split pane toggle/set actions |
 | `src/features/project-editor/use-project-editor-ui-actions-helpers.ts` | `saveNow`, `updateEditorValue`, `setZoomLevel` actions |
 | `electron/main.ts` | `before-input-event` for Electron-native shortcut interception |
-| `src/features/project-editor/pane/rich-markdown-editor/rich-markdown-editor-find.tsx` | Ctrl+F find bar |
-| `src/features/project-editor/pane/rich-markdown-editor/rich-markdown-editor-find-state.ts` | Ctrl+H find+replace |
+| `src/features/project-editor/pane/rich-markdown-editor/editor-session/editor-session-private/editor-session-find-hooks.ts` | Ctrl+F / Ctrl+H find bar shortcuts |
+| `src/features/project-editor/pane/rich-markdown-editor/editor-session/editor-session-private/editor-session-find-focus.ts` | Find-bar focus helpers and `isFindShortcutInScope` |
+| `src/features/project-editor/pane/rich-markdown-editor/editor-session/editor-session-private/editor-session-find.tsx` | Find controller entry |
+| `src/features/project-editor/pane/rich-markdown-editor/editor-session/editor-session-private/editor-session-find-state.ts` | `isModF` / `isModH` detectors |
+
+## Debug playbook
+
+1. Confirm `Ctrl+S` from a plain `<input>` still calls `onSaveNow` (`tests/workspace-keyboard-shortcuts.test.ts`).
+2. Confirm `isFindShortcutInScope(host, null, findInput)` is true when the find bar is a sibling of the host.
+3. Open the find bar, focus the query input, press `Ctrl+F` again, and check `[trama-find-shortcut] intercept Ctrl+F` in the renderer console. The event must be `defaultPrevented`.
+4. With the find input still focused, press `Ctrl+S` and check `[trama-save-shortcut] Ctrl+S` with `isFormField: true`. The dirty document must save.
+5. If save still fails, look for Chromium's native find-in-page UI; that means `preventDefault` did not run for the preceding `Ctrl+F`.
+
+## Focused tests
+
+```bash
+npm run test -- tests/workspace-keyboard-shortcuts.test.ts tests/rich-markdown-editor-find-regression.test.ts
+```
+
+## Related docs
+
+- `mds/flows/save-document-flow.md`
+- `mds/lessons-learned/find-shortcut-scope-includes-find-bar-sibling.md`
+- `mds/lessons-learned/global-esc-shortcut-modal-guard.md`
+- `mds/live/troubleshooting.md` (In-document Find)
+

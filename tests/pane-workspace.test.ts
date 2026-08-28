@@ -27,6 +27,7 @@ function makeRefs() {
       current: {
         flush: (): string | null => '# flushed',
         revealHeading: () => {},
+        setLayoutDirectiveLabel: () => false,
         flushSync: (): string | null => '# flushed',
         isSerializationPending: () => false,
         tagOverlayRecalcRef: { current: false },
@@ -37,6 +38,7 @@ function makeRefs() {
       current: {
         flush: (): string | null => '# flushed',
         revealHeading: () => {},
+        setLayoutDirectiveLabel: () => false,
         flushSync: (): string | null => '# flushed',
         isSerializationPending: () => false,
         tagOverlayRecalcRef: { current: false },

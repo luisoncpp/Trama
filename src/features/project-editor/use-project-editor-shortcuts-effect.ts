@@ -43,6 +43,12 @@ function handleZoomReset(onZoomReset: () => void, event: KeyboardEvent) {
 }
 
 function handleSave(onSaveNow: () => void, event: KeyboardEvent) {
+  const target = event.target
+  console.info('[trama-save-shortcut] Ctrl+S', {
+    isFormField: isFormFieldTarget(target),
+    tag: target instanceof HTMLElement ? target.tagName : null,
+    className: target instanceof HTMLElement ? target.className : null,
+  })
   event.preventDefault()
   onSaveNow()
 }
@@ -143,9 +149,14 @@ function handleNavigationAndZoomShortcut(
   return false
 }
 
+function isSaveShortcut(event: KeyboardEvent): boolean {
+  const isCommandKey = event.ctrlKey || event.metaKey
+  return isCommandKey && !event.altKey && !event.shiftKey && event.code === 'KeyS'
+}
+
 function makeKeydownHandler(params: UseProjectEditorShortcutsEffectParams) {
   return (event: KeyboardEvent) => {
-    if (isFormFieldTarget(event.target)) return
+    if (isFormFieldTarget(event.target) && !isSaveShortcut(event)) return
 
     if (event.key === 'Escape' && !hasOpenModal()) {
       event.preventDefault()
@@ -166,7 +177,7 @@ function makeKeydownHandler(params: UseProjectEditorShortcutsEffectParams) {
 }
 
 // Exported for testing
-export { isFormFieldTarget, hasOpenModal, handleCommandShortcut, handleNavigationAndZoomShortcut }
+export { isFormFieldTarget, hasOpenModal, isSaveShortcut, makeKeydownHandler, handleCommandShortcut, handleNavigationAndZoomShortcut }
 
 export function useProjectEditorShortcutsEffect(params: UseProjectEditorShortcutsEffectParams): void {
   useEffect(/* registerWorkspaceShortcuts */ () => {

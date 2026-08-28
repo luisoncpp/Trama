@@ -2,7 +2,7 @@
 
 ## Trigger
 
-User clicks the diskette save button in the rich editor toolbar.
+User clicks the diskette save button in the rich editor toolbar, or presses `Ctrl/Cmd + S` (including while focus is in a form field such as the local find input).
 
 ## Entry point
 
@@ -18,7 +18,7 @@ Save is the user-visible boundary between dirty pane state and persisted markdow
 2. `RichMarkdownEditor` forwards `saveDisabled` and `saveLabel` into `useSyncToolbarControls()`.
 3. `RichEditorToolbarController.syncDocumentControls()` updates the toolbar save button (`.ql-save-changes`).
 4. The controller syncs `disabled`, `title`, and `aria-label` without replacing the icon markup.
-5. Clicking the enabled diskette button calls `onSaveNow`.
+5. Clicking the enabled diskette button calls `onSaveNow`. `Ctrl/Cmd + S` reaches the same `saveNow` path through `useProjectEditorShortcutsEffect`, including when the event target is an `<input>` such as the local find field.
 6. In split mode, `PaneEditor` passes explicit pane identity: `actions.saveNow(pane)`.
 7. `saveNow(pane?)` resolves the target pane and calls `paneWorkspace.savePaneIfDirty(targetPane)`.
 8. `PaneWorkspace` flushes the pane's debounced editor serialization ref, then saves the latest content.
@@ -60,6 +60,7 @@ Save is the user-visible boundary between dirty pane state and persisted markdow
 | `src/features/project-editor/pane/rich-markdown-editor/toolbar-private/rich-markdown-editor-toolbar-dom.ts` | Creates and orders the diskette save button |
 | `src/features/project-editor/pane/rich-markdown-editor/toolbar-private/rich-markdown-editor-toolbar-helpers.ts` | Defines the save diskette icon button markup |
 | `src/features/project-editor/workspace-actions.ts` | Save action entry point |
+| `src/features/project-editor/use-project-editor-shortcuts-effect.ts` | Ctrl+S detection; save is exempt from the form-field guard |
 | `src/features/project-editor/pane/pane-workspace.ts` | Flush + save + mark-clean coordinator |
 | `tests/rich-markdown-editor-toolbar-zoom.test.ts` | Regression coverage for save icon render and disabled/enabled state |
 | `tests/project-editor-conflict-flow.test.ts` | Regression coverage for pane-targeted save in split mode |
@@ -72,16 +73,18 @@ Save is the user-visible boundary between dirty pane state and persisted markdow
 | Save icon disappears after sync | Toolbar controller replaced `textContent` instead of tooltip/aria state | `rich-markdown-editor-toolbar-controller.ts` |
 | Save button enabled when document is clean | `saveDisabled` derivation drifted from pane dirty state | `editor-panel.tsx` |
 | Clicking secondary save writes primary document | Pane identity was not passed explicitly | `pane-editor.tsx` |
+| Ctrl+S does nothing while the find field is focused | Find-bar keydown left Ctrl+F unprevented, or the form-field guard swallowed save | `editor-session-find-focus.ts`, `use-project-editor-shortcuts-effect.ts` |
 
 ## Focused tests
 
 ```bash
-npm run test -- tests/rich-markdown-editor-toolbar-zoom.test.ts tests/project-editor-conflict-flow.test.ts
+npm run test -- tests/rich-markdown-editor-toolbar-zoom.test.ts tests/project-editor-conflict-flow.test.ts tests/workspace-keyboard-shortcuts.test.ts
 ```
 
 ## Related docs
 
 - `mds/architecture/editor-serialization-debounce-architecture.md`
+- `mds/architecture/keyboard-shortcuts-architecture.md`
 - `mds/architecture/split-pane-coordination.md`
 - `mds/flows/rich-editor-typing-flow.md`
 - `mds/flows/rich-editor-revert-changes-flow.md`

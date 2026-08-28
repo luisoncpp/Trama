@@ -220,6 +220,7 @@ describe('revertChanges', () => {
     editorSessionRefs.primary.current = {
       flush: flushSpy,
       revealHeading: () => {},
+      setLayoutDirectiveLabel: () => false,
       getEditor: () => null,
       getCanonicalValue: () => '',
       subscribeContentMutated: () => () => {},

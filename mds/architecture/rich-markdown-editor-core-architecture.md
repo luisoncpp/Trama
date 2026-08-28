@@ -81,7 +81,9 @@ If you need the shortest path to the editor's risky seams instead of the full su
 | `rich-markdown-editor-view.tsx` | Render shell: attaches DOM refs, renders find bar, tag highlights, and delegates to session effects |
 | `editor-session/editor-session.ts` | Public `EditorSession` interface + `useEditorSession` hook |
 | `editor-session/editor-session-types.ts` | Full `EditorSession` interface and supporting types |
-| `editor-session/editor-session-private/editor-session-lifecycle.ts` | Quill init, disposal, disabled/spellcheck/read-only sync; delegates to content loop |
+| `editor-session/editor-session-private/editor-session-lifecycle.ts` | Quill init, disposal, disabled/spellcheck/read-only sync; registers contextmenu selection preserve; delegates to content loop |
+| `editor-session/editor-session-private/editor-session-contextmenu-selection.ts` | Preserves Quill selection across native contextmenu when BlockEmbed ranges collapse |
+| `editor-session/editor-session-private/editor-session-select-all.ts` | Quill-owned select-all helper + Ctrl/Cmd+A keyboard binding |
 | `editor-session/editor-session-private/editor-session-content.ts` | **Editor content loop**: debounced flush, canonical tracking, external apply, apply-lock |
 | `editor-session/editor-session-private/editor-session-orchestration.ts` | Lifecycle effects, feature hooks, and public facade assembly |
 | `editor-session/editor-session-private/layout-directive-controller.ts` | Layout directive orchestrator: center toggle, pagebreak/spacer, clipboard, keyboard |
@@ -110,7 +112,7 @@ If you need the shortest path to the editor's risky seams instead of the full su
 | `editor-session/editor-session-private/editor-session-toolbar-private/editor-session-toolbar-helpers.ts` | Toolbar helper utilities |
 | `rich-markdown-editor-value-sync.ts` | Canonical editor-value normalization/equality for image-bearing markdown |
 | `rich-markdown-editor-quill.ts` | Quill creation, markdown parse/serialize (see `image-handling-architecture.md`) |
-| `rich-markdown-editor-commands.ts` | Command bridge via CustomEvent (`paste-markdown`, `copy-as-markdown`) |
+| `rich-markdown-editor-commands.ts` | Command bridge via CustomEvent (`paste-markdown`, `copy-as-markdown`, `select-all`) |
 | `rich-markdown-editor-typography.ts` | Typography replacements (`--` → `—`) |
 | `../../shared/markdown-image-placeholder.ts` | Image extraction, placeholder generation, hydration, in-memory cache |
 
@@ -332,6 +334,7 @@ export type WorkspaceContextCommand =
   | { type: 'set-split-ratio'; ratio: number }
   | { type: 'paste-markdown' }
   | { type: 'copy-as-markdown' }
+  | { type: 'select-all' }
 ```
 
 ### Handler (`rich-markdown-editor-commands.ts`)
@@ -343,6 +346,13 @@ window.addEventListener(WORKSPACE_CONTEXT_MENU_EVENT, handler)
 The editor handler listens for this global event and executes:
 - **`paste-markdown`**: Read clipboard → markdown → insert via `dangerouslyPasteHTML`
 - **`copy-as-markdown`**: Serialize selection → clipboard as markdown
+- **`select-all`**: Quill `setSelection(0, length - 1)` when that editor has focus
+
+### Selection preserve on native contextmenu
+
+Opening Electron’s native context menu does not clear Quill selection in app code. However, when the Quill range includes layout-directive `BlockEmbed`s (`center:start`/`center:end`, `contenteditable=false`), Chromium can collapse the native range; Quill’s `mouseup` → `Selection.update()` then drops the highlight. `EditorSessionImpl` registers `registerContextMenuSelectionPreserve` so a stable Quill range (`lastRange`/`savedRange`, not `getSelection()`) is stashed on right-mousedown/`contextmenu` and restored with `'silent'` `setSelection` across that sync and Electron’s async `menu.popup`.
+
+**Select All:** Electron `{ role: 'selectAll' }` must not own Ctrl+A while the editor is focused — that native range collapses before stash. Use Quill `selectAllInEditor` via the app-menu custom item, Quill Ctrl/Cmd+A binding, and workspace command `{ type: 'select-all' }`. See `mds/lessons-learned/quill-contextmenu-selection-collapses-on-center-embeds.md`.
 
 ### Trigger (from sidebar/workspace)
 

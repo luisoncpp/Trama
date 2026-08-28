@@ -36,47 +36,76 @@ function dispatchWorkspaceCommand(
   )
 }
 
+/** Prefer Quill select-all when a .ql-editor is focused; otherwise native selectAll. */
+function selectAllFromMenu(win: BrowserWindow): void {
+  void win.webContents.executeJavaScript(
+    `(function () {
+      const active = document.activeElement;
+      const inQuill = active instanceof Element && !!active.closest('.ql-editor');
+      if (inQuill) {
+        window.dispatchEvent(new CustomEvent(${JSON.stringify(WORKSPACE_CONTEXT_MENU_EVENT)}, {
+          detail: { type: 'select-all' }
+        }));
+        return;
+      }
+      document.execCommand('selectAll');
+    })();`,
+    true,
+  )
+}
+
+function buildEditMenu(win: BrowserWindow): Electron.MenuItemConstructorOptions {
+  return {
+    label: 'Edit',
+    submenu: [
+      { role: 'undo' },
+      { role: 'redo' },
+      { type: 'separator' },
+      { role: 'cut' },
+      { role: 'copy' },
+      { role: 'paste' },
+      {
+        label: 'Select All',
+        accelerator: 'CmdOrCtrl+A',
+        click: () => {
+          selectAllFromMenu(win)
+        },
+      },
+    ],
+  }
+}
+
+function buildViewMenu(win: BrowserWindow): Electron.MenuItemConstructorOptions {
+  return {
+    label: 'View',
+    submenu: [
+      {
+        label: 'Back',
+        accelerator: 'Alt+Left',
+        click: () => dispatchWorkspaceCommand(win, { type: 'history-back' }),
+      },
+      {
+        label: 'Forward',
+        accelerator: 'Alt+Right',
+        click: () => dispatchWorkspaceCommand(win, { type: 'history-forward' }),
+      },
+      { type: 'separator' },
+      { role: 'toggleDevTools' },
+      { type: 'separator' },
+      {
+        label: 'Toggle Fullscreen',
+        accelerator: 'CmdOrCtrl+Shift+F',
+        click: () => dispatchWorkspaceCommand(win, { type: 'toggle-fullscreen' }),
+      },
+    ],
+  }
+}
+
 function buildMenuTemplate(win: BrowserWindow): Electron.MenuItemConstructorOptions[] {
   return [
-    {
-      label: 'File',
-      submenu: [{ role: 'close' }],
-    },
-    {
-      label: 'Edit',
-      submenu: [
-        { role: 'undo' },
-        { role: 'redo' },
-        { type: 'separator' },
-        { role: 'cut' },
-        { role: 'copy' },
-        { role: 'paste' },
-        { role: 'selectAll' },
-      ],
-    },
-    {
-      label: 'View',
-      submenu: [
-        {
-          label: 'Back',
-          accelerator: 'Alt+Left',
-          click: () => dispatchWorkspaceCommand(win, { type: 'history-back' }),
-        },
-        {
-          label: 'Forward',
-          accelerator: 'Alt+Right',
-          click: () => dispatchWorkspaceCommand(win, { type: 'history-forward' }),
-        },
-        { type: 'separator' },
-        { role: 'toggleDevTools' },
-        { type: 'separator' },
-        {
-          label: 'Toggle Fullscreen',
-          accelerator: 'CmdOrCtrl+Shift+F',
-          click: () => dispatchWorkspaceCommand(win, { type: 'toggle-fullscreen' }),
-        },
-      ],
-    },
+    { label: 'File', submenu: [{ role: 'close' }] },
+    buildEditMenu(win),
+    buildViewMenu(win),
     {
       label: 'Help',
       submenu: [

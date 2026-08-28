@@ -17,7 +17,7 @@ The solution cannot be to disable the application menu entirely via `Menu.setApp
 ## Solution
 
 Replace Electron's default application menu with a custom template that:
-- **Keeps**: File (close), Edit (undo, redo, cut, copy, paste, selectAll), View (Back, Forward, toggleDevTools, togglefullscreen), Help
+- **Keeps**: File (close), Edit (undo, redo, cut, copy, paste, Select All via Quill-aware custom item), View (Back, Forward, toggleDevTools, togglefullscreen), Help
 - **Removes**: Zoom controls from the View menu; Window menu entirely
 
 The custom menu is applied via `Menu.setApplicationMenu(Menu.buildFromTemplate(template))`.
@@ -51,7 +51,8 @@ On Windows with `titleBarStyle: 'hidden'`, Electron does not paint a native menu
     { role: 'cut' },
     { role: 'copy' },
     { role: 'paste' },
-    { role: 'selectAll' },
+    // Custom Select All: Quill setSelection when .ql-editor focused, else document.execCommand
+    { label: 'Select All', accelerator: 'CmdOrCtrl+A', click: selectAllFromMenu },
   ]
 },
 {

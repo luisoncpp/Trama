@@ -2,6 +2,8 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import {
   isFormFieldTarget,
   hasOpenModal,
+  isSaveShortcut,
+  makeKeydownHandler,
   handleCommandShortcut,
   handleNavigationAndZoomShortcut,
 } from '../src/features/project-editor/use-project-editor-shortcuts-effect'
@@ -75,6 +77,83 @@ describe('hasOpenModal', () => {
     div.setAttribute('aria-modal', 'false')
     document.body.appendChild(div)
     expect(hasOpenModal()).toBe(false)
+  })
+})
+
+describe('isSaveShortcut', () => {
+  it('returns true for Ctrl+S', () => {
+    expect(isSaveShortcut(makeKeyEvent({ ctrlKey: true, code: 'KeyS' }))).toBe(true)
+  })
+
+  it('returns true for Cmd+S', () => {
+    expect(isSaveShortcut(makeKeyEvent({ metaKey: true, code: 'KeyS' }))).toBe(true)
+  })
+
+  it('returns false for Ctrl+Shift+S', () => {
+    expect(isSaveShortcut(makeKeyEvent({ ctrlKey: true, shiftKey: true, code: 'KeyS' }))).toBe(false)
+  })
+
+  it('returns false for Ctrl+Alt+S', () => {
+    expect(isSaveShortcut(makeKeyEvent({ ctrlKey: true, altKey: true, code: 'KeyS' }))).toBe(false)
+  })
+})
+
+describe('makeKeydownHandler', () => {
+  it('blocks non-save shortcuts when focus is in a form field', () => {
+    const params = makeParams()
+    const handler = makeKeydownHandler(params)
+    const input = document.createElement('input')
+    document.body.appendChild(input)
+    window.addEventListener('keydown', handler)
+
+    input.dispatchEvent(makeKeyEvent({ ctrlKey: true, code: 'Period', bubbles: true }))
+    expect(params.onToggleSplitLayout).not.toHaveBeenCalled()
+
+    window.removeEventListener('keydown', handler)
+    document.body.removeChild(input)
+  })
+
+  it('allows Ctrl+S to save when focus is in a form field', () => {
+    const params = makeParams()
+    const handler = makeKeydownHandler(params)
+    const input = document.createElement('input')
+    document.body.appendChild(input)
+    window.addEventListener('keydown', handler)
+
+    input.dispatchEvent(makeKeyEvent({ ctrlKey: true, code: 'KeyS', bubbles: true }))
+    expect(params.onSaveNow).toHaveBeenCalledOnce()
+
+    window.removeEventListener('keydown', handler)
+    document.body.removeChild(input)
+  })
+
+  it('allows Cmd+S to save when focus is in a textarea', () => {
+    const params = makeParams()
+    const handler = makeKeydownHandler(params)
+    const textarea = document.createElement('textarea')
+    document.body.appendChild(textarea)
+    window.addEventListener('keydown', handler)
+
+    textarea.dispatchEvent(makeKeyEvent({ metaKey: true, code: 'KeyS', bubbles: true }))
+    expect(params.onSaveNow).toHaveBeenCalledOnce()
+
+    window.removeEventListener('keydown', handler)
+    document.body.removeChild(textarea)
+  })
+
+  it('allows Ctrl+S to save when focus is in the local find input', () => {
+    const params = makeParams()
+    const handler = makeKeydownHandler(params)
+    const input = document.createElement('input')
+    input.className = 'editor-findbar__input'
+    document.body.appendChild(input)
+    window.addEventListener('keydown', handler)
+
+    input.dispatchEvent(makeKeyEvent({ ctrlKey: true, code: 'KeyS', bubbles: true }))
+    expect(params.onSaveNow).toHaveBeenCalledOnce()
+
+    window.removeEventListener('keydown', handler)
+    document.body.removeChild(input)
   })
 })
 

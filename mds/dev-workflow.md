@@ -105,6 +105,8 @@ Good candidates:
 - Press Enter / Shift+Enter and verify next/previous navigation updates counter and highlight.
 - Verify typing keeps focus in find input (no focus steal to editor).
 - With find bar open, click into the editor and type text that matches the query; focus must stay in the editor.
+- With the find input focused, press Ctrl/Cmd+S and confirm the dirty document saves.
+- With the find input focused, press Ctrl/Cmd+F again: the query should re-select and native Chromium find must not appear; Ctrl/Cmd+S must still save afterward.
 
 ## Fallow audit (mandatory gate)
 

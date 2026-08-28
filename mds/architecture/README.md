@@ -21,6 +21,7 @@ Canonical technical guides — the single source of truth for each subsystem's d
 | `focus-mode-architecture.md` | Highlights API rendering, overlay fallback, scope dimming | |
 | `image-handling-architecture.md` | Inline base64 image workflow: dual-representation strategy, image cache, load-edit-save lifecycle | |
 | `ipc-architecture.md` | IPC channel taxonomy, extension workflow, envelope pattern, cache invalidation | |
+| `keyboard-shortcuts-architecture.md` | Workspace and editor shortcut registration, form-field guards, find-bar scope vs Quill host | |
 | `layout-ownership.md` | Project editor layout ownership map: sidebar width, focus overrides, split ratio, editor fill contract | |
 | `map-document-architecture.md` | Map document renderer path: meta-only marker edits, pan/zoom view state, pane-targeted navigation | |
 | `relationships-document-architecture.md` | Relationships chart renderer: graph nodes/edges, toolbar tools, add-character Auto tag, tag navigation | |
@@ -54,6 +55,7 @@ This index was last rebuilt on 2026-04-23. At that time, lessons-learned were cl
 | Refactor sidebar action propagation | `mds/plan/sidebar-editor-actions-context-plan.md` → `src/features/project-editor/project-editor-actions-context.tsx` → `src/features/project-editor/components/sidebar/sidebar-scope-path-breadcrumb.tsx` |
 | Debug sidebar path scoping | `mds/architecture/sidebar-path-scoping-model.md` → `src/features/project-editor/components/sidebar/sidebar-path-scoping.ts` → `src/features/project-editor/components/sidebar/sidebar-panel-body.tsx` → `src/features/project-editor/components/sidebar/sidebar-panel-logic.ts` |
 | Change editor behavior | `src/features/project-editor/components/rich-markdown-editor*.ts*` + `mds/architecture/editor-serialization-debounce-architecture.md` + `mds/architecture/image-handling-architecture.md` |
+| Debug workspace / editor keyboard shortcuts | `mds/architecture/keyboard-shortcuts-architecture.md` → `src/features/project-editor/use-project-editor-shortcuts-effect.ts` → `src/features/project-editor/pane/rich-markdown-editor/editor-session/editor-session-private/editor-session-find-hooks.ts` → `tests/workspace-keyboard-shortcuts.test.ts` |
 | Implement/debug map documents | `mds/spec/map-document-markers-spec.md` → `mds/architecture/map-document-architecture.md` → `mds/plan/map-document-markers-implementation-plan.md` → `src/features/project-editor/pane/editor-panel.tsx` + `src/features/project-editor/pane/map-editor/` |
 | Implement/debug document contents navigation (heading index) | `mds/spec/document-contents-navigation-spec.md` → `mds/architecture/document-contents-architecture.md` → `mds/plan/done/document-contents-navigation-implementation-plan.md` |
 | Implement/debug relationships charts | `mds/architecture/relationships-document-architecture.md` → `src/features/project-editor/pane/relationships-editor/index.ts` (facade) → `tests/relationships-editor-helpers.test.ts` |

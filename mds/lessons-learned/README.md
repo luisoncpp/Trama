@@ -27,6 +27,7 @@ Avoid: "bug description + fix". Prefer: "what I learned that applies to future w
 
 | File | Topic | Date |
 |------|-------|------|
+| `find-shortcut-scope-includes-find-bar-sibling.md` | Find-bar is a sibling of the Quill host; Ctrl+F scope must include it or native find swallows Ctrl+S | 2026-08-26 |
 | `fixed-context-menus-need-viewport-clamp.md` | Fixed `position:fixed` context menus must measure then clamp to `window.inner*` or near-edge clicks clip | 2026-08-01 |
 | `filtered-contents-ordinals-must-stay-document-global.md` | Contents filters must not compact ordinal identity used by Quill reveal and directive mutations | 2026-07-23 |
 | `global-find-preset-refresh-after-query-commit.md` | Global search presets must refresh matches after the preset query/options commit and after reveal bounds settle | 2026-07-09 |
@@ -220,6 +221,7 @@ Avoid: "bug description + fix". Prefer: "what I learned that applies to future w
 | `relationships-auto-tag-uses-label-not-slug.md` | Add-character Auto tag matches the lowered full label against `tagIndex`, not the `buildNodeId` slug; `id` and `destinationTag` are independent | 2026-06-14 |
 | `relationships-emoji-chips-must-not-affect-edge-geometry.md` | Emoji decoration chips below a node pill must be absolutely positioned (out of flow) so the anchor box and `estimateNodeHalfExtents` stay label-only; otherwise edges miss the pill border | 2026-06-18 |
 | `quill-setselection-always-focuses-root.md` | `setSelection` (even `'silent'`) DOM-focuses the Quill root via `setNativeRange`; jsdom keeps that focus on `contenteditable=false` roots, so assert `editor.focus()` was not called instead of `hasFocus() === false` | 2026-07-21 |
+| `quill-contextmenu-selection-collapses-on-center-embeds.md` | Native right-click can collapse browser selection when the Quill range includes center BlockEmbeds; stash on `contextmenu` and silent-restore after Quill’s mouseup sync | 2026-08-26 |
 | `project-editor-model-state-omits-editor-meta.md` | `model.state` strips `editorMeta` at runtime (`Omit` enforced in `use-project-editor.ts`); shell-level code must re-derive document type from pane states via `deriveActivePaneDocument` | 2026-07-21 |
 | `sidebar-rail-section-persistence-allowlist.md` | A new rail section also needs the `use-sidebar-ui-state.ts` persistence allowlist, or the stored selection silently falls back to `explorer` on next start | 2026-07-21 |
 | `quill-block-embed-clipboard-and-tag-name.md` | Quill 2 `BlockEmbed` blots require uppercase `static tagName = 'DIV'` for Parchment matching and explicit clipboard Delta matchers | 2026-07-22 |

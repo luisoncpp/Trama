@@ -180,6 +180,7 @@ When things break after refactors, run the recovery sequence per `mds/dev-workfl
 - Keep find input focused while searching; avoid explicit editor focus in query-update flow.
 - Use silent selection updates for active match and a separate visual overlay (`editor-find-highlight`) to make the match visible.
 - Only call `revealActiveMatch()` and `keepFindFocus()` from the overlay effect when focus is inside `.editor-findbar` (`isFindBarFocused()`). Content-mutation refreshes update bounds without touching editor focus.
+- `jumpMatch` / replace update match state only — never call `setSelection` directly; `revealActiveMatch` owns scroll/selection and skips `setSelection` while the find bar is focused (`setSelection` always DOM-focuses Quill).
 - Keep find modules split (`rich-markdown-editor-find.tsx`, `rich-markdown-editor-find-overlay.tsx`, `editor-session-find-visual.ts`) to satisfy lint limits.
 
 ### Find bar buttons not clickable (Windows overlay titlebar)
@@ -198,12 +199,31 @@ When things break after refactors, run the recovery sequence per `mds/dev-workfl
 
 See `mds/lessons-learned/find-bar-toolbar-click-blocked.md`.
 
+### Ctrl+S does nothing while the local find field is focused
+
+#### Symptom
+
+- Open the in-document find bar with Ctrl/Cmd+F, keep focus in the find input, then Ctrl/Cmd+S does not save. A second Ctrl+F while the find field is focused can also stop later save shortcuts from working.
+
+#### Root cause seen
+
+- The find bar is a sibling of the Quill host, not a child. The find shortcut listener used `host.contains(target)` plus `editor.hasFocus()`, so Ctrl+F from the find input was not `preventDefault`'d and Chromium could take the keyboard.
+- Independently, the workspace shortcut handler skipped all shortcuts (including Ctrl+S) when the target was an `<input>`.
+
+#### Current fix
+
+- `isFindShortcutInScope()` includes this pane's `.editor-findbar`.
+- `Ctrl/Cmd+S` is exempt from `isFormFieldTarget()`.
+
+See `mds/lessons-learned/find-shortcut-scope-includes-find-bar-sibling.md`.
+
 ### Quick checks
 
-1. Run `npm run test -- tests/rich-markdown-editor.test.ts` and verify find tests pass.
+1. Run `npm run test -- tests/rich-markdown-editor-find-regression.test.ts tests/workspace-keyboard-shortcuts.test.ts` and verify find tests pass.
 2. In app: focus editor, press Ctrl/Cmd+F, type query, confirm focus remains in input.
 3. Press Enter/Shift+Enter and confirm highlight moves with counter updates.
 4. Click Prev/Next/Close and confirm they respond (especially on Windows with overlay titlebar).
+5. With the find input focused, press Ctrl/Cmd+S and confirm a dirty document saves. Press Ctrl/Cmd+F again and confirm native Chromium find does not appear.
 
 ### Sidebar rail buttons and revisions-rail back button only click in their lower half (Windows overlay titlebar)
 
@@ -463,3 +483,27 @@ If the count at the bottom (`âœ— N files Â· M exports Â· ...`) includes 
 
 - `npm run test -- tests/clamp-context-menu-position.test.ts`
 - Right-click the last visible sidebar file near the window bottom and confirm Delete is fully visible.
+
+## 18) Selection highlight vanishes on right-click when first row is centered
+
+### Symptom
+
+- Center the first paragraph, select across it to the start of the document (Shift-select or Ctrl+A), then right-click: the selection highlight disappears (text is still there; only the visual range is gone).
+- “Copy as Markdown” may then copy the whole document instead of the intended range.
+
+### Root cause
+
+- Centering inserts `center:start` / `center:end` BlockEmbeds (`contenteditable=false`). Native right-click can collapse a browser range that includes those embeds; Quill’s `mouseup` → `Selection.update()` re-reads a null range and drops the highlight. Electron’s menu open does not clear selection in Trama code.
+
+### Current fix
+
+- Select All is Quill-owned (`selectAllInEditor` via app menu + Ctrl/Cmd+A binding + `select-all` command), not Electron `{ role: 'selectAll' }`.
+- `registerContextMenuSelectionPreserve` stashes `lastRange`/`savedRange` on right-mousedown/`contextmenu` (without `getSelection()`) and silent-restores across Quill sync and Electron `menu.popup`.
+
+### Quick checks
+
+1. Center first row → Ctrl+A → right-click → highlight stays.
+2. Same with Shift-select to start → right-click → highlight stays.
+3. Same without centering → still fine; caret-only right-click unchanged; Select All in find bar still selects the field.
+4. `npm run test -- tests/rich-markdown-editor-contextmenu-selection.test.ts`
+5. Lesson: `mds/lessons-learned/quill-contextmenu-selection-collapses-on-center-embeds.md`

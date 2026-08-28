@@ -59,19 +59,6 @@ export function useSearchState(editorRef: { current: Quill | null }) {
   const stateRef = useRef(state)
   stateRef.current = state
 
-  const selectMatch = (matches: number[], activeMatch: number, queryLength: number) => {
-    const editor = editorRef.current
-    if (!editor || matches.length === 0 || queryLength <= 0) {
-      return
-    }
-
-    const boundedIndex = Math.max(0, Math.min(activeMatch, matches.length - 1))
-    const plainStart = matches[boundedIndex]
-    const quillStart = mapPlainTextIndexToQuillIndex(editor, plainStart)
-    const quillEnd = mapPlainTextIndexToQuillIndex(editor, plainStart + queryLength)
-    editor.setSelection(quillStart, Math.max(0, quillEnd - quillStart), 'silent')
-  }
-
   const updateMatches = (nextQuery: string) => {
     applySearch(nextQuery, stateRef.current.options)
   }
@@ -92,6 +79,8 @@ export function useSearchState(editorRef: { current: Quill | null }) {
     setState((previous) => ({ ...previous, query, matches, activeMatch }))
   }
 
+  // Only update activeMatch here. Reveal/selection belongs to useActiveMatchOverlayEffect
+  // via revealActiveMatch — setSelection always DOM-focuses Quill and would steal find-bar focus.
   const jumpMatch = (direction: 1 | -1) => {
     const current = stateRef.current
     const queryLength = current.query.trim().length
@@ -101,14 +90,13 @@ export function useSearchState(editorRef: { current: Quill | null }) {
 
     const next = (current.activeMatch + direction + current.matches.length) % current.matches.length
     setState((previous) => ({ ...previous, activeMatch: next }))
-    selectMatch(current.matches, next, queryLength)
   }
 
   const reset = () => {
     setState((previous) => ({ query: '', options: previous.options, matches: [], activeMatch: 0 }))
   }
 
-  return { state, updateMatches, applySearch, refreshMatches, setMatches, jumpMatch, reset, selectMatch, stateRef }
+  return { state, updateMatches, applySearch, refreshMatches, setMatches, jumpMatch, reset, stateRef }
 }
 
 export function useReplaceActions({
@@ -117,14 +105,12 @@ export function useReplaceActions({
   replaceValue,
   keepFindFocus,
   setMatches,
-  selectMatch,
 }: {
   editorRef: { current: Quill | null }
   stateRef: { current: SearchState }
   replaceValue: string
   keepFindFocus: () => void
   setMatches: (query: string, matches: number[], activeMatch: number) => void
-  selectMatch: (matches: number[], activeMatch: number, queryLength: number) => void
 }) {
   const replaceCurrent = useCallback(/* replaceCurrent */ () => {
     const editor = editorRef.current
@@ -139,11 +125,8 @@ export function useReplaceActions({
     const matches = findAllMatches(getDocumentText(editor), current.query, current.options)
     const newActive = Math.min(boundedIndex, Math.max(0, matches.length - 1))
     setMatches(current.query, matches, newActive)
-    if (matches.length > 0) {
-      selectMatch(matches, newActive, queryLength)
-    }
     keepFindFocus()
-  }, [editorRef, stateRef, replaceValue, keepFindFocus, setMatches, selectMatch] /*Inputs for replaceCurrent*/)
+  }, [editorRef, stateRef, replaceValue, keepFindFocus, setMatches] /*Inputs for replaceCurrent*/)
 
   const replaceAll = useCallback(/* replaceAll */ () => {
     const editor = editorRef.current
@@ -157,11 +140,8 @@ export function useReplaceActions({
 
     const remaining = findAllMatches(getDocumentText(editor), current.query, current.options)
     setMatches(current.query, remaining, 0)
-    if (remaining.length > 0) {
-      selectMatch(remaining, 0, queryLength)
-    }
     keepFindFocus()
-  }, [editorRef, stateRef, replaceValue, keepFindFocus, setMatches, selectMatch] /*Inputs for replaceAll*/)
+  }, [editorRef, stateRef, replaceValue, keepFindFocus, setMatches] /*Inputs for replaceAll*/)
 
   return { replaceCurrent, replaceAll }
 }

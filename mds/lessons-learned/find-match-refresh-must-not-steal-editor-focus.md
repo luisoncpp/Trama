@@ -21,6 +21,8 @@ Match refresh and match reveal are different intents:
 
 In `useActiveMatchOverlayEffect`, call `refreshFindBounds()` on every match update, but skip `revealActiveMatch()` and `keepFindFocus()` when `isEditorBodyFocused()` is true **and** the query did not change in that effect run. Capture `isFindBarFocused()` before `revealActiveMatch()`; when the find bar is focused, skip `editor.setSelection()` and scroll to the match using bounds instead.
 
+`jumpMatch` / replace must **not** call `editor.setSelection` themselves. `setSelection` always DOM-focuses the Quill root (even with `'silent'`), which makes `isEditorBodyFocused()` true so `keepFindFocus()` bails and Enter/Next navigation leaves the caret in the editor. Leave selection and scroll to `revealActiveMatch` via the overlay effect.
+
 `keepFindFocus()` must also bail out when the editor body already has focus, so stale `setTimeout(0)` callbacks from earlier find-bar typing cannot steal focus after the user clicks back into the document.
 
 ## Focused tests

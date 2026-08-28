@@ -24,8 +24,8 @@ function makePane(path: string | null, content: string, isDirty: boolean): PaneD
 
 function makeRefs() {
   return {
-    primary: { current: { flush: () => null, revealHeading: () => {}, flushSync: () => null, isSerializationPending: () => false, tagOverlayRecalcRef: { current: false }, tagOverlayMatchesRef: { current: [] } } },
-    secondary: { current: { flush: () => null, revealHeading: () => {}, flushSync: () => null, isSerializationPending: () => false, tagOverlayRecalcRef: { current: false }, tagOverlayMatchesRef: { current: [] } } },
+    primary: { current: { flush: () => null, revealHeading: () => {}, setLayoutDirectiveLabel: () => false, flushSync: () => null, isSerializationPending: () => false, tagOverlayRecalcRef: { current: false }, tagOverlayMatchesRef: { current: [] } } },
+    secondary: { current: { flush: () => null, revealHeading: () => {}, setLayoutDirectiveLabel: () => false, flushSync: () => null, isSerializationPending: () => false, tagOverlayRecalcRef: { current: false }, tagOverlayMatchesRef: { current: [] } } },
   }
 }
 

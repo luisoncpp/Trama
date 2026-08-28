@@ -20,3 +20,4 @@ export type WorkspaceContextCommand =
   | { type: 'see-revisions'; pane: 'primary' | 'secondary'; path: string }
   | { type: 'paste-markdown' }
   | { type: 'copy-as-markdown' }
+  | { type: 'select-all' }

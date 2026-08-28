@@ -3,7 +3,7 @@ import { h, render } from 'preact'
 import { act } from 'preact/test-utils'
 import Quill from 'quill'
 import { getActiveMatchBounds } from '../src/features/project-editor/pane/rich-markdown-editor/editor-session/editor-session-private/editor-session-find-visual'
-import { isEditorBodyFocused, isFindBarFocused } from '../src/features/project-editor/pane/rich-markdown-editor/editor-session/editor-session-private/editor-session-find-focus'
+import { isEditorBodyFocused, isFindBarFocused, isFindShortcutInScope } from '../src/features/project-editor/pane/rich-markdown-editor/editor-session/editor-session-private/editor-session-find-focus'
 import { RichMarkdownEditor } from '../src/features/project-editor/pane/rich-markdown-editor/rich-markdown-editor'
 
 function sleep(ms: number) {
@@ -150,6 +150,54 @@ describe('isFindBarFocused', () => {
 
     findbar.remove()
     editor.remove()
+  })
+})
+
+describe('isFindShortcutInScope', () => {
+  it('is true when the event target is the find input sibling of the host', () => {
+    const shell = document.createElement('div')
+    const host = document.createElement('div')
+    const findbar = document.createElement('div')
+    findbar.className = 'editor-findbar'
+    const input = document.createElement('input')
+    input.className = 'editor-findbar__input'
+    findbar.append(input)
+    shell.append(host, findbar)
+    document.body.append(shell)
+
+    expect(isFindShortcutInScope(host, null, input)).toBe(true)
+
+    shell.remove()
+  })
+
+  it('is false for a find bar that belongs to another editor shell', () => {
+    const shell = document.createElement('div')
+    const host = document.createElement('div')
+    const otherShell = document.createElement('div')
+    const otherFindbar = document.createElement('div')
+    otherFindbar.className = 'editor-findbar'
+    const otherInput = document.createElement('input')
+    otherFindbar.append(otherInput)
+    shell.append(host)
+    otherShell.append(otherFindbar)
+    document.body.append(shell, otherShell)
+
+    expect(isFindShortcutInScope(host, null, otherInput)).toBe(false)
+
+    shell.remove()
+    otherShell.remove()
+  })
+
+  it('is true when the editor reports focus even if the target is outside the host', () => {
+    const host = document.createElement('div')
+    const outside = document.createElement('div')
+    document.body.append(host, outside)
+    const editor = { hasFocus: () => true }
+
+    expect(isFindShortcutInScope(host, editor, outside)).toBe(true)
+
+    host.remove()
+    outside.remove()
   })
 })
 
@@ -585,6 +633,36 @@ describe('RichMarkdownEditor find & replace', () => {
 
     const rows = root.querySelectorAll('.editor-findbar__row')
     expect(rows.length).toBe(1)
+  })
+
+  it('Ctrl+F while the find input is focused still preventDefaults so native find cannot take over', async () => {
+    act(() => {
+      render(
+        h(RichMarkdownEditor, buildEditorProps({ documentId: 'ctrl-f-find-input', value: 'hello world' })),
+        root,
+      )
+    })
+
+    await sleep(80)
+    const editor = getQuillInstance(root)
+
+    act(() => {
+      editor.focus()
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'f', ctrlKey: true, bubbles: true, cancelable: true }))
+    })
+    await sleep(30)
+
+    const findInput = root.querySelector('.editor-findbar__input') as HTMLInputElement
+    expect(findInput).toBeTruthy()
+    findInput.focus()
+
+    const secondFind = new KeyboardEvent('keydown', { key: 'f', ctrlKey: true, bubbles: true, cancelable: true })
+    act(() => {
+      findInput.dispatchEvent(secondFind)
+    })
+
+    expect(secondFind.defaultPrevented).toBe(true)
+    expect(root.querySelector('.editor-findbar')).toBeTruthy()
   })
 
   it('toggle replace mode via chevron button shows/hides replace row', async () => {

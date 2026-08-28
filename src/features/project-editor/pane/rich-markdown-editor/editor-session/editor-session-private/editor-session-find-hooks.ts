@@ -7,7 +7,8 @@ import {
   useGlobalFindPresetEffect,
   type FindContentSession,
 } from './editor-session-find-preset'
-import { isModF, isModH, useSearchState, type SearchState } from './editor-session-find-state'
+import { handleFindReplaceShortcut } from './editor-session-find-focus'
+import { useSearchState, type SearchState } from './editor-session-find-state'
 import type { FindMatchBounds } from './editor-session-find-overlay'
 
 function useFindShortcutEffect({
@@ -23,24 +24,7 @@ function useFindShortcutEffect({
 }) {
   useEffect(/* listenFindReplaceShortcuts */ () => {
     const onWindowKeyDown = (event: KeyboardEvent) => {
-      const host = hostRef.current
-      const target = event.target
-      const insideEditor = host != null && target instanceof Node && host.contains(target)
-      if (!insideEditor && !editorRef.current?.hasFocus()) {
-        return
-      }
-
-      if (isModF(event)) {
-        event.preventDefault()
-        onOpenFind()
-        return
-      }
-
-      if (isModH(event)) {
-        event.preventDefault()
-        onOpenReplace()
-        return
-      }
+      handleFindReplaceShortcut(event, hostRef.current, editorRef.current, onOpenFind, onOpenReplace)
     }
 
     window.addEventListener('keydown', onWindowKeyDown)
